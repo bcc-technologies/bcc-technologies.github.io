@@ -49,7 +49,7 @@ nav a:hover {
 
 /* Hero section */
 .hero {
-    background-image: url('Imagen1.JPG');
+    background-image: url('static/Imagen1.JPG');
     background-size: cover;
     background-position: center;
     text-align: center;
