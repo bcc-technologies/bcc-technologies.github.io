@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="{% static 'aboutUs.css' %}">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>BCC Technologies</h1>
+            <nav>
+                <ul>
+                    <li><a href="">Home</a></li>
+                    <li><a href="Services/">Services</a></li>
+                    <li><a href="aboutUs/">About Us</a></li>
+                    <li><a href="Contact/">Contact</a></li>
+                    <li><a href="blog/">BCC blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-container">
+            <h2>Welcome to Our Software Company</h2>
+            <p>We create innovative solutions that drive your business forward.</p>
+            <a href="Services/" class="cta-button">Learn More</a>
+        </div>
+    </section>
+
+    <section class="about">
+        <div class="about-container">
+            <h2>About Us</h2>
+            <p>Who are we? We are BCC Tech, a passionate group of programmer-scientists dedicated to exploring the limits of technology and innovation. Our story begins as physics students with a deep curiosity for the unknown and a passion for expanding knowledge.</p>
+            <p>Our name, in addition to combining our last names, is a tribute to the "Body Central Cubic" which is a concept of importance in solid-state physics.</p>
+            <p>What do we do? At BCC Tech, we specialize in custom software development that transforms ideas into concrete solutions. Whether creating cross-platform applications for companies in various industries or designing innovative products for the general public, our approach is always the same: make the complex easy and expand the interesting.</p>
+
+        </div>
+    </section>
+
+    <section class="services">
+        <div class="services-container">
+            <h2 class="headertekst">Our staff</h2>
+            <div class="service-card">
+                <img src="{% static 'confsulting.jpeg' %}" alt="">
+                <h3>Gabriel Barreiro</h3>
+                <p>Director del departamento de vainas bacanas</p>
+            </div>
+            <div class="service-card">
+                <img src="mobile-development.png" alt="">
+                <h3>Saul Castillo</h3>
+                <p>Director del departamento de marketing</p>
+            </div>
+            <div class="service-card">
+                <img src="consulting.png" alt="">
+                <h3>Enrique Casanova</h3>
+                <p>Director del departamento de finanzas</p>
+            </div>
+            <div class="service-card">
+                <img src="consulting.png" alt="">
+                <h3>Jesus Matos</h3>
+                <p>Asesor especialista en Proyectos</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2023 BCC Technologies. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

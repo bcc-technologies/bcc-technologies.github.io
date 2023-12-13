@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="{% static 'mainPage.css' %}">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1><img src="{% static 'logo.png' %}" alt="BCC Technologies"></h1>
+            <nav>
+                <ul>
+                    <li><a href="">Home</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="aboutUs/">About Us</a></li>
+                    <li><a href="contactUs/">Contact us</a></li>
+                    <li><a href="blog/">BCC blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-container">
+            <h2>Welcome to the cube</h2>
+            <p>We make the complex easy and expand the interesting.</p>
+            <a href="aboutUs/" class="cta-button">Learn More</a>
+        </div>
+    </section>
+
+    <section class="services">
+        <div class="services-container">
+            <h2>Our Services</h2>
+            <div class="service-card">
+                <img src="{% static 'consujlting.jpeg' %}" alt="Web Development">
+                <h3>Web Development</h3>
+                <p>We build responsive and user-friendly websites.</p>
+            </div>
+            <div class="service-card">
+                <img src="{% static 'conjsulting.jpeg' %}" alt="Mobile App Development">
+                <h3>Scientific Software Development</h3>
+                <p>We create software for your company regarding data analysis.</p>
+            </div>
+            <div class="service-card">
+                <img src="{% static 'consujlting.jpeg' %}" alt="Software Consulting">
+                <h3>Software Consulting</h3>
+                <p>We offer expert advice and solutions.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2023 BCC Technologies. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
