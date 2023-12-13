@@ -1,0 +1,93 @@
+/* Reset some default styles */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Global styles */
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    color: #333333;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: #333333;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    box-shadow: 0 16px 48px #E3E7EB;
+}
+
+.navbar-brand {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.navbar-toggler-icon {
+    background-color: #ffffff;
+}
+
+.navbar-nav {
+    margin-left: auto;
+}
+
+.nav-item {
+    margin-left: 20px;
+}
+
+.nav-link {
+    font-weight: bold;
+    color: #ffffff !important;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: #ed4624 !important;
+}
+
+/* Content section */
+.container {
+    padding: 40px;
+    background-color: #ffffff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+.container h2 {
+    font-size: 36px;
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+.container p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.container p:last-child {
+    margin-bottom: 0;
+}
+
+/* Footer styles */
+.bg-grey {
+    background-color: #333333;
+}
+footer {
+    background-color: #333333;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer p {
+    font-size: 18px;
+}
