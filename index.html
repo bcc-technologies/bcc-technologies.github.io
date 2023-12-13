@@ -1,61 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="icon" type="image/png" href="static/logo.png">
-</head>
-<body>
-    <header>
-        <div class="header-container">
-            <h1><img src="static/logo.png" alt="BCC Technologies"></h1>
-            <nav>
-                <ul>
-                    <li><a href="">Home</a></li>
-                    <li><a href="./services.html">Services</a></li>
-                    <li><a href="./aboutUs.html">About Us</a></li>
-                    <li><a href="./contactUs.html">Contact us</a></li>
-                    <li><a href="./blog.html">BCC blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% extends "blog.html" %}
+{% block content %}
+<style>
+/* Reset some default styles */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
 
-    <section class="hero">
-        <div class="hero-container">
-            <h2>Welcome to the cube</h2>
-            <p>We make the complex easy and expand the interesting.</p>
-            <a href="./aboutUs.html" class="cta-button">Learn More</a>
-        </div>
-    </section>
+/* Global styles */
+body {
+    font-family: "Roboto", sans-serif;
+    font-size: 18px;
+    background-color: #fdfdfd;
+    color: #333333; /* Text color matches the existing style */
+}
 
-    <section class="services">
-        <div class="services-container">
-            <h2>Our Services</h2>
-            <div class="service-card">
-                <img src="static/consultigng.jpeg" alt="Web Development">
-                <h3>Web Development</h3>
-                <p>We build responsive and user-friendly websites.</p>
-            </div>
-            <div class="service-card">
-                <img src="static/consultingg.jpeg" alt="Mobile App Development">
-                <h3>Scientific Software Development</h3>
-                <p>We create software for your company regarding data analysis.</p>
-            </div>
-            <div class="service-card">
-                <img src="static/consultingg.jpeg" alt="Software Consulting">
-                <h3>Software Consulting</h3>
-                <p>We offer expert advice and solutions.</p>
+.head_text {
+    color: #ffffff; /* Header text color matches the existing style */
+}
+
+.card {
+    box-shadow: 0 16px 48px #E3E7EB;
+    background-color: #ffffff; /* Card background color matches the existing style */
+    color: #333333; /* Card text color matches the existing style */
+}
+
+</style>
+
+<header class="masthead">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class=" col-md-8 col-md-10 mx-auto">
+                <div class="site-heading">
+                    <h3 class=" site-heading my-4 mt-3 text-white"> Welcome to the Cube! </h3>
+                    <p class="text-light">Get the latest articles by our authors! &nbsp
+                    </p>
+                </div>
             </div>
         </div>
-    </section>
-
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2023 BCC Technologies. All rights reserved.</p>
+    </div>
+</header>
+<div class="container">
+    <div class="row">
+        <!-- Blog Entries Column -->
+        <div class="col-md-8 mt-3 left">
+            {% for post in post_list %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">{{ post.title }}</h2>
+                    <p class="card-text text-muted h6">{{ post.author }} | {{ post.created_on}} </p>
+                    <p class="card-text">{{post.content|slice:":200" }}</p>
+                    <a href="{% url 'post_detail' post.slug  %}" class="btn btn-primary">Read More &rarr;</a>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-    </footer>
-</body>
-</html>
+        {% block sidebar %} {% include 'sidebar.html' %} {% endblock sidebar %}
+    </div>
+</div>
+{%endblock%}
