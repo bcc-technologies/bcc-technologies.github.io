@@ -15,7 +15,7 @@ body {
 .header-container {
     background-image: url('static/Landing1.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: top;
 
 
     background-color: #000000;
@@ -55,9 +55,9 @@ nav a:hover {
 
 /* Hero section */
 .hero {
-    /* background-image: url('static/Imagen1.JPG');
+    background-image: url('static/Imagen1.JPG');
     background-size: cover;
-    background-position: center; */
+    background-position: center;
     text-align: center;
     padding: 150px 0;
     color: #ffffff;
