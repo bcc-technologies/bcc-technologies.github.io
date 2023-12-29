@@ -12,7 +12,7 @@ body {
     margin: 0; /* Eliminar márgenes predeterminados del body */
 }
 
-
+/* Menu */
 .header-container {
     position: fixed; /* Fijar la barra de navegación en la parte superior */
     top: 0;
@@ -32,7 +32,6 @@ header h1 {
     margin-left: 13px;
 }
 
-/* Menu */
 nav ul {
     list-style: none;
     display: flex;
@@ -43,15 +42,6 @@ nav li {
 }
 
 nav a {
-    background-image: url('static/Landing1.JPG');
-    background-size: cover;
-    background-position: top;
-    text-align: center;
-    padding: 150px 0;
-    color: #ffffff;
-    margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
-
-
     text-decoration: none;
     color: #ffffff;
     font-weight: bold;
@@ -60,7 +50,11 @@ nav a {
 }
 
 nav a:hover {
-    color: #ed4624;
+    background-image: url('static/Landing1.JPG');
+    background-size: cover;
+    background-position: top;
+
+    /* color: #ed4624; */
 }
 
 /* Hero section */
@@ -73,7 +67,6 @@ nav a:hover {
     color: #ffffff;
     margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
 
-    /**/
     background-color: #f0f0f0;
 
 }
