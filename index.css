@@ -12,15 +12,19 @@ body {
     margin: 0; /* Eliminar márgenes predeterminados del body */
 }
 
-/* Menu */
+
 .header-container {
-    background-image: url('static/Landing1.JPG');
-    background-size: cover;
-    background-position: top;
-    text-align: center;
-    padding: 150px 0;
+    position: fixed; /* Fijar la barra de navegación en la parte superior */
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Ajustar la opacidad según sea necesario */
     color: #ffffff;
-    margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000; /* Asegurar que la barra de navegación esté sobre otros elementos */
 }
 
 header h1 {
@@ -28,6 +32,7 @@ header h1 {
     margin-left: 13px;
 }
 
+/* Menu */
 nav ul {
     list-style: none;
     display: flex;
@@ -38,6 +43,15 @@ nav li {
 }
 
 nav a {
+    background-image: url('static/Landing1.JPG');
+    background-size: cover;
+    background-position: top;
+    text-align: center;
+    padding: 150px 0;
+    color: #ffffff;
+    margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
+
+
     text-decoration: none;
     color: #ffffff;
     font-weight: bold;
