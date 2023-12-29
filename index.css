@@ -9,27 +9,23 @@ body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     color: #000000;
-    margin: 0; /* Eliminar márgenes predeterminados del body */
 }
 
 /* Menu */
 .header-container {
-    position: fixed; /* Fijar la barra de navegación en la parte superior */
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Ajustar la opacidad según sea necesario */
+    background-image: url('static/Imagen1.JPG');
+    background-color: #000000;
     color: #ffffff;
     padding: 20px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 1000; /* Asegurar que la barra de navegación esté sobre otros elementos */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
     font-size: 36px;
-    margin-left: 13px;
+    margin-left: 20px;
 }
 
 nav ul {
@@ -50,25 +46,17 @@ nav a {
 }
 
 nav a:hover {
-    background-image: url('static/Landing1.JPG');
-    background-size: cover;
-    background-position: top;
-
-    /* color: #ed4624; */
+    color: #ed4624;
 }
 
 /* Hero section */
 .hero {
-    /* background-image: url('static/Landing1.JPG'); */
+    /* background-image: url('static/Imagen1.JPG');
     background-size: cover;
-    background-position: top;
+    background-position: center; */
     text-align: center;
     padding: 150px 0;
     color: #ffffff;
-    margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
-
-    background-color: #f0f0f0;
-
 }
 
 .hero h2 {
@@ -83,8 +71,7 @@ nav a:hover {
 
 .cta-button {
     display: inline-block;
-    background-color: #000000;
-    border-color: #ed4624;
+    background-color: #ed4624;
     color: #ffffff;
     padding: 20px 40px;
     text-decoration: none;
