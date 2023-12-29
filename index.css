@@ -9,16 +9,21 @@ body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     color: #000000;
+    margin: 0; /* Eliminar márgenes predeterminados del body */
 }
 
 .header-container {
-    background-color: rgba(0, 0, 0, 0.3); /* Cambia el color de fondo a un tono oscuro con opacidad */
+    position: fixed; /* Fijar la barra de navegación en la parte superior */
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Ajustar la opacidad según sea necesario */
     color: #ffffff;
     padding: 20px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+    z-index: 1000; /* Asegurar que la barra de navegación esté sobre otros elementos */
 }
 
 header h1 {
@@ -55,6 +60,7 @@ nav a:hover {
     text-align: center;
     padding: 150px 0;
     color: #ffffff;
+    margin-top: 80px; /* Ajustar el margen superior para evitar superposición con la barra de navegación */
 }
 
 .hero h2 {
