@@ -95,7 +95,7 @@ nav a:hover {
     background-color: #ffffff;
     text-align: center;
     padding: 150px 0;
-    color: #000000;
+    color: #333333;
 }
 
 .hero h1 {
@@ -130,7 +130,7 @@ nav a:hover {
 
 /*A: Redes sociales */
 .red {
-    background-color: #ED4624;
+    background-color: #ed4624;
     height: 23vh;
     background-size: cover;
     background-position: center;
@@ -162,38 +162,6 @@ nav a:hover {
     margin: 0 2vw; /* Esto crea espacio entre los logos */
 }
 
-
-
-/*A: Clients section */
-.clients {
-    background-color: #ffffff;
-    height: 18vh;
-
-    text-align: center;
-    padding: 7vh 0;
-    color: #000000;
-}
-
-/*B: for logos */
-.clients h1 {
-    position: relative; 
-}
-
-.clients h2 {
-    font-size: 48px;
-}
-
-.clients p {
-    font-size: 24px;
-}
-
-.clients img {
-    position: relative; 
-    width: 12vw; /* Esto ajusta el ancho del logo */
-    padding-top: 1.5vh;
-    margin: 0 1vw; /* Esto crea espacio entre los logos */
-}
-
 /*A: Services section */
 .services {
     background-color: #ffffff;
@@ -216,7 +184,6 @@ nav a:hover {
 
 .service-card {
     background-color: #f5f5f5;
-    color: #333333;
     border-radius: 10px;
     padding: 40px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -233,7 +200,44 @@ nav a:hover {
 .service-card h3 {
     font-size: 24px;
     margin-bottom: 20px;
+    color: #ed4624;
 }
+
+.service-card p {
+    color: #333333;
+}
+
+
+/*A: Clients section */
+.clients {
+    background-color: #ffffff;
+    height: 18vh;
+
+    text-align: center;
+    padding: 7vh 0;
+    color: #333333;
+}
+
+/*B: for logos */
+.clients h1 {
+    position: relative; 
+}
+
+.clients h2 {
+    font-size: 48px;
+}
+
+.clients p {
+    font-size: 24px;
+}
+
+.clients img {
+    position: relative; 
+    width: 12vw; /* Esto ajusta el ancho del logo */
+    padding-top: 1.5vh;
+    margin: 0 1vw; /* Esto crea espacio entre los logos */
+}
+
 
 /*A: Footer section */
 footer {
