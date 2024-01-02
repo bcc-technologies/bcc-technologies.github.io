@@ -1,44 +1,81 @@
-/* Reset some default styles */
+/*A: Reset some default styles */
 body, h1, h2, h3, p {
     margin: 0;
     padding: 0;
 }
 
-/* Global styles */
+/*A: Global styles */
 body {
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     color: #000000;
 }
 
-/* Menu */
+/*A: Landing (Menú) */
 .header-container {
-    background-image: url('static/Landing1.jpg');
+    background-image: url(static/Fondo2.png);
+    height: 92vh;
     background-size: cover;
     background-position: top;
 
 
-    background-color: #000000;
-    color: #ffffff;
+    color: #000000;
     padding: 20px 0;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: top;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/*B: Logo */
 header h1 {
-    font-size: 36px;
-    margin-left: 20px;
+    position:absolute;
+    top: 0;
+    margin-left: 2vh;
 }
 
+
+/*B: Cube */
+header h2 {
+    position:absolute; 
+    top: 7vh; 
+    margin-left: 55vw;
+}
+
+/*B: Text-title */
+header h3 {
+    font-size: 32px;
+    margin-bottom: 20px;
+
+    position:absolute; 
+    top: 65vh; 
+    margin-left: 9vw;
+}
+
+/*B: Text-content */
+header p {
+    font-size: 24px;
+    margin-bottom: 40px;
+
+    position:absolute; 
+    width: 450px;
+    word-wrap: break-word;
+    top: 72vh; 
+    margin-left: 5.7vw;
+}
+
+/*B: Menu-options */
 nav ul {
     list-style: none;
     display: flex;
+    justify-content: space-between;
+    margin-left: 10vw;
+
 }
 
 nav li {
-    margin: 0 15px;
+    margin: 0 10px;
+
 }
 
 nav a {
@@ -53,11 +90,9 @@ nav a:hover {
     color: #ed4624;
 }
 
-/* Hero section */
+/*A: Hero section */
 .hero {
-    background-image: url('static/Imagen1.JPG');
-    background-size: cover;
-    background-position: center;
+    background-color: #ffffff;
     text-align: center;
     padding: 150px 0;
     color: #ffffff;
@@ -89,7 +124,7 @@ nav a:hover {
     background-color: #ff7e3f;
 }
 
-/* Services section */
+/*A: Services section */
 .services {
     background-color: #ffffff;
     padding: 80px 0;
@@ -130,7 +165,7 @@ nav a:hover {
     margin-bottom: 20px;
 }
 
-/* Footer section */
+/*A: Footer section */
 footer {
     background-color: #333333;
     color: #ffffff;
