@@ -13,7 +13,7 @@ body {
 
 /*A: Landing (Menú) */
 .header-container {
-    background-image: url(static/Fondo2.png);
+    background-image: url(static2/Fondo2.png);
     height: 92vh;
     background-size: cover;
     background-position: top;
@@ -95,7 +95,11 @@ nav a:hover {
     background-color: #ffffff;
     text-align: center;
     padding: 150px 0;
-    color: #ffffff;
+    color: #000000;
+}
+
+.hero h1 {
+    position: relative; 
 }
 
 .hero h2 {
@@ -167,7 +171,7 @@ nav a:hover {
 
 /*A: Footer section */
 footer {
-    background-color: #333333;
+    background-color: #000000;
     color: #ffffff;
     text-align: center;
     padding: 20px 0;
