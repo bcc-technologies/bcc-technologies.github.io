@@ -128,6 +128,72 @@ nav a:hover {
     background-color: #ff7e3f;
 }
 
+/*A: Redes sociales */
+.red {
+    background-color: #ED4624;
+    height: 23vh;
+    background-size: cover;
+    background-position: center;
+
+    text-align: center;
+    color: #ffffff;
+}
+
+.red h1 {
+    position: relative;
+    margin: auto; /* Esto centra el logo horizontalmente */
+    display: inline-block; /* Esto hace que el logo se comporte como un elemento en línea */
+    padding-top: 6vh;
+}
+
+.red h2 {
+    padding-top: 4vh;
+    font-size: 42px;
+    float: left;
+    padding-left: 3.5vw;
+}
+
+.red p {
+    font-size: 24px;
+}
+
+.red img {
+    width: 5vw; /* Esto ajusta el ancho del logo */
+    margin: 0 2vw; /* Esto crea espacio entre los logos */
+}
+
+
+
+/*A: Clients section */
+.clients {
+    background-color: #ffffff;
+    height: 18vh;
+
+    text-align: center;
+    padding: 7vh 0;
+    color: #000000;
+}
+
+/*B: for logos */
+.clients h1 {
+    position: relative; 
+}
+
+.clients h2 {
+    font-size: 48px;
+}
+
+.clients p {
+    font-size: 24px;
+}
+
+.clients img {
+    position: relative; 
+    width: 12vw; /* Esto ajusta el ancho del logo */
+    padding-top: 1.5vh;
+    margin: 0 1vw; /* Esto crea espacio entre los logos */
+}
+
 /*A: Services section */
 .services {
     background-color: #ffffff;
