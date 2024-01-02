@@ -13,7 +13,7 @@ body {
 
 /*A: Landing (Menú) */
 .header-container {
-    background-image: url(static2/Fondo2.png);
+    background-image: url(static/Fondo2.png);
     height: 92vh;
     background-size: cover;
     background-position: top;
