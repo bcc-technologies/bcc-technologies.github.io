@@ -94,12 +94,20 @@ nav a:hover {
 .hero {
     background-color: #ffffff;
     text-align: center;
-    padding: 150px 0;
+    padding: 50px 0;
     color: #333333;
+    position: relative;
 }
 
-.hero h1 {
-    position: relative; 
+.hero-container {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos en el contenedor */
+    align-items: center; /* Centra verticalmente los elementos en el contenedor */
+}
+
+.hero-content {
+    flex: 1; /* Permite que este div tome todo el espacio restante */
+    text-align: center;
 }
 
 .hero h2 {
@@ -128,39 +136,54 @@ nav a:hover {
     background-color: #ff7e3f;
 }
 
+.hero-image img {
+    height: 25.7vw;
+    margin-right: 7vw;
+}
+
+
 /*A: Redes sociales */
 .red {
     background-color: #ed4624;
     height: 23vh;
     background-size: cover;
     background-position: center;
-
     text-align: center;
     color: #ffffff;
 }
 
-.red h1 {
-    position: relative;
-    margin: auto; /* Esto centra el logo horizontalmente */
-    display: inline-block; /* Esto hace que el logo se comporte como un elemento en línea */
-    padding-top: 6vh;
-}
-
 .red h2 {
-    padding-top: 4vh;
     font-size: 42px;
-    float: left;
-    padding-left: 3.5vw;
+    padding-top: 4vh;
 }
 
-.red p {
-    font-size: 24px;
+.red-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.red-text {
+    flex: 1; /* Toma el espacio restante */
+    text-align: left;
+    padding-left: 3.5vw; /* Ajusta el espaciado a la izquierda */
+}
+
+.red-logos {
+    display: flex;
+    align-items: center;
+    padding-top: 6vh;
+    margin-right: 40vw;
+}
+
+.red h1 {
+    margin: 0 1.3vw; /* Espacio entre los logos */
 }
 
 .red img {
-    width: 5vw; /* Esto ajusta el ancho del logo */
-    margin: 0 2vw; /* Esto crea espacio entre los logos */
+    width: 5vw;
 }
+
 
 /*A: Services section */
 .services {
