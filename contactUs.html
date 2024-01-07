@@ -1,16 +1,30 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="layout.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
+</head>
 
-<div id="content"></div>
-<script>
-  fetch('layout.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('content').innerHTML = data;
-    });
-</script>
-<!--Aplica lo guardado en layout.html-->
-
-{% block content %}
+<!-- header section -->
+<body>
+    <header>
+        <div class="header-container">
+            <nav>
+                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="position: absolute ;width:11vw; top: -2.2vh; " ></h1>
+                <hr class="solid" style="position: absolute; top: 1.3vh; margin-left: 12.4vw; height:2.7vh;">
+                <ul>
+                    <li><a href="./">Inicio</a></li>
+                    <li><a href="./services">Servicios</a></li>
+                    <li><a href="./aboutUs">Nosotros</a></li>
+                    <li><a href="./contactUs">Contactanos</a></li>
+                    <li><a href="./blog">BCC Blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 <!--inicia el contenido de la página-->    
 
 <link rel="stylesheet" href="contactUs.css">
@@ -26,12 +40,43 @@
         </div>
         <div class="form-container">
             <!-- Contact form -->
-            {% include "contact_form.html" %}
+            <link rel="stylesheet" href="{{ url_for('static',filename='styles/contact_form.css') }}">
+
+<div class="form-overlay">
+    <div id="form-container" class="icon fa fa-pencil">
+        <span id="form-close" class="icon fa fa-close"></span>
+        <div id="form-content">
+            <div id="form-head">
+                <h1 class="pre">Póngase en contacto</h1>
+                <p class="pre" style="color: #e9e9e9;">Estamos para servirle</p>
+                <!-- <h1 class="post">Thanks!</h1>
+                <p class="post">I'll be in touch ASAP</p> -->
+            </div>
+            <form>
+                <input class="input name" type="text" name="user_name" placeholder="Su nombre">
+                <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
+                <select class="input select" name="subject">
+                    <option disabled>¿De qué hablamos?</option>
+                    <option selected>Sobre un nuevo proyecto</option>
+                    <option>Tengo unas preguntas</option>
+                    <option>Hagámoslo tomando un café</option>
+                </select>
+                <textarea class="input message" placeholder="¿En qué podemos ayudarle?"></textarea>
+                <input class="input submit" type="submit" value="Enviar mensaje">
+            </form>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 </section>
 
 
 
-{% endblock %}
-<!--termina el contenido de la página-->
+<footer>
+        <div class="footer-container">
+            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
