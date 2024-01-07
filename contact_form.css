@@ -1,0 +1,106 @@
+/* Estilo para el formulario */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #FAFAFA;
+  margin: 0;
+  padding: 0;
+}
+
+#form-container {
+  cursor: auto;
+  color: #FFF;
+  z-index: 1000;
+  position: relative; /* Cambiado a relativo para que el formulario flote correctamente entre el header y el footer */
+  margin: 20px auto; /* Añadido espacio alrededor del formulario */
+  background-color: #f72f4e;
+  overflow: hidden;
+  border-radius: 8px; /* para un aspecto más agradable */
+  width: 100%; /* Se ajustó para ocupar todo el ancho */
+  max-width: 610px;
+  padding: 20px; /* Añadido un relleno para mayor espacio en el contenido */
+  text-align: center; /* Centrado el contenido */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.17);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#form-content {
+  font-family: 'Roboto', sans-serif;
+  width: 100%;
+  opacity: 1;
+  text-align: left;
+  transition: opacity 0.2s 0.2s;
+  text-align: center;
+
+  form {
+    color: #FFF;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    text-align: left;
+  }
+
+  .input {
+    background: rgba(0, 0, 0, 0.2);
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 15px; /* para mayor espacio en los campos */
+    border-width: 0;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    color: #FFF; /* Añadido para mejorar la visibilidad del texto */
+    font-size: 16px; /* el tamaño del texto */
+  }
+
+  .input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 90%;
+  }
+
+  .input.message {
+    resize: none;
+    height: 150px;
+    padding: 15px; /* para mayor espacio en el campo de mensaje */
+  }
+
+  .input.submit {
+    background-color: #FFF;
+    color: #f72f4e;
+    font-size: 120%;
+    height: 60px; /* para mejorar el aspecto del botón */
+    box-shadow: 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.1s, transform 0s 0.6s;
+
+    &:active {
+      margin-top: 5px; /* para mejorar la apariencia cuando se hace clic */
+      box-shadow: 0 0 rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .input.form-error {
+    animation: error 0.8s ease;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  select option {
+    background: #f72f4e;
+    color: #FFF;
+    border: none;
+    box-shadow: none;
+    outline: none;
+  }
+
+  select option:disabled {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 90%;
+  }
+}
+
+@keyframes error {
+  0%, 100% {transform: translateX(0);}
+  10%, 30%, 50%, 70%, 90% {transform: translateX(-6px);}
+  20%, 40%, 60%, 80% {transform: translateX(6px);}
+}

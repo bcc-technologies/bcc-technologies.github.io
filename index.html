@@ -1,109 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-</head>
+{% extends "layout.html" %}
+<!--Aplica lo guardado en layout.html-->
 
-<!-- header section -->
-<body>
-    <header>
-        <div class="header-container">
-            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="width:11vw;" ></h1>
-            <hr class="solid" style="position: absolute; top: 3.5vh; margin-left: 12.4vw; height:2.7vh;">
-            <nav>
-                <ul>
-                    <li><a href="">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contactanos</a></li>
-                    <li><a href="./blog">BCC Blog</a></li>
-                </ul>
-            </nav>
-            <h2><img src="static/BCC_sf.png" alt="Body Centered Cube" style="width:43vw;" ></h2>
-            <h3>¿Quienes somos?</h3>
-            <p>Somos BCC Tech, un apasionado grupo de científicos programadores dedicados a explorar los límites de la tecnología y la innovación.</p>
-        </div>
-    </header>
+{% block content %}
+<!--inicia el contenido de la página-->
 
-    <!-- hero section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h2>Bienvenido al cubo</h2>
-                <p>Hacemos fácil lo complejo y ampliamos lo interesante.</p>
-                <a href="./aboutUs" class="cta-button">Ver más</a>
-            </div>
-            <div class="hero-image">
-                <img src="static/Imagen1.JPG" alt="BCC Founders">
-            </div>
-        </div>
-    </section>
+<link rel="stylesheet" href="index.css">
 
     
-    <!-- social networks section -->
-    <section class="red">
-        <div class="red-container">
-            <div class="red-text">
-                <h2>También puedes<br>encontrarnos en:</h2>
-            </div>
-            <div class="red-logos">
-                <h1><a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Instagram_sf.png" alt="Instagram"/>
-                </a></h1>
+<!-- Landing section -->
+<section class="landing" >
+    <div class="landing-container">
+        <h2><img src="static/BCC_sf.png" alt="Body Centered Cube" style="position: absolute; width:43vw; left: 55vw; top: -4.4vh;" ></h2>
+        <h3>¿Quienes somos?</h3>
+        <p>Somos BCC Tech, un apasionado grupo de científicos programadores dedicados a explorar los límites de la tecnología y la innovación.</p>
+    </div>
+</section>
 
-                <h1><a href="https://www.linkedin.com/company/bcc-tech/?viewAsMember=true" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Linkedin2_sf.png" alt="Linkedin"/>
-                </a></h1>
-
-                <h1><a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Fiverr2_sf.png" alt="Fiverr"/>
-                </a></h1>
-
-                <h1><a href="https://github.com/bcc-technologies/" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Github_sf.png" alt="Github"/>
-                </a></h1>
-            </div>
+<!-- hero section -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h2>Bienvenido al cubo</h2>
+            <p>Hacemos fácil lo complejo y ampliamos lo interesante.</p>
+            <a href="./aboutUs" class="cta-button">Ver más</a>
         </div>
-    </section>
-
-
-
-    <!-- services section -->
-    <section class="services">
-        <h2>Nuestros servicios</h2>
-        <div class="services-container">
-            <div class="service-card">
-                <h3>Desarrollo web</h3>
-                <p>Creamos sitios web eficientes, poderosos y adaptativos.</p>
-            </div>
-            <div class="service-card">
-                <h3>Desarrollo de software científico</h3>
-                <p>Creamos software para su empresa en materia de análisis de datos.</p>
-            </div>
-            <div class="service-card">
-                <h3>Consultoría de software</h3>
-                <p>Ofrecemos asesoramiento y soluciones de expertos.</p>
-            </div>
+        <div class="hero-image">
+            <img src="static/Imagen1.JPG" alt="BCC Founders">
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- clients section -->
-    <section class="clients">
-        <div class="clients-container">
-            <h2>Clientes que han confiado en BCC</h2>
-            <h1><img src="static/IFISUASD1_sf.png" alt="IFIS UASD" style="float: left;" ></h1>
-        </div>
-    </section>
 
-    <!-- footer section -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+<!-- social networks section -->
+<section class="red">
+    <div class="red-container">
+        <div class="red-text">
+            <h2>También puedes<br>encontrarnos en:</h2>
         </div>
-    </footer>
-</body>
-</html>
+        <div class="red-logos">
+            <h1><a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer">
+                <img src="static/Instagram_sf.png" alt="Instagram"/>
+            </a></h1>
+
+            <h1><a href="https://www.linkedin.com/company/bcc-tech/?viewAsMember=true" target="_blank" rel="noopener noreferrer">
+                <img src="static/Linkedin2_sf.png" alt="Linkedin"/>
+            </a></h1>
+
+            <h1><a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">
+                <img src="static/Fiverr2_sf.png" alt="Fiverr"/>
+            </a></h1>
+
+            <!-- <h1><a href="https://github.com/bcc-technologies/" target="_blank" rel="noopener noreferrer">
+                <img src="static/Github_sf.png" alt="Github"/>
+            </a></h1> -->
+        </div>
+    </div>
+</section>
+
+
+
+<!-- services section -->
+<section class="services">
+    <h2 class="headertekst">Nuestros servicios</h2>
+    <div class="services-container">
+        <div class="service-card">
+            <h2><img src="https://img.freepik.com/foto-gratis/tiro-medio-mujer-que-trabaja-computadora-portatil_23-2150323516.jpg?size=626&ext=jpg" alt="Gabriel Barreiro"></h2>
+            <h3>Desarrollo web</h3>
+            <p>Creamos sitios web eficientes, poderosos y adaptativos.</p>
+        </div>
+        <div class="service-card">
+            <h2><img src="https://img.freepik.com/vector-gratis/tecnologia-fondo-inteligencia-artificial-big-data-vis_598544-333.jpg?size=626&ext=jpg" alt="Saúl Castillo"></h2>
+            <h3>Desarrollo de software científico</h3>
+            <p>Creamos software para su empresa en materia de análisis de datos.</p>
+        </div>
+        <div class="service-card">
+            <h2><img src="https://img.freepik.com/foto-gratis/gente-oficina-analizando-revisando-graficos-financieros_23-2150377131.jpg?size=626&ext=jpg" alt="Enrique Casanova"></h2>
+            <h3>Consultoría de software</h3>
+            <p>Ofrecemos asesoramiento y soluciones de expertos.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- clients section -->
+<!-- <section class="clients">
+    <div class="clients-container">
+        <h2>Clientes que han confiado en BCC</h2>
+        <h1><img src="{{ url_for('static', filename='styles/static2/IFISUASD1_sf.png') }}" alt="IFIS UASD" style="float: left;" ></h1>
+    </div>
+</section> -->
+
+{% endblock %}
+<!--termina el contenido de la página-->

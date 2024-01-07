@@ -1,60 +1,21 @@
-/* Reset some default styles */
-body, h1, h2, h3, p {
-    margin: 0;
-    padding: 0;
-}
-
-/* Global styles */
-body {
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
-    color: #333333;
-}
-
-.header-container {
-    background-color: #333333;
-    color: #ffffff;
-    padding: 20px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-    font-size: 36px;
-    margin-left: 20px;
-}
-
-nav ul {
-    list-style: none;
-    display: flex;
-}
-
-nav li {
-    margin: 0 15px;
-}
-
-nav a {
-    text-decoration: none;
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-nav a:hover {
-    color: #ed4624;
-}
-
-/* Hero section */
+/*A: Hero section */
 .hero {
-    background-image: url('static/Imagen1.JPG');
-    background-size: cover;
-    background-position: center;
+    background-color: #ffffff;
     text-align: center;
-    padding: 150px 0;
-    color: #ffffff;
+    padding: 50px 0;
+    color: #333333;
+    position: relative;
+}
+
+.hero-container {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos en el contenedor */
+    align-items: center; /* Centra verticalmente los elementos en el contenedor */
+}
+
+.hero-content {
+    flex: 1; /* Permite que este div tome todo el espacio restante */
+    text-align: center;
 }
 
 .hero h2 {
@@ -76,38 +37,44 @@ nav a:hover {
     border-radius: 5px;
     font-weight: bold;
     font-size: 24px;
-    transition: background-color 0.3s, transform 0.3s;
+    transition: background-color 0.3s;
 }
 
 .cta-button:hover {
     background-color: #ff7e3f;
-    transform: scale(1.05);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hero-image img {
+    height: 25.7vw;
+    margin-right: 7vw;
 }
 
 /* About Us section */
 .about {
     background-color: #f0f0f0;
-    padding: 80px 0;
+    padding: 5vw 0;
 }
 
 .about h2 {
-    font-size: 36px;
+    font-size: 2.5vw;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 5vh;
 }
 
 .about-container {
-    max-width: 800px;
+    max-width: 70vw;
     margin: 0 auto;
     text-align: center;
 }
 
 .about p {
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: 1.3vw;
+    line-height: 3.5vh;
+    width: 53.7vw;
+    text-align: left;
+    margin: auto;
     color: #555;
-    margin-bottom: 30px;
+    margin-bottom: 2vh;
 }
 
 .about p:last-child {
@@ -117,31 +84,31 @@ nav a:hover {
 .about-quote {
     font-style: italic;
     color: #777;
-    margin-top: 20px;
+    margin-top: 1vh;
 }
 
 /* Add a decorative separator */
 .about-separator {
-    width: 100px;
-    height: 4px;
+    width: 7vw;
+    height: 0.3vw;
     background-color: #ed4624;
-    margin: 20px auto;
+    margin: 1vh auto;
 }
 
 /* Add a visually appealing call-to-action */
 .about-cta {
-    margin-top: 30px;
+    margin-top: 2vh;
 }
 
 .about-cta a {
     display: inline-block;
     background-color: #ed4624;
     color: #fff;
-    padding: 15px 30px;
+    padding: 2vh 4vw; /* Ajustado a vh y vw */
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 0.5vw;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 1.5vw;
     transition: background-color 0.3s;
 }
 
@@ -149,70 +116,62 @@ nav a:hover {
     background-color: #ff7e3f;
 }
 
+
 /* Services section */
 .services {
-    background-color: #ffffff;
-    padding: 80px 0;
+    background-color: #f0f0f0;
+    padding: 8vw 0;
 }
 
 .services h2 {
-    font-size: 36px;
+    font-size: 2.7vw;
     text-align: center;
-    margin-bottom: 40px;
     color: #333333;
 }
 
 .services-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr)); /* Columnas de 25vw, con un mínimo de 1fr */
+    gap: 2vw;
     justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    margin-top: 10vh;
 }
 
 .service-card {
-    background-color: #f5f5f5;
-    color: #333333;
-    border-radius: 10px;
-    padding: 40px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    color: #000;
+    border-radius: 0.7vw;
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
     text-align: center;
-    flex: 1;
-    min-width: 300px;
     transition: transform 0.3s, box-shadow 0.3s;
+    height: 48vh;
+    width: 22vw;
+    margin: auto; /* Centro horizontalmente */
 }
 
 .service-card img {
-    max-width: 100px;
-    margin-bottom: 20px;
+    height: 12.2vw;
+    margin-bottom: 1vh;
+    margin-top: 4vh;
 }
 
 .service-card h3 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 1.7vw;
+    margin-bottom: 1.7vh;
+    color: #ed4624;
+}
+
+.service-card p {
+    margin-bottom: 3.2vh;
+    word-wrap: break-word;
+    width: 17vw;
+    margin: auto;
 }
 
 .service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-0.5vw);
+    box-shadow: 0 0.8vw 1.6vw rgba(0, 0, 0, 0.2);
 }
 
-/* Footer section */
-footer {
-    background-color: #333333;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px 0;
-}
-
-h2.headertekst {
-    text-align: center;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-footer p {
-    font-size: 18px;
-}

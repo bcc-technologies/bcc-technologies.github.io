@@ -1,0 +1,73 @@
+/* Reset some default styles */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Global styles */
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    color: #000000;
+}
+
+/* Header styles */
+.header-container {
+    height: 7vh;
+    background-color: #000000;
+    color: #f0f0f0;
+    padding: 0.7vh 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: top;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo styles */
+header h1 {
+    position: absolute;
+    top: 0;
+    margin-left: 2vh;
+}
+
+/* Menu styles */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    margin-left: 10vw;
+}
+
+nav li {
+    margin: 0 10px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #ed4624;
+}
+
+/*A: Footer section */
+footer {
+    background-color: #2d2c2c;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 0;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer p {
+    font-size: 18px;
+}

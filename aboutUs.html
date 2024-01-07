@@ -1,76 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="aboutUs.css">
-    <link rel="icon" type="image/png" href="static/logo.png">
-</head>
-<body>
-    <header>
-        <div class="header-container">
-            <h1>BCC Technologies</h1>
-            <nav>
-                <ul>
-                    <li><a href="">Home</a></li>
-                    <li><a href="Services/">Services</a></li>
-                    <li><a href="aboutUs/">About Us</a></li>
-                    <li><a href="Contact/">Contact</a></li>
-                    <li><a href="blog/">BCC blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% extends "layout.html" %}
+<!--Aplica lo guardado en layout.html-->
 
-    <section class="hero">
-        <div class="hero-container">
-            <h2>Welcome to Our Software Company</h2>
-            <p>We create innovative solutions that drive your business forward.</p>
-            <a href="Services/" class="cta-button">Learn More</a>
-        </div>
-    </section>
+{% block content %}
+<!--inicia el contenido de la página-->
 
-    <section class="about">
-        <div class="about-container">
-            <h2>About Us</h2>
-            <p>Who are we? We are BCC Tech, a passionate group of programmer-scientists dedicated to exploring the limits of technology and innovation. Our story begins as physics students with a deep curiosity for the unknown and a passion for expanding knowledge.</p>
-            <p>Our name, in addition to combining our last names, is a tribute to the "Body Central Cubic" which is a concept of importance in solid-state physics.</p>
-            <p>What do we do? At BCC Tech, we specialize in custom software development that transforms ideas into concrete solutions. Whether creating cross-platform applications for companies in various industries or designing innovative products for the general public, our approach is always the same: make the complex easy and expand the interesting.</p>
 
-        </div>
-    </section>
+<link rel="stylesheet" href="aboutUs.css">
 
-    <section class="services">
-        <div class="services-container">
-            <h2 class="headertekst">Our staff</h2>
-            <div class="service-card">
-                <img src="{% static 'confsulting.jpeg' %}" alt="">
-                <h3>Gabriel Barreiro</h3>
-                <p>Director del departamento de vainas bacanas</p>
+<!-- hero section -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h2>Bienvenido a nuestra empresa de software</h2>
+            <p>Creamos soluciones innovadoras que impulsan su negocio.</p>
+            <a href="Services/" class="cta-button">Ver soluciones</a>
             </div>
-            <div class="service-card">
-                <img src="mobile-development.png" alt="">
-                <h3>Saul Castillo</h3>
-                <p>Director del departamento de marketing</p>
-            </div>
-            <div class="service-card">
-                <img src="consulting.png" alt="">
-                <h3>Enrique Casanova</h3>
-                <p>Director del departamento de finanzas</p>
-            </div>
-            <div class="service-card">
-                <img src="consulting.png" alt="">
-                <h3>Jesus Matos</h3>
-                <p>Asesor especialista en Proyectos</p>
-            </div>
+        <div class="hero-image">
+            <img src="static/Imagen1.JPG" alt="BCC Founders">
         </div>
-    </section>
+    </div>
+</section>
 
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2023 BCC Technologies. All rights reserved.</p>
+<section class="about">
+    <div class="about-container">
+        <h2>Quiénes somos</h2>
+        <p>Somos BCC Tech, un apasionado grupo de programadores-científicos dedicados a explorar los límites de la tecnología y la innovación. Nuestra historia comienza como estudiantes de física con una profunda curiosidad por lo desconocido y una pasión por expandir el conocimiento.</p>
+        <p>Nuestro nombre, además de combinar nuestros apellidos, es un homenaje al "Cuerpo Cúbico Central", que es un concepto de importancia en la física del estado sólido.</p>
+        <p>¿A qué nos dedicamos? En BCC Tech estamos especializados en el desarrollo de software a medida que transforma las ideas en soluciones concretas. Ya sea creando aplicaciones multiplataforma para empresas de diversos sectores o diseñando productos innovadores para el público en general, nuestro enfoque es siempre el mismo: hacer fácil lo complejo y ampliar lo interesante.</p>
+
+    </div>
+</section>
+
+<section class="services">
+    <h2 class="headertekst">Nuestro equipo</h2>
+    <div class="services-container">
+        <div class="service-card">
+            <h2><img src="static/barry.jpg" alt="Gabriel Barreiro"></h2>
+            <h3>Gabriel Barreiro</h3>
+            <p>Director del departamento de vainas bacanas</p>
         </div>
-    </footer>
-</body>
-</html>
+        <div class="service-card">
+            <h2><img src="https://media.licdn.com/dms/image/D5603AQF1BM2xrZWw3A/profile-displayphoto-shrink_800_800/0/1689802245158?e=1709769600&v=beta&t=vUyOmbhlNukIsmASLG4Aw05iVp_OtyYsQctVAVQ_6mg" alt="Saúl Castillo"></h2>
+            <h3>Saúl Castillo</h3>
+            <p>Director de operaciones y mercadeo</p>
+        </div>
+        <div class="service-card">
+            <h2><img src="static/Enrique.jpeg" alt="Enrique Casanova"></h2>
+            <h3>Enrique Casanova</h3>
+            <p>Director del departamento de finanzas</p>
+        </div>
+        <div class="service-card">
+            <h2><img src="static/Enma_rl.jpg" alt="Enmanuel Rodriguez Brea"></h2>
+            <h3>Enmanuel Rodriguez</h3>
+            <p>Secretario General</p>
+        </div>
+        <div class="service-card">
+            <h2><img src="https://media.licdn.com/dms/image/C4E03AQE5_S0KE182hw/profile-displayphoto-shrink_800_800/0/1619181632215?e=1709769600&v=beta&t=tEuF-oQlzmQZ5QVpxgoc-_d-COW5KuA1_uThjepc240" alt="Jesus Matos"></h2>
+            <h3>Jesus Matos</h3>
+            <p>Asesor especialista en Proyectos</p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+<!--termina el contenido de la página-->

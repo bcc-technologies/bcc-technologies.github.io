@@ -1,22 +1,14 @@
-/*A: Reset some default styles */
-body, h1, h2, h3, p {
-    margin: 0;
-    padding: 0;
-}
-
-/*A: Global styles */
-body {
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
-    color: #000000;
-}
-
 /*A: Landing (Menú) */
-.header-container {
+.landing {
+    color: #333333;
+    word-wrap: break-word;
+}
+
+.landing-container {
     background-image: url(static/Fondo2.png);
-    height: 92vh;
+    height: 83.6vh;
     background-size: cover;
-    background-position: top;
+    background-position: center;
 
 
     color: #000000;
@@ -27,74 +19,36 @@ body {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/*B: Logo */
-header h1 {
-    position:absolute;
-    top: 0;
-    margin-left: 2vh;
-}
-
 
 /*B: Cube */
-header h2 {
+.landing h2 {
     position:absolute; 
-    top: 7vh; 
-    margin-left: 55vw;
 }
 
 /*B: Text-title */
-header h3 {
+.landing h3 {
     font-size: 32px;
-    margin-bottom: 20px;
 
     position:absolute; 
     top: 65vh; 
-    margin-left: 9vw;
+    left: 9vw;
 }
 
 /*B: Text-content */
-header p {
+.landing p {
     font-size: 24px;
-    margin-bottom: 40px;
+    width: 30vw;
 
     position:absolute; 
-    width: 30vw;
-    word-wrap: break-word;
     top: 72vh; 
-    margin-left: 5.7vw;
-}
-
-/*B: Menu-options */
-nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    margin-left: 10vw;
-
-}
-
-nav li {
-    margin: 0 10px;
-
-}
-
-nav a {
-    text-decoration: none;
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-nav a:hover {
-    color: #ed4624;
+    left: 5.7vw;
 }
 
 /*A: Hero section */
 .hero {
     background-color: #ffffff;
     text-align: center;
-    padding: 50px 0;
+    padding: 22vh 0;
     color: #333333;
     position: relative;
 }
@@ -185,51 +139,63 @@ nav a:hover {
 }
 
 
-/*A: Services section */
+/* Services section */
 .services {
-    background-color: #ffffff;
-    padding: 80px 0;
+    background-color: #fff;
+    padding: 8vw 0;
 }
 
 .services h2 {
-    font-size: 36px;
+    font-size: 2.7vw;
     text-align: center;
-    margin-bottom: 40px;
     color: #333333;
 }
 
 .services-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr)); /* Columnas de 25vw, con un mínimo de 1fr */
+    gap: 2vw;
     justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    margin-top: 10vh;
 }
 
 .service-card {
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    padding: 40px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f0f0f0;
+    color: #000;
+    border-radius: 0.7vw;
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
     text-align: center;
-    flex: 1;
-    min-width: 300px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 48vh;
+    width: 22vw;
+    margin: auto; /* Centro horizontalmente */
 }
 
 .service-card img {
-    max-width: 100px;
-    margin-bottom: 20px;
+    height: 12.2vw;
+    margin-bottom: 1vh;
+    margin-top: 4vh;
 }
 
 .service-card h3 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 1.7vw;
+    margin-bottom: 1.7vh;
     color: #ed4624;
 }
 
 .service-card p {
-    color: #333333;
+    margin-bottom: 3.2vh;
+    word-wrap: break-word;
+    width: 17vw;
+    margin: auto;
 }
 
+.service-card:hover {
+    transform: translateY(-0.5vw);
+    box-shadow: 0 0.8vw 1.6vw rgba(0, 0, 0, 0.2);
+}
 
 /*A: Clients section */
 .clients {
@@ -240,7 +206,6 @@ nav a:hover {
     padding: 7vh 0;
     color: #333333;
 }
-
 /*B: for logos */
 .clients h1 {
     position: relative; 
@@ -261,20 +226,3 @@ nav a:hover {
     margin: 0 1vw; /* Esto crea espacio entre los logos */
 }
 
-
-/*A: Footer section */
-footer {
-    background-color: #000000;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px 0;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-footer p {
-    font-size: 18px;
-}

@@ -1,214 +1,77 @@
-/* Reset some default styles */
-body, h1, h2, h3, p {
-    margin: 0;
-    padding: 0;
-}
 
-/* Global styles */
-body {
+/* About Us */
+.about {
     background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
-    color: #333333;
+    padding: 10vh 0;
+    text-align: center;
+    display: flex;
+    justify-content: center;
 }
 
-.header-container {
-    background-color: #333333;
-    color: #ffffff;
-    padding: 20px 0;
+.about h2 {
+    font-size: 2.4vw;
+    color: #333;
+    margin-bottom: 2vh;
+}
+
+.contact-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-    font-size: 36px;
-    margin-left: 20px;
-}
-
-nav ul {
-    list-style: none;
-    display: flex;
-}
-
-nav li {
-    margin: 0 15px;
-}
-
-nav a {
-    text-decoration: none;
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-nav a:hover {
-    color: #ed4624;
-}
-
-/* Hero section */
-.hero {
-    background-image: url('static/Imagen2.JPG');
-    background-size: cover;
-    background-position: center;
-    text-align: center;
-    padding: 150px 0;
-    color: #ffffff;
-}
-
-.hero h2 {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-
-.hero p {
-    font-size: 24px;
-    margin-bottom: 40px;
-}
-
-.cta-button {
-    display: inline-block;
-    background-color: #ed4624;
-    color: #ffffff;
-    padding: 20px 40px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 24px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.cta-button:hover {
-    background-color: #ff7e3f;
-    transform: scale(1.05);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* About Us and Contact Us section */
-.about, .contact {
-    background-color: #f0f0f0;
-    padding: 80px 0;
-}
-
-.about h2, .contact h2 {
-    font-size: 36px;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.about-container, .contact-container {
-    max-width: 800px;
-    margin: 0 auto;
     text-align: center;
 }
 
-.about p, .contact p {
-    font-size: 18px;
+.about-container {
+    max-width: 45vw;
+    text-align: left;
+    padding-right: 5vw;
+}
+
+.form-container {
+    max-width: 50vw;
+}
+
+.about p {
+    font-size: 1.3vw;
     line-height: 1.6;
     color: #555;
-    margin-bottom: 30px;
+    margin-bottom: 2vh;
 }
 
-.about p:last-child, .contact p:last-child {
+.about p:last-child {
     margin-bottom: 0;
 }
 
 .about-quote {
     font-style: italic;
     color: #777;
-    margin-top: 20px;
+    margin-top: 1.5vh;
 }
 
 /* Add a decorative separator */
-.about-separator, .contact-separator {
-    width: 100px;
-    height: 4px;
+.about-separator {
+    width: 15vw;
+    height: 0.4vh;
     background-color: #ed4624;
-    margin: 20px auto;
+    margin: 1.5vh auto;
 }
 
 /* Add a visually appealing call-to-action */
-.about-cta, .contact-cta {
-    margin-top: 30px;
+.about-cta {
+    margin-top: 2vh;
 }
 
-.about-cta a, .contact-cta a {
+.about-cta a {
     display: inline-block;
     background-color: #ed4624;
     color: #fff;
-    padding: 15px 30px;
+    padding: 1.5vh 3vw;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 1.8vw;
     transition: background-color 0.3s;
 }
 
-.about-cta a:hover, .contact-cta a:hover {
+.about-cta a:hover {
     background-color: #ff7e3f;
-}
-
-/* Services section */
-.services {
-    background-color: #ffffff;
-    padding: 80px 0;
-}
-
-.services h2 {
-    font-size: 36px;
-    text-align: center;
-    margin-bottom: 40px;
-    color: #333333;
-}
-
-.services-container {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-}
-
-.service-card {
-    background-color: #f5f5f5;
-    color: #333333;
-    border-radius: 10px;
-    padding: 40px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    flex: 1;
-    min-width: 300px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.service-card img {
-    max-width: 100px;
-    margin-bottom: 20px;
-}
-
-.service-card h3 {
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Footer section */
-footer {
-    background-color: #333333;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px 0;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-footer p {
-    font-size: 18px;
 }
