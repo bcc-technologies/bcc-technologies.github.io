@@ -1,11 +1,29 @@
-<div id="content"></div>
-<script>
-  fetch('layout.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('content').innerHTML = data;
-    });
-</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="layout.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
+</head>
+
+<!-- header section -->
+<body>
+    <header>
+        <div class="header-container">
+            <nav>
+                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="position: absolute ;width:11vw; top: -2.2vh; " ></h1>
+                <hr class="solid" style="position: absolute; top: 1.3vh; margin-left: 12.4vw; height:2.7vh;">
+                <ul>
+                    <li><a href="./">Inicio</a></li>
+                    <li><a href="./services">Servicios</a></li>
+                    <li><a href="./aboutUs">Nosotros</a></li>
+                    <li><a href="./contactUs">Contactanos</a></li>
+                    <li><a href="./blog">BCC Blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
 <!--Aplica lo guardado en layout.html-->
 
@@ -103,3 +121,11 @@
 
 </div>
 <!--termina el contenido de la página-->
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
