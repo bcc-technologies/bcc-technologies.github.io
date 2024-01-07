@@ -40,6 +40,12 @@
     transition: background-color 0.3s;
 }
 
+a {
+  color: orange; /* Set the desired color */
+  text-decoration: none; /* Remove underline if you don't want it */
+}
+
+
 .cta-button:hover {
     background-color: #ff7e3f;
 }
