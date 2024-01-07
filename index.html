@@ -1,4 +1,12 @@
-{% extends "layout.html" %}
+<div id="content"></div>
+<script>
+  fetch('layout.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>
+
 <!--Aplica lo guardado en layout.html-->
 
 {% block content %}
