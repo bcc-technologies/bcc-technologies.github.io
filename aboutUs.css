@@ -4,13 +4,13 @@
     text-align: center;
     padding: 50px 0;
     color: #333333;
-    position: relative;
 }
 
 .hero-container {
     display: flex;
     justify-content: space-between; /* Distribuye los elementos en el contenedor */
     align-items: center; /* Centra verticalmente los elementos en el contenedor */
+    margin-top: 7.5vh;
 }
 
 .hero-content {
@@ -41,10 +41,9 @@
 }
 
 a {
-  color: #ed4624; /* Set the desired color */
-  text-decoration: none; /* Remove underline if you don't want it */
-}
-
+    color: #ed4624; /* Set the desired color */
+    text-decoration: none; /* Remove underline if you don't want it */
+  }
 
 .cta-button:hover {
     background-color: #ff7e3f;

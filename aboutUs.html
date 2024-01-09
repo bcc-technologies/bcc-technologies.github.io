@@ -1,32 +1,7 @@
-<!-- <!DOCTYPE html> -->
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-</head>
-
-<!-- header section -->
-<body>
-    <header>
-        <div class="header-container">
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="position: absolute ;width:11vw; top: -2.2vh; " ></h1>
-                <hr class="solid" style="position: absolute; top: 1.3vh; margin-left: 12.4vw; height:2.7vh;">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contactanos</a></li>
-                    <li><a href="./blog">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% extends "layout.html" %}
 <!--Aplica lo guardado en layout.html-->
 
+{% block content %}
 <!--inicia el contenido de la página-->
 
 
@@ -57,13 +32,12 @@
 </section>
 
 <section class="services">
-    <h2 class="headertekst">Nuestro equipo</h2>
+    <h2>Nuestro equipo</h2>
     <div class="services-container">
         <div class="service-card">
             <h2><img src="static/bar2_fb.png" alt="Gabriel Barreiro"></h2>
-            <h3><a href="./">Gabriel Barreiro</a></h3>
+            <h3>Gabriel Barreiro</h3>
             <p>Director del departamento de vainas bacanas</p>
-            
         </div>
         <div class="service-card">
             <h2><img src="static/saul_fb.png" alt="Saúl Castillo"></h2>
@@ -88,12 +62,5 @@
     </div>
 </section>
 
-
+{% endblock %}
 <!--termina el contenido de la página-->
-<footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-</body>
-</html>
