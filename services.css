@@ -1,0 +1,225 @@
+/*A: Landing (Menú) */
+.landing {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 50px 0;
+    color: #333333;
+}
+
+.landing-container {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos en el contenedor */
+    align-items: center; /* Centra verticalmente los elementos en el contenedor */
+    margin-top: 7.5vh;
+}
+
+.landing-content {
+    font-size: 1.3vw;
+    line-height: 3.5vh;
+    width: 40vw;
+    text-align: left;
+    margin: auto;
+    color: #333333;
+    word-wrap: break-word;    
+}
+
+.landing h2 {
+    font-size: 5vw; 
+    width: max-content; 
+    margin-bottom: 6vh; 
+    margin-top: 7vh; 
+    margin-left: -20vw;
+}
+
+.landing p {
+    font-size: 1.5vw; 
+    line-height: 5vh; 
+    padding-bottom: 8vh; 
+    width: fit-content; 
+    margin-left: -10vw;
+}
+
+
+
+/*A: Hero section */
+.hero {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 50px 0;
+    color: #333333;
+}
+
+.hero-container {
+    display: flex;
+    justify-content: space-between; /* Distribuye los elementos en el contenedor */
+    align-items: center; /* Centra verticalmente los elementos en el contenedor */
+}
+
+.hero-content {
+    font-size: 1.3vw;
+    line-height: 3.5vh;
+    width: 40vw;
+    text-align: left;
+    margin: auto;
+    color: #333333;
+    word-wrap: break-word;    
+}
+
+.hero h2 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: #ed4624;
+    color: #ffffff;
+    padding: 20px 40px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 24px;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #ff7e3f;
+}
+
+.hero-image img {
+    height: 25.7vw;
+    margin-left: 7vw;
+}
+
+/* About Us section */
+.about {
+    background-color: #fff; /*#f0f0f0;*/
+    padding: 5vw 0;
+}
+
+.about h2 {
+    font-size: 2.5vw;
+    color: #333;
+    margin-bottom: 5vh;
+}
+
+.about-container {
+    max-width: 70vw;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about p {
+    font-size: 1.3vw;
+    line-height: 3.5vh;
+    width: 53.7vw;
+    text-align: left;
+    margin: auto;
+    color: #555;
+    margin-bottom: 2vh;
+}
+
+.about p:last-child {
+    margin-bottom: 0;
+}
+
+.about-quote {
+    font-style: italic;
+    color: #777;
+    margin-top: 1vh;
+}
+
+/* Add a decorative separator */
+.about-separator {
+    width: 7vw;
+    height: 0.3vw;
+    background-color: #ed4624;
+    margin: 1vh auto;
+}
+
+/* Add a visually appealing call-to-action */
+.about-cta {
+    margin-top: 2vh;
+}
+
+.about-cta a {
+    display: inline-block;
+    background-color: #ed4624;
+    color: #fff;
+    padding: 2vh 4vw; /* Ajustado a vh y vw */
+    text-decoration: none;
+    border-radius: 0.5vw;
+    font-weight: bold;
+    font-size: 1.5vw;
+    transition: background-color 0.3s;
+}
+
+.about-cta a:hover {
+    background-color: #ff7e3f;
+}
+
+
+/* Services section */
+.services {
+    background-color: #f0f0f0;
+    padding: 8vw 0;
+    color: #333333;
+}
+
+.services h2 {
+    font-size: 2.7vw;
+    text-align: center;
+    color: #333333;
+}
+
+.services-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr)); /* Columnas de 25vw, con un mínimo de 1fr */
+    gap: 2vw;
+    justify-content: center;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    margin-top: 10vh;
+}
+
+.service-card {
+    background-color: #fff;
+    color: #000;
+    border-radius: 0.7vw;
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 48vh;
+    width: 22vw;
+    margin: auto; /* Centro horizontalmente */
+}
+
+.service-card img {
+    height: 12.2vw;
+    margin-bottom: 1vh;
+    margin-top: 4vh;
+}
+
+.service-card h3 {
+    font-size: 1.7vw;
+    margin-bottom: 1.7vh;
+    color: #ed4624;
+}
+
+.service-card p {
+    margin-bottom: 3.2vh;
+    word-wrap: break-word;
+    width: 17vw;
+    margin: auto;
+}
+
+.service-card:hover {
+    transform: translateY(-0.5vw);
+    box-shadow: 0 0.8vw 1.6vw rgba(0, 0, 0, 0.2);
+}
+
