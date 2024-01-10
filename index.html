@@ -38,10 +38,12 @@
     
 <!-- Landing section -->
 <section class="landing" >
-    <div class="landing-container">
-        <h2><img src="static/BCC_sf.png" alt="Body Centered Cube" style="position: absolute; width:43vw; left: 55vw; top: -4.4vh;" ></h2>
-        <h3>¿Quienes somos?</h3>
-        <p>Somos BCC Tech, un apasionado grupo de científicos programadores dedicados a explorar los límites de la tecnología y la innovación.</p>
+    <div class="landing-container" style="height: 130vh; background-position: bottom;">
+        <h1><img src="{{ url_for('static', filename='styles/static2/BCC.png') }}" alt="Body Centered Cube" ></h1>
+        <!-- <h2><img src="{{ url_for('static', filename='styles/static2/CirculoBlanco_fb.png') }}" alt="Body Centered Cube" style="position: absolute; width:60vw; left: -5vw; top: 20vh;" ></h2> -->
+        <div class="circle"></div>
+        <h3 style="color: #000; top: 45vh;">¿Quienes somos?</h3>
+        <p style="color: #000; top:52vh;">Somos BCC Tech, un apasionado grupo de científicos programadores dedicados a explorar los límites de la tecnología y la innovación.</p>
     </div>
 </section>
 
@@ -54,7 +56,7 @@
             <a href="./aboutUs" class="cta-button">Ver más</a>
         </div>
         <div class="hero-image">
-            <img src="static/Imagen1.JPG" alt="BCC Founders">
+            <img src="{{ url_for('static', filename='styles/static2/Imagen1.JPG') }}" alt="BCC Founders">
         </div>
     </div>
 </section>
@@ -68,19 +70,19 @@
         </div>
         <div class="red-logos">
             <h1><a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer">
-                <img src="static/Instagram_sf.png" alt="Instagram"/>
+                <img src="{{ url_for('static', filename='styles/static2/Instagram_sf.png') }}" alt="Instagram"/>
             </a></h1>
 
             <h1><a href="https://www.linkedin.com/company/bcc-tech/?viewAsMember=true" target="_blank" rel="noopener noreferrer">
-                <img src="static/Linkedin2_sf.png" alt="Linkedin"/>
+                <img src="{{ url_for('static', filename='styles/static2/Linkedin2_sf.png') }}" alt="Linkedin"/>
             </a></h1>
 
             <h1><a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">
-                <img src="static/Fiverr2_sf.png" alt="Fiverr"/>
+                <img src="{{ url_for('static', filename='styles/static2/Fiverr2_sf.png') }}" alt="Fiverr"/>
             </a></h1>
 
             <!-- <h1><a href="https://github.com/bcc-technologies/" target="_blank" rel="noopener noreferrer">
-                <img src="static/Github_sf.png" alt="Github"/>
+                <img src="{{ url_for('static', filename='styles/static2/Github_sf.png') }}" alt="Github"/>
             </a></h1> -->
         </div>
     </div>
@@ -91,7 +93,7 @@
 <!-- services section -->
 <section class="services">
     <h2 class="headertekst">Nuestros servicios</h2>
-    <div class="services-container">
+    <div class="services-container" style="margin-bottom: 5vh;">
         <div class="service-card">
             <h2><img src="https://img.freepik.com/foto-gratis/tiro-medio-mujer-que-trabaja-computadora-portatil_23-2150323516.jpg?size=626&ext=jpg" alt="Gabriel Barreiro"></h2>
             <h3>Desarrollo web</h3>
@@ -119,9 +121,7 @@
     </div>
 </section> -->
 
-</div>
-<!--termina el contenido de la página-->
-
+    <!-- footer section -->
     <footer>
         <div class="footer-container">
             <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
