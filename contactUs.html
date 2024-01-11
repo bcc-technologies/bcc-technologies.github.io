@@ -52,18 +52,22 @@
                 <!-- <h1 class="post">Thanks!</h1>
                 <p class="post">I'll be in touch ASAP</p> -->
             </div>
-            <form>
-                <input class="input name" type="text" name="user_name" placeholder="Su nombre">
-                <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
-                <select class="input select" name="subject">
-                    <option disabled>¿De qué hablamos?</option>
-                    <option selected>Sobre un nuevo proyecto</option>
-                    <option>Tengo unas preguntas</option>
-                    <option>Hagámoslo tomando un café</option>
-                </select>
-                <textarea class="input message" placeholder="¿En qué podemos ayudarle?"></textarea>
-                <input class="input submit" type="submit" value="Enviar mensaje">
-            </form>
+            <form
+  action="https://formspree.io/f/xleqdrag"
+  method="POST"
+>
+    <input class="input name" type="text" name="user_name" placeholder="Su nombre">
+    <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
+    <select class="input select" name="subject">
+        <option disabled selected>¿De qué hablamos?</option>
+        <option selected>Sobre un nuevo proyecto</option>
+        <option>Tengo unas preguntas</option>
+        <option>Hagámoslo tomando un café</option>
+    </select>
+    <textarea class="input message" name="message" placeholder="¿En qué podemos ayudarle?"></textarea>
+    <input class="input submit" type="submit" value="Enviar mensaje">
+</form>
+
         </div>
     </div>
 </div>
