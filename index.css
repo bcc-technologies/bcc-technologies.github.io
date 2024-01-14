@@ -5,87 +5,46 @@
 }
 
 .landing-container {
-    background-image: url(static/FondoOla5.png);
-    /* background-color: #000; */
-    height: 100vh;
+    background-image: url(static/Fondo2.png);
+    margin-top: auto; /* Para que se pueda ver el menú */
+    height: 90.6vh;
     background-size: cover;
     background-position: center;
-    
+
+
     color: #000000;
     padding: 20px 0;
     display: flex;
     justify-content: space-between;
     align-items: top;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-
-    /* margin-top: 7.5vh;  Para que se pueda ver el menú */
 }
 
 
 /*B: Cube */
-@keyframes rotateCube {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-.lading h1 {
-    position: relative;
-}
-
-.landing h1 img {
-    position: absolute;
-    width: 37vw; /* Ajusta el ancho según sea necesario */
-    left: 55%;
-    top: 22vh;
-    transform: translateX(-50%);
-    transform-origin: center;
-    animation: rotateCube 10s infinite linear;
-    transition: transform 0.1s ease; /* Añadida una transición para suavizar la animación */
-}
-
-
-/*B: Stock images */
-.landing h2{
+.landing h2 {
     position:absolute; 
 }
-
 
 /*B: Text-title */
 .landing h3 {
     font-size: 32px;
-    color: #f0f0f0;
 
     position:absolute; 
-    top: 25vh; 
-    left: 15vw;
+    top: 65vh; 
+    left: 9vw;
 }
 
 /*B: Text-content */
 .landing p {
-    color: #fff;
     font-size: 24px;
     width: 30vw;
 
     position:absolute; 
-    top: 32vh; 
-    left: 11.7vw;
+    top: 72vh; 
+    left: 5.7vw;
 }
 
-/* CSS styles for the circle */
-.circle {
-    background-color: white; 
-    border-radius: 50%; /* Makes the element a circle with a radius of 50%. */
-
-    position: absolute; 
-    height: 33vw; 
-    width: 33vw; 
-    left: 8.7vw; 
-    top: 23vh;
-}
 
 /*A: Hero section */
 .hero {
