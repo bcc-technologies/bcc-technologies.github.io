@@ -20,6 +20,19 @@ form {
     margin-top: 20px;
 }
 
+/* Style for the total container */
+.total-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Style for the total */
+#total {
+    font-size: 24px;
+    color: #ed4624;
+}
+
+
 label {
     display: block;
     margin-bottom: 10px;
