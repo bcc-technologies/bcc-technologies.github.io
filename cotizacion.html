@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiple Selection Form</title>
+</head>
+<body>
 <h1>Product Selection</h1>
 
 <form id="productForm">
@@ -40,6 +48,27 @@
   <label>
     <input type="checkbox" name="product" value="Mantenimiento y soporte continuo" data-price="5000.00"> Mantenimiento y soporte continuo
   </label>
+  <p id="total">Total: $0.00</p>
 
+  <script>
+    function calculateTotal() {
+      var checkboxes = document.getElementsByName('product');
+      var total = 0;
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+          // Access the price using the data attribute
+          var price = parseFloat(checkboxes[i].getAttribute('data-price'));
+          total += price;
+        }
+      }
+
+      // Display the total
+      document.getElementById('total').innerHTML = 'Total: $' + total.toFixed(2);
+    }
+  </script>
+
+</body>
+</html>
   <button type="button" onclick="calculateTotal()">Calculate Total</button>
 </form>
