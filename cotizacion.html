@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multiple Selection Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="cotizacion.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
 </head>
 <body>
 
@@ -46,7 +48,7 @@
       <input type="checkbox" name="product" value="Mantenimiento y soporte continuo" data-price="5000"> Mantenimiento y soporte continuo
     </label>
 
-    
+    <button type="button" onclick="calculateTotal()">Calculate Total</button>
   </form>
 
   <h1>Aplicaciones moviles</h1>
@@ -61,7 +63,39 @@
     </label>
 
     <label>
-      <input type="checkbox" name="product" value="Acceso a internet" data-price="15.00"> Product C
+      <input type="checkbox" name="product" value="Acceso a internet" data-price="1500"> Acceso a internet
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Acceso de cámara" data-price="2000"> Acceso de cámara
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Acceso de micrófono" data-price="2000"> Acceso de micrófono
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Manejo de usuarios" data-price="2500"> Manejo de usuarios
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Simulación física*" data-price="15000"> Simulación física*
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Acceso a puerto de salida" data-price="7000"> Acceso a puerto de salida
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="GPS" data-price="5000"> GPS
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Diseño de interfaz de usuario (UI) y experiencia de usuario (UX) móvil" data-price="30000"> Diseño de interfaz de usuario (UI) y experiencia de usuario (UX) móvil
+    </label>
+
+    <label>
+      <input type="checkbox" name="product" value="Integración de servicios en la nube y APIs*" data-price="5000"> Integración de servicios en la nube y APIs*
     </label>
 
     <button type="button" onclick="calculateTotal()">Calculate Total</button>
@@ -87,5 +121,11 @@
     }
   </script>
 
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+        </div>
+    </footer>
 </body>
 </html>
