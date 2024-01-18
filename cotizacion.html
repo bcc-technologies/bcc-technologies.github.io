@@ -6,48 +6,25 @@
   <title>Multiple Selection Form</title>
 </head>
 <body>
-<h1>Product Selection</h1>
 
-<form id="productForm">
-  <label>
-    <input type="checkbox" name="product" value="Automatización" data-price="5000.00"> Automatización
-  </label>
+  <h1>Aplicaciones de escritorio</h1>
 
-  <label>
-    <input type="checkbox" name="product" value="Generación de documentos" data-price="5000.00"> Generación de documentos
-  </label>
+  <form id="productForm">
+    <label>
+      <input type="checkbox" name="product" value="Automatización" data-price="5000"> Product A
+    </label>
 
-  <label>
-    <input type="checkbox" name="product" value="Acceso a puertos USB" data-price="2000.00"> Acceso a puertos USB
-  </label>
+    <label>
+      <input type="checkbox" name="product" value="Product B" data-price="20.00"> Product B
+    </label>
 
-  <label>
-    <input type="checkbox" name="product" value="Conexión a dispositivos externos" data-price="3000.00"> Conexión a dispositivos externos
-  </label>
+    <label>
+      <input type="checkbox" name="product" value="Product C" data-price="15.00"> Product C
+    </label>
 
-  <label>
-    <input type="checkbox" name="product" value="Desarrollo de software de escritorio personalizado" data-price="5000.00"> Desarrollo de software de escritorio personalizado
-  </label>
+    <button type="button" onclick="calculateTotal()">Calculate Total</button>
+  </form>
 
-  <label>
-    <input type="checkbox" name="product" value="Modernización y migración de aplicaciones heredadas" data-price="10000.00"> Modernización y migración de aplicaciones heredadas
-  </label>
-
-  <label>
-    <input type="checkbox" name="product" value="Consultoría en diseño de interfaz de usuario (UI) y experiencia de usuario (UX)" data-price="20000.00"> Consultoría en diseño de interfaz de usuario (UI) y experiencia de usuario (UX)
-  </label>
-
-  <label>
-    <input type="checkbox" name="product" value="Integración de bases de datos y sistemas en aplicaciones de escritorio" data-price="10000.00"> Integración de bases de datos y sistemas en aplicaciones de escritorio
-  </label>
-
-  <label>
-    <input type="checkbox" name="product" value="Optimización de rendimiento y escalabilidad" data-price="10000.00"> Optimización de rendimiento y escalabilidad
-  </label>
-
-  <label>
-    <input type="checkbox" name="product" value="Mantenimiento y soporte continuo" data-price="5000.00"> Mantenimiento y soporte continuo
-  </label>
   <p id="total">Total: $0.00</p>
 
   <script>
@@ -70,5 +47,3 @@
 
 </body>
 </html>
-  <button type="button" onclick="calculateTotal()">Calculate Total</button>
-</form>
