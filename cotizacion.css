@@ -42,9 +42,9 @@ button:hover {
 }
 
 #total {
-    text-align: center;
+    text-align: right;
     margin-top: 20px;
-    font-size: 18px;
+    font-size: 24px;
     color: #ed4624;
 }
 
@@ -83,8 +83,8 @@ form label, form button {
 
 /* Estilos para el total en ambos formularios */
 .total {
-    text-align: center;
+    text-align: right;
     margin-top: 20px;
-    font-size: 18px;
+    font-size: 24px;
     color: #ed4624;
 }
