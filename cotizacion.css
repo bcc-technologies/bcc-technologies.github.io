@@ -94,10 +94,35 @@ form label, form button {
     margin-top: 20px;
 }
 
-/* Estilos para el total en ambos formularios */
-.total {
-    text-align: right;
+/* Add these styles to your cotizacion.css */
+
+/* Style for the total container */
+.total-container {
+    text-align: center;
     margin-top: 20px;
+}
+
+/* Style for the total */
+#total {
     font-size: 24px;
     color: #ed4624;
+    margin-top: 10px; /* Add margin for separation */
 }
+
+/* Style for the buttons */
+button {
+    background-color: #ed4624;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px; /* Add margin between checkboxes and button */
+}
+
+button:hover {
+    background-color: #ff7e3f;
+}
+
