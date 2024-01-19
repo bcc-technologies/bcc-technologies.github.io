@@ -1,6 +1,6 @@
 /* Add these styles to your cotizacion.css */
 
-/* Estilos generales */
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -8,14 +8,14 @@ body {
     background-color: #f0f0f0;
 }
 
-/* Estilos para los encabezados */
+/* Header Styles */
 h1 {
     text-align: center;
     margin-top: 20px;
     color: #ed4624;
 }
 
-/* Estilos para los formularios */
+/* Form Styles */
 form {
     display: flex;
     flex-direction: column;
@@ -29,16 +29,16 @@ form {
     max-width: 600px;
 }
 
-/* Estilos para las checkboxes */
+/* Checkbox Styles */
 form label {
     display: block;
     margin-bottom: 10px;
     color: #333333;
 }
 
-/* Estilos para los botones */
+/* Button Styles */
 button {
-    align-self: center;
+    align-self: flex-end;
     margin-top: 20px;
     background-color: #ed4624;
     color: #fff;
@@ -54,7 +54,7 @@ button:hover {
     background-color: #ff7e3f;
 }
 
-/* Estilos para el pie de página */
+/* Footer Styles */
 footer {
     background-color: #333333;
     color: #fff;
@@ -65,10 +65,10 @@ footer {
     width: 100%;
 }
 
-/* Estilos para el total en ambos formularios */
+/* Total Styles */
 .total-container {
     text-align: right;
-    margin-top: 20px;
+    margin-top: -20px;
     margin-right: 20px;
 }
 
