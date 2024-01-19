@@ -1,3 +1,36 @@
+/* Add these styles to your cotizacion.css */
+
+/* Style for the total container */
+.total-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Style for the total */
+#total {
+    font-size: 24px;
+    color: #ed4624;
+    margin-top: 10px; /* Add margin for separation */
+}
+
+/* Style for the buttons and checkboxes */
+button, label {
+    margin-left: 0; /* Remove default margin */
+}
+
+/* Style for the form container */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Style for the button container */
+button {
+    align-self: center; /* Center the button */
+    margin-top: 20px; /* Add margin between checkboxes and button */
+}
+
 /* Estilos generales */
 body {
     font-family: Arial, sans-serif;
@@ -13,52 +46,10 @@ h1 {
 }
 
 /* Estilos para las checkboxes */
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-}
-
-/* Style for the total container */
-.total-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Style for the total */
-#total {
-    font-size: 24px;
-    color: #ed4624;
-}
-
-
-label {
+form label {
     display: block;
     margin-bottom: 10px;
     color: #333333;
-}
-
-button {
-    background-color: #ed4624;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #ff7e3f;
-}
-
-#total {
-    text-align: right;
-    margin-top: 20px;
-    font-size: 24px;
-    color: #ed4624;
 }
 
 /* Estilos para el footer */
@@ -81,48 +72,10 @@ footer {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos para los checkboxes y el botón en ambos formularios */
-form label, form button {
-    margin-top: 10px;
-}
-
-/* Estilos para la sección de productos en ambos formularios */
-.product-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* Estilos para el total en ambos formularios */
+.total {
+    text-align: right;
     margin-top: 20px;
-}
-
-/* Add these styles to your cotizacion.css */
-
-/* Style for the total container */
-.total-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Style for the total */
-#total {
     font-size: 24px;
     color: #ed4624;
-    margin-top: 10px; /* Add margin for separation */
 }
-
-/* Style for the buttons */
-button {
-    background-color: #ed4624;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 20px; /* Add margin between checkboxes and button */
-}
-
-button:hover {
-    background-color: #ff7e3f;
-}
-
