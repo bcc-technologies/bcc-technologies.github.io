@@ -1,36 +1,5 @@
 /* Add these styles to your cotizacion.css */
 
-/* Style for the total container */
-.total-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Style for the total */
-#total {
-    font-size: 24px;
-    color: #ed4624;
-    margin-top: 10px; /* Add margin for separation */
-}
-
-/* Style for the buttons and checkboxes */
-button, label {
-    margin-left: 0; /* Remove default margin */
-}
-
-/* Style for the form container */
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-/* Style for the button container */
-button {
-    align-self: center; /* Center the button */
-    margin-top: 20px; /* Add margin between checkboxes and button */
-}
-
 /* Estilos generales */
 body {
     font-family: Arial, sans-serif;
@@ -39,10 +8,25 @@ body {
     background-color: #f0f0f0;
 }
 
+/* Estilos para los encabezados */
 h1 {
     text-align: center;
     margin-top: 20px;
     color: #ed4624;
+}
+
+/* Estilos para los formularios */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #fff;
+    padding: 20px;
+    color: #333333;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 600px;
 }
 
 /* Estilos para las checkboxes */
@@ -52,7 +36,25 @@ form label {
     color: #333333;
 }
 
-/* Estilos para el footer */
+/* Estilos para los botones */
+button {
+    align-self: center;
+    margin-top: 20px;
+    background-color: #ed4624;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #ff7e3f;
+}
+
+/* Estilos para el pie de página */
 footer {
     background-color: #333333;
     color: #fff;
@@ -63,19 +65,15 @@ footer {
     width: 100%;
 }
 
-/* Estilos específicos para las secciones de aplicaciones de escritorio y móviles */
-.desktop-section, .mobile-section {
-    background-color: #fff;
-    padding: 20px;
-    color: #333333;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
 /* Estilos para el total en ambos formularios */
-.total {
+.total-container {
     text-align: right;
     margin-top: 20px;
+    margin-right: 20px;
+}
+
+#total {
     font-size: 24px;
     color: #ed4624;
+    margin-top: 10px;
 }
