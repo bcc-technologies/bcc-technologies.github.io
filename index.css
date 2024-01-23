@@ -108,8 +108,8 @@
 }
 
 .red h2 {
-    font-size: 42px;
-    padding-top: 4vh;
+    font-size: 270%;
+    padding-top: 1%;
 }
 
 .red-container {
@@ -127,7 +127,7 @@
 .red-logos {
     display: flex;
     align-items: center;
-    padding-top: 6vh;
+    padding-top: 1%;
     margin-right: 40vw;
 }
 
@@ -169,8 +169,8 @@
     box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
-    height: 48vh;
-    width: 22vw;
+    height: 110%;
+    width: 100%;
     margin: auto; /* Centro horizontalmente */
 }
 
@@ -191,6 +191,7 @@
     word-wrap: break-word;
     width: 17vw;
     margin: auto;
+    text-align: center;
 }
 
 .service-card:hover {
