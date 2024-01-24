@@ -116,7 +116,7 @@
 
 .about p {
     font-size: 1.3vw;
-    line-height: 3.5vh;
+    line-height: 100%;
     width: 53.7vw;
     text-align: left;
     margin: auto;
@@ -194,8 +194,8 @@
     box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
-    height: 48vh;
-    width: 22vw;
+    height: 102%;
+    width: 100%;
     margin: auto; /* Centro horizontalmente */
 }
 
