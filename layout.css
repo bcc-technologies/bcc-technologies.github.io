@@ -1,106 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-    <link rel="stylesheet" href="index.css"> <!-- Agregado para incluir estilos específicos de la página -->
-</head>
+/* Reset some default styles */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-<body>
+/* Global styles */
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    color: #333333;
+}
 
-    <!-- header section -->
-    <header>
-        <div class="header-container">
-            <nav>
-                <ul>
-                  <h1><img src="static/Marca2_sf.png" alt="BCC Technologies"></h1>
-                  <hr class="solid" style="position: relative; top: -1.1vh; height:2.7vh;">
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contactanos</a></li>
-                    <li><a href="./blog">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+/* Header styles */
+.header-container {
+    height: 8vh;
+    background-color: #000000;
+    color: #f0f0f0;
+    padding: 1.5vh 13.4vw; /* Utilizando porcentajes para adaptabilidad */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    z-index: 10;
+}
 
-    <!-- Landing section -->
-    <section class="landing">
-        <div class="landing-container">
-            <h2><img src="static/BCC_sf.png" alt="Body Centered Cube"></h2>
-            <h3>¿Quienes somos?</h3>
-            <p>Somos BCC Tech, un apasionado grupo de científicos programadores dedicados a explorar los límites de la tecnología y la innovación.</p>
-        </div>
-    </section>
+/* Logo styles */
+header h1 {
+    margin-left: 2%;
+}
 
-    <!-- Hero section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h2>Bienvenido al cubo</h2>
-                <p>Hacemos fácil lo complejo y ampliamos lo interesante.</p>
-                <a href="./aboutUs" class="cta-button">Ver más</a>
-            </div>
-            <div class="hero-image">
-                <img src="static/Imagen1.JPG" alt="BCC Founders">
-            </div>
-        </div>
-    </section>
+/* Menu styles */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    margin-left: 10%;
+}
 
-    <!-- Social networks section -->
-    <section class="red">
-        <div class="red-container">
-            <div class="red-text">
-                <h2>También puedes<br>encontrarnos en:</h2>
-            </div>
-            <div class="red-logos">
-                <h1><a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Instagram_sf.png" alt="Instagram">
-                </a></h1>
+nav li {
+    margin: 0 1em; /* Cambiado a em para mejor adaptabilidad */
+}
 
-                <h1><a href="https://www.linkedin.com/company/bcc-tech/?viewAsMember=true" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Linkedin2_sf.png" alt="Linkedin">
-                </a></h1>
+nav a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1.2em; /* Cambiado a em para mejor adaptabilidad */
+    transition: color 0.3s;
+}
 
-                <h1><a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Fiverr2_sf.png" alt="Fiverr">
-                </a></h1>
-            </div>
-        </div>
-    </section>
+nav a:hover {
+    color: #ed4624;
+}
 
-    <!-- Services section -->
-    <section class="services">
-        <h2 class="headertekst">Nuestros servicios</h2>
-        <div class="services-container">
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/foto-gratis/tiro-medio-mujer-que-trabaja-computadora-portatil_23-2150323516.jpg?size=626&ext=jpg" alt="Gabriel Barreiro"></h2>
-                <h3>Desarrollo web</h3>
-                <p>Creamos sitios web eficientes, poderosos y adaptativos.</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/vector-gratis/tecnologia-fondo-inteligencia-artificial-big-data-vis_598544-333.jpg?size=626&ext=jpg" alt="Saúl Castillo"></h2>
-                <h3>Desarrollo de software científico</h3>
-                <p>Creamos software para su empresa en materia de análisis de datos.</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/foto-gratis/gente-oficina-analizando-revisando-graficos-financieros_23-2150377131.jpg?size=626&ext=jpg" alt="Enrique Casanova"></h2>
-                <h3>Consultoría de software</h3>
-                <p>Ofrecemos asesoramiento y soluciones de expertos.</p>
-            </div>
-        </div>
-    </section>
+/* Footer section */
+footer {
+    background-color: #2d2c2c;
+    color: #ffffff;
+    text-align: center;
+    padding: 2vh 0;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    <!-- Footer section -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+.footer-container {
+    max-width: 80%; /* Utilizando porcentajes para adaptabilidad */
+    margin: 0 auto;
+}
 
-</body>
-</html>
+footer p {
+    font-size: 1em; /* Cambiado a em para mejor adaptabilidad */
+}
