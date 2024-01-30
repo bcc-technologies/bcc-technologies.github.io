@@ -1,4 +1,11 @@
-/*A: Landing (Menú) */
+/* Reset some default styles */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Landing (Menú) */
 .landing {
     color: #333333;
     word-wrap: break-word;
@@ -6,98 +13,85 @@
 
 .landing-container {
     background-image: url(static/Fondo2.png);
-    margin-top: auto; /* Para que se pueda ver el menú */
+    margin-top: auto;
     height: 90.6vh;
     background-size: cover;
     background-position: center;
-
-
     color: #000000;
-    padding: 20px 0;
+    padding: 2.5% 2%; /* Utilizando porcentajes para adaptabilidad */
     display: flex;
     justify-content: space-between;
     align-items: top;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
-/*B: Cube */
-.landing h2 {
-    position:absolute; 
+/* Cube, Text-title, Text-content */
+.landing h2,
+.landing h3,
+.landing p {
+    position: absolute;
 }
 
-/*B: Text-title */
 .landing h3 {
-    font-size: 32px;
-
-    position:absolute; 
-    top: 65vh; 
+    font-size: 2.7vw;
+    top: 65vh;
     left: 9vw;
 }
 
-/*B: Text-content */
 .landing p {
-    font-size: 24px;
+    font-size: 2vw;
     width: 30vw;
-
-    position:absolute; 
-    top: 72vh; 
+    top: 72vh;
     left: 5.7vw;
 }
 
-
-/*A: Hero section */
+/* Hero section */
 .hero {
     background-color: #ffffff;
     text-align: center;
-    padding: 22vh 0;
+    padding: 22vh 2%; /* Utilizando porcentajes para adaptabilidad */
     color: #333333;
 }
 
 .hero-container {
     display: flex;
-    justify-content: space-between; /* Distribuye los elementos en el contenedor */
-    align-items: center; /* Centra verticalmente los elementos en el contenedor */
+    justify-content: space-between;
+    align-items: center;
 }
 
 .hero-content {
-    flex: 1; /* Permite que este div tome todo el espacio restante */
+    flex: 1;
     text-align: center;
 }
 
 .hero h2 {
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-size: 4vw;
+    margin-bottom: 1.5vh;
 }
 
 .hero p {
-    font-size: 24px;
-    margin-bottom: 40px;
+    font-size: 2vw;
+    margin-bottom: 3vh;
 }
 
 .cta-button {
     display: inline-block;
     background-color: #ed4624;
     color: #ffffff;
-    padding: 20px 40px;
+    padding: 2.5% 4%; /* Utilizando porcentajes para adaptabilidad */
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 24px;
+    font-size: 2vw;
     transition: background-color 0.3s;
 }
 
-.cta-button:hover {
-    background-color: #ff7e3f;
-}
-
 .hero-image img {
-    height: 25.7vw;
-    margin-right: 7vw;
+    height: 12vw;
+    margin-right: 3vw;
 }
 
-
-/*A: Redes sociales */
+/* Redes sociales */
 .red {
     background-color: #ed4624;
     height: 23vh;
@@ -108,7 +102,7 @@
 }
 
 .red h2 {
-    font-size: 270%;
+    font-size: 2.7vw;
     padding-top: 5%;
 }
 
@@ -119,9 +113,9 @@
 }
 
 .red-text {
-    flex: 1; /* Toma el espacio restante */
+    flex: 1;
     text-align: left;
-    padding-left: 3.5vw; /* Ajusta el espaciado a la izquierda */
+    padding-left: 3.5vw;
 }
 
 .red-logos {
@@ -132,18 +126,17 @@
 }
 
 .red h1 {
-    margin: 0 1.3vw; /* Espacio entre los logos */
+    margin: 0 1.3vw;
 }
 
 .red img {
-    width: 5vw;
+    width: 2.5vw;
 }
-
 
 /* Services section */
 .services {
     background-color: #fff;
-    padding: 8vw 0;
+    padding: 8vh 2%; /* Utilizando porcentajes para adaptabilidad */
 }
 
 .services h2 {
@@ -154,30 +147,30 @@
 
 .services-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr)); /* Columnas de 25vw, con un mínimo de 1fr */
+    grid-template-columns: repeat(auto-fill, minmax(25vw, 1fr));
     gap: 2vw;
     justify-content: center;
-    margin-left: 8vw;
-    margin-right: 8vw;
+    margin-left: 4vw; /* Ajuste del margen */
+    margin-right: 4vw; /* Ajuste del margen */
     margin-top: 10vh;
 }
 
 .service-card {
     background-color: #f0f0f0;
     color: #000;
-    border-radius: 0.7vw;
-    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
+    border-radius: 1vw; /* Ajuste de la esquina redonda */
+    box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
     height: 110%;
     width: 100%;
-    margin: auto; /* Centro horizontalmente */
+    margin: auto;
 }
 
 .service-card img {
-    height: 12.2vw;
+    height: 6vw;
     margin-bottom: 1vh;
-    margin-top: 4vh;
+    margin-top: 2vh;
 }
 
 .service-card h3 {
@@ -196,35 +189,33 @@
 
 .service-card:hover {
     transform: translateY(-0.5vw);
-    box-shadow: 0 0.8vw 1.6vw rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.2);
 }
 
-/*A: Clients section */
+/* Clients section */
 .clients {
     background-color: #ffffff;
     height: 18vh;
-
     text-align: center;
-    padding: 7vh 0;
+    padding: 7vh 2%; /* Utilizando porcentajes para adaptabilidad */
     color: #333333;
 }
-/*B: for logos */
-.clients h1 {
-    position: relative; 
+
+.clients h1,
+.clients img {
+    position: relative;
 }
 
 .clients h2 {
-    font-size: 48px;
+    font-size: 4vw;
 }
 
 .clients p {
-    font-size: 24px;
+    font-size: 2vw;
 }
 
 .clients img {
-    position: relative; 
-    width: 12vw; /* Esto ajusta el ancho del logo */
+    width: 6vw;
     padding-top: 1.5vh;
-    margin: 0 1vw; /* Esto crea espacio entre los logos */
+    margin: 0 1vw;
 }
-
