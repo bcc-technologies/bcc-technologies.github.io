@@ -63,6 +63,10 @@ nav a {
     transition: color 0.3s;
 }
 
+#blog-link {
+    white-space: nowrap; /* Evita el line break */
+}
+
 h1 img {
     position: relative;
     max-width: 100%; /* Asegura que la imagen no exceda su ancho original */
