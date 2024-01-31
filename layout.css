@@ -111,13 +111,14 @@ nav a:hover {
     }
 
     nav.active ul {
+        /* Estilos del menú desplegable */
         display: flex;
         flex-direction: column;
         position: absolute;
         top: 8vh;
         left: 0;
         width: 100%;
-        background-color: #000;
+        background-color: rgba(0, 0, 0, 0.8); /* Cambia el valor alfa según tus preferencias (0 es completamente transparente, 1 es completamente opaco) */
         z-index: 1;
     }
 
