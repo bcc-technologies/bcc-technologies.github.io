@@ -94,7 +94,6 @@ body, h1, h2, h3, p {
 /* Redes sociales */
 .red {
     background-color: #ed4624;
-    /*height: 23vh;*/
     background-size: cover;
     background-position: center;
     text-align: center;
@@ -108,21 +107,22 @@ body, h1, h2, h3, p {
 
 .red-container {
     display: flex;
+    flex-direction: column; /* Cambiado a columna en pantallas pequeñas */
     justify-content: space-between;
     align-items: center;
+    padding: 3% 0; /* Ajuste de espacio en pantallas pequeñas */
 }
 
 .red-text {
     flex: 1;
-    text-align: left;
-    padding-left: 3.5vw;
+    text-align: center; /* Alineación de texto en pantallas pequeñas */
+    padding: 0 5%; /* Ajuste de espacio en pantallas pequeñas */
 }
 
 .red-logos {
     display: flex;
     align-items: center;
     padding-top: 1%;
-    margin-right: 40vw;
 }
 
 .red h1 {
@@ -133,6 +133,31 @@ body, h1, h2, h3, p {
 .red img {
     width: 4vw;
 }
+
+/* Estilos para pantallas pequeñas */
+@media screen and (max-width: 768px) {
+    .red h2 {
+        font-size: 2em; /* Tamaño del título ajustado para pantallas pequeñas */
+    }
+
+    .red-container {
+        padding: 5% 0; /* Ajuste de espacio en pantallas pequeñas */
+    }
+
+    .red-logos {
+        flex-direction: column; /* Cambiado a columna en pantallas pequeñas */
+    }
+
+    .red h1 {
+        margin: 1vh 0; /* Ajuste de margen en pantallas pequeñas */
+    }
+
+    .red img {
+        width: 8vw; /* Ajuste del tamaño de la imagen en pantallas pequeñas */
+        margin: 1vh 0; /* Ajuste de margen en pantallas pequeñas */
+    }
+}
+
 
 /* Services section */
 .services {
