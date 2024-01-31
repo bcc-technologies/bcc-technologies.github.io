@@ -126,7 +126,7 @@ body, h1, h2, h3, p {
 }
 
 .red h1 {
-    /*margin: 0 1.3vw;*/
+    margin: 0 1.3vw;
     padding-top: 5%;
 }
 
@@ -164,7 +164,7 @@ body, h1, h2, h3, p {
     text-align: center;
     transition: transform 0.3s, box-shadow 0.3s;
     height: 110%;
-    width: 100%;
+    width: 90%;
     margin: auto;
     margin-bottom: 4vh;
 }
