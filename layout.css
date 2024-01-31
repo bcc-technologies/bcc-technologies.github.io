@@ -65,6 +65,13 @@ h1 img {
     height: auto;
 }
 
+/* Agrega estilos específicos para el logo */
+.logo {
+    max-width: 200px; /* Tamaño máximo para el logo */
+    width: 100%; /* Hace que el logo ocupe el 100% de su contenedor */
+    height: auto; /* Permite que la altura se ajuste proporcionalmente al ancho */
+}
+
 hr.solid {
     /* Estilos comunes */
     border-top: 2.7vh solid #fff;
