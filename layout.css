@@ -77,7 +77,7 @@ hr.solid {
     border-top: 2.7vh solid #fff; /* Ajusta el tamaño de la línea horizontal */
     width: 0.1%; /* Asegura que la línea horizontal se extienda completamente */
     position: relative;
-    left: 2.5vw;
+    left: 0.5vw;
 }
 
 nav a:hover {
