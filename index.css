@@ -153,8 +153,8 @@ body, h1, h2, h3, p {
     justify-content: center;
     margin-left: 4vw; /* Ajuste del margen */
     margin-right: 4vw; /* Ajuste del margen */
-    margin-top: 4vh;
-    margin-bottom: 4vh;
+    margin-top: 8vh;
+    margin-bottom: 7vh;
 }
 
 .service-card {
@@ -188,7 +188,7 @@ body, h1, h2, h3, p {
 .service-card p {
     margin-bottom: 3.2vh;
     word-wrap: break-word;
-    width: 17vw;
+    width: 90%;
     margin: auto;
     text-align: center;
 }
@@ -213,11 +213,11 @@ body, h1, h2, h3, p {
     }
 
     .service-card h3 {
-        font-size: 2.2vw; /* Tamaño del título ajustado */
+        font-size: 2em; /* Tamaño del título ajustado */
     }
 
     .service-card p {
-        font-size: 1.7vw; /* Tamaño del párrafo ajustado */
+        font-size: 1.2em; /* Tamaño del párrafo ajustado */
     }
 }
 
