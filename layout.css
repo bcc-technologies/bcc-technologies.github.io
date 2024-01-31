@@ -67,7 +67,7 @@ h1 img {
 
 /* Agrega estilos específicos para el logo */
 .logo {
-    max-width: 200px; /* Tamaño máximo para el logo */
+    max-width: 150px; /* Tamaño máximo para el logo */
     width: 100%; /* Hace que el logo ocupe el 100% de su contenedor */
     height: auto; /* Permite que la altura se ajuste proporcionalmente al ancho */
 }
@@ -124,6 +124,10 @@ nav a:hover {
     nav.active ul li {
         padding: 10px;
         text-align: center;
+    }
+
+    hr.solid {
+        display: none;
     }
 }
 
