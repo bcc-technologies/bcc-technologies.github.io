@@ -87,14 +87,14 @@ body, h1, h2, h3, p {
 }
 
 .hero-image img {
-    height: 12vw;
+    height: 12vh;
     margin-right: 3vw;
 }
 
 /* Redes sociales */
 .red {
     background-color: #ed4624;
-    height: 23vh;
+    /*height: 23vh;*/
     background-size: cover;
     background-position: center;
     text-align: center;
@@ -130,7 +130,7 @@ body, h1, h2, h3, p {
 }
 
 .red img {
-    width: 2.5vw;
+    width: 4vw;
 }
 
 /* Services section */
