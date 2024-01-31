@@ -126,7 +126,8 @@ body, h1, h2, h3, p {
 }
 
 .red h1 {
-    margin: 0 1.3vw;
+    /*margin: 0 1.3vw;*/
+    padding-top: 5%;
 }
 
 .red img {
