@@ -77,6 +77,14 @@ nav a:hover {
     color: #ed4624;
 }
 
+/* Estilo para el botón de hamburguesa */
+.menu-toggle {
+    display: none; /* Oculta el botón de hamburguesa de forma predeterminada */
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #ffffff;
+    margin-right: 15px;
+}
 
 /* Estilos para pantallas pequeñas */
 @media screen and (max-width: 768px) {
