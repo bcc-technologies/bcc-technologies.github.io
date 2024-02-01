@@ -19,7 +19,7 @@ header, .content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 15%;
+    padding-top: 11.7vh;
 }
 
 .product-section {
