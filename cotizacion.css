@@ -1,21 +1,37 @@
-/* Add these styles to your cotizacion.css */
-
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f0f0f0;
+    display: flex; /* Agregado para utilizar flexbox */
+    flex-direction: column; /* Mostrar el contenido en una columna */
+    min-height: 100vh; /* Al menos el 100% de la altura de la ventana */
 }
 
-/* Header Styles */
+/* Header and Content Styles */
+header, .content {
+    width: 100%; /* Ocupar todo el ancho disponible */
+    box-sizing: border-box; /* Incluir el padding y border en el ancho total */
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15%;
+}
+
+.product-section {
+    margin-bottom: 1%;
+}
+
 h1 {
     text-align: center;
     margin-top: 20px;
     color: #ed4624;
 }
 
-/* Form Styles */
 form {
     display: flex;
     flex-direction: column;
@@ -26,17 +42,16 @@ form {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
-    max-width: 600px;
+    width: 47vw;
+    word-wrap: break-word;
 }
 
-/* Checkbox Styles */
 form label {
     display: block;
     margin-bottom: 10px;
     color: #333333;
 }
 
-/* Button Styles */
 button {
     align-self: flex-end;
     margin-top: 20px;
@@ -54,22 +69,22 @@ button:hover {
     background-color: #ff7e3f;
 }
 
-/* Footer Styles */
-
 
 /* Total Styles */
 .total-container {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: fixed; /* Fijar la posición */
+    top: 50%; /* Colocarlo en el centro */
+    right: 0; /* Colocarlo en la parte derecha */
+    padding-top: 2%; /* Mantener el espacio en la parte superior */
     background-color: #ed4624;
     color: #fff;
-    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1; /* Asegurarse de que esté en la capa superior */
+    word-wrap: break-word;
+    max-width: 20vw;
 }
 
 #total {
     font-size: 24px;
-    margin-top: 10px;
 }
