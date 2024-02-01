@@ -1,35 +1,51 @@
-<!-- <!DOCTYPE html> -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BCC Technologies</title>
     <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="contactUs.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
+
+    <!-- JavaScript para el menú desplegable -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('nav');
+
+            menuToggle.addEventListener('click', function () {
+                nav.classList.toggle('active');
+            });
+        });
+    </script>
 </head>
 
-<!-- header section -->
 <body>
-    <header>
-        <div class="header-container">
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="position: absolute ;width:11vw; top: -2.2vh; " ></h1>
-                <hr class="solid" style="position: absolute; top: 1.3vh; margin-left: 12.4vw; height:2.7vh;">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contactanos</a></li>
-                    <li><a href="./blog">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-<!--inicia el contenido de la página-->    
 
+<!-- header section -->
+<header>
+    <div class="header-container">
+        <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
+        <div class="menu-toggle">&#9776;</div>
+        <nav>
+            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <hr class="solid">
+            <ul>
+                <li><a href="./">Inicio</a></li>
+                <li><a href="./services">Servicios</a></li>
+                <li><a href="./aboutUs">Nosotros</a></li>
+                <li><a href="./contactUs">Contactanos</a></li>
+                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Contenido de la página -->
 <link rel="stylesheet" href="contactUs.css">
 
-<!-- Contact info -->
+<!-- Información de contacto -->
 <section class="about">
     <div class="contact-container">
         <div class="about-container">
@@ -39,48 +55,45 @@
             <p>Dirección: Avenida Benigno Filomeno de Rojas #15, Santo Domingo, República Dominicana</p>
         </div>
         <div class="form-container">
-            <!-- Contact form -->
+            <!-- Formulario de contacto -->
             <link rel="stylesheet" href="contact_form.css">
 
-<div class="form-overlay">
-    <div id="form-container" class="icon fa fa-pencil">
-        <span id="form-close" class="icon fa fa-close"></span>
-        <div id="form-content">
-            <div id="form-head">
-                <h1 class="pre">Póngase en contacto</h1>
-                <p class="pre" style="color: #e9e9e9;">Estamos para servirle</p>
-                <!-- <h1 class="post">Thanks!</h1>
-                <p class="post">I'll be in touch ASAP</p> -->
+            <div class="form-overlay">
+                <div id="form-container" class="icon fa fa-pencil">
+                    <span id="form-close" class="icon fa fa-close"></span>
+                    <div id="form-content">
+                        <div id="form-head">
+                            <h1 class="pre">Póngase en contacto</h1>
+                            <p class="pre" style="color: #e9e9e9;">Estamos para servirle</p>
+                        </div>
+                        <form
+                            action="https://formspree.io/f/xleqdrag"
+                            method="POST"
+                        >
+                            <input class="input name" type="text" name="user_name" placeholder="Su nombre">
+                            <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
+                            <select class="input select" name="subject">
+                                <option disabled selected>¿De qué hablamos?</option>
+                                <option selected>Sobre un nuevo proyecto</option>
+                                <option>Tengo unas preguntas</option>
+                                <option>Hagámoslo tomando un café</option>
+                            </select>
+                            <textarea class="input message" name="message" placeholder="¿En qué podemos ayudarle?"></textarea>
+                            <input class="input submit" type="submit" value="Enviar mensaje">
+                        </form>
+                    </div>
+                </div>
             </div>
-            <form
-  action="https://formspree.io/f/xleqdrag"
-  method="POST"
->
-    <input class="input name" type="text" name="user_name" placeholder="Su nombre">
-    <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
-    <select class="input select" name="subject">
-        <option disabled selected>¿De qué hablamos?</option>
-        <option selected>Sobre un nuevo proyecto</option>
-        <option>Tengo unas preguntas</option>
-        <option>Hagámoslo tomando un café</option>
-    </select>
-    <textarea class="input message" name="message" placeholder="¿En qué podemos ayudarle?"></textarea>
-    <input class="input submit" type="submit" value="Enviar mensaje">
-</form>
-
-        </div>
-    </div>
-</div>
         </div>
     </div>
 </section>
 
-
-
+<!-- Footer section -->
 <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+    <div class="footer-container">
+        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
 </body>
 </html>
