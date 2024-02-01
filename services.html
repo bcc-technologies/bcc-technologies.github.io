@@ -1,69 +1,64 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BCC Technologies</title>
     <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="services.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
+
+    <!-- JavaScript para el menú desplegable -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('nav');
+
+            menuToggle.addEventListener('click', function () {
+                nav.classList.toggle('active');
+            });
+        });
+    </script>
 </head>
 
-<!-- header section -->
 <body>
-    <header>
-        <div class="header-container">
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" style="position: absolute ;width:11vw; top: -2.2vh; " ></h1>
-                <hr class="solid" style="position: absolute; top: 1.3vh; margin-left: 12.4vw; height:2.7vh;">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contactanos</a></li>
-                    <li><a href="./blog">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-<!--Aplica lo guardado en layout.html-->
-
-<div id="content">
-    <!-- Your main content goes here -->
-
-
-<!--inicia el contenido de la página-->
-
-<link rel="stylesheet" href="services.css">
-
-<!-- Landing section -->
-<!-- <section class="landing" >
-    <div class="landing-container" style="height: 5vh;">
-        <hr class="solid" style="position: absolute; top: 16.3vh; height: 1vh; background-color: #ed4624; width: 100vw; color: #ed4624;">
-        <h2><img src="{{ url_for('static', filename='styles/static2/BCC.png') }}" alt="Body Centered Cube" style="position: absolute; width:30vw; margin-left: 10vw; top: 10.7vh;" ></h2> -->
-        <!-- <h3 style="color: #ed4624; font-size: 5vw; margin-top: 6vh;margin-left: 30vw;">Bienvenido al cubo</h3>
-        <p>Hacemos fácil lo complejo y ampliamos lo interesante.</p>
+<!-- header section -->
+<header>
+    <div class="header-container">
+        <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
+        <div class="menu-toggle">&#9776;</div>
+        <nav>
+            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <hr class="solid">
+            <ul>
+                <li><a href="./">Inicio</a></li>
+                <li><a href="./services">Servicios</a></li>
+                <li><a href="./aboutUs">Nosotros</a></li>
+                <li><a href="./contactUs">Contactanos</a></li>
+                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
+            </ul>
+        </nav>
     </div>
-</section> -->
+</header>
+
+<!-- Contenido de la página -->
 
 <!-- offers section -->
 <section class="hero">
     <div class="hero-container" style="margin-top: 7.5vh; margin-left: -5vw;">
-
         <div class="hero-image" style="margin-right:2vw;">
-            <img src="static/Servicios(3)(1).png" alt="nuestras ofertas"> 
-            <!-- <img src="https://img.freepik.com/vector-gratis/plantilla-infografica-nuestros-servicios-dibujada-mano_23-2149889315.jpg?size=626&ext=jpg" alt="nuestras ofertas"> -->
+            <img src="static/Servicios(3)(1).png" alt="nuestras ofertas">
         </div>
-
         <div class="hero-content">
             <h2 style="line-height: 7vh;">Exploradores de la Tecnología</h2>
             <p>BCC Tech no es solo una empresa de software, somos un equipo apasionado de programadores-científicos con raíces en la física. Nuestra historia nos define como más que programadores; somos investigadores y creadores versátiles.</p>
             <p>Ya sea para empresas de diversos sectores o para el público en general, nuestro enfoque es constante: hacer fácil lo complejo y ampliar lo interesante.</p>
         </div>
     </div>
-
 </section>
 
-<!-- offers section -->
+<!-- services section -->
 <section class="services">
     <h2>Nuestros servicios</h2>
     <div class="services-container">
@@ -101,10 +96,11 @@
             <h3>Mantenimiento y actualización</h3>
             <p>¿Una aplicación que necesitas actualizar o sitio web que requiere mantenimiento? te ayudamos</p>
         </div>
+        
     </div>
 </section>
 
-<!-- offers section -->
+<!-- about us section -->
 <section class="about">
     <div class="about-container">
         <h2>Esto ofrecemos realmente</h2>
@@ -119,7 +115,6 @@
         <p><strong>Agilidad en la Era Cambiante:</strong> El mundo tecnológico evoluciona rápidamente, y en <em>BCCTechnologies</em>, nos movemos al mismo ritmo.
         
         <p>¡Únete a nosotros en la travesía de la <span style="color: #ed4624;"><em>innovación</em></span>!.</p>
-                
     </div>
 </section>
 
@@ -127,17 +122,14 @@
 <section class="hero" style="background-color: #f0f0f0;">
     <div class="hero-container">
         <div class="hero-image">
-            <!-- <img src="{{ url_for('static', filename='styles/static2/Imagen1.JPG') }}" alt="BCC Founders"> -->
             <img src="static/carpetas_fb.png" alt="cotización">
         </div>
-
         <div class="hero-content">
             <h2 style="line-height: 6vh;">¡Solicite ahora su cotización!</h2>
             <p>Comprender sus necesidades y objetivos es esencial para nosotros. Escuchamos y trabajamos juntos para 
                 crear una experiencia única.</p>
             <p>Comuníquenos sus deseos y haremos lo mejor posible por hacerlos realidad.
             </p>
-
             <a href="./cotizacion" class="cta-button">OBTENER COTIZACIÓN</a>
         </div>
     </div>
