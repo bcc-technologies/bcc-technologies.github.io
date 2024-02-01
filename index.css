@@ -107,7 +107,7 @@ body, h1, h2, h3, p {
 
 .red-container {
     display: flex;
-    flex-direction: column; /* Cambiado a columna en pantallas pequeñas */
+    flex-direction: line;
     justify-content: space-between;
     align-items: center;
     padding: 3% 0; /* Ajuste de espacio en pantallas pequeñas */
@@ -115,8 +115,8 @@ body, h1, h2, h3, p {
 
 .red-text {
     flex: 1;
-    text-align: center; /* Alineación de texto en pantallas pequeñas */
-    padding: 0 5%; /* Ajuste de espacio en pantallas pequeñas */
+    text-align: left; /* Alineación de texto a la izquierda */
+    padding: 0 5%;
 }
 
 .red-logos {
@@ -141,11 +141,17 @@ body, h1, h2, h3, p {
     }
 
     .red-container {
+        flex-direction: column; /* Cambiado a columna en pantallas pequeñas */
         padding: 5% 0; /* Ajuste de espacio en pantallas pequeñas */
     }
 
+    .red-text {
+        flex: 1;
+        text-align: left; /* Alineación de texto en pantallas pequeñas */
+    }
+
     .red-logos {
-        flex-direction: column; /* Cambiado a columna en pantallas pequeñas */
+        flex-direction: line; /* Cambiado a columna en pantallas pequeñas */
     }
 
     .red h1 {
