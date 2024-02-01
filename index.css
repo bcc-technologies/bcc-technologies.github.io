@@ -107,32 +107,33 @@ body, h1, h2, h3, p {
 
 .red-container {
     display: flex;
-    flex-direction: line;
-    justify-content: space-between;
+    flex-direction: line; /* Cambiado a columna en pantallas pequeñas */
+    justify-content: left; /* Centrar verticalmente en pantallas pequeñas */
     align-items: center;
     padding: 3% 0; /* Ajuste de espacio en pantallas pequeñas */
 }
 
 .red-text {
-    flex: 1;
-    text-align: left; /* Alineación de texto a la izquierda */
-    padding: 0 5%;
+    text-align: center; /* Alineación de texto centrado */
+    padding: 0 5%; /* Ajuste de espacio horizontal */
 }
 
 .red-logos {
     display: flex;
     align-items: center;
+    justify-content: center; /* Centrar horizontalmente en pantallas pequeñas */
     padding-top: 1%;
 }
 
 .red h1 {
-    margin: 0 1.3vw;
-    padding-top: 5%;
+    margin: 1vh 0; /* Ajuste de margen en pantallas pequeñas */
 }
 
 .red img {
-    width: 4vw;
+    width: 6vw;
+    margin: 1vh 1vw; /* Ajuste de margen entre imágenes en pantallas pequeñas */
 }
+
 
 /* Estilos para pantallas pequeñas */
 @media screen and (max-width: 768px) {
@@ -152,6 +153,7 @@ body, h1, h2, h3, p {
 
     .red-logos {
         flex-direction: line; /* Cambiado a columna en pantallas pequeñas */
+        gap: 12%;
     }
 
     .red h1 {
