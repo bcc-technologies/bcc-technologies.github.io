@@ -73,32 +73,31 @@
 }
 
 
-/*A: About Us section */
+/* About Us section */
 .about {
     background-color: #fff;
-    padding: 5vw 0;
+    padding: 5% 2%; /* Ajustado a porcentajes para mejor adaptabilidad */
 }
 
 .about h2 {
-    font-size: 2.5vw;
+    font-size: 2em; /* Cambiado a em para mejor adaptabilidad */
     color: #333;
-    margin-bottom: 5vh;
+    margin-bottom: 3vh; /* Reducido el espacio inferior */
 }
 
 .about-container {
-    max-width: 70vw;
+    max-width: 70%;
     margin: 0 auto;
     text-align: center;
 }
 
 .about p {
-    font-size: 1.3vw;
-    line-height: 3.5vh;
-    width: 53.7vw;
+    font-size: 1em; /* Cambiado a em para mejor adaptabilidad */
+    line-height: 1.6; /* Ajustado a una unidad sin medida para mejor adaptabilidad */
+    max-width: 100%; /* Ajustado a porcentaje para mejor adaptabilidad */
     text-align: left;
-    margin: auto;
+    margin: 2vh auto; /* Ajustado el espacio vertical */
     color: #555;
-    margin-bottom: 2vh;
 }
 
 .about p:last-child {
@@ -111,15 +110,15 @@
     margin-top: 1vh;
 }
 
-/*B: Add a decorative separator */
+/* Add a decorative separator */
 .about-separator {
-    width: 7vw;
+    width: 10%;
     height: 0.3vw;
     background-color: #ed4624;
-    margin: 1vh auto;
+    margin: 1.5vh auto; /* Ajustado el espacio vertical */
 }
 
-/*B: Add a visually appealing call-to-action */
+/* Add a visually appealing call-to-action */
 .about-cta {
     margin-top: 2vh;
 }
@@ -128,17 +127,18 @@
     display: inline-block;
     background-color: #ed4624;
     color: #fff;
-    padding: 2vh 4vw; /* Ajustado a vh y vw */
+    padding: 2vh 4%; /* Ajustado a porcentaje y vh para mejor adaptabilidad */
     text-decoration: none;
     border-radius: 0.5vw;
     font-weight: bold;
-    font-size: 1.5vw;
+    font-size: 1em; /* Cambiado a em para mejor adaptabilidad */
     transition: background-color 0.3s;
 }
 
 .about-cta a:hover {
     background-color: #ff7e3f;
 }
+
 
 
 /*A: Services section */
@@ -190,6 +190,13 @@
     margin-bottom: 1.7vh;
     color: #ed4624;
 }
+
+.service-card h3 a {
+    font-size: inherit;
+    color: inherit; /* Hereda el color del contenedor (en este caso, el color del h3) */
+    text-decoration: none; /* Elimina la subrayado predeterminado */
+}
+
 
 .service-card p {
     margin-bottom: 3.2vh;
