@@ -45,6 +45,32 @@ body, h1, h2, h3, p {
     left: 5.7vw;
 }
 
+/* Media Query para dispositivos móviles */
+@media (max-width: 768px) {
+    .landing-container {
+        height: auto;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        background-size: flex;
+    }
+
+    .landing h3 {
+        font-size: 5vw;
+        top: auto;
+        left: auto;
+        margin-top: 2vh;
+    }
+
+    .landing p {
+        font-size: 4vw;
+        width: auto;
+        top: auto;
+        left: auto;
+        margin-top: 2vh;
+    }
+}
+
 /* Hero section */
 .hero {
     background-color: #ffffff;
@@ -87,9 +113,40 @@ body, h1, h2, h3, p {
 }
 
 .hero-image img {
-    height: 35vh;
+    height: 35vw;
     margin-right: 3vw;
 }
+
+/* Media Query para pantallas pequeñas */
+@media (max-width: 768px) {
+    .hero {
+        padding: 15vh 2%; /* Ajustar el padding para pantallas pequeñas */
+    }
+
+    .hero-container {
+        margin-top: 5vh; /* Agregar un margen superior en pantallas pequeñas */
+        display: flex;
+        flex-direction: column; /* Cambiar a columna en pantallas pequeñas */
+        align-items: center;
+        gap: 6vh;
+    }
+    
+
+    .cta-button {
+        padding: 4% 6%; /* Ajustar el padding del botón para pantallas pequeñas */
+        font-size: 3vw; /* Ajustar el tamaño del texto del botón para pantallas pequeñas */
+    }
+
+    .hero-image img {
+        height: 100%; /* Hacer la imagen ocupar el 100% del ancho en pantallas pequeñas */
+        margin-right: 0; /* Eliminar el margen derecho en pantallas pequeñas */
+        margin-bottom: 3vh; /* Agregar un margen inferior en pantallas pequeñas */
+    }
+}
+
+
+
+
 
 /* Redes sociales */
 .red {
