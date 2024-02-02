@@ -66,6 +66,10 @@ body, h1, h2, h3, p {
         top: 72vw;
     }
 
+    #cube{
+      top: 10vh;
+    }
+
 }
 
 /* Block section (reusable simple content section with text, button and image) */
