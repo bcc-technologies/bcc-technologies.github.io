@@ -5,13 +5,13 @@ body, h1, h2, h3, p {
     box-sizing: border-box;
 }
 
-/* Landing (Menú) */
-.landing {
+/* Hero section*/
+.hero {
     color: #333333;
     word-wrap: break-word;
 }
 
-.landing-container {
+.hero-container {
     background-image: url(static/Fondo2.png);
     margin-top: auto;
     height: 90.6vh;
@@ -26,66 +26,73 @@ body, h1, h2, h3, p {
 }
 
 /* Cube, Text-title, Text-content */
-.landing h2,
-.landing h3,
-.landing p {
+.hero h2,
+.hero h3,
+.hero p {
     position: absolute;
 }
 
-.landing h3 {
+.hero h3 {
     font-size: 2.7vw;
     top: 65vh;
     left: 9vw;
 }
 
-.landing p {
+.hero p {
     font-size: 2vw;
     width: 30vw;
     top: 72vh;
     left: 5.7vw;
 }
 
+#cube {
+    position: absolute;
+    width: 43vw; 
+    left: 55vw; 
+    top: 5vh;
+}
+
 /* Media Query para dispositivos móviles */
 @media (max-width: 768px) {
-    .landing-container {
+    .hero-container {
         height: 90.6vw;
     }
 
-    .landing h3 {
+    .hero h3 {
         top: 65vw;
     }
 
-    .landing p {
+    .hero p {
         top: 72vw;
     }
 
 }
 
-/* Hero section */
-.hero {
+/* Block section (reusable simple content section with text, button and image) */
+.block {
     background-color: #ffffff;
     text-align: center;
     padding: 22vh 2%; /* Utilizando porcentajes para adaptabilidad */
     color: #333333;
 }
 
-.hero-container {
+.block-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.hero-content {
+.block-content {
     flex: 1;
     text-align: center;
 }
 
-.hero h2 {
+.block h2 {
     font-size: 4vw;
     margin-bottom: 1.5vh;
 }
 
-.hero p {
+.block p {
     font-size: 2vw;
     margin-bottom: 3vh;
 }
@@ -102,7 +109,7 @@ body, h1, h2, h3, p {
     transition: background-color 0.3s;
 }
 
-.hero-image img {
+.block-image img {
     width: 50vw;
     margin-right: 3vw;
     border-radius: 45vw;
@@ -110,11 +117,11 @@ body, h1, h2, h3, p {
 
 /* Media Query para pantallas pequeñas */
 @media (max-width: 768px) {
-    .hero {
+    .block {
         padding: 15vh 2%; /* Ajustar el padding para pantallas pequeñas */
     }
 
-    .hero-container {
+    .block-container {
         margin-top: 5vh; /* Agregar un margen superior en pantallas pequeñas */
         display: flex;
         flex-direction: column; /* Cambiar a columna en pantallas pequeñas */
@@ -128,7 +135,7 @@ body, h1, h2, h3, p {
         font-size: 3vw; /* Ajustar el tamaño del texto del botón para pantallas pequeñas */
     }
 
-    .hero-image img {
+    .block-image img {
         width: 70vw; /* Hacer la imagen ocupar el 100% del ancho en pantallas pequeñas */
         margin-right: 0; /* Eliminar el margen derecho en pantallas pequeñas */
         margin-bottom: 3vh; /* Agregar un margen inferior en pantallas pequeñas */
