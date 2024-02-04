@@ -116,9 +116,9 @@ body, h1, h2, h3, p {
 }
 
 .block-image img {
-    width: 50vw;
+    width: 45vw;
     margin-right: 3vw;
-    border-radius: 45vw;
+    border-radius: 35vw;
 }
 
 /* Media Query para pantallas pequeñas */
