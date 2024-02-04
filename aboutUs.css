@@ -93,7 +93,7 @@
 
 .about p {
     font-size: 1em; /* Cambiado a em para mejor adaptabilidad */
-    line-height: 1.6; /* Ajustado a una unidad sin medida para mejor adaptabilidad */
+    line-height: 1.6; /* Unidad sin medida para mejor adaptabilidad */
     max-width: 100%; /* Ajustado a porcentaje para mejor adaptabilidad */
     text-align: left;
     margin: 2vh auto; /* Ajustado el espacio vertical */

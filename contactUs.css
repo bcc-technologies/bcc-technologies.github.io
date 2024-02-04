@@ -5,43 +5,43 @@
 /* About Us */
 .about {
     min-height: 72vh;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-
     background-color: #f0f0f0;
-    padding: 10vh 0;
+    padding: 10vh 2vw; /* Ajuste del padding para pantallas pequeñas */
     text-align: center;
     display: flex;
     justify-content: center;
+    flex-wrap: wrap; /* Permitir que los elementos se envuelvan en pantallas pequeñas */
 }
 
 .about h2 {
-    font-size: 2.4vw;
+    font-size: 3.5em; 
     color: #333;
     margin-bottom: 2vh;
+    width: 100%; /* Ancho completo en pantallas pequeñas */
 }
 
 .contact-container {
     display: flex;
-    justify-content: space-between;
-    text-align: center;
+    flex-direction: row; /* Fila en pantallas grandes */
+    justify-content: flex-start; /* Alineando a la izquierda en pantallas pequeñas */
+    align-items: center;
     margin-top: 4vh;
 }
 
 .about-container {
-    max-width: 45vw;
+    max-width: 50%;
     text-align: left;
-    padding-right: 5vw;
+    padding: 0 8.5vw; /* Espacio alrededor del texto */
 }
 
 .form-container {
-    max-width: 50vw;
+    max-width: 100%; /* Ajustando el ancho máximo para adaptabilidad */
+    margin-top: 3vh; /* Ajuste del margen superior para pantallas pequeñas */
 }
 
 .about p {
-    font-size: 1.3vw;
-    line-height: 1.6;
+    font-size: 1.5em; 
+    line-height: 1.6; /* Unidad sin medida para mejor adaptabilidad */
     color: #555;
     margin-bottom: 2vh;
 }
@@ -73,14 +73,46 @@
     display: inline-block;
     background-color: #ed4624;
     color: #fff;
-    padding: 1.5vh 3vw;
+    padding: 2vh 4vw;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 1.8vw;
+    font-size: 2vw; /* Ajustando el tamaño del texto para pantallas pequeñas */
     transition: background-color 0.3s;
 }
 
 .about-cta a:hover {
     background-color: #ff7e3f;
+}
+
+/* Media Query para pantallas pequeñas */
+@media (max-width: 768px) {
+    .about {
+        padding: 10vh 2vw; /* Ajuste del padding para pantallas pequeñas */
+    }
+
+    .about h2 {
+        font-size: 2.5em; /* Ajustado el tamaño para pantallas pequeñas */
+        width: 100%; /* Asegurando que el ancho sea completo en pantallas pequeñas */
+    }
+
+    .about-container,
+    .form-container {
+        padding: 0.2; /* Reduciendo el padding en pantallas pequeñas */
+        max-width: 100%; /* Ajustando el ancho máximo para adaptabilidad */
+    }
+
+    .contact-container {
+        flex-direction: column; /* Cambiando a columna en pantallas pequeñas */
+        justify-content: flex-start; /* Alineando a la izquierda en pantallas pequeñas */
+    }
+
+    .about p {
+        font-size: 0.8em; /* Ajustando el tamaño del texto para pantallas pequeñas */
+    }
+
+    .about-cta a {
+        padding: 2.5vh 4vw; /* Ajustando el padding del botón para pantallas pequeñas */
+        font-size: 2.5vw; /* Ajustando el tamaño del texto del botón para pantallas pequeñas */
+    }
 }

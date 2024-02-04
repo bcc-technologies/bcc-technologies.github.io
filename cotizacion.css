@@ -3,23 +3,23 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f0f0f0;
-    display: flex; /* Agregado para utilizar flexbox */
-    flex-direction: column; /* Mostrar el contenido en una columna */
-    min-height: 100vh; /* Al menos el 100% de la altura de la ventana */
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Header and Content Styles */
 header, .content {
-    width: 100%; /* Ocupar todo el ancho disponible */
-    box-sizing: border-box; /* Incluir el padding y border en el ancho total */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 11.7vh;
+    padding-top: 11.7vh; /* Ajuste para pantallas pequeñas */
 }
 
 .product-section {
@@ -29,33 +29,39 @@ header, .content {
 h1 {
     text-align: center;
     margin-top: 20px;
-    color: #ed4624;
+    color: #000;
 }
 
 form {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    background-color: #fff;
+    align-items: left; /* Alinear al centro en pantallas pequeñas */
+    background-color: #ed4624;
     padding: 20px;
-    color: #333333;
+    color: #fff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
-    width: 47vw;
+    width: 47vw; 
     word-wrap: break-word;
 }
 
 form label {
     display: block;
     margin-bottom: 10px;
-    color: #333333;
+    color: #fff;
+}
+
+.button-container{
+    display: flex;
+    flex-direction: column;
+    margin: 20px auto;
+    padding-right: 40.5%;
 }
 
 button {
-    align-self: flex-end;
     margin-top: 20px;
-    background-color: #ed4624;
+    background-color: #000;
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -66,25 +72,48 @@ button {
 }
 
 button:hover {
-    background-color: #ff7e3f;
+    background-color: #40bf77;
 }
-
 
 /* Total Styles */
 .total-container {
-    position: fixed; /* Fijar la posición */
-    top: 50%; /* Colocarlo en el centro */
-    right: 0; /* Colocarlo en la parte derecha */
-    padding-top: 2%; /* Mantener el espacio en la parte superior */
-    background-color: #ed4624;
+    position: fixed;
+    top: 50%;
+    right: 0;
+    padding-top: 2%;
+    background-color: #40bf77;
     color: #fff;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1; /* Asegurarse de que esté en la capa superior */
+    z-index: 1;
     word-wrap: break-word;
-    max-width: 20vw;
+    max-width: 80%; 
 }
 
 #total {
     font-size: 24px;
+}
+
+/* Media Query para pantallas pequeñas */
+@media (max-width: 768px) {
+    .content {
+        padding-top: 15vh; /* Ajuste adicional para pantallas muy pequeñas */
+    }
+
+    form {
+        width: 90%; /* Ajuste de ancho adicional para pantallas pequeñas */
+    }
+
+    .total-container {
+        max-width: 30%; /* Ajuste de ancho adicional para pantallas pequeñas */
+    }
+
+    .button-container {
+        margin-left: 50vw;
+        margin-right: 10vw;
+
+    }
+
+    button {
+        width: 90vw;
+    }
 }

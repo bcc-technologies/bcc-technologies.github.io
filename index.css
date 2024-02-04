@@ -67,7 +67,9 @@ body, h1, h2, h3, p {
     }
 
     #cube{
-      top: 30vh;
+      top: 25vh;
+      width: 53vw; 
+      left: 45vw; 
     }
 
 }
