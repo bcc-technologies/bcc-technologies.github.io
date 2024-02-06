@@ -107,10 +107,10 @@ h4 {
 }
 
 /* Imágenes */
-img {
+.contenedor img {
     max-width: 100%;
     height: auto; /* Evitar distorsión de imágenes */
-    border-radius: 8px; /* Bordes redondeados para imágenes */
+    border-radius: 1%; /* Bordes redondeados para imágenes */
     margin-bottom: 1.5rem; /* Agregar espacio inferior para imágenes */
 }
 

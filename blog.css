@@ -56,6 +56,8 @@ h2 {
 
 h3 {
     font-size: 3.2rem;
+    margin-bottom: 3%;
+    margin-top: 2%;
 }
 
 h4 {
@@ -63,8 +65,9 @@ h4 {
 }
 
 /* Imágenes */
-img {
+.blog img {
     max-width: 100%;
+    border-radius: 1%;
 }
 
 /* Utilidades */
@@ -259,7 +262,7 @@ img {
 }
 
 .sidebar {
-    margin-top: 10%;
+    margin-top: 7%;
 }
 .sidebar-divider {
     display: none; /* Ocultar la línea en pantallas grandes */
