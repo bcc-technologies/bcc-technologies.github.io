@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="blog.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
+
+    <!-- JavaScript para el menú desplegable -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('nav');
+
+            menuToggle.addEventListener('click', function () {
+                nav.classList.toggle('active');
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+<!-- header section -->
+<header>
+    <div class="header-container">
+        <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
+        <div class="menu-toggle">&#9776;</div>
+        <nav>
+            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <hr class="solid">
+            <ul>
+                <li><a href="./">Inicio</a></li>
+                <li><a href="./services">Servicios</a></li>
+                <li><a href="./aboutUs">Nosotros</a></li>
+                <li><a href="./contactUs">Contactanos</a></li>
+                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h2>Explora nuestro Blog</h2>
+        <p>Descubre las últimas novedades y consejos en nuestra área de expertise.</p>
+    </div>
+</section>
+
+<!-- Blog Container -->
+<div class="blog-container">
+    <!-- Blog Post 1 -->
+    <div class="blog-post">
+        <img src="static/working.png" alt="Blog Image 1">
+        <h3>Título del Blog Post</h3>
+        <p>Descripción corta del contenido del blog.</p>
+        <a href="#" class="read-more-btn">Leer Más</a>
+    </div>
+
+    <!-- Blog Post 2 -->
+    <div class="blog-post">
+        <img src="static/working.png" alt="Blog Image 2">
+        <h3>Otro Título del Blog</h3>
+        <p>Contenido interesante y relevante sobre un tema específico. ¡Mantente informado!</p>
+        <a href="#" class="read-more-btn">Leer Más</a>
+    </div>
+
+    <!-- Blog Post 3 -->
+    <div class="blog-post">
+        <img src="static/working.png" alt="Blog Image 3">
+        <h3>Último Título del Blog</h3>
+        <p>Consejos, trucos y noticias que te mantendrán actualizado en nuestra industria.</p>
+        <a href="#" class="read-more-btn">Leer Más</a>
+    </div>
+</div>
+
+<!-- footer section -->
+<footer>
+    <div class="footer-container">
+        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+</footer>
+</body>
+</html>
