@@ -259,9 +259,39 @@
             </form>
         </section>
          
-        <section class="button-container">
+        <!-- <section class="button-container">
           <button type="button" id="k" onclick="calculateTotal()">Calcular Total</button>
-        </section>
+        </section> -->
+
+        <script>
+        // Obtener todas las casillas de verificación
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+        // Agregar un evento 'change' a cada casilla de verificación
+        checkboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', calculateTotal);
+        });
+
+        // Función para calcular el total
+        function calculateTotal() {
+          let total = 0;
+
+          // Obtener las casillas de verificación seleccionadas
+          const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+
+          // Sumar los precios de los productos seleccionados
+          selectedCheckboxes.forEach(checkbox => {
+            const price = parseFloat(checkbox.dataset.price);
+            total += price;
+          });
+
+          // Actualizar el elemento que muestra el total
+          const totalElement = document.getElementById('total'); // Reemplazar con el ID real del elemento
+          if (totalElement) {
+            totalElement.textContent = 'Total: $' + total.toFixed(2);
+          }
+        }
+        </script>
 
         <!-- Add a div to wrap the total -->
         <div class="total-container">
@@ -276,24 +306,6 @@
             <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
         </div>
     </footer>
-
-    <script>
-        function calculateTotal() {
-            var checkboxes = document.getElementsByName('product');
-            var total = 0;
-
-            for (var i = 0; i < checkboxes.length; i++) {
-                if (checkboxes[i].checked) {
-                    // Accede al precio utilizando el atributo de datos (data attribute)
-                    var price = parseFloat(checkboxes[i].getAttribute('data-price'));
-                    total += price;
-                }
-            }
-
-            // Muestra el total
-            document.getElementById('total').innerHTML = 'Total: $' + total.toFixed(2);
-        }
-    </script>
 
 </body>
 </html>
