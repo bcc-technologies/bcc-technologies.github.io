@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="aboutUs.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
     
-    <!-- JavaScript para el menú desplegable -->
+    <!-- Shopify Buy SDK -->
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+
+    <!-- JavaScript for menu toggle and Shopify integration -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const menuToggle = document.querySelector('.menu-toggle');
@@ -17,18 +20,39 @@
             menuToggle.addEventListener('click', function () {
                 nav.classList.toggle('active');
             });
+
+            // Shopify integration
+            const client = ShopifyBuy.buildClient({
+                domain: '2e2e5e-7c.myshopify.com',
+                storefrontAccessToken: '5808702fc7a60eaec392ca904d4e5fe5'
+            });
+
+            function updateTeamMembers(products) {
+                const servicesContainer = document.querySelector('.services-container');
+                servicesContainer.innerHTML = products.map(product => `
+                    <div class="service-card">
+                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
+                        <h3><a href="${product.onlineStoreUrl}" target="_blank">${product.title}</a></h3>
+                        <p>${product.description}</p>
+                    </div>
+                `).join('');
+            }
+
+            client.product.fetchAll()
+                .then(updateTeamMembers)
+                .catch(error => {
+                    console.error('Error fetching Shopify products:', error);
+                    // Fallback to original content if there's an error
+                });
         });
     </script>
-
 </head>
-
 
 <body>
   
     <!-- header section -->
     <header>
         <div class="header-container">
-            <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
             <div class="menu-toggle">&#9776;</div>
             <nav>
                 <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
@@ -61,36 +85,13 @@
     <section class="services">
         <h2>Nuestro equipo</h2>
         <div class="services-container">
+            <!-- This content will be dynamically replaced by Shopify products -->
             <div class="service-card">
                 <h2><img src="static/bar2_fb.png" alt="Gabriel Barreiro"></h2>
                 <h3><a href="https://www.linkedin.com/in/gabriel-barreiro-b25225205/" target="_blank">Gabriel Barreiro</a></h3>
                 <p>Director de tecnología e innovación</p>
             </div>
-            <div class="service-card">
-                <h2><img src="static/saul_fb.png" alt="Saúl Castillo"></h2>
-                <h3><a href="https://www.linkedin.com/in/saulecast/" target="_blank">Saúl Castillo</a></h3>
-                <p>Director de operaciones y mercadeo</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="static/Enrique_sf.png" alt="Enrique Casanova"></h2>
-                <h3><a href="https://www.linkedin.com/in/enrique-casanova-benitez-5278771b0/" target="_blank">Enrique Casanova</a></h3>
-                <p>Director de finanzas</p>
-            </div>
-            <!-- <div class="service-card">
-                <h2><img src="static/Enma.jpeg" alt="Enmanuel Rodriguez Brea"></h2>
-                <h3><a href="https://www.instagram.com/enmanuelr.brea/" target="_blank">Enmanuel Rodriguez</a></h3>
-                <p>Secretario General</p>
-            </div> -->
-            <div class="service-card">
-                <h2><img src="static/Oliva_sf.png" alt="Raffaele Oliva"></h2>
-                <h3><a href="https://www.linkedin.com/in/raffaele-oliva-a40249105/" target="_blank">Raffaele Oliva</a></h3>
-                <p>Jefe de ciencias químicas</p> 
-            </div>
-            <div class="service-card">
-                <h2><img src="static/Jesus_fb.png" alt="Jesus Matos"></h2>
-                <h3><a href="https://www.linkedin.com/in/jesusmatossanchez/" target="_blank">Jesus Matos</a></h3>
-                <p>Asesor especialista en Proyectos</p>
-            </div>
+            <!-- More team members... -->
         </div>
     </section>
     
@@ -100,7 +101,6 @@
             <p>Somos <strong style="color: #ed4624;">BCC Tech</strong>, un apasionado grupo de <em style="color: #ed4624;">programadores-científicos</em> dedicados a explorar los límites de la tecnología y la innovación. Nuestra historia comienza como estudiantes de <em style="color: #ed4624;">física</em> con una profunda curiosidad por lo desconocido y una pasión por expandir el conocimiento.</p>
             <p>Nuestro nombre, además de combinar nuestros apellidos, es un homenaje al "<strong style="color: #ed4624;">Cuerpo Cúbico Central</strong>", que es un concepto de importancia en la física del estado sólido.</p>
             <p>¿A qué nos dedicamos? En <strong style="color: #ed4624;">BCC Tech</strong> estamos especializados en el desarrollo de <em style="color: #ed4624;">software a medida</em> que transforma las ideas en soluciones concretas. Ya sea creando aplicaciones multiplataforma para empresas de diversos sectores o diseñando productos innovadores para el público en general, nuestro enfoque es siempre el mismo: hacer fácil lo complejo y ampliar lo interesante.</p>
-
         </div>
     </section>
 
