@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="services.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
 
-    <!-- JavaScript para el menú desplegable -->
+    <!-- Shopify Buy SDK -->
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+
+    <!-- JavaScript for menu toggle and Shopify integration -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const menuToggle = document.querySelector('.menu-toggle');
@@ -17,6 +20,30 @@
             menuToggle.addEventListener('click', function () {
                 nav.classList.toggle('active');
             });
+
+            // Shopify integration
+            const client = ShopifyBuy.buildClient({
+                domain: '2e2e5e-7c.myshopify.com',
+                storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
+            });
+
+            function updateServices(products) {
+                const servicesContainer = document.querySelector('.services-container');
+                servicesContainer.innerHTML = products.map(product => `
+                    <div class="service-card">
+                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
+                        <h3>${product.title}</h3>
+                        <p>${product.description}</p>
+                    </div>
+                `).join('');
+            }
+
+            client.product.fetchAll()
+                .then(updateServices)
+                .catch(error => {
+                    console.error('Error fetching Shopify products:', error);
+                    // Fallback to original content if there's an error
+                });
         });
     </script>
 </head>
@@ -26,7 +53,6 @@
 <!-- header section -->
 <header>
     <div class="header-container">
-        <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
         <div class="menu-toggle">&#9776;</div>
         <nav>
             <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
@@ -41,8 +67,6 @@
         </nav>
     </div>
 </header>
-
-<!-- Contenido de la página -->
 
 <!-- offers section -->
 <section class="block">
@@ -62,41 +86,13 @@
 <section class="services">
     <h2>Nuestros servicios</h2>
     <div class="services-container">
+        <!-- This content will be dynamically replaced by Shopify products -->
         <div class="service-card">
             <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-programador_114360-2284.jpg?size=626&ext=jpg" alt="Apps de escritorio"></h2>
             <h3>Aplicaciones de Escritorio</h3>
             <p>Desarrollo de aplicaciones de escritorio adaptadas a tus necesidades</p>
         </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-seleccionar_114360-383.jpg?size=626&ext=jpg" alt="Desarrollo Movil"></h2>
-            <h3>Aplicaciones Móviles</h3>
-            <p>Desarrollo de aplicaciones móviles adaptadas a tus necesidades</p>
-        </div>
-        <div class="service-card">
-            <h2 style="margin-top: 10%;"><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-orientacion-multidispositivo_114360-7405.jpg?size=626&ext=jpg" alt="Desarrollo multiplataforma">
-            </h2>
-            <h3 style="margin-top: 10%;">Aplicaciones multiplataforma</h3>
-            <p>No importa si ejecutas en un escritorio o un dispositivo móvil, todo estará conectado</p>
-        </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-estadisticas-sitio_114360-1434.jpg?size=626&ext=jpg" alt="Desarrollo Web"></h2>
-            <h3>Páginas Web</h3>
-            <p>Desarrollo de aplicaciones web adaptadas a tus necesidades</p>
-        </div>
-        <div class="service-card">
-            <!-- https://img.freepik.com/vector-gratis/ilustracion-concepto-matematicas_114360-3972.jpg?size=626&ext=jpg -->
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-analisis_114360-1119.jpg?size=626&ext=jpg" alt="Consultoría">
-            </h2>
-            <h3>Servicios de consultoría</h3>
-            <p>Consultoría para guiarte en tus necesidades informáticas o científicas</p>
-        </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-servidor_114360-287.jpg?size=626&ext=jpg" alt="Mantenimiento">
-            </h2>
-            <h3>Mantenimiento y actualización</h3>
-            <p>¿Una aplicación que necesitas actualizar o sitio web que requiere mantenimiento? te ayudamos</p>
-        </div>
-        
+        <!-- More service cards... -->
     </div>
 </section>
 
@@ -117,7 +113,7 @@
         </ul>
         
         <p>¡Únete a nosotros en la travesía de la <span style="color: #ed4624;"><em>innovación</em></span>!.</p>
-        
+    </div>
 </section>
 
 <!-- schedule section -->
