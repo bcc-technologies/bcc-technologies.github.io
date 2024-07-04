@@ -7,81 +7,31 @@
     <link rel="stylesheet" href="layout.css">
     <link rel="stylesheet" href="aboutUs.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
-    
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
 
-    <!-- JavaScript for menu toggle and Shopify integration -->
+    <!-- JavaScript para el menú desplegable -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
-
+@@ -17,18 +20,39 @@
             menuToggle.addEventListener('click', function () {
                 nav.classList.toggle('active');
             });
-
-            // Shopify integration
-            const client = ShopifyBuy.buildClient({
-                domain: '2e2e5e-7c.myshopify.com',
-                storefrontAccessToken: '5808702fc7a60eaec392ca904d4e5fe5'
-            });
-
-            function updateTeamMembers(products) {
-                const servicesContainer = document.querySelector('.services-container');
-                servicesContainer.innerHTML = products.map(product => `
-                    <div class="service-card">
-                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
-                        <h3><a href="${product.onlineStoreUrl}" target="_blank">${product.title}</a></h3>
-                        <p>${product.description}</p>
-                    </div>
-                `).join('');
-            }
-
-            client.product.fetchAll()
-                .then(updateTeamMembers)
-                .catch(error => {
-                    console.error('Error fetching Shopify products:', error);
-                    // Fallback to original content if there's an error
-                });
         });
     </script>
+
 </head>
 
+
 <body>
-  
+
     <!-- header section -->
     <header>
         <div class="header-container">
+            <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
             <div class="menu-toggle">&#9776;</div>
             <nav>
                 <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-                <hr class="solid">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./contactUs">Contáctanos</a></li>
-                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Block section -->
-    <section class="block">
-        <div class="block-container">
-            <div class="block-content">
-                <h2>Bienvenido a nuestra empresa de software</h2>
-                <p>Creamos soluciones innovadoras que impulsan su negocio.</p>
-                <a href="./services" class="cta-button">Ver soluciones</a>
-            </div>
-            <div class="block-image">
-                <img src="static/Imagen1.JPG" alt="BCC Founders">
-            </div>
-        </div>
-    </section>
-
+@@ -61,36 +85,13 @@ <h2>Bienvenido a nuestra empresa de software</h2>
     <section class="services">
         <h2>Nuestro equipo</h2>
         <div class="services-container">
@@ -117,13 +67,12 @@
             </div>
         </div>
     </section>
-    
-    <section class="about">
-        <div class="about-container">
-            <h2>Quiénes somos</h2>
+
+@@ -100,7 +101,6 @@ <h2>Quiénes somos</h2>
             <p>Somos <strong style="color: #ed4624;">BCC Tech</strong>, un apasionado grupo de <em style="color: #ed4624;">programadores-científicos</em> dedicados a explorar los límites de la tecnología y la innovación. Nuestra historia comienza como estudiantes de <em style="color: #ed4624;">física</em> con una profunda curiosidad por lo desconocido y una pasión por expandir el conocimiento.</p>
             <p>Nuestro nombre, además de combinar nuestros apellidos, es un homenaje al "<strong style="color: #ed4624;">Cuerpo Cúbico Central</strong>", que es un concepto de importancia en la física del estado sólido.</p>
             <p>¿A qué nos dedicamos? En <strong style="color: #ed4624;">BCC Tech</strong> estamos especializados en el desarrollo de <em style="color: #ed4624;">software a medida</em> que transforma las ideas en soluciones concretas. Ya sea creando aplicaciones multiplataforma para empresas de diversos sectores o diseñando productos innovadores para el público en general, nuestro enfoque es siempre el mismo: hacer fácil lo complejo y ampliar lo interesante.</p>
+
         </div>
     </section>
 
