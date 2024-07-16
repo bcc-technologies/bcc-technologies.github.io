@@ -11,7 +11,7 @@
     <!-- Shopify Buy SDK -->
     <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
 
-    <!-- JavaScript para Shopify y funcionalidad del menú -->
+    <!-- JavaScript for menu toggle and Shopify integration -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const menuToggle = document.querySelector('.menu-toggle');
@@ -21,29 +21,28 @@
                 nav.classList.toggle('active');
             });
 
-            // Integración con Shopify
+            // Shopify integration
             const client = ShopifyBuy.buildClient({
                 domain: '2e2e5e-7c.myshopify.com',
-                storefrontAccessToken: 'tu-storefront-access-token'
+                storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
             });
 
-            function updateProducts(products) {
-                const productsContainer = document.querySelector('.products-container');
-                productsContainer.innerHTML = products.map(product => `
-                    <div class="product-card">
-                        <img src="${product.images[0].src}" alt="${product.title}">
+            function updateServices(products) {
+                const servicesContainer = document.querySelector('.services-container');
+                servicesContainer.innerHTML = products.map(product => `
+                    <div class="service-card">
+                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
                         <h3>${product.title}</h3>
                         <p>${product.description}</p>
-                        <p>Precio: ${product.variants[0].price} USD</p>
-                        <a href="${product.onlineStoreUrl}" class="buy-button">Comprar</a>
                     </div>
                 `).join('');
             }
 
             client.product.fetchAll()
-                .then(updateProducts)
+                .then(updateServices)
                 .catch(error => {
                     console.error('Error fetching Shopify products:', error);
+                    // Fallback to original content if there's an error
                 });
         });
     </script>
