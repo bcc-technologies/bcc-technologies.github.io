@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - BCC Technologies</title>
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="products.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
+
+    <!-- Shopify Buy SDK -->
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+
+    <!-- JavaScript para Shopify y funcionalidad del menú -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('nav');
+
+            menuToggle.addEventListener('click', function () {
+                nav.classList.toggle('active');
+            });
+
+            // Integración con Shopify
+            const client = ShopifyBuy.buildClient({
+                domain: '2e2e5e-7c.myshopify.com',
+                storefrontAccessToken: 'tu-storefront-access-token'
+            });
+
+            function updateProducts(products) {
+                const productsContainer = document.querySelector('.products-container');
+                productsContainer.innerHTML = products.map(product => `
+                    <div class="product-card">
+                        <img src="${product.images[0].src}" alt="${product.title}">
+                        <h3>${product.title}</h3>
+                        <p>${product.description}</p>
+                        <p>Precio: ${product.variants[0].price} USD</p>
+                        <a href="${product.onlineStoreUrl}" class="buy-button">Comprar</a>
+                    </div>
+                `).join('');
+            }
+
+            client.product.fetchAll()
+                .then(updateProducts)
+                .catch(error => {
+                    console.error('Error fetching Shopify products:', error);
+                });
+        });
+    </script>
+</head>
+<body>
+    <!-- header section -->
+    <header>
+        <div class="header-container">
+            <div class="menu-toggle">&#9776;</div>
+            <nav>
+                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+                <hr class="solid">
+                <ul>
+                   <li><a href="./">Inicio</a></li>
+                   <li><a href="./aboutUs">Nosotros</a></li>
+                    <li><a href="./services">Servicios</a></li>
+                    <li><a href="./products">Productos</a></li>
+                    <li><a href="./contactUs">Contáctanos</a></li>
+                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>    
+
+    <!-- Hero section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Descubre Nuestros Productos Innovadores</h1>
+                <p>Explora nuestra gama de productos de análisis de microestructuras y más, diseñados para llevar tu negocio al siguiente nivel.</p>
+                <a href="#products" class="cta-button">Ver Productos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Productos section -->
+    <section id="products" class="products">
+        <h2>Nuestros Productos</h2>
+        <div class="products-container">
+            <!-- Ejemplo de producto añadido manualmente -->
+            <div class="product-card">
+                <img src="static/product_logo_MAP.png" alt="MAPs - Programa de Análisis de Microestructuras">
+                <h3>MAPs</h3>
+                <p>Línea de software diseñados para el análisis de imágenes microscópicas.</p>
+                <p><b>Consulta los precios de nuestras licencias anuales</b></p>
+                <a href="#" class="buy-button">Ver más</a>
+            </div>
+            <!-- Los productos de Shopify se cargarán aquí dinámicamente -->
+        </div>
+    </section>
+
+    <!-- footer section -->
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
