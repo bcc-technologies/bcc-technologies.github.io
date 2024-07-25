@@ -34,13 +34,15 @@ body {
 }
 
 /* Enlaces */
+
+/* Enlaces */
 a {
     text-decoration: none;
     color: var(--primario);
     position: relative;
 }
 
-a::after {
+a:not(.nav_link)::after {
     content: '';
     position: absolute;
     width: 100%;
@@ -53,7 +55,7 @@ a::after {
     transition: transform 0.2s ease-out;
 }
 
-a:hover::after {
+a:not(.nav_link):hover::after {
     transform: scaleX(1);
     transform-origin: bottom left;
 }
@@ -115,7 +117,7 @@ h4 {
     gap: 2rem;
 }
 
-.navegacion__enlace {
+.nav_link {
     display: block;
     text-align: center;
     font-size: 1.8rem;
@@ -316,7 +318,7 @@ h4 {
 
 
 
-/* Botón de cambio de tema (claro/oscuro*/
+/* Botón de cambio de tema (claro/oscuro) */
 .theme-toggle {
     position: fixed;
     top: 10px; /* Ajusta la posición hacia arriba */
@@ -409,7 +411,7 @@ body.dark-mode {
         gap: 1rem; /* Espacio entre elementos */
     }
 
-    .navegacion__enlace {
+    .nav_link {
         font-size: 2rem; /* Tamaño de fuente aumentado */
     }
 
