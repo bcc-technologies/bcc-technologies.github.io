@@ -9,7 +9,6 @@
     --rojo: #ed4624;
 }
 
-
 /* Reset y estilos globales */
 html {
     box-sizing: border-box;
@@ -140,10 +139,17 @@ h4 {
 
 .boton--primario {
     background-color: var(--secundario);
+    margin-left: 1%;
+    margin-top: 4%;
+    margin-bottom: 3%;
 }
 
 .boton--secundario {
     background-color: var(--primario);
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-top: 4%;
+    margin-bottom: 3%;
 }
 
 /* Cursos */
@@ -170,7 +176,7 @@ h4 {
     font-weight: 400;
 }
 
-/* Sección de héroe */
+/* Sección de hero */
 .hero {
     position: relative;
     background-image: url('static/banner.jpg');
@@ -201,14 +207,6 @@ h4 {
 }
 
 /* Contenedor del blog */
-.blog-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin: 20px;
-    background-color: #f0f0f0c1;
-}
-
 /* Estilos de las entradas del blog */
 .blog-post {
     width: calc(33.33% - 20px);
@@ -265,6 +263,8 @@ h4 {
 
 .sidebar {
     margin-top: 7%;
+    margin-left: 30%;
+    margin-right: -30%;
 }
 .sidebar-divider {
     display: none; /* Ocultar la línea en pantallas grandes */
@@ -292,17 +292,27 @@ h4 {
 
     .sidebar-divider {
         display: block;
-        border-top: 1px; /* Establecer la línea roja */
-        margin-top: 10px; /* Espacio superior para separar la línea */
-        color: #ed4624;
+        border-top: 1px solid #ed4624;
+        margin-top: 10px;
     }
-    
+
+    .sidebar{
+        margin-left: 0%;
+        margin-right: 0%;
+    }
 }
 
 @media (max-width: 480px) {
     .blog-post {
         width: 100%;
     }
+    .hero {
+        padding: 80px 0;
+    }
+    .hero h2 {
+        font-size: 2.8rem;
+    }
+    .hero p {
+        font-size: 1.4rem;
+    }
 }
-
-
