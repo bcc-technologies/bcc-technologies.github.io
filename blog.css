@@ -36,7 +36,28 @@ body {
 /* Enlaces */
 a {
     text-decoration: none;
+    color: var(--primario);
+    position: relative;
 }
+
+a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: var(--rojo);
+    bottom: -2px;
+    left: 0;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.2s ease-out;
+}
+
+a:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
 
 /* Encabezados */
 h1,
@@ -119,7 +140,7 @@ h4 {
     margin-bottom: 0;
 }
 
-/* Botón */
+/* Botones */
 .boton {
     display: block;
     font-family: var(--fuenteHeading);
@@ -131,10 +152,14 @@ h4 {
     font-weight: 700;
     margin-bottom: 2rem;
     border: none;
+    background-color: var(--secundario);
+    transition: background-color 0.3s, transform 0.3s; /* Transiciones suaves */
 }
 
 .boton:hover {
     cursor: pointer;
+    background-color: var(--rojo);
+    transform: translateY(-2px); /* Desplazamiento ligero al hacer hover */
 }
 
 .boton--primario {
@@ -261,6 +286,7 @@ h4 {
     background-color: #ff7e3f;
 }
 
+/* Barra lateral derecha */
 .sidebar {
     margin-top: 7%;
     margin-left: 30%;
@@ -269,6 +295,103 @@ h4 {
 .sidebar-divider {
     display: none; /* Ocultar la línea en pantallas grandes */
 }
+
+/* Volver arriba */
+#back-to-top {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: var(--secundario);
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    transition: background-color 0.3s;
+}
+
+
+
+/* Botón de cambio de tema (claro/oscuro*/
+.theme-toggle {
+    position: fixed;
+    top: 10px; /* Ajusta la posición hacia arriba */
+    right: 20px;
+    background-color: var(--button-background);
+    color: var(--button-color);
+    border: none;
+    padding: 5px; /* Reduce el padding para hacerlo más pequeño */
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 16px; /* Reduce el tamaño de la fuente */
+    width: 35px; /* Ajusta el ancho */
+    height: 35px; /* Ajusta la altura */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: #ff7e3f;
+    transform: scale(1.1);
+}
+
+.sun-icon, .moon-icon {
+    display: none;
+}
+
+/* Mostrar el ícono correspondiente */
+body.light-mode .sun-icon {
+    display: block;
+}
+
+body.dark-mode .moon-icon {
+    display: block;
+}
+
+/* Modo Claro (default) */
+body.light-mode {
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --button-background: var(--primario);
+    --button-color: var(--rojo);
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Modo Oscuro */
+body.dark-mode {
+    --background-color: #191818;
+    --text-color: #ededed;
+    --button-background: var(--primario);
+    --button-color: var(--blanco);
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+
+
+/* Mostrar el botón en dispositivos móviles */
+@media (max-width: 768px) {
+    #back-to-top {
+        display: block;
+    }
+
+    .theme-toggle{
+        margin-right: 7%;
+    }
+}
+
+#back-to-top:hover {
+    background-color: #555;
+}
+
+
 
 /* Ajustes de diseño responsivo */
 @media (max-width: 768px) {

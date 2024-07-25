@@ -9,83 +9,197 @@
     <link rel="icon" type="image/png" href="static/Favi2.png">
     <!-- Shopify Buy SDK -->
     <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    <!-- Incluir canvas-confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
-
 </head>
 <body>
-    <!-- header section -->
-    <header>
-        <div class="header-container">
-            <div class="menu-toggle">&#9776;</div>
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-                <hr class="solid">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./products">Productos</a></li>
-                    <li><a href="./contactUs">Contáctanos</a></li>
-                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h2>Explora el <span style="color: #ed4624;">BCC Blog</span></h2>
-            <p>Toma una taza de café y relájate leyendo nuestro Blog. Tenemos mucho que contarte</p>    
-        </div>
-    </section>
-    <div class="contenedor contenido-principal">
-        <main class="blog">
-            <h3 style="color: #784D3C;">Bienvenido al Blog</h3>
-            <article class="entrada">
-                <div class="entrada__imagen">
-                    <picture>
-                        <img loading="lazy" src="static/Imagen2.JPG" alt="imagen blog">
-                    </picture>
-                </div>
-                <div class="entrada__contenido">
-                    <h4 class="no-margin">«Y… ¿Qué es BCC Technologies?»</h4>
-                    <p>En este artículo, aquí y ahora, pretendemos hablarle con la formalidad digna de profesionales pero la sinceridad de idealistas que saben que sin ustedes no somos más que personas con un sueño sin aterrizar. Queremos sincerarnos...</p>
-                    <a href="./blog_content" class="boton boton--primario">Leer Entrada</a>
-                </div>
-            </article>
-        </main> 
-        <aside class="sidebar" id="services">
-            <hr class="sidebar-divider">
-            <h3>Nuestros Servicios de Consultoría:</h3>
-            <ul class="cursos no-padding">
-                <li class="widget-curso">
-                    <h4 class="no-margin">Software y/o Electrónica</h4>
-                    <p class="widget-curso__label">Valor: 
-                        <span class="widget-curso__info">$5,000-$20,000 (DOP)</span>
-                    </p>
-                    <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
-                </li>
-                <li class="widget-curso">
-                    <h4 class="no-margin">Física</h4>
-                    <p class="widget-curso__label">Valor: 
-                        <span class="widget-curso__info">$25,000 (DOP)</span>
-                    </p>
-                    <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
-                </li>
+<!-- header section -->
+<header>
+    <div class="header-container">
+        <div class="menu-toggle">&#9776;</div>
+        <nav>
+            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <hr class="solid">
+            <ul>
+                <li><a href="./">Inicio</a></li>
+                <li><a href="./aboutUs">Nosotros</a></li>
+                <li><a href="./services">Servicios</a></li>
+                <li><a href="./products">Productos</a></li>
+                <li><a href="./contactUs">Contáctanos</a></li>
+                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
             </ul>
-        </aside>
+        </nav>
+        <!-- Botón de cambio de tema -->
+        <button id="theme-toggle" class="theme-toggle">
+            <span class="sun-icon">&#9728;</span>
+            <span class="moon-icon">&#9790;</span>
+        </button>
     </div>
-    <!-- footer section -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-    <!-- Incluir el archivo blog.js -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
-    <script src="blog.js"></script>
+</header>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h2>Explora el <span style="color: #ed4624;">BCC Blog</span></h2>
+        <p>Toma una taza de café y relájate leyendo nuestro Blog. Tenemos mucho que contarte</p>    
+    </div>
+</section>
+
+<div class="contenedor contenido-principal">
+    <main class="blog">
+        <h3 style="color: #784D3C;">Bienvenido al Blog</h3>
+        <article class="entrada">
+            <div class="entrada__imagen">
+                <picture>
+                    <img loading="lazy" src="static/Imagen2.JPG" alt="imagen blog">
+                </picture>
+            </div>
+            <div class="entrada__contenido">
+                <h4 class="no-margin">«Y… ¿Qué es BCC Technologies?»</h4>
+                <p>En este artículo, aquí y ahora, pretendemos hablarle con la formalidad digna de profesionales pero la sinceridad de idealistas que saben que sin ustedes no somos más que personas con un sueño sin aterrizar. Queremos sincerarnos...</p>
+                <a href="./blog_content" class="boton boton--primario">Leer Entrada</a>
+            </div>
+        </article>
+    </main> 
+    <aside class="sidebar" id="services">
+        <hr class="sidebar-divider">
+        <h3>Nuestros Servicios de Consultoría:</h3>
+        <ul class="cursos no-padding">
+            <li class="widget-curso">
+                <h4 class="no-margin">Software y/o Electrónica</h4>
+                <p class="widget-curso__label">Valor: 
+                    <span class="widget-curso__info">$5,000-$20,000 (DOP)</span>
+                </p>
+                <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
+            </li>
+            <li class="widget-curso">
+                <h4 class="no-margin">Física</h4>
+                <p class="widget-curso__label">Valor: 
+                    <span class="widget-curso__info">$25,000 (DOP)</span>
+                </p>
+                <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
+                <!-- go up -->
+                <button id="back-to-top" title="Volver Arriba">&#8679;</button>
+            </li>
+        </ul>
+
+    </aside>
+</div>
+
+<!-- footer section -->
+<footer>
+    <div class="footer-container">
+        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<!-- JavaScript para el menú toggle e integración de Shopify -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const nav = document.querySelector('nav');
+
+        menuToggle.addEventListener('click', function () {
+            nav.classList.toggle('active');
+        });
+
+        // Shopify integration
+        const client = ShopifyBuy.buildClient({
+            domain: '2e2e5e-7c.myshopify.com',
+            storefrontAccessToken: '60ee1e20cccd72924afe74642353e01c'
+        });
+
+        function updateBlogPosts(articles) {
+            const blogContainer = document.querySelector('.blog');
+            blogContainer.innerHTML = `<h3>Bienvenido al Blog</h3>` + 
+            articles.map(article => `
+                <article class="entrada">
+                    <div class="entrada__imagen">
+                        <picture>
+                            <img loading="lazy" src="${article.image.src}" alt="${article.title}">
+                        </picture>
+                    </div>
+                    <div class="entrada__contenido">
+                        <h4 class="no-margin">${article.title}</h4>
+                        <p>${article.excerptHtml}</p>
+                        <a href="${article.url}" class="boton boton--primario">Leer Entrada</a>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function updateServices(products) {
+            const servicesContainer = document.querySelector('.cursos');
+            servicesContainer.innerHTML = products.map(product => `
+                <li class="widget-curso">
+                    <h4 class="no-margin">${product.title}</h4>
+                    <p class="widget-curso__label">Valor: 
+                        <span class="widget-curso__info">${product.variants[0].price} (DOP)</span>
+                    </p>
+                    <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
+                </li>
+            `).join('');
+        }
+
+        // Fetch blog posts
+        client.article.fetchAll()
+            .then(updateBlogPosts)
+            .catch(error => {
+                console.error('Error fetching Shopify articles:', error);
+            });
+
+        // Fetch services
+        client.product.fetchAll()
+            .then(updateServices)
+            .catch(error => {
+                console.error('Error fetching Shopify products:', error);
+            });
+    });
+</script>
+
+<script>
+    // Código del botón "Volver Arriba"
+    document.addEventListener('DOMContentLoaded', function () {
+    const backToTopButton = document.getElementById('back-to-top');
+
+    // Función para mostrar/ocultar el botón según el scroll y el tamaño de la pantalla
+    function checkScroll() {
+        if (window.innerWidth <= 768) {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+        } else {
+            backToTopButton.style.display = "none";
+        }
+    }
+
+    // Mostrar/ocultar el botón en función del scroll
+    window.onscroll = checkScroll;
+
+    // Ocultar el botón cuando se redimensiona la pantalla
+    window.onresize = checkScroll;
+
+    // Inicializar la función para configurar el estado inicial
+    checkScroll();
+
+    backToTopButton.addEventListener('click', function () {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+
+    // Código del botón de cambio de tema
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    themeToggleButton.addEventListener('click', function () {
+        body.classList.toggle('dark-mode');
+        body.classList.toggle('light-mode');
+    });
+
+    // Inicializar el estado del tema
+    body.classList.add('light-mode');
+});
+</script>
 
 </body>
 </html>
