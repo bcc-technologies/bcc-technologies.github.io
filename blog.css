@@ -6,6 +6,7 @@
     --gris: #e1e1e1;
     --blanco: #ffffff;
     --primario: #000000;
+    --rojo: #ed4624;
 }
 
 
@@ -138,11 +139,11 @@ h4 {
 }
 
 .boton--primario {
-    background-color: var(--primario);
+    background-color: var(--secundario);
 }
 
 .boton--secundario {
-    background-color: var(--secundario);
+    background-color: var(--primario);
 }
 
 /* Cursos */
