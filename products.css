@@ -1,24 +1,25 @@
-/* products.css */
-
 /* Estilos generales */
 body, h1, h2, h3, p {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
 }
 
 /* Sección de héroe */
 .hero {
-    background-color: #000;
+    /* background: linear-gradient(to right, #ff7e5f, #feb47b); */
+    background-color: #333;
     background-size: cover;
     background-position: center;
-    height: 60vh;
+    height: 70vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ededed;
+    color: #fff;
     text-align: center;
     position: relative;
+    overflow: hidden;
 }
 
 .hero::before {
@@ -36,14 +37,28 @@ body, h1, h2, h3, p {
     z-index: 2;
 }
 
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('static/particles.png');
+    background-size: cover;
+    opacity: 0.2;
+    z-index: 1;
+}
+
 .hero-content h1 {
     font-size: 3em;
     margin-bottom: 1em;
+    animation: fadeInDown 1s ease-in-out;
 }
 
 .hero-content p {
     font-size: 1.5em;
     margin-bottom: 1.5em;
+    animation: fadeInUp 1s ease-in-out;
 }
 
 .cta-button {
@@ -51,14 +66,38 @@ body, h1, h2, h3, p {
     background-color: #ed4624;
     color: #ffffff;
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 25px;
     text-decoration: none;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 .cta-button:hover {
     background-color: #ff7e3f;
+    transform: scale(1.1);
+}
+
+/* Keyframes for animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Sección de productos */
@@ -85,10 +124,28 @@ body, h1, h2, h3, p {
 .product-card {
     background-color: #fff;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
-    transition: transform 0.2s;
+    transition: transform 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.product-card:hover::before {
+    opacity: 1;
 }
 
 .product-card img {
@@ -98,7 +155,7 @@ body, h1, h2, h3, p {
 }
 
 .product-card h3 {
-    font-size: 1.5em;
+    font-size: 1.8em;
     margin: 1.5vh 0;
     color: #ed4624;
 }
@@ -114,14 +171,15 @@ body, h1, h2, h3, p {
     background-color: #ed4624;
     color: #fff;
     padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 25px;
     text-decoration: none;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 .buy-button:hover {
     background-color: #ff7e3f;
+    transform: scale(1.1);
 }
 
 /* Media Query para pantallas pequeñas */

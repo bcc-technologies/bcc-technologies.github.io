@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,19 +27,20 @@
                 storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
             });
 
-            function updateServices(products) {
-                const servicesContainer = document.querySelector('.services-container');
-                servicesContainer.innerHTML = products.map(product => `
-                    <div class="service-card">
-                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
+            function updateProducts(products) {
+                const productsContainer = document.querySelector('.products-container');
+                productsContainer.innerHTML += products.map(product => `
+                    <div class="product-card">
+                        <img src="${product.images[0].src}" alt="${product.title}">
                         <h3>${product.title}</h3>
                         <p>${product.description}</p>
+                        <a href="${product.onlineStoreUrl}" class="buy-button">Ver más</a>
                     </div>
                 `).join('');
             }
 
             client.product.fetchAll()
-                .then(updateServices)
+                .then(updateProducts)
                 .catch(error => {
                     console.error('Error fetching Shopify products:', error);
                     // Fallback to original content if there's an error
@@ -48,7 +49,7 @@
     </script>
 </head>
 <body>
-    <!-- header section -->
+    <!-- Header section -->
     <header>
         <div class="header-container">
             <div class="menu-toggle">&#9776;</div>
@@ -56,8 +57,8 @@
                 <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
                 <hr class="solid">
                 <ul>
-                   <li><a href="./">Inicio</a></li>
-                   <li><a href="./aboutUs">Nosotros</a></li>
+                    <li><a href="./">Inicio</a></li>
+                    <li><a href="./aboutUs">Nosotros</a></li>
                     <li><a href="./services">Servicios</a></li>
                     <li><a href="./products">Productos</a></li>
                     <li><a href="./contactUs">Contáctanos</a></li>
@@ -69,6 +70,7 @@
 
     <!-- Hero section -->
     <section class="hero">
+        <div class="particles"></div>
         <div class="hero-container">
             <div class="hero-content">
                 <h1>Descubre Nuestros Productos Innovadores</h1>
@@ -94,7 +96,7 @@
         </div>
     </section>
 
-    <!-- footer section -->
+    <!-- Footer section -->
     <footer>
         <div class="footer-container">
             <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
