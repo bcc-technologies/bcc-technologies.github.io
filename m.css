@@ -1,0 +1,342 @@
+/* Estilos generales */
+body, h1, h2, h3, p {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    padding-bottom: 3%;
+}
+
+.auth-buttons {
+    float: right;
+}
+
+.auth-buttons button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.signup {
+    background: #007bff;
+    color: #fff;
+}
+
+.login {
+    background: #6c757d;
+    color: #fff;
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 0;
+    background: #fff;
+    background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20% 40%;
+    background-repeat: repeat;
+    background-position: center center;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 24px;
+    margin-bottom: 40px;
+}
+
+.auth-buttons button,
+.cta-buttons button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.get-started,
+.book-demo {
+    margin: 10px;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.get-started {
+    background: #ed4524e3;
+    color: #fff;
+}
+
+.book-demo {
+    color: #000;
+}
+
+.trusted-companies {
+    text-align: center;
+    padding: 50px 0;
+    background: #fff;
+}
+
+.trusted-companies p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.company-logos img {
+    margin: 0 15px;
+}
+
+.dashboard-preview {
+    text-align: center;
+    padding: 50px 0;
+    background: #fff;
+    background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20% 40%;
+    background-repeat: repeat;
+    background-position: center center;
+}
+
+.dashboard-preview img {
+    max-width: 100%;
+}
+
+.pricing {
+    padding: 50px 0;
+    background: #f1f1f1;
+    text-align: center;
+}
+
+.pricing h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.product-selector {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.product-button {
+    background: #ddd;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin: 0 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.product-button.active {
+    background: #007bff;
+    color: #fff;
+}
+
+.product-button:not(.active) {
+    opacity: 0.5;
+}
+
+.product-description {
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.product-description p {
+    margin: 0;
+}
+
+.pricing-table {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: nowrap;
+}
+
+.pricing-plan {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.pricing-plan:hover {
+    transform: translateY(-10px);
+}
+
+.pricing-plan h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.pricing-plan p {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.buy-plan {
+    background: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    margin-top: 20px;
+}
+
+.pricing-details {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.pricing-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.pricing-details ul li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.pricing-details ul li::before {
+    content: '✔️';
+    margin-right: 10px;
+    color: #28a746;
+}
+
+/* New Styles for the Custom Plan Card */
+.buy-plan-card {
+    background: #f7f7f7;
+    border: 2px dashed #007bff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+}
+
+/* FAQ section styles */
+.faq {
+    padding: 50px 0;
+    background: #fff;
+    text-align: left;
+}
+
+.faq h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.faq-item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background: #fff;
+}
+
+.faq-item h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+    padding-right: 30px;
+}
+
+.faq-item h3::after {
+    content: '\25BC'; /* Flecha hacia abajo */
+    position: absolute;
+    right: 10px;
+    font-size: 24px;
+    color: #007bff;
+    transition: transform 0.3s;
+}
+
+.faq-item.open h3::after {
+    transform: rotate(180deg); /* Rota la flecha hacia arriba */
+}
+
+.faq-answer {
+    font-size: 18px;
+    margin: 0;
+    display: none;
+    padding: 10px 0 0 0;
+    border-top: 1px solid #ddd;
+    transition: max-height 0.3s ease-out;
+}
+
+/* Estilos específicos para pantallas pequeñas */
+@media screen and (max-width: 768px) {
+    .pricing-table {
+        flex-wrap: wrap;
+    }
+
+    .pricing-plan {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .product-selector {
+        flex-direction: column;
+    }
+
+    .product-button {
+        margin-bottom: 10px;
+    }
+
+    .faq h2 {
+        font-size: 28px;
+    }
+
+    .faq-item h3 {
+        font-size: 20px;
+    }
+
+    .faq-answer {
+        font-size: 16px;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .hero p {
+        font-size: 18px;
+    }
+
+    .get-started,
+    .book-demo {
+        font-size: 16px;
+        padding: 10px 20px;
+    }
+}
