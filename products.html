@@ -70,7 +70,7 @@
 
     <!-- Hero section -->
     <section class="hero">
-        <div class="particles"></div>
+        <div class="particles" id="particles"></div>
         <div class="hero-container">
             <div class="hero-content">
                 <h1>Descubre Nuestros Productos Innovadores</h1>
@@ -102,5 +102,14 @@
             <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <!-- Script para efecto parallax -->
+    <script>
+        document.addEventListener('scroll', function() {
+            const particles = document.getElementById('particles');
+            let offset = window.pageYOffset;
+            particles.style.backgroundPositionY = offset * 0.7 + 'px';
+        });
+    </script>
 </body>
 </html>
