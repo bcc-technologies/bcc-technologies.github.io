@@ -72,45 +72,27 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     async function fetchShopifyData() {
-        try {
-            const response = await fetch('https://2e2e5e-7c.myshopify.com/api/2024-01/graphql.json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Shopify-Storefront-Access-Token': '60ee1e20cccd72924afe74642353e01c'
-                },
-                body: JSON.stringify({
-                    query: `
-                        {
-                            blogs(first: 1) {
-                                edges {
-                                    node {
-                                        articles(first: 5) {
-                                            edges {
-                                                node {
-                                                    title
-                                                    excerptHtml
+    try {
+        const response = await fetch('https://2e2e5e-7c.myshopify.com/api/2024-01/graphql.json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Shopify-Storefront-Access-Token': '60ee1e20cccd72924afe74642353e01c'
+            },
+            body: JSON.stringify({
+                query: `
+                    {
+                        blogs(first: 1) {
+                            edges {
+                                node {
+                                    articles(first: 5) {
+                                        edges {
+                                            node {
+                                                title
+                                                excerptHtml
+                                                handle
+                                                image {
                                                     url
-                                                    image {
-                                                        url
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            products(first: 5) {
-                                edges {
-                                    node {
-                                        title
-                                        variants(first: 1) {
-                                            edges {
-                                                node {
-                                                    priceV2 {
-                                                        amount
-                                                        currencyCode
-                                                    }
                                                 }
                                             }
                                         }
@@ -118,50 +100,68 @@ document.addEventListener('DOMContentLoaded', function () {
                                 }
                             }
                         }
-                    `
-                })
-            });
+                        products(first: 5) {
+                            edges {
+                                node {
+                                    title
+                                    handle
+                                    variants(first: 1) {
+                                        edges {
+                                            node {
+                                                priceV2 {
+                                                    amount
+                                                    currencyCode
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `
+            })
+        });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('Shopify API Response:', result);
-
-            if (result.errors) {
-                throw new Error('GraphQL Errors: ' + JSON.stringify(result.errors));
-            }
-
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching from Shopify API:', error);
-            throw error;
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
 
+        const result = await response.json();
+        console.log('Shopify API Response:', result);
+
+        if (result.errors) {
+            throw new Error('GraphQL Errors: ' + JSON.stringify(result.errors));
+        }
+
+        return result.data;
+    } catch (error) {
+        console.error('Error fetching from Shopify API:', error);
+        throw error;
+    }
+}
     function updateBlogPosts(articles) {
-        const blogContainer = document.getElementById('blog-posts-container');
-        if (articles.length === 0) {
-            blogContainer.innerHTML = '<p>No blog posts found.</p>';
-            return;
-        }
-        
-        blogContainer.innerHTML = articles.map(article => `
-            <article class="entrada">
-                <div class="entrada__imagen">
-                    <picture>
-                        <img loading="lazy" src="${article.image ? article.image.url : 'static/Imagen2.JPG'}" alt="${article.title}">
-                    </picture>
-                </div>
-                <div class="entrada__contenido">
-                    <h4 class="no-margin">${article.title}</h4>
-                    <p>${article.excerptHtml}</p>
-                    <a href="${article.url}" class="boton boton--primario">Leer Entrada</a>
-                </div>
-            </article>
-        `).join('');
+    const blogContainer = document.getElementById('blog-posts-container');
+    if (articles.length === 0) {
+        blogContainer.innerHTML = '<p>No blog posts found.</p>';
+        return;
     }
+    
+    blogContainer.innerHTML = articles.map(article => `
+        <article class="entrada">
+            <div class="entrada__imagen">
+                <picture>
+                    <img loading="lazy" src="${article.image ? article.image.url : 'static/Imagen2.JPG'}" alt="${article.title}">
+                </picture>
+            </div>
+            <div class="entrada__contenido">
+                <h4 class="no-margin">${article.title}</h4>
+                <p>${article.excerptHtml}</p>
+                <a href="/blogs/news/${article.handle}" class="boton boton--primario">Leer Entrada</a>
+            </div>
+        </article>
+    `).join('');
+}
 
     function updateServices(products) {
         const servicesContainer = document.getElementById('services-container');
