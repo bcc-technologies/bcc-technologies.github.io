@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NUMEAT Labs - Innovación en Nanotecnología</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e6d7c3;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #fff;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+        nav ul li {
+            margin-left: 1rem;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+        }
+        .hero {
+            display: flex;
+            padding: 4rem 2rem;
+            align-items: center;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .hero-content {
+            flex: 1;
+            padding-right: 2rem;
+        }
+        .hero-image {
+            flex: 1;
+            text-align: right;
+        }
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+        }
+        h1, h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .hero h1 {
+            color: #fff;
+        }
+        .hero p {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #fff;
+            color: #333;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 20px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background-color: #fff;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 10px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #777;
+        }
+        .pricing {
+            padding: 4rem 2rem;
+            background-color: #fff;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .pricing-cards {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            width: calc(25% - 20px);
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+        .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .features {
+            list-style-type: none;
+            padding: 0;
+        }
+        .features li::before {
+            content: "✓ ";
+            color: #28a745;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .custom {
+            border: 2px dashed #007bff;
+        }
+        .faq {
+            padding: 4rem 2rem;
+            background-color: #f8f9fa;
+        }
+        .faq h2 {
+            margin-bottom: 30px;
+        }
+        .faq-item {
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .faq-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">NUMEAT Labs</div>
+        <nav>
+            <ul>
+                <li><a href="#about">Inicio</a></li>
+                <li><a href="#pricing">Precios</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="about" class="hero">
+        <div class="hero-content">
+            <h1>Transformando el Futuro con Innovación e Integridad</h1>
+            <p>Descubre cómo estamos remodelando la industria alimentaria introduciendo fuentes de proteínas innovadoras y éticas respaldadas por la excelencia científica.</p>
+            <a href="#contact" class="cta-button">CONTÁCTANOS</a>
+        </div>
+        <div class="hero-image">
+            <img src="static/nano" alt="Estructura de Proteína">
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-value">500K</div>
+            <div class="stat-label">ALCANCE DE CONSUMIDORES</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">60%</div>
+            <div class="stat-label">REDUCCIÓN DE CARBONO</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">90%</div>
+            <div class="stat-label">MENOS TIERRA UTILIZADA</div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <h2>Precios</h2>
+        
+        <div class="tabs">
+            <button class="tab active">Nano</button>
+            <button class="tab">Med</button>
+            <button class="tab">Ing</button>
+        </div>
+        
+        <div class="description">
+            MAP-Nano es una potente solución para investigaciones en nanotecnología. Proporciona análisis precisos, variados y rápidos de materiales a nanoescala.
+        </div>
+        
+        <div class="pricing-cards">
+            <div class="card">
+                <h3>Licencia Estándar</h3>
+                <div class="price">$3,000 por año</div>
+                <ul class="features">
+                    <li>Acceso básico</li>
+                    <li>Soporte limitado</li>
+                    <li>Actualizaciones regulares</li>
+                </ul>
+                <a href="#" class="btn">Comenzar</a>
+            </div>
+            
+            <div class="card">
+                <h3>Licencia Profesional</h3>
+                <div class="price">$5,000 por año</div>
+                <ul class="features">
+                    <li>Acceso a todas las funcionalidades</li>
+                    <li>Soporte premium 24/7</li>
+                    <li>Actualizaciones adicionales</li>
+                </ul>
+                <a href="#" class="btn">Comenzar</a>
+            </div>
+            
+            <div class="card">
+                <h3>Licencia Institucional</h3>
+                <div class="price">$10,000 por año</div>
+                <ul class="features">
+                    <li>Acceso ilimitado para múltiples usuarios</li>
+                    <li>Soporte técnico dedicado</li>
+                    <li>Consultoría anual incluida</li>
+                </ul>
+                <a href="#" class="btn">Comenzar</a>
+            </div>
+            
+            <div class="card custom">
+                <h3>Plan Personalizado</h3>
+                <p>Para empresas que necesiten algo más adaptado a sus necesidades, ofrecemos planes personalizados.</p>
+                <ul class="features">
+                    <li>Soluciones a medida</li>
+                    <li>Soporte dedicado</li>
+                    <li>Consultoría personalizada</li>
+                </ul>
+                <a href="#" class="btn">Contacta con nosotros</a>
+            </div>
+        </div>
+    </section>
+    
+    <section id="faq" class="faq">
+        <h2>Preguntas Frecuentes</h2>
+        <div class="faq-item">
+            <div class="faq-question">¿Qué incluye el soporte técnico dedicado?</div>
+            <div class="faq-answer">Nuestro soporte técnico dedicado incluye asistencia prioritaria por teléfono y correo electrónico, tiempos de respuesta garantizados y un gerente de cuenta asignado para ayudar con cualquier problema o consulta.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">¿Puedo cambiar de plan en cualquier momento?</div>
+            <div class="faq-answer">Sí, puede actualizar su plan en cualquier momento. Los cambios se reflejarán en su próximo ciclo de facturación. Para downgrades, comuníquese con nuestro equipo de soporte.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">¿Ofrecen descuentos para instituciones educativas?</div>
+            <div class="faq-answer">Sí, ofrecemos descuentos especiales para instituciones educativas. Por favor, póngase en contacto con nuestro equipo de ventas para obtener más información sobre nuestros programas educativos.</div>
+        </div>
+    </section>
+</body>
+</html>
