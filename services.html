@@ -12,40 +12,7 @@
     <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
 
     <!-- JavaScript for menu toggle and Shopify integration -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
 
-            menuToggle.addEventListener('click', function () {
-                nav.classList.toggle('active');
-            });
-
-            // Shopify integration
-            const client = ShopifyBuy.buildClient({
-                domain: '2e2e5e-7c.myshopify.com',
-                storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
-            });
-
-            function updateServices(products) {
-                const servicesContainer = document.querySelector('.services-container');
-                servicesContainer.innerHTML = products.map(product => `
-                    <div class="service-card">
-                        <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
-                        <h3>${product.title}</h3>
-                        <p>${product.description}</p>
-                    </div>
-                `).join('');
-            }
-
-            client.product.fetchAll()
-                .then(updateServices)
-                .catch(error => {
-                    console.error('Error fetching Shopify products:', error);
-                    // Fallback to original content if there's an error
-                });
-        });
-    </script>
 </head>
 
 <body>
