@@ -1,0 +1,138 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fff;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .logo {
+    height: 40px;
+  }
+  
+  .nav-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #ed4624;
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  
+  .nav-actions button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    font-weight: bold;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  
+  .login-btn {
+    background-color: #000;
+    color: #fff;
+  }
+  
+  .contact-btn {
+    background-color: #ed4624;
+    color: #fff;
+  }
+  
+  .signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+    background: linear-gradient(to bottom, #fff, #f9f9f9);
+  }
+  
+  .signup-card {
+    background-color: #1a1a1a;
+    color: #ededed;
+    padding: 40px;
+    border-radius: 25px;
+    width: 450px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
+  }
+  
+  .signup-card h1 {
+    font-size: 2.2em;
+    margin-bottom: 10px;
+  }
+  
+  .signup-card p {
+    font-size: 1em;
+    margin-bottom: 20px;
+  }
+  
+  .signup-card form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .signup-card input {
+    padding: 12px 15px;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 15px;
+    background: transparent;
+    color: #fff;
+    font-size: 1em;
+  }
+  
+  .signup-card input::placeholder {
+    color: #aaa;
+  }
+  
+  .signup-card button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ff6d4d;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .signup-card button .arrow {
+    margin-left: 10px;
+    font-size: 1.3em;
+  }
+  
+  .signup-card button:hover {
+    background-color: #ff7e3f;
+  }
+  
+  .login-link {
+    margin-top: 15px;
+    font-size: 0.95em;
+  }
+  
+  .login-link a {
+    color: #9cdfff;
+    text-decoration: underline;
+  }
+  
+  .legal-links {
+    margin-top: 15px;
+    font-size: 0.9em;
+  }
+  
+  .legal-links a {
+    color: #aaa;
+    margin: 0 5px;
+    text-decoration: none;
+  }
+  

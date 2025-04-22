@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalles de MAPs - BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="product_maps.css">
+    <!-- <link rel="stylesheet" href="layout.css"> -->
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="product_maps2.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
 </head>
 
@@ -20,7 +21,7 @@
 </script>
 
 <body>   
-    <header>
+    <!-- <header>
         <div class="header-container">
             <div class="menu-toggle">&#9776;</div>
             <nav>
@@ -35,6 +36,21 @@
                     <li><a href="./blog" id="blog-link">BCC Blog</a></li>
                 </ul>
             </nav>
+        </div>
+    </header> -->
+
+    <!-- Barra de navegación -->
+    <header class="navbar">
+        <img src="static\BCC_sf.png" alt="Logo BCC" class="logo">
+        <nav class="nav-links">
+        <a href="./">Inicio</a>
+        <a href="./aboutUs">Nosotros</a>
+        <a href="./products">Productos</a>
+        <a href="./services">Servicios</a>
+        </nav>
+        <div class="nav-actions">
+        <button class="login-btn" onclick="location.href='login'">Login</button>
+        <button class="contact-btn">Contact</button>
         </div>
     </header>
     
@@ -160,6 +176,16 @@
     </div>
     
 </section>
+
+
+<!-- Footer section -->
+<footer>
+    <div class="footer-container">
+        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+
 <script>
     const section2 = document.querySelector('#section2');
     
