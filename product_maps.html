@@ -38,248 +38,148 @@
         </div>
     </header>
     
-    <section class="hero">
-        <div class="grid-background"></div>
-        <div class="container">
-            <h1>Maps</h1>
-            <p>Línea de Programas de Análisis de Microestructuras</p>
-            <div class="cta-buttons">
-                <button class="get-started">Empezar gratis</button>
-                <button class="book-demo">Reservar demostración gratuita</button>
+    <div class="hero">
+            <div class="hero-content">
+                <h1>MAP-Nano</h1>
+                <p>Powerful analysis tool for Scaning Electron Microscopy</p>
+                <button class="demo-btn">
+                    <span class="btn-text">Request A Demo</span>
+                    <span class="arrow-circle">
+                      <span class="arrow">→</span>
+                    </span>
+                  </button>
+                  
+            </div>
+            <div class="hero-image">
+                <img src="static/mapnano.png" alt="MAP-Nano Software Interface">
             </div>
         </div>
-    </section>
-
-    <section class="dashboard-preview">
-        <div class="container">
-            <img src="static/product_logo_MAP.png" alt="Dashboard Preview">
-        </div>
-    </section>
-
-    <section class="pricing">
-        <div class="container">
-            <h2>Precios</h2>
-            <div class="product-selector">
-                <button data-product="nano" class="product-button active">Nano</button>
-                <button data-product="med" class="product-button">Med</button>
-                <button data-product="ing" class="product-button">Ing</button>
-            </div>
-            <div class="product-description" id="product-description">
-                <!-- La descripción del producto se actualizará dinámicamente aquí -->
-            </div>
-            <div class="pricing-table" id="pricing-table">
-                <!-- Las tarjetas de precios se actualizarán dinámicamente aquí -->
-            </div>
-        </div>
-    </section>
-
-    <section class="faq">
-        <div class="container">
-            <h2>Preguntas Frecuentes</h2>
-            <div class="faq-item">
-                <h3 class="faq-question">¿Qué es MAP-Nano?</h3>
-                <p class="faq-answer">MAP-Nano es una solución diseñada para análisis de microestructuras a nivel nanométrico, ideal para investigaciones y aplicaciones industriales de alta precisión.</p>
-            </div>
-            <div class="faq-item">
-                <h3 class="faq-question">¿Qué incluye el soporte premium?</h3>
-                <p class="faq-answer">El soporte premium incluye acceso 24/7 a nuestro equipo de soporte, actualizaciones adicionales y asistencia personalizada para resolver cualquier problema técnico.</p>
-            </div>
-            <div class="faq-item">
-                <h3 class="faq-question">¿Puedo personalizar mi plan?</h3>
-                <p class="faq-answer">Sí, ofrecemos planes personalizados para empresas que necesiten soluciones adaptadas a sus necesidades específicas. Contáctanos para más detalles.</p>
-            </div>
-            <div class="faq-item">
-                <h3 class="faq-question">¿Cómo puedo contactar con el soporte?</h3>
-                <p class="faq-answer">Puedes contactar con nuestro equipo de soporte a través del correo electrónico, teléfono o chat en vivo en nuestra plataforma.</p>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const productButtons = document.querySelectorAll('.product-button');
-    const pricingTable = document.getElementById('pricing-table');
-    const productDescription = document.getElementById('product-description');
-
-    const productData = {
-        nano: {
-            description: 'MAP-Nano es una potente solución para investigaciones en nanotecnología. Proporciona análisis precisos, variados y rápidos de materiales a nanoescala.',
-            pricing: [
-                {
-                    title: 'Licencia Estándar',
-                    price: '$3,000 por año',
-                    features: [
-                        'Acceso básico',
-                        'Soporte limitado',
-                        'Actualizaciones regulares'
-                    ]
-                },
-                {
-                    title: 'Licencia Profesional',
-                    price: '$5,000 por año, incluye soporte premium y actualizaciones adicionales',
-                    features: [
-                        'Acceso a todas las funcionalidades',
-                        'Soporte premium 24/7',
-                        'Actualizaciones adicionales'
-                    ]
-                },
-                {
-                    title: 'Licencia Institucional',
-                    price: '$10,000 por año, permite múltiples usuarios y soporte técnico dedicado',
-                    features: [
-                        'Acceso ilimitado para múltiples usuarios',
-                        'Soporte técnico dedicado',
-                        'Consultoría anual incluida'
-                    ]
-                }
-            ]
-        },
-        med: {
-            description: 'MAP-Med ofrece herramientas avanzadas para el análisis de imágenes microscópicas en medicina, proporcionando información crítica y veloz para el diagnóstico y tratamiento de enfermedades.',
-            pricing: [
-                {
-                    title: 'Licencia Estándar',
-                    price: '$5,000 por año',
-                    features: [
-                        'Acceso básico',
-                        'Soporte limitado',
-                        'Actualizaciones regulares'
-                    ]
-                },
-                {
-                    title: 'Licencia Profesional',
-                    price: '$8,000 por año, incluye soporte premium y actualizaciones adicionales',
-                    features: [
-                        'Acceso a todas las funcionalidades',
-                        'Soporte premium 24/7',
-                        'Actualizaciones adicionales'
-                    ]
-                },
-                {
-                    title: 'Licencia Institucional',
-                    price: '$15,000 por año, permite múltiples usuarios y soporte técnico dedicado',
-                    features: [
-                        'Acceso ilimitado para múltiples usuarios',
-                        'Soporte técnico dedicado',
-                        'Consultoría anual incluida'
-                    ]
-                }
-            ]
-        },
-        ing: {
-            description: 'MAP-Ing está diseñado para el análisis de imágenes en ingeniería, ofreciendo herramientas avanzadas para obtener resultados precisos y detallados.',
-            pricing: [
-                {
-                    title: 'Licencia Estándar',
-                    price: '$3,000 por año',
-                    features: [
-                        'Acceso básico',
-                        'Soporte limitado',
-                        'Actualizaciones regulares'
-                    ]
-                },
-                {
-                    title: 'Licencia Profesional',
-                    price: '$6,000 por año, incluye soporte premium y actualizaciones adicionales',
-                    features: [
-                        'Acceso a todas las funcionalidades',
-                        'Soporte premium 24/7',
-                        'Actualizaciones adicionales'
-                    ]
-                },
-                {
-                    title: 'Licencia Institucional',
-                    price: '$12,000 por año, permite múltiples usuarios y soporte técnico dedicado',
-                    features: [
-                        'Acceso ilimitado para múltiples usuarios',
-                        'Soporte técnico dedicado',
-                        'Consultoría anual incluida'
-                    ]
-                }
-            ]
-        }
-    };
-
-    const customPlan = {
-        title: 'Plan Personalizado',
-        description: 'Para empresas que necesiten algo más adaptado a sus necesidades, ofrecemos planes personalizados.',
-        action: 'Contacta con nosotros',
-        features: [
-            'Soluciones a medida',
-            'Soporte dedicado',
-            'Consultoría personalizada'
-        ]
-    };
-
-    function updatePricingCards(product) {
-        const productInfo = productData[product];
-        productDescription.textContent = productInfo.description;
-        pricingTable.innerHTML = productInfo.pricing.map(plan => `
-            <div class="pricing-plan">
-                <h3>${plan.title}</h3>
-                <p>${plan.price}</p>
-                <button class="buy-plan">Comenzar</button>
-                <div class="pricing-details">
-                    <ul>
-                        ${plan.features.map(feature => `<li>${feature}</li>`).join('')}
-                    </ul>
+    </div>
+    <!-- Solutions Section -->
+<section class="solutions">
+    <div class="container">
+        <h2>Explore our solutions</h2>
+        
+        <div class="solutions-grid">
+            <div class="solution-card">
+                <div class="solution-image">
+                    <img src="static/life-science.jpg" alt="Life Science Microscopic Image">
+                    <h3>Life Science & Microbiology</h3>
+                </div>
+                <div class="solution-content">
+                    <p>Our software enables researchers to precisely analyze, segment, and quantify microscopic organisms, accelerating discovery in biotechnology, pharmaceuticals, and life sciences.</p>
+                    <a href="#" class="see-more-btn">
+                        See More
+                        <span class="arrow">→</span>
+                    </a>
                 </div>
             </div>
-        `).join('') + `
-            <div class="pricing-plan buy-plan-card">
-                <h3>${customPlan.title}</h3>
-                <p>${customPlan.description}</p>
-                <button class="buy-plan">${customPlan.action}</button>
-                <div class="pricing-details">
-                    <ul>
-                        ${customPlan.features.map(feature => `<li>${feature}</li>`).join('')}
-                    </ul>
+            
+            <div class="solution-card">
+                <div class="solution-image">
+                    <img src="static/map-meterial.jpg" alt="Material Science Microscopic Image">
+                    <h3>Material Science</h3>
+                </div>
+                <div class="solution-content">
+                    <p>We empower researchers to segment, quantify, and analyze materials at the nanoscale, enhancing innovation in metallurgy, polymers, semiconductors, and advanced materials.</p>
+                    <a href="#" class="see-more-btn">
+                        See More
+                        <span class="arrow">→</span>
+                    </a>
                 </div>
             </div>
-        `;
-    }
-
-    function setActiveButton(activeButton) {
-        productButtons.forEach(button => {
-            if (button === activeButton) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
+        </div>
+    </div>
+</section>
+<section1>
+    <div class="hero1">
+        <div class="hero-image1">
+            <img src="static/IMG_0649.png" alt="MAP-Nano Software Interface">
+        </div>
+        <div class="hero-content1">
+            <h1>Discover better materials, faster</h1>
+            <p>Using MAP-Nano the characterization  process for novel  materials is faster and more accurate than ever before</p>
+              
+        </div>
+        
+    </div>
+</section1>
+<section id="section2">
+    <div class="hero2">
+        <h1>Streamline material characterization with an automated analysis tool</h1>
+        <div class="hero-layout2">
+            <div class="hero-content2">
+                <h1>Intuitive UI for fast inspection</h1>
+                <p>• Select region of interest and get specified data from your sample using Weibull and Gaussian distributions<br>
+                   • Benefit from pre-configured and customizable ranges for border detection
+                </p>
+            </div>
+            <div class="hero-image2">
+                <img src="static/MAP1.png" alt="MAP-Nano Software Interface">
+            </div>
+        </div>
+    </div>
+    <div class="hero3">
+        <div class="hero-layout3">
+            <div class="hero-content3">
+                <h1>Portal to state-of-the art analytics workflows</h1>
+                <p>• Take advantage of advanced shape detecting algorithm for size distributions<br>
+                   • Access analytics tools for material characterization
+                </p>
+            </div>
+            <div class="hero-image3">
+                <img src="static/MAP2.png" alt="MAP-Nano Software Interface">
+            </div>
+        </div>
+    </div>
+    <div class="hero4">
+        <div class="hero-layout4">
+            <div class="hero-content4">
+                <h1>Intuitive, robust features for surface rougness</h1>
+                <p>• Study the height distribution and rougness of your sample for different zoom sizes<br>
+                   • Create computational models from your experimental data
+                </p>
+            </div>
+            <div class="hero-image4">
+                <img src="static/MAP3.png" alt="MAP-Nano Software Interface">
+            </div>
+        </div>
+    </div>
+    <div class="hero5">
+        <div class="hero-layout5">
+            <div class="hero-content5">
+                <h1>Web & cross-platform support</h1>
+                <p>• Manage data analysis on local Linux, windows, Mac and Cloud<br>
+                   • Use MAP-Nano in a secure web interface
+                </p>
+            </div>
+            <div class="hero-image5">
+                <img src="static/MAP4.png" alt="MAP-Nano Software Interface">
+            </div>
+        </div>
+    </div>
+    
+</section>
+<script>
+    const section2 = document.querySelector('#section2');
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            document.body.style.backgroundColor = '#232323'; //#232323
+          } else {
+            document.body.style.backgroundColor = '#ffffff';
+          }
         });
-    }
-
-    productButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const product = this.getAttribute('data-product');
-            setActiveButton(this);
-            updatePricingCards(product);
-        });
-    });
-
-    // Inicializar con el primer producto
-    setActiveButton(productButtons[0]);
-    updatePricingCards(productButtons[0].getAttribute('data-product'));
-
-    // FAQ functionality
-    const faqQuestions = document.querySelectorAll('.faq-question');
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', function() {
-            const faqItem = this.parentElement;
-            faqItem.classList.toggle('open');
-            const answer = this.nextElementSibling;
-            answer.style.display = (answer.style.display === 'block') ? 'none' : 'block';
-        });
-    });
-
-});
-    </script>
-
+      },
+      {
+        threshold: 0.5 // adjust depending on how much of the section should be visible
+      }
+    );
+  
+    observer.observe(section2);
+  </script>
+  
 </body>
 </html>
