@@ -1,0 +1,365 @@
+/* ==========================================================================
+   BCC Technologies — product_maps2.css (clean & cohesive)
+   Notes:
+   - Keeps existing class names and visual behavior.
+   - Deduplicates variables/rules; organizes sections; preserves all effects.
+   - Accent color: #ed4624 (via --accent).
+   ========================================================================== */
+
+/* ==========================================================================
+   1) DESIGN TOKENS & BASE
+   ========================================================================== */
+:root{
+  /* Colors */
+  --ink:#0f172a;
+  --muted:#475569;
+  --line:#e2e8f0;
+  --bg:#ffffff;
+  --bg-alt:#f8fafc;
+  --accent:#ed4624;          /* BCC accent */
+  --accent-ink:#ffffff;
+  --chip:#0b1220;
+
+  /* Radii & Shadows */
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 6px 16px rgba(2,6,23,.08);
+  --shadow-md: 0 12px 28px rgba(2,6,23,.12);
+
+  /* Typography scale */
+  --step--1: clamp(12px,.85vw,14px);
+  --step-0:  clamp(14px,1vw,16px);
+  --step-1:  clamp(16px,1.25vw,18px);
+  --step-2:  clamp(20px,2.2vw,24px);
+  --step-3:  clamp(28px,4vw,34px);
+
+  /* Layout tokens */
+  --container-max: 1200px;
+  --section-y: clamp(56px, 9vh, 88px);
+
+  /* Navbar height (fallback; can be overridden by JS) */
+  --nav-h: 64px;
+}
+@media (max-width: 640px){ :root{ --nav-h: 56px; } }
+
+*{ box-sizing:border-box; }
+html,body{
+  margin:0; padding:0; background:var(--bg); color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  font-size: var(--step-0); letter-spacing:.01em;
+}
+img{ max-width:100%; display:block; }
+a{ text-decoration:none; color:inherit; }
+::selection{ background: rgba(237,70,36,.18); }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+/* ==========================================================================
+   2) LAYOUT & UTILITIES
+   ========================================================================== */
+.container{ max-width: var(--container-max); margin:0 auto; padding:0 24px; }
+.section{ padding: var(--section-y) 0; }
+.section-alt{ background: var(--bg-alt); }
+.lead{ color:var(--muted); margin:8px 0 0; }
+.meta{ color:#64748b; font-size:12px; margin-top:8px; }
+
+/* Simple grids */
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap: clamp(18px, 3vw, 32px); }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap: clamp(18px, 2.6vw, 28px); }
+.grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap: clamp(18px, 2.2vw, 24px); }
+
+/* Utilities */
+.text-muted{ color: var(--muted); }
+.center{ text-align:center; }
+.rounded{ border-radius: var(--radius); }
+.shadow-sm{ box-shadow: var(--shadow-sm); }
+.shadow-md{ box-shadow: var(--shadow-md); }
+.container-narrow{ max-width:840px; margin:0 auto; }
+
+/* ==========================================================================
+   3) NAVIGATION
+   ========================================================================== */
+.navbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+  box-shadow: 0 1px 0 var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 24px;
+}
+.logo{ height:36px; }
+.nav-links{ display:flex; gap:18px; font-size:14px; }
+.nav-actions{ display:flex; gap:10px; }
+
+/* Nav link underline animation + active state */
+.nav-links a{
+  position:relative; padding:10px 0;
+  transition: color .2s ease, opacity .2s ease;
+  background-image: linear-gradient(currentColor,currentColor);
+  background-size: 0% 2px; background-position: 0 100%; background-repeat: no-repeat;
+}
+.nav-links a:hover{ color: var(--accent); background-size: 100% 2px; }
+.nav-links a.is-active,
+.nav-links a[aria-current="page"]{ color: var(--accent); }
+
+/* ==========================================================================
+   4) BUTTONS & LINKS
+   ========================================================================== */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius: var(--radius);
+  padding:12px 16px; font-weight:600; font-size:14px;
+  border:1px solid var(--line);
+  transition: transform .15s ease, box-shadow .25s ease, background-color .25s ease, border-color .25s ease;
+  will-change: transform;
+}
+.btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:active{ transform: translateY(0); box-shadow: none; }
+.btn-dark{ background:#0b1220; color:#fff; border-color:#0b1220; }
+.btn-ghost:hover{ background:#f1f5f9; }
+.btn-outline{ background:#fff; color:#0b1220; border-color: var(--ink); }
+.btn-accent{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+.btn-accent:hover{ filter: brightness(.98); }
+.btn-sm{ padding:8px 12px; font-size: var(--step--1); border-radius:10px; }
+.btn-lg{ padding:14px 18px; font-size: var(--step-1); border-radius: var(--radius-lg); }
+
+/* Secondary link underline effect (for card links etc.) */
+a.link, .card-link{
+  background-image: linear-gradient(currentColor,currentColor);
+  background-size: 0% 2px; background-position: 0 100%; background-repeat:no-repeat;
+  transition: background-size .25s ease;
+}
+a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
+
+/* ==========================================================================
+   5) HERO (PRODUCT)
+   - Fullscreen layout respecting navbar height
+   - Elegant background halo + scientific grid
+   ========================================================================== */
+.hero-product{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(180deg,#fff,#fff);
+
+  /* Fullscreen (works with sticky navbar) */
+  min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100svh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h));
+
+  display:flex; align-items:center;
+  padding-block: clamp(24px, 6vh, 64px);
+}
+
+/* Background halo (slow rotation) */
+.hero-product::before{
+  content:"";
+  position:absolute; inset:-30% -40%;
+  background:
+    radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, #fff 65%) 0%, transparent 70%) no-repeat;
+  filter: blur(40px); opacity:.35; transform: rotate(0deg); z-index:-2;
+  animation: heroHalo 36s linear infinite;
+}
+/* Scientific subtle grid overlay */
+.hero-product::after{
+  content:""; position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(2,6,23,.06) 1px, transparent 0) 0 0 / 22px 22px,
+    linear-gradient(to bottom, rgba(2,6,23,.04), rgba(2,6,23,0));
+  mix-blend-mode:multiply; z-index:-1; pointer-events:none; opacity:.6;
+}
+@keyframes heroHalo{ to{ transform: rotate(360deg);} }
+
+.hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; }
+.eyebrow{ font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:700; }
+.hero-copy h1{ font-size: clamp(36px, 5vw, 56px); line-height:1.1; margin:8px 0; letter-spacing:-0.02em; }
+.hero-copy h1{ position:relative; padding-left:14px; }
+.hero-copy h1::before{
+  content:""; position:absolute; left:0; top:.15em; bottom:.15em; width:3px;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 70%, #fff 30%), transparent);
+  border-radius:2px; opacity:.75;
+}
+.hero-copy .sub{ color:var(--muted); font-size: clamp(16px, 1.6vw, 18px); margin-top:10px; }
+.chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.chip{
+  background: rgba(2,6,23,.06);
+  border:1px solid var(--line);
+  color:#0b1220;
+  border-radius:999px; padding:6px 10px; font-size:12px;
+}
+.cta-row{ display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+
+.hero-media{ display:flex; flex-direction:column; gap:6px; align-items:center; position:relative; }
+.hero-media img{
+  border-radius:20px;
+  border:1px solid color-mix(in oklab, var(--line) 90%, #fff 10%);
+  background:#fff;
+  box-shadow:
+    0 30px 60px rgba(2,6,23,.18),
+    0 12px 24px rgba(2,6,23,.10),
+    inset 0 1px 0 rgba(255,255,255,.6);
+  max-height: min(60dvh, 520px);
+  height:auto; width:auto; object-fit:contain;
+}
+.hero-media figcaption{ font-size:12px; color:#64748b; opacity:.8; }
+
+
+/* === HERO IMG: más grande y columna de imagen más ancha === */
+.hero-grid{
+  grid-template-columns: 1fr 1.2fr;   /* antes 1.1fr .9fr */
+  gap: clamp(24px, 4vw, 48px);
+}
+.hero-media{
+  align-items: stretch;                /* permite que la imagen use el ancho */
+}
+.hero-media img{
+  width: 100%;
+  height: auto;
+  max-height: clamp(420px, 72dvh, 760px); /* sube el límite vertical */
+  object-fit: contain;
+}
+
+@media (max-width: 960px){
+  .hero-grid{ grid-template-columns: 1fr; }
+  .hero-media img{ max-height: clamp(320px, 55dvh, 640px); }
+}
+
+/* === HERO container más ancho (solo en esta sección) === */
+/*
+.hero-product .container{
+max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
+/* }  */
+
+
+/* HERO: más presencia de la imagen y balance copy/img */
+.hero-grid{ grid-template-columns: .95fr 1.35fr; }   /* + ancho a la imagen */
+.hero-media{ align-items: stretch; }
+.hero-media img{
+  width: 100%;
+  max-height: clamp(520px, 78dvh, 860px); /* sube límite vertical */
+  object-fit: contain;
+}
+
+/* Pequeño “edge bleed” para que respire fuera del grid (sutil) */
+.hero-product .container{ overflow: visible; }
+.hero-media{ transform: translateX(2%); }
+@media (max-width: 960px){
+  .hero-grid{ grid-template-columns: 1fr; }
+  .hero-media{ transform: none; }
+  .hero-media img{ max-height: clamp(360px, 60dvh, 700px); }
+}
+
+
+/* Sólo hero más ancho */
+/* .hero-product .container{ max-width: 1320px; } */
+
+
+/* ==========================================================================
+   6) CARDS & PANELS
+   ========================================================================== */
+.cards .card{
+  border:1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding:16px; background:#fff;
+  transition: transform .2s cubic-bezier(.22,.61,.36,1), box-shadow .25s ease, border-color .25s ease;
+  will-change: transform;
+}
+.cards .card:hover{
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(237,70,36,.35);
+}
+.card-thumb{
+  height:160px; background:#e5e7eb;
+  border-radius: calc(var(--radius) + 2px);
+  margin-bottom:10px;
+  background-size:cover; background-position:center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+.card-title{ font-weight:600; margin-bottom:4px; }
+.card-text{ color:var(--muted); font-size:14px; }
+.card-link{ margin-top:8px; color:var(--accent); font-size:14px; }
+
+.panel{
+  border:1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:#fff;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* Badges (optional) */
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  border-radius:999px; padding:4px 10px; font-size: var(--step--1);
+  border:1px solid var(--line); background:#fff;
+}
+.badge--accent{ background: rgba(237,70,36,.08); border-color: rgba(237,70,36,.28); color:#b43320; }
+
+/* ==========================================================================
+   7) FEATURE ROWS
+   ========================================================================== */
+.feature-row{ display:grid; grid-template-columns:1fr 1fr; gap: clamp(18px, 3vw, 32px); align-items:center; padding: clamp(12px, 2vh, 28px) 0; }
+.feature-row.reverse{ direction:rtl; }
+.feature-row.reverse > *{ direction:ltr; }
+.feature-copy h3{ font-size: var(--step-2); margin:0 0 8px; line-height:1.2; }
+.feature-copy p{ color:var(--muted); margin:0 0 8px; }
+.feature-bullets{ margin:8px 0 0 18px; }
+.feature-bullets li{ margin:6px 0; }
+.feature-media img{ border-radius:12px; border:1px solid var(--line); background:#fff; }
+
+/* ==========================================================================
+   8) SPECS GRID
+   ========================================================================== */
+.specs-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap: clamp(12px, 2vw, 20px); margin-top:16px; }
+.specs-grid h4{ margin:0 0 6px; font-size:16px; }
+
+/* ==========================================================================
+   9) FOOTER
+   ========================================================================== */
+.footer{ border-top:1px solid var(--line); padding:28px 0; background:#fff; }
+.foot-inner{ display:flex; justify-content:center; }
+.footer p{ color:#64748b; font-size:12px; margin:0; }
+
+/* ==========================================================================
+   10) REVEAL ON SCROLL (safe)
+   ========================================================================== */
+.reveal{ opacity:0; transform: translateY(12px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.is-visible{ opacity:1; transform: translateY(0); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .btn, .cards .card, .reveal{ transition:none !important; transform:none !important; }
+  *, *::before, *::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:0ms !important; scroll-behavior:auto !important; }
+}
+
+/* ==========================================================================
+   11) RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1200px){
+  .container{ padding: 0 20px; }
+}
+@media (max-width: 960px){
+  .hero-grid{ grid-template-columns:1fr; }
+  .grid-2{ grid-template-columns:1fr; }
+  .feature-row{ grid-template-columns:1fr; }
+  .specs-grid{ grid-template-columns:1fr 1fr; }
+  .grid-3{ grid-template-columns:1fr 1fr; }
+  .grid-4{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width: 640px){
+  .nav-links{ display:none; }
+  .hero-copy h1{ font-size:36px; }
+  .specs-grid{ grid-template-columns:1fr; }
+  .grid-3, .grid-4{ grid-template-columns:1fr; }
+}
+
+/* ==========================================================================
+   12) PRINT (PDF-friendly)
+   ========================================================================== */
+@media print{
+  .navbar, .footer { display:none !important; }
+  .hero-product{ min-height:auto !important; padding: 20px 0 !important; background:none !important; }
+  .section{ padding: 20px 0 !important; }
+  .cards .card{ box-shadow:none !important; }
+}

@@ -3,179 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAP-Nano | Powerful analysis tool for Scanning Electron Microscopy</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
     <link rel="stylesheet" href="product_maps.css">
-</head>
-<body>
-    <div class="container">
-        <!-- Navigation -->
-        <nav>
-            <div class="logo">
-                <img src="static/bcclogo.png" alt="MAP-Nano Logo">
-            </div>
-            <div class="nav-links">
-                <a href="./">Inicio</a>
-                <a href="./aboutUs">Nosotros</a>
-                <a href="./products" class="active">Productos</a>
-                <a href="./services">Servicios</a>
-            </div>
-            <div class="nav-buttons">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <button class="login-btn" onclick="location.href='login.html'">Login</button>
-                <button class="contact-btn" onclick="window.location.href='./contactUs'">Contact</button>
-            </div>
-        </nav>
-        
-        <!-- Hero Section -->
-        <div class="hero">
-            <div class="hero-content">
-                <h1>MAP-Nano</h1>
-                <p>Powerful analysis tool for Scaning Electron Microscopy</p>
-                <button class="demo-btn">
-                    <a href="https://github.com/bcc-technologies/MAP-Nano_releases/releases/latest/download/MAP-Nano-Setup.exe" 
-   class="download-button">
-   <span class="btn-text">Download MAP-Nano for Windows</span>
-</a>
-                    <span class="arrow-circle">
-                      <span class="arrow">→</span>
-                    </span>
-                  </button>
-                  
-            </div>
-            <div class="hero-image">
-                <img src="static/mapnano.png" alt="MAP-Nano Software Interface">
-            </div>
-        </div>
-    </div>
-    <!-- Solutions Section -->
-<section class="solutions">
-    <div class="container">
-        <h2>Explore our solutions</h2>
-        
-        <div class="solutions-grid">
-            <div class="solution-card">
-                <div class="solution-image">
-                    <img src="static/life-science.jpg" alt="Life Science Microscopic Image">
-                    <h3>Life Science & Microbiology</h3>
-                </div>
-                <div class="solution-content">
-                    <p>Our software enables researchers to precisely analyze, segment, and quantify microscopic organisms, accelerating discovery in biotechnology, pharmaceuticals, and life sciences.</p>
-                    <a href="#" class="see-more-btn">
-                        See More
-                        <span class="arrow">→</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="solution-card">
-                <div class="solution-image">
-                    <img src="static/map-meterial.jpg" alt="Material Science Microscopic Image">
-                    <h3>Material Science</h3>
-                </div>
-                <div class="solution-content">
-                    <p>We empower researchers to segment, quantify, and analyze materials at the nanoscale, enhancing innovation in metallurgy, polymers, semiconductors, and advanced materials.</p>
-                    <a href="#" class="see-more-btn">
-                        See More
-                        <span class="arrow">→</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section1>
-    <div class="hero1">
-        <div class="hero-image1">
-            <img src="static/IMG_0649.png" alt="MAP-Nano Software Interface">
-        </div>
-        <div class="hero-content1">
-            <h1>Discover better materials, faster</h1>
-            <p>Using MAP-Nano the characterization  process for novel  materials is faster and more accurate than ever before</p>
-              
-        </div>
-        
-    </div>
-</section1>
-<section id="section2">
-    <div class="hero2">
-        <h1>Streamline material characterization with an automated analysis tool</h1>
-        <div class="hero-layout2">
-            <div class="hero-content2">
-                <h1>Intuitive UI for fast inspection</h1>
-                <p>• Select region of interest and get specified data from your sample using Weibull and Gaussian distributions<br>
-                   • Benefit from pre-configured and customizable ranges for border detection
-                </p>
-            </div>
-            <div class="hero-image2">
-                <img src="static/MAP1.png" alt="MAP-Nano Software Interface">
-            </div>
-        </div>
-    </div>
-    <div class="hero3">
-        <div class="hero-layout3">
-            <div class="hero-content3">
-                <h1>Portal to state-of-the art analytics workflows</h1>
-                <p>• Take advantage of advanced shape detecting algorithm for size distributions<br>
-                   • Access analytics tools for material characterization
-                </p>
-            </div>
-            <div class="hero-image3">
-                <img src="static/MAP2.png" alt="MAP-Nano Software Interface">
-            </div>
-        </div>
-    </div>
-    <div class="hero4">
-        <div class="hero-layout4">
-            <div class="hero-content4">
-                <h1>Intuitive, robust features for surface rougness</h1>
-                <p>• Study the height distribution and rougness of your sample for different zoom sizes<br>
-                   • Create computational models from your experimental data
-                </p>
-            </div>
-            <div class="hero-image4">
-                <img src="static/MAP3.png" alt="MAP-Nano Software Interface">
-            </div>
-        </div>
-    </div>
-    <div class="hero5">
-        <div class="hero-layout5">
-            <div class="hero-content5">
-                <h1>Web & cross-platform support</h1>
-                <p>• Manage data analysis on local Linux, windows, Mac and Cloud<br>
-                   • Use MAP-Nano in a secure web interface
-                </p>
-            </div>
-            <div class="hero-image5">
-                <img src="static/MAP4.png" alt="MAP-Nano Software Interface">
-            </div>
-        </div>
-    </div>
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" crossorigin="crossorigin" as="font">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
     
-</section>
-<script>
-    const section2 = document.querySelector('#section2');
+    <!-- Shopify Buy SDK -->
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            document.body.style.backgroundColor = '#232323'; //#232323
-          } else {
-            document.body.style.backgroundColor = '#ffffff';
-          }
+    <!-- JavaScript for menu toggle and Shopify integration -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Menu toggle functionality
+        const menuToggle = document.querySelector('.menu-toggle');
+        const nav = document.querySelector('nav');
+
+        menuToggle.addEventListener('click', function () {
+            nav.classList.toggle('active');
         });
-      },
-      {
-        threshold: 0.5 // adjust depending on how much of the section should be visible
-      }
-    );
-  
-    observer.observe(section2);
-  </script>
-  
+
+        // Shopify integration
+        const client = ShopifyBuy.buildClient({
+            domain: '2e2e5e-7c.myshopify.com',
+            storefrontAccessToken: 'a791b0c74fab70851230df08048bc7dc'
+        });
+
+        function updateServices(products) {
+            const servicesContainer = document.querySelector('.services-container');
+            servicesContainer.innerHTML = products.slice(0, 3).map(product => `
+                <div class="service-card">
+                    <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
+                    <h3>${product.title}</h3>
+                    <p>${product.description}</p>
+                </div>
+            `).join('');
+        }
+
+        client.product.fetchAll()
+            .then(updateServices)
+            .catch(error => {
+                console.error('Error fetching Shopify products:', error);
+                // Fallback to original content if there's an error
+            });
+    });
+    </script>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L9FYNRKVNH');
+</script>
+
+<body>
+  <!-- Top navigation (simple) -->
+  <header class="navbar">
+    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
+    <nav class="nav-links">
+      <a href="./">Inicio</a>
+      <a href="./aboutUs">Nosotros</a>
+      <a href="./products">Productos</a>
+      <a href="./services">Servicios</a>
+      <a href="./blog" id="blog-link">BCCBlog</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Login</a>
+      <a class= "btn btn-dark" href="./contactUs">Contact</a>
+    </div>
+  </header>
+
+    <main>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+        <div class="hero-copy reveal">
+            <p class="eyebrow">Imagen → Decisión</p>
+            <h1>Abrimos nuevas vías para el <span class="accent">descubrimiento microestructural</span></h1>
+            <p class="sub">
+            Nuestra plataforma convierte microscopía en métricas reproducibles para materiales, biología e ingeniería.
+            </p>
+            <div class="hero-cta">
+            <a class="btn btn-dark" href="#platform">Explorar plataforma</a>
+            <a class="btn btn-ghost" href="/product_maps_nano">Probar MAP-Nano</a>
+            </div>
+            <p class="meta">Compatible con SEM/óptica · Segmentación robusta · Rugosidad, porosidad y morfología</p>
+        </div>
+        <div class="hero-media reveal">
+        <!-- Usa tu imagen real del producto -->
+        <img src="static/MAP3.png" alt="Platform overview" />
+        <!-- <div class="media-caption">Ver la demo de 2 min de la plataforma</div> -->
+        <div class="media-caption">Prueba MAPs</div>
+        </div>
+        </div>
+    </section>
+
+    <!-- SOLUCIONES POR SECTOR -->
+    <section id="solutions" class="section">
+        <div class="container">
+        <h2>Soluciones por sector</h2>
+        <p class="lead">Elija su área para ver casos de uso, flujos y resultados medibles.</p>
+        <div class="grid-4 cards">
+            <a class="card" href="/products#nano">
+            <div class="card-thumb">
+                <!-- Imagen que se estira para adaptarse a las dimensiones del card-thumb-->
+                 <img src="static/particles.jpg" alt="Nanotecnología" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Nanotecnología</div>
+            <div class="card-text">Caracterización cuantitativa de superficies y partículas.</div>
+            <div class="card-link">Ver casos de uso →</div>
+            </a>
+            <a class="card" href="/products#bio">
+            <div class="card-thumb">
+                <img src="static/spores.jpeg" alt="coming soon" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Biología / Cultivos</div>
+            <div class="card-text">Detección de núcleos, conteo celular, viabilidad.</div>
+            <div class="card-link">Ver casos de uso →</div>
+            </a>
+            <a class="card" href="/products#ing">
+            <div class="card-thumb">
+                <img src="static/hormigon.jpg" alt="Ingeniería" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Ingeniería / Materiales</div>
+            <div class="card-text">Rugosidad, porosidad, defectos y control de calidad.</div>
+            <div class="card-link">Ver casos de uso →</div>
+            </a>
+            <a class="card" href="/products#med">
+            <div class="card-thumb">
+                <img src="static/blood_cells.webp" alt="Medicina" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Medicina (coming soon)</div>
+            <div class="card-text">Soporte a diagnóstico por imagen y telemetría.</div>
+            <div class="card-link">Ver casos de uso →</div>
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- PLATAFORMA -->
+    <section id="platform" class="section section-alt">
+        <div class="container grid-2">
+        <div>
+            <h2>Plataforma BCC: de imagen a decisión</h2>
+            <p class="lead">
+            Suite para ingestión, segmentación, medición y reporte. Principios: precisión, reproducibilidad, trazabilidad,
+            automatización y colaboración.
+            </p>
+            <ul class="feature-list">
+            <li>Pipelines configurables (umbral, morfología, texturas, shape fitting)</li>
+            <li>Métricas: distribución (Weibull/Gauss), rugosidad, porosidad y contorno</li>
+            <li>Exportación: reportes PDF/CSV, API y dashboards</li>
+            <li>Multiplataforma (desktop & web), control de versiones y auditoría</li>
+            </ul>
+            <div class="row-cta">
+            <a class="btn btn-dark" href="/contactUs?demo=1">Agendar demo</a>
+            <a class="btn btn-ghost" href="/blog">Ver documentación</a>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+            <div class="panel-title">Componentes de la plataforma</div>
+            <div class="grid-2 cards cards-tight">
+                <a class="card" href="/product_maps_nano">
+                <div class="card-thumb sm">
+                 <img src="static/map_nano_logo.png" alt="MAP-Nano" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Nano</div>
+                <div class="card-text">Análisis de micro-estructuras y superficies.</div>
+                <div class="card-link">Ver producto →</div>
+                </a>
+                <a class="card" href="/product_maps#map-bio">
+                <div class="card-thumb sm">
+                    <img src="static/map_bio_logo.png" alt="MAP-Bio" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Bio</div>
+                <div class="card-text">Conteo/detección celular y morfología.</div>
+                <div class="card-link">Ver producto →</div>
+                </a>
+                <a class="card" href="/product_maps#map-ing">
+                <div class="card-thumb sm">
+                    <img src="static/map_ing_logo.png" alt="MAP-Ing" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Ing</div>
+                <div class="card-text">Porosidad, defectos y control de calidad.</div>
+                <div class="card-link">Ver producto →</div>
+                </a>
+                <a class="card" href="/product_maps#map-med">
+                <div class="card-thumb sm">
+                    <img src="static/map_med_logo.png" alt="MAP-Med" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Med</div>
+                <div class="card-text">Asistentes a imagen clínica (R&D).</div>
+                <div class="card-link">Ver producto →</div>
+                </a>
+            </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- CASOS DE USO -->
+    <section class="section">
+        <div class="container">
+        <h2>Casos de uso destacados</h2>
+        <div class="grid-3 cards">
+            <a class="card">
+            <div class="card-thumb">
+                <!-- Imagen que se estira para adaptarse a las dimensiones del card-thumb-->
+                 <img src="static/MAP3.png" alt="Rugosidad superficial" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Rugosidad superficial</div>
+            <div class="card-text">Pipeline reproducible para Ra/Rq/Rz con máscaras y batch.</div>
+            <!-- <div class="card-link">Ver flujo →</div> -->
+            </a>
+            <a class="card">
+            <div class="card-thumb">
+                <img src="static/defect.png" alt="Detección de defectos" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Detección de irregularidades</div>
+            <div class="card-text">Métodos variados para identificar defectos en muestras</div>
+            <!-- <div class="card-link">Ver flujo →</div> -->
+            </a>
+            <a class="card">
+            <div class="card-thumb">
+                <img src="static/gyrosigma.png" alt="Clasificación morfológica" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Análisis celular</div>
+            <div class="card-text">Conteo y análisis morfológico de células</div>
+            <!-- <div class="card-link">Ver flujo →</div> -->
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- RECURSOS -->
+    <section id="resources" class="section section-alt">
+        <div class="container">
+        <div class="row-between">
+            <div>
+            <h2>Recursos</h2>
+            <p class="lead">Aprenda con guías, webinars y notas de lanzamiento.</p>
+            </div>
+            <a class="btn btn-ghost" href="/blog">Ver todos</a>
+        </div>
+        <div class="grid-3 cards">
+            <a class="card" href="/blog">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">Guía rápida de MAP-Nano</div>
+            <div class="card-text">PDF • 8 min de lectura</div>
+            <div class="card-link">Abrir →</div>
+            </a>
+            <a class="card" href="/blog">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">Webinar: Porosidad práctica</div>
+            <div class="card-text">Video • 24 min</div>
+            <div class="card-link">Abrir →</div>
+            </a>
+            <a class="card" href="/blog">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">Notas de versión 2025-Q3</div>
+            <div class="card-text">Changelog • Plataforma BCC</div>
+            <div class="card-link">Abrir →</div>
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- PRENSA / PREMIOS -->
+    <section class="section">
+        <div class="container">
+        <hr class="divider" style="border: none; border-top: 1px solid var(--line); margin: 40px 0;">
+        <h2>En medios y reconocimientos</h2>
+        <div class="logo-row">
+            <div class="logo-box">
+                <!-- imagen centrada dentro del logo-box-->
+                <img src="static/mescyt_logo.png" alt="Mescyt" style="max-height: 190%; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+            <div class="logo-box">
+                <img src="static/proindustria_logo.png" alt="Proindustria" style="max-height: 160%; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+            <!-- <div class="logo-box"></div>
+            <div class="logo-box"></div>
+            <div class="logo-box"></div>
+            <div class="logo-box"></div> -->
+        </div>
+        <p class="meta">Premio ProIndustria 2025 • 2.º lugar MESCyT 2024 • Cobertura nacional</p>
+        <!-- Subtle horizontal line for visual division-->
+        <hr class="divider" style="border: none; border-top: 1px solid var(--line); margin: 10px 0;">
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="section cta-final">
+        <div class="container center">
+        <h2>¿Listo para ver MAPs en acción?</h2>
+        <p class="lead">Agende una demo o empiece con el trial de MAP-Nano. Respondemos en menos de 24 h.</p>
+        <div class="hero-cta">
+            <a class="btn btn-dark" href="/contactUs?demo=1">Agendar demo</a>
+            <a class="btn btn-ghost" href="/product_maps">Descargar trial</a>
+        </div>
+        </div>
+    </section>
+    </main>
+
+      <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container foot-inner">
+      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+    <script>
+    // Año en footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Toggle nav en móvil
+    const navToggle = document.getElementById('navToggle');
+    const mainNav = document.getElementById('mainNav');
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+        mainNav.classList.toggle('open');
+        });
+    }
+    </script>
+    <!-- ===== /HOME BCC ===== -->
+
+
+    <script>
+    (function(){
+    const els = document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+    }, {threshold:.15});
+    els.forEach(el=>io.observe(el));
+    })();
+    </script>
+
+    <script>
+    (function(){
+    const nav=document.querySelector('.navbar');
+    if(!nav) return;
+    const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+    setH(); addEventListener('resize', setH);
+    })();
+    </script>
+
+    <script>
+    (function(){
+    const img = document.querySelector('.hero-media img');
+    if(!img) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;  // respeta accesibilidad
+    const hasRoom = () => (window.innerHeight || 0) >= 640;              // solo si hay altura
+    const onScroll = () => {
+        if(!hasRoom()) { img.style.transform = ''; return; }
+        const y = Math.min(1, window.scrollY / ((window.innerHeight||1)));
+        img.style.transform = `translateY(${y * 12}px)`;                   // 0→12px
+    };
+    onScroll(); addEventListener('scroll', onScroll, {passive:true});
+    addEventListener('resize', onScroll);
+    })();
+    </script>
+
+
+
+
 </body>
 </html>

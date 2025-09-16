@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalles de MAPs - BCC Technologies</title>
+  <!-- <link rel="stylesheet" href="layout.css"> -->
+  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="product_maps_nano.css">
+  <link rel="icon" type="image/png" href="static/Favi2.png">
+
+  <!-- Google tag (gtag.js) EN HEAD -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L9FYNRKVNH');
+  </script>
+
+  <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+    "@context":"https://schema.org",
+    "@type":"SoftwareApplication",
+    "name":"MAP-Nano",
+    "operatingSystem":"Windows, Linux, macOS, Web",
+    "applicationCategory":"ScientificSoftware",
+    "description":"Reproducible SEM/optical image analysis for roughness, porosity and morphology with batch pipelines.",
+    "url":"https://bcctechnologies.com.do/product_maps",
+    "image":"https://bcctechnologies.com.do/static/mapnano.png",
+    "offers": {
+        "@type": "Offer",
+        "url": "https://bcctechnologies.com.do/contactUs?demo=1",
+        "price":"0",
+        "priceCurrency":"USD",
+        "availability":"https://schema.org/InStock"
+    },
+    "publisher": {
+        "@type":"Organization",
+        "name":"BCC Technologies",
+        "url":"https://bcctechnologies.com.do/"
+    }
+    }
+    </script>
+
+    <!-- JavaScript for menu toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('nav');
+    
+            menuToggle.addEventListener('click', function () {
+                nav.classList.toggle('active');
+            });
+        });
+    </script>
+</head>
+
+
+<body>
+  <!-- Top navigation (simple) -->
+  <header class="navbar">
+    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
+    <nav class="nav-links">
+      <a href="./">Inicio</a>
+      <a href="./aboutUs">Nosotros</a>
+      <a href="./products">Productos</a>
+      <a href="./services">Servicios</a>
+      <a href="./blog" id="blog-link">BCCBlog</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Login</a>
+      <a class= "btn btn-dark" href="./contactUs">Contact</a>
+    </div>
+  </header>
+
+  <!-- HERO PRODUCT -->
+  <section class="hero-product">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">MAPs Platform</p>
+        <h1>MAP-Nano</h1>
+        <p class="sub">
+          Powerful analysis for <strong>Scanning Electron Microscopy</strong> and optical images — reproducible segmentation, roughness and size distributions.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Windows</span>
+          <span class="chip">Linux</span>
+          <span class="chip">macOS</span>
+          <span class="chip">Web</span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-dark"
+             href="https://github.com/bcc-technologies/MAP-Nano_releases/releases/latest/download/MAP-Nano-Setup.exe">
+            Download for Windows
+          </a>
+          <a class="btn btn-ghost" href="./contactUs?demo=1">Request a demo</a>
+          <!-- <a class="btn btn-ghost" href="./blog">Quick guide (PDF)</a> -->
+        </div>
+        <p class="meta">SEM/optical · Batch pipelines · Roughness · Porosity · Morphology · CSV/PDF export</p>
+      </div>
+      <figure class="hero-media">
+        <img src="static/mapnano.png" alt="MAP-Nano — main UI" />
+        <figcaption>Explore a 2-minute walkthrough</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+  <div class="container">
+    <div class="feature-row">
+      <figure class="feature-media">
+        <img src="static/IMG_0649.png" alt="MAP-Nano software interface" loading="lazy" />
+      </figure>
+      <div class="feature-copy">
+        <h3>Discover better materials, faster</h3>
+        <p>
+          Using MAP-Nano, the characterization process for novel materials is faster
+          and more accurate than ever before.
+        </p>
+        <!-- (Opcional) CTAs coherentes con la página -->
+        <!--
+        <div class="row-cta">
+          <a class="btn btn-dark"
+             href="https://github.com/bcc-technologies/MAP-Nano_releases/releases/latest/download/MAP-Nano-Setup.exe">
+            Download for Windows
+          </a>
+          <a class="btn btn-ghost" href="./contactUs?demo=1">Request a demo</a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- SOLUTIONS (se puede mover a /product_maps general si prefieres) -->
+  <section class="section">
+    <div class="container">
+      <h2>Explore our solutions</h2>
+      <p class="lead">Choose your area to see typical workflows, inputs and outputs.</p>
+      <div class="grid-2 cards">
+        <a class="card" href="./products#bio">
+          <div class="card-thumb" style="background-image:url('static/life-science.jpg')"></div>
+          <div class="card-title">Life Science & Microbiology</div>
+          <div class="card-text">Segment, quantify and characterize cells and structures to accelerate discovery.</div>
+          <div class="card-link">See more →</div>
+        </a>
+        <a class="card" href="./products#nano">
+          <div class="card-thumb" style="background-image:url('static/map-meterial.jpg')"></div>
+          <div class="card-title">Materials Science</div>
+          <div class="card-text">Quantify size distributions, porosity and defects on SEM/optical images.</div>
+          <div class="card-link">See more →</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES (4 filas reutilizando el mismo componente) -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="feature-row">
+        <div class="feature-copy">
+          <h3>Intuitive UI for fast inspection</h3>
+          <p>Pick ROI and obtain distribution metrics (Weibull/Gaussian), with pre-configured and customizable edge detection.</p>
+          <ul class="feature-bullets">
+            <li>Interactive ROI tools with masks</li>
+            <li>Batch mode for entire folders</li>
+            <li>Traceability and reproducibility</li>
+          </ul>
+        </div>
+        <figure class="feature-media">
+          <img src="static/MAP1.png" alt="ROI and distribution tools" loading="lazy" />
+        </figure>
+      </div>
+
+      <div class="feature-row reverse">
+        <div class="feature-copy">
+          <h3>Shape detection & size distributions</h3>
+          <p>State-of-the-art shape fitting to derive robust size distributions and morphological stats.</p>
+          <ul class="feature-bullets">
+            <li>Contours, skeletons and curve fitting</li>
+            <li>Export to CSV/PDF and API</li>
+            <li>Quality checks and outlier control</li>
+          </ul>
+        </div>
+        <figure class="feature-media">
+          <img src="static/MAP2.png" alt="Shape detection workflows" loading="lazy" />
+        </figure>
+      </div>
+
+      <div class="feature-row">
+        <div class="feature-copy">
+          <h3>Surface roughness — done right</h3>
+          <p>Study height distributions and <em>roughness</em> at different scales; build computational models from experimental data.</p>
+          <ul class="feature-bullets">
+            <li>Ra / Rq / Rz and custom metrics</li>
+            <li>Multi-scale analysis</li>
+            <li>Reports with figures and tables</li>
+          </ul>
+        </div>
+        <figure class="feature-media">
+          <img src="static/MAP3.png" alt="Surface roughness analysis" loading="lazy" />
+        </figure>
+      </div>
+
+      <div class="feature-row reverse">
+        <div class="feature-copy">
+          <h3>Web & cross-platform support</h3>
+          <p>Run locally on Windows, Linux, macOS — or use a secure web interface for collaboration.</p>
+          <ul class="feature-bullets">
+            <li>User management and roles</li>
+            <li>Versioned analyses</li>
+            <li>Cloud or on-prem deployment</li>
+          </ul>
+        </div>
+        <figure class="feature-media">
+          <img src="static/MAP4.png" alt="Web and desktop support" loading="lazy" />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPECS -->
+  <section class="section">
+    <div class="container">
+      <h2>Technical specs</h2>
+      <div class="specs-grid">
+        <div>
+          <h4>Inputs</h4>
+          <p>SEM/optical images (PNG/JPG/TIFF), batch folders, ROI masks.</p>
+        </div>
+        <div>
+          <h4>Outputs</h4>
+          <p>CSV tables, annotated images, PDF reports, API JSON.</p>
+        </div>
+        <div>
+          <h4>Algorithms</h4>
+          <p>Thresholding, morphology, contour/skeleton, shape fitting, distributions (Weibull/Gaussian).</p>
+        </div>
+        <div>
+          <h4>Compatibility</h4>
+          <p>Windows, Linux, macOS, Browser (secure web).</p>
+        </div>
+      </div>
+      <div class="row-cta">
+        <a class="btn btn-dark" href="./contactUs">Request a demo</a>
+        <a class="btn btn-ghost" href="./blog">Release notes</a>
+        <a class="btn btn-ghost" href="./blog">Quick guide (PDF)</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container foot-inner">
+      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+
+
+<script>
+    const section2 = document.querySelector('.section.section-alt'); // la primera sección alterna
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            document.body.style.backgroundColor = '#232323'; //#232323
+          } else {
+            document.body.style.backgroundColor = '#ffffff';
+          }
+        });
+      },
+      {
+        threshold: 0.5 // adjust depending on how much of the section should be visible
+      }
+    );
+  
+    observer.observe(section2);
+</script>
+  
+<script>
+  const isWin = navigator.platform.toLowerCase().includes('win');
+  if (!isWin) {
+    document.querySelectorAll('a.btn.btn-dark[href*="Setup.exe"]').forEach(a => a.style.display = 'none');
+  }
+</script>
+
+
+<script>
+  (function(){
+    const nav = document.querySelector('.navbar');
+    const setNavH = () => {
+      if (!nav) return;
+      document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+    };
+    setNavH();
+    window.addEventListener('resize', setNavH);
+  })();
+</script>
+
+
+<script>
+  (function(){
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) || els.length===0) return els.forEach(el=>el.classList.add('is-visible'));
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }
+      });
+    }, { threshold:.15 });
+    els.forEach(el=>io.observe(el));
+  })();
+</script>
+
+<script>
+  (function(){
+    const img = document.querySelector('.hero-media img');
+    if(!img) return;
+    const onScroll = () => {
+      const y = Math.min(1, window.scrollY / (window.innerHeight || 1));
+      img.style.transform = `translateY(${y * 12}px)`; /* 0→12px */
+    };
+    onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+</script>
+
+
+</body>
+</html>
