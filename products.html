@@ -1,127 +1,526 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos - BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="products.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-
-    <!-- JavaScript for menu toggle and Shopify integration -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
-
-            menuToggle.addEventListener('click', function () {
-                nav.classList.toggle('active');
-            });
-
-            // Shopify integration
-            const client = ShopifyBuy.buildClient({
-                domain: '2e2e5e-7c.myshopify.com',
-                storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
-            });
-
-            function updateProducts(products) {
-                const productsContainer = document.querySelector('.products-container');
-                productsContainer.innerHTML += products.map(product => `
-                    <div class="product-card">
-                        <img src="${product.images[0].src}" alt="${product.title}">
-                        <h3>${product.title}</h3>
-                        <p>${product.description}</p>
-                        <a href="${product.onlineStoreUrl}" class="buy-button">Ver más</a>
-                    </div>
-                `).join('');
-            }
-
-            client.product.fetchAll()
-                .then(updateProducts)
-                .catch(error => {
-                    console.error('Error fetching Shopify products:', error);
-                    // Fallback to original content if there's an error
-                });
-        });
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Productos — BCC Technologies</title>
+  <link rel="icon" type="image/png" href="static/Favi2.png" />
+  <link rel="stylesheet" href="products.css" />
+  <link rel="stylesheet" href="login.css" />
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L9FYNRKVNH');
-</script>
-
-
 <body>
-    <!-- Header section -->
-    <header>
-        <div class="header-container">
-            <div class="menu-toggle">&#9776;</div>
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-                <hr class="solid">
-                <ul>
-                    <li><a href="./">Inicio</a></li>
-                    <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./products">Productos</a></li>
-                    <li><a href="./contactUs">Contáctanos</a></li>
-                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>    
+  <!-- Navbar de tu sitio -->
+  <header class="navbar">
+    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
+    <nav class="nav-links">
+      <a href="./">Inicio</a>
+      <a href="./aboutUs">Nosotros</a>
+      <a href="./products" aria-current="page">Productos</a>
+      <a href="./services">Servicios</a>
+      <a href="./blog">Recursos</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Login</a>
+      <a class="btn btn-dark" href="./contactUs">Contacto</a>
+    </div>
+  </header>
 
-    <!-- Hero section -->
-    <section class="hero">
-        <div class="particles" id="particles"></div>
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1>Descubre Nuestros Productos Innovadores</h1>
-                <p>Explora nuestra gama de productos para ciencia y empresas</p>
-                <a href="#products" class="cta-button">Ver Productos</a>
-            </div>
-        </div>
-    </section>
+  <!-- ================= HERO: Portfolio Navigator ================= -->
+  <section class="hero" data-theme="software">
+    <!-- Fondo temático del hero -->
+    <div class="hero-bg" aria-hidden="true">
+      <div class="layer base"></div>
+      <div class="layer grid"></div>
+      <div class="layer rings"></div>   <!-- DLS -->
+      <div class="layer arcs"></div>    <!-- EIS -->
+      <div class="layer stripes"></div> <!-- Bundles -->
+    </div>
 
-    <!-- Productos section -->
-    <section id="products" class="products">
-        <h2>Nuestros Productos</h2>
-        <div class="products-container">
-            <!-- Ejemplo de producto añadido manualmente -->
-            <div class="product-card">
-                <img src="static/product_logo_MAP.png" alt="MAPs - Programa de Análisis de Microestructuras">
-                <h3>MAPs</h3>
-                <p>Línea de software diseñados para el análisis de imágenes microscópicas.</p>
-                <p><b>Consulta los precios de nuestras licencias anuales</b></p>
-                <a href="./product_maps" class="buy-button">Ver más</a>
-            </div>
-            <!-- Los productos de Shopify se cargarán aquí dinámicamente -->
-        </div>
-    </section>
+    <div class="container hero-grid">
+      <!-- Copy -->
+      <div class="hero-copy">
+        <p class="eyebrow">Portafolio BCC</p>
+        <h1>Instrumentación y software para caracterización y análisis</h1>
+        <p class="lead">
+          Desde espectrometría de impedancia (EIS) y DLS, hasta la suite MAPs para análisis de imagen.
+          Encuentra el producto ideal en segundos.
+        </p>
 
-    <!-- Footer section -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+        <nav class="hero-tabs" role="tablist" aria-label="Familias de producto">
+          <button role="tab" aria-selected="true"  aria-controls="pane-software"        id="tab-software"        data-pane="#pane-software">Software</button>
+          <button role="tab" aria-selected="false" aria-controls="pane-instrumentacion" id="tab-instrumentacion" data-pane="#pane-instrumentacion">Instrumentación</button>
+          <button role="tab" aria-selected="false" aria-controls="pane-bundles"         id="tab-bundles"         data-pane="#pane-bundles">Bundles</button>
+        </nav>
 
-    <!-- Script para efecto parallax -->
-    <script>
-        document.addEventListener('scroll', function() {
-            const particles = document.getElementById('particles');
-            let offset = window.pageYOffset;
-            particles.style.backgroundPositionY = offset * 0.7 + 'px';
+        <div class="hero-cta">
+          <a class="btn btn-dark" href="#catalogo">Ver productos</a>
+          <a class="btn" href="#comparador">Comparar</a>
+        </div>
+      </div>
+
+      <!-- Panel visual dinámico -->
+      <div class="hero-visual">
+        <!-- Software -->
+        <div class="hero-pane active" id="pane-software" role="tabpanel" aria-labelledby="tab-software">
+          <div class="hero-showcase">
+            <a class="showcase-item" href="./product_maps_nano.html">
+              <img src="static/defect.png" alt="MAP-Nano" loading="lazy" />
+              <strong>MAP-Nano</strong>
+              <div class="showcase-meta">Rugosidad, porosidad y morfología</div>
+            </a>
+            <a class="showcase-item" href="./product_maps#map-bio">
+              <img src="static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
+              <strong>MAP-Bio</strong>
+              <div class="showcase-meta">Conteo y análisis morfológico</div>
+            </a>
+            <a class="showcase-item" href="#">
+              <img src="static/generated_eis.png" alt="EIS Toolkit" loading="lazy" />
+              <strong>EIS-Toolkit</strong>
+              <div class="showcase-meta">Ajuste de circuitos equivalentes</div>
+            </a>
+          </div>
+        </div>
+        <!-- Instrumentación -->
+        <div class="hero-pane" id="pane-instrumentacion" role="tabpanel" aria-labelledby="tab-instrumentacion">
+          <div class="hero-showcase">
+            <a class="showcase-item" href="#catalogo" data-scroll-to="eis">
+              <img src="static/product_eis.jpg" alt="EIS-2000" loading="lazy" />
+              <strong>EIS-2000</strong>
+              <div class="showcase-meta">10 µHz–1 MHz • 10 µV–5 V</div>
+            </a>
+            <a class="showcase-item" href="#catalogo" data-scroll-to="dls">
+              <img src="static/product_dls.jpg" alt="DLS-Pro" loading="lazy" />
+              <strong>DLS-Pro</strong>
+              <div class="showcase-meta">1–5,000 nm • 15–90 °C</div>
+            </a>
+            <a class="showcase-item" href="#catalogo" data-scroll-to="dls">
+              <img src="static/product_dls2.jpg" alt="DLS-Mini" loading="lazy" />
+              <strong>DLS-Mini</strong>
+              <div class="showcase-meta">Compacto para docencia</div>
+            </a>
+          </div>
+        </div>
+        <!-- Bundles -->
+        <div class="hero-pane" id="pane-bundles" role="tabpanel" aria-labelledby="tab-bundles">
+          <div class="hero-showcase">
+            <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
+              <img src="static/bundle_dls_bio.jpg" alt="DLS-Pro + MAP-Bio" loading="lazy" />
+              <strong>DLS-Pro + MAP-Bio</strong>
+              <div class="showcase-meta">PSD + morfología en una sola vista</div>
+            </a>
+            <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
+              <img src="static/bundle_eis_toolkit.jpg" alt="EIS-2000 + EIS-Toolkit" loading="lazy" />
+              <strong>EIS-2000 + EIS-Toolkit</strong>
+              <div class="showcase-meta">Medición + fitting reproducible</div>
+            </a>
+            <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
+              <img src="static/bundle_microscopy_nano.jpg" alt="Microscopía + MAP-Nano" loading="lazy" />
+              <strong>Microscopía + MAP-Nano</strong>
+              <div class="showcase-meta">Imagen → métrica → reporte</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Filtro sticky ================= -->
+  <div class="filter-bar" id="catalogo">
+    <div class="container">
+      <form id="filtersForm" class="filters" role="search" aria-label="Filtrar productos">
+        <div class="filters-row">
+          <!-- Familia: selección única (segmentado) -->
+          <div class="group" role="radiogroup" aria-label="Familia">
+            <span class="label">Familia:</span>
+            <button type="button" class="seg is-active" data-group="family" data-value="all" aria-pressed="true">Todo</button>
+            <button type="button" class="seg" data-group="family" data-value="software" aria-pressed="false">Software</button>
+            <button type="button" class="seg" data-group="family" data-value="instrumentacion" aria-pressed="false">Instrumentación</button>
+            <button type="button" class="seg" data-group="family" data-value="bundles" aria-pressed="false">Bundles</button>
+          </div>
+
+          <!-- Método: multi-select (pills) -->
+          <div class="group" aria-label="Método">
+            <span class="label">Método:</span>
+            <button type="button" class="pill" data-group="method" data-value="EIS" aria-pressed="false">EIS</button>
+            <button type="button" class="pill" data-group="method" data-value="DLS" aria-pressed="false">DLS</button>
+            <button type="button" class="pill" data-group="method" data-value="Imaging" aria-pressed="false">Imaging</button>
+          </div>
+
+          <!-- Uso: multi-select (pills) -->
+          <div class="group" aria-label="Uso">
+            <span class="label">Uso:</span>
+            <button type="button" class="pill" data-group="use" data-value="ID" aria-pressed="false">I+D</button>
+            <button type="button" class="pill" data-group="use" data-value="QA" aria-pressed="false">QA/QC</button>
+            <button type="button" class="pill" data-group="use" data-value="Teaching" aria-pressed="false">Docencia</button>
+          </div>
+
+          <!-- Búsqueda -->
+          <div class="group search">
+            <label for="filterSearch" class="visually-hidden">Buscar</label>
+            <input id="filterSearch" type="search" placeholder="Buscar por nombre, método o etiqueta…" inputmode="search" />
+          </div>
+
+          <!-- Acciones -->
+          <div class="group actions">
+            <button type="button" id="clearFilters" class="btn btn-ghost" hidden>Limpiar</button>
+          </div>
+        </div>
+
+        <!-- Chips activos + meta resultados -->
+        <div class="filters-meta">
+          <div class="active-chips" id="activeChips" aria-live="polite"></div>
+          <div class="result-meta"><span id="resultCount"></span></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Grid de productos ================= -->
+  <section class="products section">
+    <div class="container">
+      <h2>Catálogo</h2>
+      <div class="products-grid" id="productsGrid">
+        <!-- Instrumentación → EIS -->
+        <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="ID,QA" id="eis">
+          <img src="static/product_eis.jpg" alt="EIS-2000" loading="lazy" />
+          <h3>EIS-2000</h3>
+          <p>10 µHz–1 MHz • 10 µV–5 V • Rack</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+          </div>
+        </article>
+        <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="Teaching,ID">
+          <img src="static/product_eis2.jpg" alt="EIS-1000" loading="lazy" />
+          <h3>EIS-1000</h3>
+          <p>1 mHz–500 kHz • Benchtop</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+          </div>
+        </article>
+
+        <!-- Instrumentación → DLS -->
+        <article class="product-card reveal" data-family="instrumentacion" data-method="DLS" data-use="ID,QA" id="dls">
+          <img src="static/product_dls.jpg" alt="DLS-Pro" loading="lazy" />
+          <h3>DLS-Pro</h3>
+          <p>1–5,000 nm • 15–90 °C • PSD</p>
+          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrumento</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+          </div>
+        </article>
+        <article class="product-card reveal" data-family="instrumentacion" data-method="DLS" data-use="Teaching">
+          <img src="static/product_dls2.jpg" alt="DLS-Mini" loading="lazy" />
+          <h3>DLS-Mini</h3>
+          <p>Compacto para docencia • PSD básico</p>
+          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrumento</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+          </div>
+        </article>
+
+        <!-- Software → MAP Suite -->
+        <article class="product-card reveal" data-family="software" data-method="Imaging" data-use="ID,QA">
+          <img src="static/mapnano.png" alt="MAP-Nano" loading="lazy" />
+          <h3>MAP-Nano</h3>
+          <p>Rugosidad, porosidad y morfología • Web/Desktop</p>
+          <div class="product-tags"><span class="tag">Imaging</span><span class="tag">Software</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./product_maps#map-nano">Ver más</a>
+            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+          </div>
+        </article>
+        <article class="product-card reveal" data-family="software" data-method="Imaging" data-use="ID">
+          <img src="static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
+          <h3>MAP-Bio</h3>
+          <p>Conteo y morfología • Web/Desktop</p>
+          <div class="product-tags"><span class="tag">Imaging</span><span class="tag">Software</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./product_maps#map-bio">Ver más</a>
+            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+          </div>
+        </article>
+        <article class="product-card reveal" data-family="software" data-method="EIS" data-use="ID,QA">
+          <img src="static/product_placeholder.png" alt="EIS-Toolkit" loading="lazy" />
+          <h3>EIS-Toolkit</h3>
+          <p>Fitting de circuitos equivalentes • Desktop</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Software</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="#">Ver más</a>
+            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+          </div>
+        </article>
+
+        <!-- Bundles -->
+        <article class="product-card reveal" data-family="bundles" data-method="DLS,Imaging" data-use="QA,ID" id="bundles">
+          <img src="static/bundle_dls_bio.jpg" alt="DLS-Pro + MAP-Bio" loading="lazy" />
+          <h3>DLS-Pro + MAP-Bio</h3>
+          <p>PSD + morfología • Integración lista</p>
+          <div class="product-tags"><span class="tag">Bundle</span><span class="tag">DLS + Imaging</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha</a>
+          </div>
+        </article>
+        <article class="product-card reveal" data-family="bundles" data-method="EIS" data-use="ID,QA">
+          <img src="static/bundle_eis_toolkit.jpg" alt="EIS-2000 + EIS-Toolkit" loading="lazy" />
+          <h3>EIS-2000 + EIS-Toolkit</h3>
+          <p>Medición + fitting reproducible</p>
+          <div class="product-tags"><span class="tag">Bundle</span><span class="tag">EIS</span></div>
+          <div class="card-cta">
+            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
+            <a class="btn btn-ghost" href="#">Ficha</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Comparador simple ================= -->
+  <section class="compare section" id="comparador">
+    <div class="container">
+      <h2>Comparador rápido</h2>
+      <div class="lead">Especificaciones clave por familia (valores de ejemplo; ajustar a tus modelos reales).</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Método</th>
+              <th>Rango clave</th>
+              <th>Salidas</th>
+              <th>Formato</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EIS-2000</td>
+              <td>EIS</td>
+              <td>10 µHz–1 MHz; 10 µV–5 V</td>
+              <td>Bode, Nyquist, parámetros</td>
+              <td>Rack</td>
+            </tr>
+            <tr>
+              <td>DLS-Pro</td>
+              <td>DLS</td>
+              <td>1–5,000 nm; 15–90 °C</td>
+              <td>PSD, ζ</td>
+              <td>Benchtop</td>
+            </tr>
+            <tr>
+              <td>MAP-Nano</td>
+              <td>Imaging</td>
+              <td>Rugosidad, porosidad, morfología</td>
+              <td>CSV, PDF, API</td>
+              <td>Web/Desktop</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container foot-inner">
+      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ================= Scripts ================= -->
+  <script>
+    // Año
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Ajustar --nav-h a la altura real del navbar
+    (function(){
+      const nav=document.querySelector('.navbar');
+      if(!nav) return;
+      const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+      setH(); addEventListener('resize', setH);
+    })();
+
+    // Tabs del hero (tema + panes)
+    (function(){
+      const tabs  = document.querySelectorAll('.hero-tabs [role="tab"]');
+      const panes = document.querySelectorAll('.hero-pane');
+      const hero  = document.querySelector('.hero');
+
+      function setThemeFromTab(id){
+        const theme = id==='tab-instrumentacion' ? 'instrumentacion'
+                    : id==='tab-bundles'         ? 'bundles'
+                    : 'software';
+        hero?.setAttribute('data-theme', theme);
+      }
+      // Tema inicial según tab seleccionado
+      setThemeFromTab(document.querySelector('.hero-tabs [aria-selected="true"]')?.id || 'tab-software');
+
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabs.forEach(b=>b.setAttribute('aria-selected','false'));
+          btn.setAttribute('aria-selected','true');
+          panes.forEach(p=>p.classList.remove('active'));
+          const pane = document.querySelector(btn.dataset.pane);
+          if(pane) pane.classList.add('active');
+          setThemeFromTab(btn.id);
         });
-    </script>
+      });
+    })();
+
+    // Scroll a secciones desde items del hero
+    document.querySelectorAll('[data-scroll-to]').forEach(el=>{
+      el.addEventListener('click',(e)=>{
+        const id = el.getAttribute('data-scroll-to');
+        const target = document.getElementById(id);
+        if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+      });
+    });
+
+    // Reveal on scroll
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+      const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+      }, {threshold:.15});
+      els.forEach(el=>io.observe(el));
+    })();
+
+    /* ===== Filters v2: estado, URL sync, búsqueda, chips ===== */
+    (function(){
+      const grid = document.getElementById('productsGrid');
+      if(!grid) return;
+
+      // Helpers
+      const $ = (s, r=document) => r.querySelector(s);
+      const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+      const normalize = (s='') => s.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      // Estado
+      const state = { family:'all', method:[], use:[], search:'' };
+
+      // Elementos
+      const cards = $$('.product-card', grid);
+      const segs  = $$('.seg');
+      const pills = $$('.pill');
+      const input = $('#filterSearch');
+      const clear = $('#clearFilters');
+      const chipsWrap = $('#activeChips');
+      const resultCount = $('#resultCount');
+
+      // Cargar desde URL
+      const params = new URLSearchParams(location.search);
+      if (params.has('family')) state.family = params.get('family') || 'all';
+      if (params.has('method')) state.method = params.get('method').split(',').filter(Boolean);
+      if (params.has('use'))    state.use    = params.get('use').split(',').filter(Boolean);
+      if (params.has('q'))      state.search = params.get('q') || '';
+
+      // UI inicial
+      function syncUIFromState(){
+        segs.forEach(b=>{
+          const active = b.dataset.value === state.family || (state.family==='all' && b.dataset.value==='all');
+          b.classList.toggle('is-active', active);
+          b.setAttribute('aria-pressed', String(active));
+        });
+        pills.forEach(b=>{
+          const selected = state[b.dataset.group]?.includes(b.dataset.value);
+          b.setAttribute('aria-pressed', String(!!selected));
+        });
+        if (input) input.value = state.search;
+        clear.hidden = (state.family==='all' && !state.method.length && !state.use.length && !state.search);
+      }
+
+      // URL sync
+      function syncURL(){
+        const q = new URLSearchParams();
+        if (state.family && state.family!=='all') q.set('family', state.family);
+        if (state.method.length) q.set('method', state.method.join(','));
+        if (state.use.length)    q.set('use', state.use.join(','));
+        if (state.search)        q.set('q', state.search);
+        const qs = q.toString();
+        history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+      }
+
+      // Chips
+      function renderChips(){
+        chipsWrap.innerHTML = '';
+        const addChip = (label, group, value) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = `${label} <button aria-label="Quitar ${label}">×</button>`;
+          chip.querySelector('button').addEventListener('click', ()=>{
+            if (group==='family') state.family = 'all';
+            else if (Array.isArray(state[group])) state[group] = state[group].filter(v=>v!==value);
+            apply();
+          });
+          chipsWrap.appendChild(chip);
+        };
+        if (state.family!=='all') addChip(`Familia: ${state.family}`, 'family', state.family);
+        state.method.forEach(v => addChip(`Método: ${v}`, 'method', v));
+        state.use.forEach(v => addChip(`Uso: ${v}`, 'use', v));
+        if (state.search) addChip(`Buscar: “${state.search}”`, 'search', '');
+      }
+
+      // Filtrado
+      function apply(){
+        const q = normalize(state.search);
+        let visible = 0;
+
+        cards.forEach(card=>{
+          const f = card.dataset.family;
+          const m = (card.dataset.method||'').split(',').map(s=>s.trim());
+          const u = (card.dataset.use||'').split(',').map(s=>s.trim());
+          const text = normalize(card.textContent);
+          let ok = true;
+          if (state.family!=='all') ok = ok && f === state.family;
+          if (state.method.length)  ok = ok && state.method.some(x => m.includes(x));
+          if (state.use.length)     ok = ok && state.use.some(x => u.includes(x));
+          if (q)                    ok = ok && text.includes(q);
+          card.style.display = ok ? '' : 'none';
+          if (ok) visible++;
+        });
+
+        resultCount.textContent = `${visible} producto${visible===1?'':'s'}`;
+        clear.hidden = (state.family==='all' && !state.method.length && !state.use.length && !state.search);
+        renderChips();
+        syncURL();
+      }
+
+      // Eventos
+      segs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          state.family = btn.dataset.value;
+          segs.forEach(b=>{ b.classList.toggle('is-active', b===btn); b.setAttribute('aria-pressed', String(b===btn)); });
+          apply();
+        });
+      });
+      pills.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const g = btn.dataset.group; const v = btn.dataset.value;
+          const arr = state[g] || (state[g]=[]);
+          const i = arr.indexOf(v);
+          if (i>=0) arr.splice(i,1); else arr.push(v);
+          btn.setAttribute('aria-pressed', String(i<0));
+          apply();
+        });
+      });
+      let t; input?.addEventListener('input', ()=>{
+        clearTimeout(t);
+        t = setTimeout(()=>{ state.search = input.value.trim(); apply(); }, 160);
+      });
+      clear.addEventListener('click', ()=>{
+        state.family='all'; state.method=[]; state.use=[]; state.search='';
+        syncUIFromState(); apply();
+      });
+
+      // Init
+      syncUIFromState(); apply();
+    })();
+  </script>
 </body>
 </html>

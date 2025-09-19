@@ -171,7 +171,23 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
 }
 @keyframes heroHalo{ to{ transform: rotate(360deg);} }
 
-.hero-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; }
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:40px;
+  align-items:center;
+  transform: translateX(10%);
+}
+
+@media (max-width: 768px){
+  .hero-grid{
+    transform: none;          /* cancela la transformación */
+    grid-template-columns:1fr;
+    gap:24px;
+  }
+}
+
+
 .eyebrow{ font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:700; }
 .hero-copy h1{ font-size: clamp(36px, 5vw, 56px); line-height:1.1; margin:8px 0; letter-spacing:-0.02em; }
 .hero-copy h1{ position:relative; padding-left:14px; }
@@ -192,13 +208,13 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
 
 .hero-media{ display:flex; flex-direction:column; gap:6px; align-items:center; position:relative; }
 .hero-media img{
-  border-radius:20px;
-  border:1px solid color-mix(in oklab, var(--line) 90%, #fff 10%);
-  background:#fff;
-  box-shadow:
+  /* border-radius:20px; */
+  /* border:1px solid color-mix(in oklab, var(--line) 90%, #fff 10%); */
+  /* background:#fff; */
+  /* box-shadow:
     0 30px 60px rgba(2,6,23,.18),
     0 12px 24px rgba(2,6,23,.10),
-    inset 0 1px 0 rgba(255,255,255,.6);
+    inset 0 1px 0 rgba(255,255,255,.6); */
   max-height: min(60dvh, 520px);
   height:auto; width:auto; object-fit:contain;
 }
@@ -243,7 +259,8 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 
 /* Pequeño “edge bleed” para que respire fuera del grid (sutil) */
 .hero-product .container{ overflow: visible; }
-.hero-media{ transform: translateX(2%); }
+/* .hero-media{transform: translateX(-20%) scale(1.2);} */
+.hero-media{transform: translateX(-20%);}
 @media (max-width: 960px){
   .hero-grid{ grid-template-columns: 1fr; }
   .hero-media{ transform: none; }
@@ -252,7 +269,9 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 
 
 /* Sólo hero más ancho */
-/* .hero-product .container{ max-width: 1320px; } */
+.hero-product .container{ max-width: 2000px; }
+.hero-product .container > *{ max-width: 1200px; margin:0 auto; }
+
 
 
 /* ==========================================================================
