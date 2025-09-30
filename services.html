@@ -1,151 +1,1087 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="services.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-
-    <!-- JavaScript for menu toggle and Shopify integration -->
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Servicios — BCC Technologies</title>
+  <link rel="icon" type="image/png" href="static/Favi2.png" />
+  <link rel="stylesheet" href="services.css" />
+  <link rel="stylesheet" href="login.css"/>
 </head>
-
 <body>
-
-<!-- header section -->
-<header>
-    <div class="header-container">
-        <div class="menu-toggle">&#9776;</div>
-        <nav>
-            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-            <hr class="solid">
-            <ul>
-                <li><a href="./">Inicio</a></li>
-                <li><a href="./aboutUs">Nosotros</a></li>
-                <li><a href="./services">Servicios</a></li>
-                <li><a href="./products">Productos</a></li>
-                <li><a href="./contactUs">Contáctanos</a></li>
-                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-            </ul>
-        </nav>
+  <!-- Navbar (reutiliza el real de tu sitio si ya existe) -->
+  <header class="navbar">
+    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
+    <nav class="nav-links">
+      <a href="./">Inicio</a>
+      <a href="./aboutUs">Nosotros</a>
+      <a href="./products">Productos</a>
+      <a href="./services" aria-current="page">Servicios</a>
+      <a href="./blog">Recursos</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Login</a>
+      <a class="btn btn-dark" href="./contactUs?demo=1">Contacto</a>
     </div>
-</header>
- 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  </header>
 
-  gtag('config', 'G-L9FYNRKVNH');
+  <!-- ================= HERO ================= -->
+  <section class="hero hero-services">
+    <!-- Fondo temático -->
+    <div class="hero-bg" aria-hidden="true">
+      <div class="layer base"></div>
+      <div class="layer grid"></div>
+      <div class="layer nodes"></div>
+      <div class="layer waves"></div>
+    </div>
+
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Servicios BCC</p>
+        <h1>Servicios de ciencia y tecnología</h1>
+        <p class="lead">
+          Integración de instrumentación (EIS/DLS), análisis avanzados on-site, automatización de laboratorio y software a medida.
+        </p>
+
+        <div class="chipbar">
+          <span class="chip">Industria</span>
+          <span class="chip">Academia</span>
+          <span class="chip">Startups</span>
+          <span class="chip">Consultoría</span>
+          <span class="chip">Llave en mano</span>
+          <span class="chip">Soporte continuo</span>
+        </div>
+
+        <div class="hero-cta">
+          <a class="btn btn-dark" href="#packages">Ver paquetes</a>
+          <a class="btn" href="./contactUs">Contactar al equipo</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <figure class="hero-figure">
+          <img src="static/Servicios.png" alt="Integración EIS/DLS y análisis científico" loading="eager" />
+          <figcaption class="media-caption">Soluciones: instrumentación + software + métodos</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= SECTORES ================= -->
+  <section class="section" id="sectors">
+    <div class="container">
+      <h2>Sectores que atendemos</h2>
+      <div class="sectors-grid">
+        <div class="sector reveal">
+          <h4>I+D en materiales</h4>
+          <ul class="bullets">
+            <li>Análisis avanzado de muestras SEM</li><li>DLS</li><li>Automatizaciones a pedido</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Sector empresarial</h4>
+          <ul class="bullets">
+            <li>Software a medida</li><li>Pipelines automáticos</li><li>QA/QC</li><li>Análisis de campo</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Biotech</h4>
+          <ul class="bullets">
+            <li>Automatización de caracterización</li><li>Análisis de impedancias</li><li>Sistemas de monitoreo</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Agroindustria</h4>
+          <ul class="bullets">
+            <li>Detección de contaminantes</li><li>Análisis microscópico de muestras</li><li>Identificación de plagas</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Academia</h4>
+          <ul class="bullets">
+            <li>Training y consultoría</li><li>Exposiciones educativas</li><li>Apoyo en investigaciones</li>
+          </ul>
+        </div>
+      </div>
+      
+      <hr class="section-divider" style="margin-top: 5rem; margin-bottom: -5rem;" />
+    </div>
+  </section>
+
+
+
+    <!-- ================= ADVISOR (micro-quiz + recomendación) ================= -->
+    <section class="section advisor" id="advisor">
+      <div class="container">
+        <h2>Encuentra tu mejor opción</h2>
+        <p class="lead">Responde 3 preguntas. Te sugerimos un paquete con tiempos y entregables.</p>
+
+        <!-- Micro-quiz -->
+        <form class="quiz" aria-label="Asistente de selección de servicios">
+        <div class="quiz-row">
+            <!-- Objetivo -->
+            <div class="quiz-group" role="radiogroup" aria-label="Objetivo">
+            <div class="label">Objetivo:</div>
+            <button type="button" class="chip seg is-active" data-group="goal" data-value="caracterizar" aria-pressed="true">Caracterizar muestras</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="integrar" aria-pressed="false">Integrar instrumentación</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="automatizar" aria-pressed="false">Automatizar flujo</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="prototipar" aria-pressed="false">Prototipar</button>
+            </div>
+
+            <!-- Método -->
+            <div class="quiz-group" role="radiogroup" aria-label="Método principal">
+            <div class="label">Método:</div>
+            <button type="button" class="chip pill is-active" data-group="method" data-value="imagen" aria-pressed="true">Imagen</button>
+            <button type="button" class="chip pill" data-group="method" data-value="dls" aria-pressed="false">DLS</button>
+            <button type="button" class="chip pill" data-group="method" data-value="eis" aria-pressed="false">EIS</button>
+            <button type="button" class="chip pill" data-group="method" data-value="mixto" aria-pressed="false">Mixto</button>
+            </div>
+
+            <!-- Horizonte -->
+            <div class="quiz-group" role="radiogroup" aria-label="Horizonte">
+            <div class="label">Horizonte:</div>
+            <button type="button" class="chip seg is-active" data-group="horizon" data-value="2w" aria-pressed="true">2 semanas</button>
+            <button type="button" class="chip seg" data-group="horizon" data-value="1-3m" aria-pressed="false">1–3 meses</button>
+            </div>
+        </div>
+        </form>
+
+        <!-- Recomendación -->
+        <div class="recommendation" id="recommendation">
+        <div class="rec-main">
+            <article class="rec-card reveal">
+            <div class="rec-eyebrow">Recomendado</div>
+            <h3 id="rec-title">Pack Imaging + MAP Suite Enablement</h3>
+            <p class="rec-meta" id="rec-meta">Morfología, porosidad y rugosidad con presets reproducibles.</p>
+            <ul class="bullets" id="rec-bullets">
+                <li>Onboarding MAP y presets por muestra</li>
+                <li>CSV/PDF/API y ejemplos con máscaras</li>
+                <li>Checklist de calidad</li>
+            </ul>
+            <!-- <p class="small" id="rec-time">Tiempo típico: <strong>2 semanas</strong></p> -->
+            <div class="row-cta">
+                <a class="btn btn-dark" id="rec-primary" href="./contactUs?demo=1">Cotizar</a>
+                <a class="btn btn-ghost" id="rec-secondary" href="#packages">Ver ficha</a>
+                <a class="btn btn-ghost" id="rec-compare" href="#compare">Comparar</a>
+            </div>
+            </article>
+
+            <aside class="reasoning reveal">
+            <div class="why">Por qué esto</div>
+            <ul id="rec-reasons">
+                <li>Necesitas métricas reproducibles en imagen.</li>
+                <li>Horizonte cercano (2 semanas).</li>
+            </ul>
+            </aside>
+        </div>
+
+        <div class="rec-alt">
+            <article class="rec-card alt reveal">
+            <div class="rec-eyebrow">Alternativa</div>
+            <h4 id="alt-title">Sprint de Prototipado (2 semanas)</h4>
+            <p class="small" id="alt-meta">Prototipo ejecutable + roadmap.</p>
+            <div class="row-cta">
+                <a class="btn" id="alt-link" href="./contactUs?demo=1">Evaluar esta opción</a>
+            </div>
+            </article>
+        </div>
+        </div>
+    </div>
+    </section>
+
+
+
+    <!-- ================ Categorías (Selector Maestro) ================ -->
+    <section class="section section-alt needs" id="navigator">
+    <div class="container needs-wrap">
+        <div class="needs-head">
+        <h2>¿Aún no te decides?</h2>
+        <p class="lead">Explora nuestra línea de servicios. Selecciona una para ver alcance, entregables y próximos pasos.</p>
+        </div>
+
+        <div class="needs-grid" role="tablist" aria-label="Categorías de servicio">
+        <!-- Software -->
+        <article class="need-card is-active" role="tab" aria-selected="true" tabindex="0" data-key="software">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="static/vid_software.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-programador_114360-2284.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Desarrollo de software</h3>
+            <p>Apps para web/desktop/mobile, pipelines y APIs según necesidades</p>
+        </article>
+
+        <!-- Integración -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="integracion">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="static/vid_integracion.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-orientacion-multidispositivo_114360-7405.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Integración de instrumentación</h3>
+            <p>EIS, DLS, microscopía: drivers, control y validación.</p>
+        </article>
+
+        <!-- Análisis (con demo antes/después, sin video) -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="analisis">
+            <div class="need-media demo-beforeafter" data-demo="before-after">
+            <!-- <img class="img-before" src="static/demo_imaging_before.jpg" alt="" aria-hidden="true">
+            <img class="img-after"  src="static/demo_imaging_after.jpg"  alt="" aria-hidden="true"> -->
+            <!-- <input class="demo-slider" type="range" min="0" max="100" value="50" aria-label="Deslizar para ver antes/después"> -->
+             <video muted playsinline loop preload="none" data-src="static/vid_analisis.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-estadisticas-sitio_114360-1434.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Análisis y algoritmos</h3>
+            <p>Señales (EIS/DLS), imagen (SEM/óptica), fitting y modelos.</p>
+        </article>
+
+        <!-- Automatización -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="automatizacion">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="static/vid_automatizacion.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-seleccionar_114360-383.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Automatización de laboratorio</h3>
+            <p>Orquestación, colas de análisis, reportes y trazabilidad.</p>
+        </article>
+
+        <!-- Training -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="training">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="static/vid_training.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-analisis_114360-1119.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Training y transferencia</h3>
+            <p>Talleres EIS/DLS/Imagen, reproducibilidad y reporting.</p>
+        </article>
+
+        <!-- Soporte -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="soporte">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="static/vid_soporte.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-servidor_114360-287.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Soporte & mantenimiento</h3>
+            <p>SLAs, actualizaciones, health checks y asesoría continua.</p>
+        </article>
+        </div>
+
+        <!-- Panel detalle sticky -->
+        <aside class="need-detail" id="needDetail" role="tabpanel" aria-live="polite">
+        <div class="detail-eyebrow">Seleccionado</div>
+        <h3 id="needTitle">Software científico a medida</h3>
+        <p class="detail-sub" id="needSub">Apps desktop/web, pipelines y APIs para análisis reproducible. Integraciones con hardware y LIMS ligero.</p>
+
+        <ul class="bullets" id="needBullets">
+            <li>Reproducibilidad y versionado</li>
+            <li>APIs y despliegue on-prem/cloud</li>
+            <li>Documentación y pruebas</li>
+        </ul>
+
+        <div class="quick-specs">
+            <!-- <span class="badge" id="needTime">Tiempo típico: 2–6 semanas</span> -->
+            <span class="badge" id="needDeliver">Entregables: código, docs, pipelines</span>
+        </div>
+
+        <div class="row-cta">
+            <a class="btn btn-dark" id="needPrimary" href="#packages">Ver paquetes</a>
+            <a class="btn btn-ghost" id="needSecondary" href="./contactUs?demo=1">Contactar al equipo</a>
+        </div>
+        </aside>
+    </div>
+    </section>
+
+
+<!-- =============== CÓMO TRABAJAMOS (Compact) (lo quité por falta de tiempo, puedes reintegrarlo si gustas) =============== -->
+<!--  
+<section class="section process-compact" id="process">
+  <div class="container">
+    <div class="pc-head">
+      <h2>Cómo trabajamos</h2>
+      <p class="lead">Un timeline compacto por tipo de proyecto. Cambia de track para ver tiempos y entregables clave.</p>
+    </div>
+
+    Tracks
+    <nav class="pc-tabs" role="tablist" aria-label="Tracks de proyecto">
+      <button type="button" class="pc-tab is-active" role="tab" aria-selected="true" data-track="quickstart">Quickstart / Training</button>
+      <button type="button" class="pc-tab" role="tab" aria-selected="false" data-track="integracion">Integración (EIS/DLS)</button>
+      <button type="button" class="pc-tab" role="tab" aria-selected="false" data-track="map">Imaging + MAP Suite</button>
+      <button type="button" class="pc-tab" role="tab" aria-selected="false" data-track="automatizacion">Automatización</button>
+      <button type="button" class="pc-tab" role="tab" aria-selected="false" data-track="software">Software a medida</button>
+    </nav>
+
+    Resumen
+    <div class="pc-summary">
+      <span class="badge">Duración estimada: <strong id="pc-total">—</strong></span>
+      <span class="badge">Entregables: <span id="pc-outs">—</span></span>
+      <span class="badge muted">Gates claros en cada fase</span>
+    </div>
+
+    Timeline 1 fila
+    <div class="pc-bar" id="pcBar" aria-label="Timeline por fases">
+      Los segmentos se inyectan por JS
+    </div>
+
+    Acciones
+    <div class="pc-actions">
+      <a class="btn btn-dark" href="./contactUs?demo=1">Hablar con un ingeniero</a>
+      <button class="btn btn-ghost" id="pc-toggle" aria-expanded="false" aria-controls="pc-details">Ver detalles</button>
+    </div>
+
+    Detalles colapsables (mini)
+    <div class="pc-details" id="pc-details" hidden>
+      <div class="pc-details-grid" id="pcDetailsGrid">
+        Cards por fase (se inyectan por JS)
+      </div>
+    </div>
+  </div>
+</section>
+ -->
+
+  <!-- ================= CASOS ================= -->
+  <!-- <section class="section section-alt" id="cases">
+    <div class="container">
+      <h2>Resultados</h2>
+      <div class="cards-grid">
+        <article class="card case reveal">
+          <h3>Materiales (SEM + DLS)</h3>
+          <p><strong>Input:</strong> micrografías + dispersión<br>
+             <strong>Método:</strong> segmentación + PSD<br>
+             <strong>Métricas:</strong> morfología, porosidad, PSD(1–5000 nm)</p>
+          <p class="outcome">Outcome: −<strong>60%</strong> tiempo de caracterización</p>
+        </article>
+
+        <article class="card case reveal">
+          <h3>Baterías (EIS)</h3>
+          <p><strong>Input:</strong> barridos de frecuencia<br>
+             <strong>Método:</strong> fitting de circuitos equivalentes<br>
+             <strong>Métricas:</strong> R<sub>ct</sub>, difusión, capacitancias aparentes</p>
+          <p class="outcome">Outcome: mejor correlación con rendimiento</p>
+        </article>
+
+        <article class="card case reveal">
+          <h3>Biotech (imagen)</h3>
+          <p><strong>Input:</strong> imágenes celulares<br>
+             <strong>Método:</strong> conteo y morfología automatizados<br>
+             <strong>Métricas:</strong> distribución de tamaño, forma, densidad</p>
+          <p class="outcome">Outcome: variabilidad ↓, throughput ↑</p>
+        </article>
+      </div>
+    </div>
+  </section> -->
+
+
+  <!-- ================= COMPARADOR ================= -->
+  <section class="section section-alt" id="compare">
+    <div class="container">
+      <h2>Comparativa de servicios</h2>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>Servicio</th>
+              <th>Qué incluye</th>
+              <th>Entregables</th>
+              <!-- <th>Tiempo típico</th> -->
+              <th>Modalidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EIS Implementation</td>
+              <td>Instalación, drivers, plantilla, fitting base</td>
+              <td>SOP, curvas ejemplo, PDF</td>
+              <!-- <td>2–4 semanas</td> -->
+              <td>Proyecto</td>
+            </tr>
+            <tr>
+              <td>DLS Rapid</td>
+              <td>Pipeline PSD, validación, capacitación</td>
+              <td>CSV, reporte, guía</td>
+              <!-- <td>1–3 semanas</td> -->
+              <td>Proyecto</td>
+            </tr>
+            <tr>
+              <td>Imaging + MAP</td>
+              <td>Onboarding, presets y exportes</td>
+              <td>CSV/PDF/API, ejemplos, checklist</td>
+              <!-- <td>~2 semanas</td> -->
+              <td>Proyecto</td>
+            </tr>
+            <tr>
+              <td>Soporte continuo</td>
+              <td>Actualizaciones, health checks, asesoría</td>
+              <td>Plan de mejora, registro incidencias</td>
+              <!-- <td>Mensual/Trimestral</td> -->
+              <td>Retainer</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPO ================= -->
+  <section class="section" id="team">
+    <div class="container">
+      <h2>Equipo y credenciales</h2>
+      <div class="team-blurb">
+        <p>
+          Equipo multidisciplinario en física, ingeniería, química, y biología. Estándares de reproducibilidad, versionado y validación cruzada.
+          Soporte on-prem o cloud y acceso por roles.
+        </p>
+        <ul class="badges">
+          <li>Confidencialidad (NDA)</li>
+          <li>Trazabilidad</li>
+          <li>Integraciones LIMS/ERP/SCADA</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section section-alt" id="faq">
+    <div class="container">
+      <h2>Preguntas frecuentes</h2>
+      <div class="accordion">
+        <details class="faq">
+          <summary>¿Quién posee la IP de los entregables?</summary>
+          <div class="faq-body">El NDA garantiza la titularidad de tus datos y entregables. El IP de los productos suele pertenecer a BCC, pero pueden haber excepciones según el caso</div>
+        </details>
+
+        <details class="faq">
+          <summary>¿On-prem o cloud?</summary>
+          <div class="faq-body">Soportamos ambas modalidades y recomendamos según tus restricciones y cumplimiento.</div>
+        </details>
+
+        <details class="faq">
+          <summary>¿Qué incluye el soporte?</summary>
+          <div class="faq-body">Actualizaciones, health checks, tiempo de respuesta acordado y canal dedicado.</div>
+        </details>
+
+        <details class="faq">
+          <summary>¿Integran con sistemas existentes?</summary>
+          <div class="faq-body">Sí: LIMS/ERP/SCADA y dispositivos soportados. Definimos el alcance en la propuesta.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA FINAL ================= -->
+  <section class="section cta-final" id="contact-cta">
+    <div class="container cta-inner">
+      <div>
+        <h2>¿Listo para acelerar tu proyecto?</h2>
+        <p class="lead">Cuéntanos el objetivo, los datos y el horizonte temporal. Te proponemos un plan concreto.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-dark" href="./contactUs">Contactar al equipo</a>
+        <a class="btn btn-ghost" href="./products">Ver productos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container foot-inner">
+      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ================= Scripts mínimos ================= -->
+  <script>
+    // Año + ajustar --nav-h a la altura real del navbar
+    document.getElementById('year').textContent = new Date().getFullYear();
+    (function(){
+      const nav=document.querySelector('.navbar');
+      if(!nav) return;
+      const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+      setH(); addEventListener('resize', setH);
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+      const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+      }, {threshold:.12});
+      els.forEach(el=>io.observe(el));
+    })();
+
+    // Acordeón: abre solo uno a la vez (opcional)
+    (function(){
+      const items = document.querySelectorAll('.accordion details');
+      items.forEach(d=>{
+        d.addEventListener('toggle', ()=>{
+          if(d.open){
+            items.forEach(o=>{ if(o!==d) o.removeAttribute('open'); });
+          }
+        });
+      });
+    })();
+  </script>
+
+
+
+    <script>
+    /* ===== Micro-quiz & Recommendation ===== */
+    (function(){
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+    const state = { goal:'caracterizar', method:'imagen', horizon:'2w' };
+
+    // UI
+    const chips = $$('.quiz .chip');
+    const rec = {
+        title: $('#rec-title'),
+        meta:  $('#rec-meta'),
+        bullets: $('#rec-bullets'),
+        time:  $('#rec-time'),
+        primary: $('#rec-primary'),
+        secondary: $('#rec-secondary'),
+        compare: $('#rec-compare'),
+        reasons: $('#rec-reasons'),
+        altTitle: $('#alt-title'),
+        altMeta:  $('#alt-meta'),
+        altLink:  $('#alt-link'),
+    };
+
+    // Selección única por grupo
+    chips.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+        const group = btn.dataset.group;
+        const value = btn.dataset.value;
+        $$('.quiz .chip[data-group="'+group+'"]').forEach(b=>{
+            b.classList.toggle('is-active', b===btn);
+            b.setAttribute('aria-pressed', String(b===btn));
+        });
+        state[group] = value;
+        render();
+        });
+    });
+
+    function pickRecommendation({goal, method, horizon}){
+        // Defaults
+        let main = {
+        id:'map', title:'Pack Imaging + MAP Suite Enablement',
+        meta:'Morfología, porosidad y rugosidad con presets reproducibles.',
+        bullets:['Onboarding MAP y presets por muestra','CSV/PDF/API y ejemplos con máscaras','Checklist de calidad'],
+        time: (horizon==='2w'?'2 semanas':'3–4 semanas'),
+        primaryHref:'./product_maps#map-nano',
+        secondaryHref:'#packages'
+        };
+        let alt = { title:'Sprint de Prototipado (2 semanas)', meta:'Prototipo ejecutable + roadmap.', href:'./contactUs?demo=1' };
+        const reasons = [];
+
+        // Goal-driven switches
+        if(goal==='integrar'){
+        main = {
+            id:'integracion', title:'Integración de instrumentación',
+            meta:'Drivers, control, adquisición y validación con estándares.',
+            bullets:['Plantillas de medición y SOP','Curvas ejemplo y validación','Onboarding del equipo'],
+            time:(horizon==='2w'?'2–3 semanas':'3–6 semanas'),
+            primaryHref:'./contactUs?demo=1', secondaryHref:'#packages'
+        };
+        alt = { title:'EIS Implementation', meta:'Instalación + fitting base (R(QR)).', href:'#packages' };
+        reasons.push('Objetivo principal: integración de hardware.');
+        }
+        else if(goal==='automatizar'){
+        main = {
+            id:'auto', title:'Automatización de laboratorio',
+            meta:'Orquestación de tareas, colas de análisis, reportes y trazabilidad.',
+            bullets:['Flujos auditables','Dashboards y alertas','Roles y permisos'],
+            time:(horizon==='2w'?'2–4 semanas':'1–3 meses'),
+            primaryHref:'./contactUs?demo=1', secondaryHref:'#packages'
+        };
+        alt = { title:'Imaging + MAP (presets + reporting)', meta:'Quick win para equipos con imagen.', href:'#packages' };
+        reasons.push('Necesitas reducir pasos manuales y ganar trazabilidad.');
+        }
+        else if(goal==='prototipar'){
+        main = {
+            id:'sprint', title:'Sprint de Prototipado (2 semanas)',
+            meta:'Diseño → prototipo ejecutable → roadmap.',
+            bullets:['Hipótesis y alcance','Implementación rápida','Backlog por fases'],
+            time:'2 semanas',
+            primaryHref:'./contactUs?demo=1', secondaryHref:'#packages'
+        };
+        alt = { title:'Pack específico según método', meta:'Elige Pack EIS / DLS / MAP.', href:'#packages' };
+        reasons.push('Buscas validar rápido con impacto tangible.');
+        } else {
+        // caracterizar (por defecto)
+        reasons.push('Objetivo: caracterizar muestras con métricas reproducibles.');
+        }
+
+        // Method refinement
+        if(method==='eis'){
+        if(goal!=='automatizar' && goal!=='prototipar'){
+            main = {
+            id:'eis', title:'Pack EIS Implementation',
+            meta:'Instalación, drivers, plantilla y fitting base (R(QR)).',
+            bullets:['Curvas ejemplo','Reporte PDF + SOP','Parámetros ajustados'],
+            time:(horizon==='2w'?'2–4 semanas':'3–6 semanas'),
+            primaryHref:'./contactUs?demo=1', secondaryHref:'#packages'
+            };
+            alt = { title:'EIS + Toolkit (software)', meta:'Medición + fitting reproducible.', href:'#packages' };
+        }
+        reasons.push('Trabajas con EIS; orientamos a instalación + fitting.');
+        }
+        if(method==='dls'){
+        if(goal!=='automatizar' && goal!=='prototipar'){
+            main = {
+            id:'dls', title:'Pack DLS Rapid Characterization',
+            meta:'Pipeline PSD + validación con estándar y capacitación.',
+            bullets:['Exportes CSV y reporte','Guías de preparación','Sesión hands-on'],
+            time:(horizon==='2w'?'1–3 semanas':'2–4 semanas'),
+            primaryHref:'./contactUs?demo=1', secondaryHref:'#packages'
+            };
+            alt = { title:'DLS + MAP-Bio (bundle)', meta:'PSD + morfología en una sola vista.', href:'#packages' };
+        }
+        reasons.push('Trabajas con DLS; priorizamos PSD validada.');
+        }
+        if(method==='imagen'){
+        if(goal==='caracterizar'){
+            main = { ...main, id:'map' }; // MAP ya seleccionado por defecto
+        }
+        reasons.push('Método principal: imagen (SEM/óptica).');
+        }
+        if(method==='mixto'){
+        reasons.push('Métodos mixtos: combinamos entregables por etapa.');
+        alt = { title:'Bundle híbrido (EIS/DLS/Imagen)', meta:'Paquete combinado según tu caso.', href:'#packages' };
+        }
+
+        // Horizon reason
+        reasons.push(horizon==='2w' ? 'Horizonte cercano: priorizamos quick wins.' : 'Horizonte extendido: podemos incluir integraciones.');
+
+        return { main, alt, reasons };
+    }
+
+    function render(){
+        const { main, alt, reasons } = pickRecommendation(state);
+        rec.title.textContent = main.title;
+        rec.meta.textContent  = main.meta;
+        rec.bullets.innerHTML = main.bullets.map(li=>`<li>${li}</li>`).join('');
+        // rec.time.innerHTML    = `Tiempo típico: <strong>${main.time}</strong>`;
+        rec.primary.href      = main.primaryHref;
+        rec.secondary.href    = main.secondaryHref;
+        rec.compare.href      = '#compare';
+        rec.reasons.innerHTML = reasons.map(r=>`<li>${r}</li>`).join('');
+        rec.altTitle.textContent = alt.title;
+        rec.altMeta.textContent  = alt.meta;
+        rec.altLink.href         = alt.href;
+    }
+
+    render(); // inicial
+    })();
+    </script>
+
+
+    <script>
+    /* ============== Selector Maestro: estado, lazy video, demo slider ============== */
+    (function(){
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+
+    // Mapeo de contenido por clave
+    const DATA = {
+        software: {
+        title: 'Software a medida',
+        sub: 'Apps desktop/web, pipelines y APIs para análisis reproducible. Integraciones con hardware y LIMS ligero.',
+        bullets: ['Reproducibilidad y versionado','APIs y despliegue on-prem/cloud','Documentación y pruebas'],
+        // time: 'Tiempo típico: 2–6 semanas',
+        deliver: 'Entregables: código, docs, pipelines',
+        primaryHref: '#packages', primaryText: 'Ver paquetes',
+        secondaryHref: './contactUs', secondaryText: 'Contacto'
+        },
+        integracion: {
+        title: 'Integración de instrumentación',
+        sub: 'EIS, DLS, microscopía y periféricos: drivers, control, adquisición y validación.',
+        bullets: ['Plantillas de medición y SOP','Curvas ejemplo y validación','Onboarding del equipo'],
+        // time: 'Tiempo típico: 2–6 semanas',
+        deliver: 'Entregables: SOP, datasets, reporte',
+        primaryHref: '#packages', primaryText: 'Ver paquetes',
+        secondaryHref: './contactUs?demo=1', secondaryText: 'Cotizar'
+        },
+        analisis: {
+        title: 'Análisis y algoritmos',
+        sub: 'Señales (EIS/DLS), imagen (SEM/óptica), fitting y modelos.',
+        bullets: ['Pipelines y notebooks','CSV/PDF/API','Validación cruzada'],
+        // time: 'Tiempo típico: 1–4 semanas',
+        deliver: 'Entregables: scripts, reportes, presets',
+        primaryHref: '#packages', primaryText: 'Ver paquetes',
+        secondaryHref: './contactUs?demo=1', secondaryText: 'Agendar llamada'
+        },
+        automatizacion: {
+        title: 'Automatización de laboratorio',
+        sub: 'Orquestación de tareas, colas de análisis, reportes y trazabilidad.',
+        bullets: ['Flujos auditables','Dashboards y alertas','Roles y permisos'],
+        // time: 'Tiempo típico: 2–8 semanas',
+        deliver: 'Entregables: flujos, dashboards, APIs',
+        primaryHref: './contactUs', primaryText: 'Contacto',
+        secondaryHref: '#packages', secondaryText: 'Ver paquetes'
+        },
+        training: {
+        title: 'Training y transferencia',
+        sub: 'Talleres EIS/DLS/Imagen, reproducibilidad y reporting con materiales y datasets.',
+        bullets: ['Manuales y grabaciones','Sesiones hands-on','Evaluación final'],
+        // time: 'Tiempo típico: 1–2 semanas',
+        deliver: 'Entregables: materiales, datasets, certificado',
+        primaryHref: './contactUs?demo=1', primaryText: 'Agendar taller',
+        secondaryHref: '#packages', secondaryText: 'Ver paquetes'
+        },
+        soporte: {
+        title: 'Soporte & mantenimiento',
+        sub: 'SLAs, actualizaciones, health checks y asesoría continua.',
+        bullets: ['Plan de mejora','Registro de incidencias','Canal dedicado'],
+        // time: 'Tiempo típico: Mensual/Trimestral',
+        deliver: 'Entregables: reportes y roadmap',
+        primaryHref: './contactUs?demo=1', primaryText: 'Diseñar SLA',
+        secondaryHref: '#packages', secondaryText: 'Ver paquetes'
+        }
+    };
+
+    // Referencias UI
+    const cards = $$('.need-card');
+    const detail = {
+        title: $('#needTitle'), sub: $('#needSub'), bullets: $('#needBullets'),
+        time: $('#needTime'), deliver: $('#needDeliver'),
+        p: $('#needPrimary'), s: $('#needSecondary')
+    };
+
+    function setActive(card){
+        cards.forEach(c=>{
+        const active = (c===card);
+        c.classList.toggle('is-active', active);
+        c.setAttribute('aria-selected', String(active));
+        c.setAttribute('tabindex', active ? '0' : '-1');
+        });
+        const key = card.dataset.key;
+        const d = DATA[key];
+        if(!d) return;
+        detail.title.textContent = d.title;
+        detail.sub.textContent   = d.sub;
+        detail.bullets.innerHTML = d.bullets.map(x=>`<li>${x}</li>`).join('');
+        detail.time.textContent  = d.time;
+        detail.deliver.textContent = d.deliver;
+        detail.p.href = d.primaryHref;  detail.p.textContent = d.primaryText;
+        detail.s.href = d.secondaryHref;detail.s.textContent = d.secondaryText;
+
+        // Scroll al panel en móvil
+        if (window.matchMedia('(max-width:1080px)').matches) {
+        $('#needDetail')?.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+    }
+
+    // Click/teclado
+    cards.forEach(card=>{
+        card.addEventListener('click', ()=>setActive(card));
+        card.addEventListener('keydown', (e)=>{
+        if(e.key==='Enter' || e.key===' ') { e.preventDefault(); setActive(card); }
+        if(e.key==='ArrowRight' || e.key==='ArrowDown'){ e.preventDefault(); move(1); }
+        if(e.key==='ArrowLeft'  || e.key==='ArrowUp'){   e.preventDefault(); move(-1); }
+        function move(dir){
+            const idx = cards.indexOf(card);
+            const next = cards[(idx + dir + cards.length) % cards.length];
+            next.focus(); setActive(next);
+        }
+        });
+    });
+
+    // Inicial por defecto
+    setActive(cards[0]);
+
+    // Lazy video: carga cuando es visible
+    if ('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            const v = entry.target;
+            if(entry.isIntersecting){
+            const src = v.getAttribute('data-src');
+            if(src && !v.src){ v.src = src; v.load(); v.play().catch(()=>{}); }
+            } else {
+            v.pause();
+            }
+        });
+        }, {threshold: .25});
+        $$('video[data-src]').forEach(v=>io.observe(v));
+    }
+
+    // Demo antes/después (rango controla clip)
+    $$('.demo-beforeafter').forEach(box=>{
+        const slider = $('.demo-slider', box);
+        if(!slider) return;
+        const apply = ()=> box.style.setProperty('--split', slider.value);
+        slider.addEventListener('input', apply); apply();
+    });
+
+    // Respeta reduce motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        $$('video').forEach(v=>{ v.removeAttribute('autoplay'); v.pause(); });
+    }
+    })();
+    </script>
+
+
+    <script>
+    /* ============== Process v2: datos por track + render dinámico ============== */
+    (function(){
+    const $  = (s,r=document)=>r.querySelector(s);
+    const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+    // Datos por track (duraciones, entregables, gate y "cliente aporta")
+    const TRACKS = {
+        quickstart: {
+        label:'Quickstart / Training',
+        phases:{
+            f0:{ dur:'1–2 días', del:['NDA','Checklist de acceso','Calendario y canales'], gate:'Accesos listos', cli:['Contacto técnico designado','Disponibilidad para sesiones'] },
+            f1:{ dur:'1–2 días', del:['Alcance y objetivos','Plan de sesión','Materiales base'], gate:'Aprobación de agenda', cli:['Expectativas de contenido','Casos de ejemplo'] },
+            f2:{ dur:'—', del:[], gate:'N/A', cli:[] },
+            f3:{ dur:'2–5 días', del:['Taller/sesiones','Materiales y datasets','Evaluación final'], gate:'Asistencia y feedback', cli:['Participantes confirmados'] },
+            f4:{ dur:'2–5 días', del:['Grabaciones y manual','Checklist de operación'], gate:'Checklist completado', cli:['Canal para dudas'] },
+            f5:{ dur:'Opcional', del:['Plan de mejora'], gate:'SLA acordado', cli:['Disponibilidad para soporte'] }
+        }
+        },
+        integracion:{
+        label:'Integración de Instrumentación (EIS/DLS)',
+        phases:{
+            f0:{ dur:'3–5 días', del:['NDA','Checklist de puertos/driver','Calendario de equipo'], gate:'Acceso físico/log', cli:['Acceso a instrumento','Punto IT'] },
+            f1:{ dur:'1–2 semanas', del:['Documento de alcance','Criterios de aceptación','Plan de validación'], gate:'Alcance v1 aprobado', cli:['Muestras/estándares','Requisitos de seguridad'] },
+            f2:{ dur:'1–3 semanas', del:['Driver/control','Prueba con estándar','Reporte validación inicial'], gate:'Reproducibilidad ≥ X% / Error ≤ Y', cli:['Ventanas de uso del equipo'] },
+            f3:{ dur:'1–3 semanas', del:['SOP y plantillas','Curvas ejemplo','Fitting base (p.ej. R(QR))'], gate:'Criterios de aceptación cumplidos', cli:['Operador disponible'] },
+            f4:{ dur:'2–5 días', del:['Sesiones de training','Documentación y grabaciones'], gate:'Checklist de operación OK', cli:['Equipo de usuarios'] },
+            f5:{ dur:'2 semanas', del:['Hotfixes menores','Monitoreo básico'], gate:'Estabilidad aceptada', cli:['Canal de soporte'] }
+        }
+        },
+        map:{
+        label:'Imaging + MAP Suite',
+        phases:{
+            f0:{ dur:'1–2 días', del:['NDA','Checklist de datasets','Calendario'], gate:'Dataset muestra', cli:['10–50 imágenes representativas'] },
+            f1:{ dur:'2–4 días', del:['Alcance y métricas (IoU/precisión)','Plan de validación'], gate:'Aprobación de métricas', cli:['Etiquetas/verdad terreno si aplica'] },
+            f2:{ dur:'1–2 semanas', del:['Presets iniciales','Reporte ejemplo'], gate:'IoU/prec ≥ X% en validación', cli:['Feedback sobre resultados'] },
+            f3:{ dur:'1–2 semanas', del:['Presets finales','Exportes CSV/PDF/API','Checklist de calidad'], gate:'Tiempo por lote ≤ T', cli:['Acceso a entorno destino'] },
+            f4:{ dur:'2–5 días', del:['Transferencia y docs','Grabaciones'], gate:'Checklist de operación OK', cli:['Usuarios clave'] },
+            f5:{ dur:'2 semanas', del:['Ajustes menores','Monitoreo básico'], gate:'Estabilidad aceptada', cli:['Canal de soporte'] }
+        }
+        },
+        automatizacion:{
+        label:'Automatización de laboratorio',
+        phases:{
+            f0:{ dur:'5–7 días', del:['NDA','Checklist LIMS/ERP/SCADA','Arquitectura inicial'], gate:'Accesos y políticas IT', cli:['Punto IT y dueño de proceso'] },
+            f1:{ dur:'2–3 semanas', del:['Alcance','Diseño de flujos','Plan de pruebas'], gate:'Alcance v1 y priorización', cli:['Mapeo de procesos'] },
+            f2:{ dur:'2–4 semanas', del:['MVP (1–2 flujos)','Logs/roles','Reporte de validación'], gate:'Trazabilidad 100% / Reintentos OK', cli:['Datos de prueba'] },
+            f3:{ dur:'3–8 semanas', del:['Orquestación completa','Dashboards/alertas','Hardening y seguridad'], gate:'KPIs en verde', cli:['Usuarios pilotando'] },
+            f4:{ dur:'1 semana', del:['Handover y training','Plan de rollback'], gate:'Operación estable', cli:['Equipo de operación'] },
+            f5:{ dur:'2–4 semanas', del:['Soporte ampliado','Plan de mejora'], gate:'SLA definido', cli:['Canal y ventanas'] }
+        }
+        },
+        software:{
+        label:'Software a medida',
+        phases:{
+            f0:{ dur:'5–10 días', del:['NDA','Checklist técnica','Arquitectura preliminar'], gate:'Stack y entorno definidos', cli:['Requisitos y restricciones'] },
+            f1:{ dur:'2–4 semanas', del:['SOW/alcance','Métricas de éxito','Plan de validación'], gate:'SOW firmado', cli:['Prioridades y supuestos'] },
+            f2:{ dur:'3–6 semanas', del:['MVP funcional','Reporte de validación inicial'], gate:'Cobertura de casos críticos', cli:['Datos representativos'] },
+            f3:{ dur:'4–10 semanas', del:['Features v1','Pruebas','Deploy on-prem/cloud'], gate:'Criterios de aceptación OK', cli:['Acceso a entornos'] },
+            f4:{ dur:'2–5 días', del:['Handover/Training','Documentación'], gate:'Checklist de operación OK', cli:['Equipo de adopción'] },
+            f5:{ dur:'2–4 semanas', del:['Estabilización','Soporte y mejoras'], gate:'SLA operativo', cli:['Canal de soporte'] }
+        }
+        }
+    };
+
+    const pgrid = $('#pgrid');
+    const tabs  = $$('.process-tabs .ptab');
+
+    function renderTrack(key){
+        const t = TRACKS[key]; if(!t) return;
+        $$('.pstep', pgrid).forEach(step=>{
+        const phase = step.dataset.phase;
+        const d = t.phases[phase];
+        // Duración
+        $('.p-duration', step).textContent = d?.dur || '—';
+        // Entregables
+        const ulDel = $('.p-deliverables', step); ulDel.innerHTML = (d?.del||[]).map(x=>`<li>${x}</li>`).join('') || '<li>—</li>';
+        // Gate
+        $('.p-gate', step).textContent = d?.gate || '—';
+        // Cliente aporta
+        const ulCli = $('.p-client', step); ulCli.innerHTML = (d?.cli||[]).map(x=>`<li>${x}</li>`).join('') || '<li>—</li>';
+        });
+    }
+
+    // Tabs
+    tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+        tabs.forEach(b=>{ b.classList.toggle('is-active', b===btn); b.setAttribute('aria-selected', String(b===btn)); });
+        renderTrack(btn.dataset.track);
+        });
+    });
+
+    // Inicial
+    renderTrack('quickstart');
+
+    // Readiness → riesgo (0–5 checks)
+    const checks = $$('#readyList input[type="checkbox"]');
+    const fill   = $('#riskFill');
+    const label  = $('#riskText');
+    function updateRisk(){
+        const n = checks.filter(c=>c.checked).length;
+        const pct = (n/5)*100;
+        fill.style.width = pct + '%';
+        let txt = 'Alto';
+        if (n>=4) txt='Bajo';
+        else if (n>=2) txt='Medio';
+        label.textContent = txt;
+    }
+    checks.forEach(c=>c.addEventListener('change', updateRisk));
+    updateRisk();
+    })();
+    </script>
+
+
+<script>
+/* ===== Process Compact: datos + render ===== */
+(function(){
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  // Datos compactos por track (duración "peso" en días para ancho y totalLabel para resumen)
+  const TRACKS = {
+    quickstart: {
+      totalLabel: '2–10 días',
+      outs: ['Materiales & datasets', 'Sesiones hands-on', 'Evaluación final'],
+      phases: {
+        f0:{ label:'Readiness',   days:1.5, tip:['NDA','Accesos listos'], gate:'Accesos listos' },
+        f1:{ label:'Descubr.',    days:1.5, tip:['Agenda & objetivos'], gate:'Agenda aprobada' },
+        f2:{ label:'Piloto',      days:0,   tip:[], gate:'—' },
+        f3:{ label:'Ejecución',   days:3,   tip:['Taller', 'Materiales'], gate:'Sesiones completadas' },
+        f4:{ label:'Handover',    days:3,   tip:['Grabaciones','Checklist'], gate:'Checklist OK' },
+        f5:{ label:'Soporte',     days:0,   tip:[], gate:'Opcional' }
+      }
+    },
+    integracion: {
+      totalLabel: '6–8 semanas',
+      outs: ['SOP + plantillas', 'Curvas ejemplo', 'Fitting base'],
+      phases: {
+        f0:{ label:'Readiness',   days:4,   tip:['Checklist puertos/driver'], gate:'Acceso a equipo' },
+        f1:{ label:'Descubr.',    days:10,  tip:['Alcance','Criterios aceptación'], gate:'Alcance v1 OK' },
+        f2:{ label:'Piloto',      days:14,  tip:['Driver/control','Validación estándar'], gate:'Reproducibilidad ≥ X%'},
+        f3:{ label:'Impl.',       days:14,  tip:['SOP','Fitting base'], gate:'Criterios cumplidos' },
+        f4:{ label:'Handover',    days:4,   tip:['Training','Docs'], gate:'Checklist OK' },
+        f5:{ label:'Estabil.',    days:10,  tip:['Hotfixes','Monitoreo'], gate:'Estabilidad aceptada' }
+      }
+    },
+    map: {
+      totalLabel: '1–4 semanas',
+      outs: ['Presets finales', 'CSV/PDF/API', 'Checklist calidad'],
+      phases: {
+        f0:{ label:'Readiness',   days:1.5, tip:['Dataset muestra'], gate:'Dataset listo' },
+        f1:{ label:'Descubr.',    days:3,   tip:['Métricas IoU/precisión'], gate:'Métricas aprobadas'},
+        f2:{ label:'Piloto',      days:7,   tip:['Presets iniciales','Reporte ejemplo'], gate:'IoU/prec ≥ X%'},
+        f3:{ label:'Impl.',       days:7,   tip:['Exportes','Checklist'], gate:'Tiempo por lote ≤ T' },
+        f4:{ label:'Handover',    days:3,   tip:['Transferencia','Grabaciones'], gate:'Checklist OK' },
+        f5:{ label:'Estabil.',    days:10,  tip:['Ajustes menores'], gate:'Estabilidad aceptada' }
+      }
+    },
+    automatizacion: {
+      totalLabel: '10–16 semanas',
+      outs: ['Flujos orquestados', 'Dashboards/alertas', 'Roles & trazabilidad'],
+      phases: {
+        f0:{ label:'Readiness',   days:6,   tip:['Checklist LIMS/ERP/SCADA'], gate:'Accesos IT' },
+        f1:{ label:'Descubr.',    days:16,  tip:['Flujos','Plan de pruebas'], gate:'Alcance v1 OK' },
+        f2:{ label:'MVP',         days:21,  tip:['1–2 flujos','Logs/roles'], gate:'Trazabilidad 100%' },
+        f3:{ label:'Hardening',   days:35,  tip:['Seguridad','KPIs en verde'], gate:'KPIs OK' },
+        f4:{ label:'Handover',    days:7,   tip:['Plan rollback','Training'], gate:'Operación estable' },
+        f5:{ label:'Estabil.',    days:21,  tip:['Soporte ampliado'], gate:'SLA definido' }
+      }
+    },
+    software: {
+      totalLabel: '12–20 semanas',
+      outs: ['MVP funcional', 'Features v1', 'Deploy on-prem/cloud'],
+      phases: {
+        f0:{ label:'Readiness',   days:8,   tip:['Checklist técnica','Arquitectura preliminar'], gate:'Stack/entorno definidos' },
+        f1:{ label:'SOW',         days:21,  tip:['Alcance','Métricas de éxito'], gate:'SOW firmado' },
+        f2:{ label:'MVP',         days:28,  tip:['Casos críticos','Validación inicial'], gate:'Cobertura crítica' },
+        f3:{ label:'Impl.',       days:49,  tip:['Pruebas','Deploy'], gate:'Criterios cumplidos' },
+        f4:{ label:'Handover',    days:4,   tip:['Docs','Training'], gate:'Checklist OK' },
+        f5:{ label:'Estabil.',    days:21,  tip:['Soporte','Mejoras'], gate:'SLA operativo' }
+      }
+    }
+  };
+
+  const bar = $('#pcBar');
+  const tabs = $$('.pc-tab');
+  const totalEl = $('#pc-total');
+  const outsEl  = $('#pc-outs');
+  const details = $('#pc-details');
+  const detailsGrid = $('#pcDetailsGrid');
+  const toggleBtn = $('#pc-toggle');
+
+  function renderTrack(key){
+    const t = TRACKS[key]; if(!t) return;
+    // Resumen
+    totalEl.textContent = t.totalLabel;
+    outsEl.textContent  = t.outs.join(' · ');
+    // Limpia bar
+    bar.innerHTML = '';
+    // Total días para proporciones
+    const totalDays = Object.values(t.phases).reduce((s,p)=>s+(p.days||0),0) || 1;
+    // Render segmentos
+    Object.entries(t.phases).forEach(([k,p],i)=>{
+      const widthPct = (p.days/totalDays)*100;
+      const seg = document.createElement('div');
+      seg.className = 'pc-seg';
+      seg.setAttribute('tabindex','0');
+      seg.dataset.phase = k;
+      seg.innerHTML = `
+        <span>${i}</span>
+        <div class="seg-label">${p.label}</div>
+        <div class="pc-tip">
+          <strong>Fase ${i} — ${p.label}</strong>
+          <ul style="margin:.3rem 0 0; padding-left:18px;">
+            ${ (p.tip||[]).slice(0,2).map(x=>`<li>${x}</li>`).join('') || '<li>—</li>' }
+          </ul>
+          <div style="margin-top:6px;opacity:.9;">Gate: <strong>${p.gate}</strong></div>
+        </div>
+      `;
+      seg.style.width = (widthPct>0?widthPct:6) + '%'; // mínimo visible
+      seg.addEventListener('focus', ()=>setActive(seg));
+      seg.addEventListener('mouseenter', ()=>setActive(seg));
+      bar.appendChild(seg);
+    });
+    // Marca primero activo
+    setActive(bar.querySelector('.pc-seg'));
+    // Detalles (mini) — 6 cards
+    detailsGrid.innerHTML = '';
+    Object.entries(t.phases).forEach(([k,p],i)=>{
+      const card = document.createElement('article');
+      card.className = 'pc-card';
+      card.innerHTML = `
+        <h4>Fase ${i} — ${p.label}</h4>
+        <div class="meta">${p.days ? `~${p.days} día${p.days>=2?'s':''}` : '—'}</div>
+        <ul class="bullets">${ (p.tip||[]).slice(0,3).map(x=>`<li>${x}</li>`).join('') || '<li>—</li>' }</ul>
+        <div class="gate">Gate: <strong>${p.gate}</strong></div>
+      `;
+      detailsGrid.appendChild(card);
+    });
+  }
+
+  function setActive(seg){
+    $$('.pc-seg', bar).forEach(s=>s.dataset.active='false');
+    if(seg) seg.dataset.active='true';
+  }
+
+  // Tabs
+  tabs.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      tabs.forEach(b=>{ b.classList.toggle('is-active', b===btn); b.setAttribute('aria-selected', String(b===btn)); });
+      renderTrack(btn.dataset.track);
+    });
+  });
+
+  // Toggle detalles
+  toggleBtn.addEventListener('click', ()=>{
+    const isOpen = details.hasAttribute('hidden') ? false : true;
+    if(isOpen){ details.setAttribute('hidden',''); toggleBtn.setAttribute('aria-expanded','false'); toggleBtn.textContent='Ver detalles'; }
+    else { details.removeAttribute('hidden'); toggleBtn.setAttribute('aria-expanded','true'); toggleBtn.textContent='Ocultar detalles'; }
+  });
+
+  // Inicial
+  renderTrack('quickstart');
+})();
 </script>
 
 
-<!-- offers section -->
-<section class="block">
-    <div class="block-container" style="margin-top: 7.5vh; margin-left: -5vw;">
-        <div class="block-image" style="margin-right:2vw;">
-            <img src="static/Servicios.png" id="servimg" alt="nuestras ofertas">
-        </div>
-        <div class="block-content">
-            <h2 style="line-height: 7vh;">Exploradores de la Tecnología</h2>
-            <p>BCC Tech <span style="color: #ed4624;"><em>no es solo una empresa de software</em></span>, somos un equipo apasionado de programadores-científicos con raíces en la física. Nuestra historia nos define como más que programadores; somos investigadores y creadores versátiles.</p>
-            <p>Ya sea para empresas de diversos sectores o para el público en general, nuestro enfoque es constante: hacer fácil lo complejo y ampliar lo interesante.</p>
-        </div>
-    </div>
-</section>
-
-<!-- services section -->
-<section class="services">
-    <h2>Nuestros servicios</h2>
-    <div class="services-container">
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-programador_114360-2284.jpg?size=626&ext=jpg" alt="Apps de escritorio"></h2>
-            <h3>Aplicaciones de Escritorio</h3>
-            <p>Desarrollo de aplicaciones de escritorio adaptadas a tus necesidades</p>
-        </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-seleccionar_114360-383.jpg?size=626&ext=jpg" alt="Desarrollo Movil"></h2>
-            <h3>Aplicaciones Móviles</h3>
-            <p>Desarrollo de aplicaciones móviles adaptadas a tus necesidades</p>
-        </div>
-        <div class="service-card">
-            <h2 style="margin-top: 10%;"><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-orientacion-multidispositivo_114360-7405.jpg?size=626&ext=jpg" alt="Desarrollo multiplataforma">
-            </h2>
-            <h3 style="margin-top: 10%;">Aplicaciones multiplataforma</h3>
-            <p>No importa si ejecutas en un escritorio o un dispositivo móvil, todo estará conectado</p>
-        </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-estadisticas-sitio_114360-1434.jpg?size=626&ext=jpg" alt="Desarrollo Web"></h2>
-            <h3>Páginas Web</h3>
-            <p>Desarrollo de aplicaciones web adaptadas a tus necesidades</p>
-        </div>
-        <div class="service-card">
-            <!-- https://img.freepik.com/vector-gratis/ilustracion-concepto-matematicas_114360-3972.jpg?size=626&ext=jpg -->
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-analisis_114360-1119.jpg?size=626&ext=jpg" alt="Consultoría">
-            </h2>
-            <h3>Servicios de consultoría</h3>
-            <p>Consultoría para guiarte en tus necesidades informáticas o científicas</p>
-        </div>
-        <div class="service-card">
-            <h2><img src="https://img.freepik.com/vector-gratis/ilustracion-concepto-servidor_114360-287.jpg?size=626&ext=jpg" alt="Mantenimiento">
-            </h2>
-            <h3>Mantenimiento y actualización</h3>
-            <p>¿Una aplicación que necesitas actualizar o sitio web que requiere mantenimiento? Te ayudamos</p>
-        </div>
-        
-    </div>
-</section>
-
-<!-- about us section -->
-<section class="about">
-    <div class="about-container">
-        <h2>Lo que ofrecemos</h2>
-        <p>¡Bienvenido a <em>BCCTechnologies</em>!</p>
-        
-        <p>En <em>BCCTechnologies</em>, no solo ofrecemos soluciones, deseamos innovar en cada experiencia tecnológica ¿Cómo lo lograremos?</p>
-        
-        <ul>
-            <li style="margin-bottom: 10px;"><strong>Innovación a tu medida:</strong> En el corazón de nuestra misión está sumerginos en tus necesidades, asegurándonos de que cada solución que brindamos impulse tus resultados de manera significativa.</li>
-            
-            <li style="margin-bottom: 10px;"><strong>Futuro sostenible:</strong> No solo nos preocupamos por hoy, sino por el mañana. Fomentamos el uso responsable de recursos tecnológicos.</li>
-            
-            <li style="margin-bottom: 10px;"><strong>Agilidad en la era cambiante:</strong> El mundo tecnológico evoluciona rápidamente, y en <em>BCCTechnologies</em>, nos movemos al mismo ritmo.</li>
-        </ul>
-        
-        <p>¡Únete a nosotros en la travesía de la <span style="color: #ed4624;"><em>innovación</em></span>!</p>
-    </div>
-</section>
-
-<!-- schedule section -->
-<section class="block" style="background-color: #f0f0f0;">
-    <div class="block-container">
-        <div class="block-image">
-            <img src="static/carpetas_fb.png" alt="cotización">
-        </div>
-        <div class="block-content">
-            <h2 style="line-height: 6vh;">¡Solicite ahora su cotización!</h2>
-            <p>Comprender sus necesidades y objetivos es esencial para nosotros. Escuchamos y trabajamos juntos para 
-                crear una experiencia única.</p>
-            <p>Comuníquenos sus deseos y haremos lo mejor posible por hacerlos realidad.
-            </p>
-            <a href="./cotizacion" class="cta-button">OBTENER COTIZACIÓN</a>
-        </div>
-    </div>
-</section>
-
-<!-- footer section -->
-<footer>
-    <div class="footer-container">
-        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
-    </div>
-</footer>
 
 </body>
 </html>
