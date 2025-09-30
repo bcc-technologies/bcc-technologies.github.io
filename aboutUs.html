@@ -1,124 +1,295 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="aboutUs.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-    
-    <!-- JavaScript para el menú desplegable -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
-
-            menuToggle.addEventListener('click', function () {
-                nav.classList.toggle('active');
-            });
-        });
-    </script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nosotros — BCC Technologies</title>
+  <link rel="icon" type="image/png" href="static/Favi2.png" />
+  <link rel="stylesheet" href="aboutUs.css" />
+  <link rel="stylesheet" href="login.css" />
+  <meta name="description" content="Programadores-científicos creando software y flujos reproducibles para EIS, DLS e imagen. Integración de instrumentación, análisis y automatización." />
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L9FYNRKVNH');
-</script>
-
-
 <body>
-  
-    <!-- header section -->
-    <header>
-        <div class="header-container">
-            <!-- Agregado el botón de hamburguesa con la clase 'menu-toggle' -->
-            <div class="menu-toggle">&#9776;</div>
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-                <hr class="solid">
-                <ul>
-                   <li><a href="./">Inicio</a></li>
-                   <li><a #about>Nosotros</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./products">Productos</a></li>
-                    <li><a href="./contactUs">Contáctanos</a></li>
-                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    
-    <!-- Block section -->
-    <section class="block">
-        <div class="block-container">
-            <div class="block-content">
-                <h2>Bienvenido a nuestra empresa de software</h2>
-                <p>Creamos soluciones innovadoras que impulsan su negocio.</p>
-                <a href="./services" class="cta-button">Ver soluciones</a>
-            </div>
-            <div class="block-image">
-                <img src="static/Imagen1.JPG" alt="BCC Founders">
-            </div>
-        </div>
-    </section>
+  <!-- Navbar (usa tu navbar real si ya lo tienes global) -->
+  <header class="navbar">
+    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
+    <nav class="nav-links">
+      <a href="./">Inicio</a>
+      <a href="./aboutUs" aria-current="page">Nosotros</a>
+      <a href="./products">Productos</a>
+      <a href="./services">Servicios</a>
+      <a href="./blog">Recursos</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Login</a>
+      <a class="btn btn-dark" href="./contactUs">Contacto</a>
+    </div>
+  </header>
 
-    <section class="services">
-        <h2>Nuestro equipo</h2>
-        <div class="services-container">
-            <div class="service-card">
-                <h2><img src="static/bar2_fb.png" alt="Gabriel Barreiro"></h2>
-                <h3><a href="https://www.linkedin.com/in/gabriel-barreiro-b25225205/" target="_blank">Gabriel Barreiro</a></h3>
-                <p>Director de Tecnología e Innovación</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="static/saul_fb.png" alt="Saúl Castillo"></h2>
-                <h3><a href="https://www.linkedin.com/in/saulecast/" target="_blank">Saúl Castillo</a></h3>
-                <p>Director de Operaciones y Mercadeo</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="static/Enrique_sf.png" alt="Enrique Casanova"></h2>
-                <h3><a href="https://www.linkedin.com/in/enrique-casanova-benitez-5278771b0/" target="_blank">Enrique Casanova</a></h3>
-                <p>Director de Finanzas</p>
-            </div>
-            <!-- <div class="service-card">
-                <h2><img src="static/Enma.jpeg" alt="Enmanuel Rodriguez Brea"></h2>
-                <h3><a href="https://www.instagram.com/enmanuelr.brea/" target="_blank">Enmanuel Rodriguez</a></h3>
-                <p>Secretario General</p>
-            </div> -->
-            <div class="service-card">
-                <h2><img src="static/Oliva_sf.png" alt="Raffaele Oliva"></h2>
-                <h3><a href="https://www.linkedin.com/in/raffaele-oliva-a40249105/" target="_blank">Raffaele Oliva</a></h3>
-                <p>Jefe de Ciencias Químicas</p> 
-            </div>
-            <div class="service-card">
-                <h2><img src="static/Jesus_fb.png" alt="Jesus Matos"></h2>
-                <h3><a href="https://www.linkedin.com/in/jesusmatossanchez/" target="_blank">Jesus Matos</a></h3>
-                <p>Asesor especialista en Proyectos</p>
-            </div>
-        </div>
-    </section>
-    
-    <section class="about">
-        <div class="about-container">
-            <h2>Quiénes somos</h2>
-            <p>Somos <strong style="color: #ed4624;">BCC Tech</strong>, un apasionado grupo de <em style="color: #ed4624;">programadores-científicos</em> dedicados a explorar los límites de la tecnología y la innovación. Nuestra historia comienza como estudiantes de <em style="color: #ed4624;">física</em> con una profunda curiosidad por lo desconocido y una pasión por expandir el conocimiento.</p>
-            <p>Nuestro nombre, además de combinar nuestros apellidos, es un homenaje al "<strong style="color: #ed4624;">Cuerpo Cúbico Central</strong>", que es un concepto de importancia en la física del estado sólido.</p>
-            <p>¿A qué nos dedicamos? En <strong style="color: #ed4624;">BCC Tech</strong> estamos especializados en el desarrollo de <em style="color: #ed4624;">software a medida</em> que transforma las ideas en soluciones concretas. Ya sea creando aplicaciones multiplataforma para empresas de diversos sectores o diseñando productos innovadores para el público en general, nuestro enfoque es siempre el mismo: hacer fácil lo complejo y ampliar lo interesante.</p>
+<!-- ================= HERO — ABOUT (especial) ================= -->
+<section class="about-hero" id="top">
+  <div class="container about-grid">
+    <div class="about-copy">
+      <p class="eyebrow">Nosotros</p>
+      <h1>Programadores-científicos que convierten datos en decisiones</h1>
+      <p class="lead">
+        Integramos instrumentación (EIS/DLS), analizamos señales e imagen (SEM/óptica) y automatizamos flujos.
+        Basados en Santo Domingo (UTC-4), trabajamos con industria y academia.
+      </p>
 
-        </div>
-    </section>
+      <ul class="about-metrics">
+        <li>Fundada en 2024</li>
+        <li>EIS · DLS · Imagen</li>
+        <li>On-prem / Cloud</li>
+      </ul>
 
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+      <div class="hero-cta">
+        <a class="btn btn-dark" href="#team">Conocer al equipo</a>
+        <a class="btn btn-ghost" href="./services">Ver servicios</a>
+      </div>
+    </div>
+
+    <!-- Collage visual (5 piezas + tarjeta de misión) -->
+    <div class="about-collage" aria-hidden="true">
+      <figure class="collage-card c1">
+        <img src="static/saul_fb.png" alt="">
+      </figure>
+      <figure class="collage-card c2">
+        <img src="static/bar2_fb.png" alt="">
+      </figure>
+      <figure class="collage-card c3">
+        <img src="static/Enrique_sf.png" alt="">
+      </figure>
+      <figure class="collage-card c4">
+        <img src="static/Oliva_sf.png" alt="">
+      </figure>
+      <figure class="collage-card c5">
+        <img src="static/Jesus_fb.png" alt="">
+      </figure>
+
+      <!-- <blockquote class="mission-card">
+        <span class="quote">“Facilitando lo complejo y expandiendo lo interesante”</span>
+        <span class="sig">Equipo BCC</span>
+      </blockquote> -->
+    </div>
+  </div>
+</section>
+
+  <!-- ================= PRINCIPIOS ================= -->
+  <section class="section section-alt" id="principles">
+    <div class="container">
+      <h2>Nuestros principios</h2>
+      <div class="pillars">
+        <article class="pillar reveal">
+          <h3>Reproducibilidad</h3>
+          <p>Versionado de análisis, métricas acordadas y validación cruzada.</p>
+        </article>
+        <article class="pillar reveal">
+          <h3>Seguridad</h3>
+          <p>NDA, acceso por roles y despliegues on-prem o cloud según política.</p>
+        </article>
+        <article class="pillar reveal">
+          <h3>Pragmatismo</h3>
+          <p>Pilotos de 2–4 semanas con entregables claros y criterios de aceptación.</p>
+        </article>
+        <article class="pillar reveal">
+          <h3>Transferencia</h3>
+          <p>Training, materiales y handover documentado para autonomía del equipo.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPO ================= -->
+  <section class="section" id="team">
+    <div class="container">
+      <h2>Equipo</h2>
+      <p class="lead">Liderazgo técnico y científico. Tarjetas uniformes, roles claros y foco en impacto.</p>
+
+      <h3 class="group-title">Leadership</h3>
+      <div class="team-grid">
+        <!-- Gabriel -->
+        <article class="person reveal">
+          <img src="static/Barry.jpg" alt="Gabriel Barreiro" style="object-fit: cover;"/>
+          <div class="p-meta">
+            <h4>Gabriel Barreiro</h4>
+            <p class="role">Director de Tecnología e Innovación · EIS & Automatización</p>
+            <p class="blurb">Integra instrumentación con pipelines y fitting reproducible.</p>
+          </div>
+          <a class="plink" href="#" aria-label="LinkedIn de Gabriel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/></svg>
+          </a>
+        </article>
+        <!-- Saúl -->
+        <article class="person reveal">
+          <img src="static/saul_fb.png" alt="Saúl Castillo" />
+          <div class="p-meta">
+            <h4>Saúl Castillo</h4>
+            <p class="role">Director General · Producto & Estrategia</p>
+            <p class="blurb">Alinea alcance y entregables a impacto de negocio.</p>
+          </div>
+          <a class="plink" href="#" aria-label="LinkedIn de Saúl">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/></svg>
+          </a>
+        </article>
+        <!-- Enrique -->
+        <article class="person reveal">
+          <img src="static/Enrique_sf.png" alt="Enrique Casanova" />
+          <div class="p-meta">
+            <h4>Enrique Casanova</h4>
+            <p class="role">Director de Finanzas · Operaciones & Compliance</p>
+            <p class="blurb">Estructura modelos y acuerdos con clientes.</p>
+          </div>
+          <a class="plink" href="#" aria-label="LinkedIn de Enrique">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/></svg>
+          </a>
+        </article>
+      </div>
+
+      <h3 class="group-title">Ciencia & Advisors</h3>
+      <div class="team-grid">
+        <!-- Raffaele -->
+        <article class="person reveal">
+          <img src="static/Oliva_sf.png" alt="Raffaele Oliva" />
+          <div class="p-meta">
+            <h4>Raffaele Oliva</h4>
+            <p class="role">Jefe de Ciencias Químicas · Materiales & Electroquímica</p>
+            <p class="blurb">Valida métricas y criterios de aceptación en laboratorio.</p>
+          </div>
+          <a class="plink" href="#" aria-label="LinkedIn de Raffaele">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/></svg>
+          </a>
+        </article>
+        <!-- Jesús -->
+        <article class="person reveal">
+          <img src="static/Jesus_fb.png" alt="Jesús Matos" />
+          <div class="p-meta">
+            <h4>Jesús Matos</h4>
+            <p class="role">Asesor de Proyectos · Roadmaps & Quick wins</p>
+            <p class="blurb">Diseña hojas de ruta y prioriza impactos técnicos.</p>
+          </div>
+          <a class="plink" href="#" aria-label="LinkedIn de Jesús">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/></svg>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HISTORIA ================= -->
+  <section class="section" id="story">
+    <div class="container">
+      <h2>Nuestra historia</h2>
+      <div class="timeline">
+        <div class="titem reveal">
+          <div class="dot"></div>
+          <div class="tdate">Ago 2023</div>
+          <div class="ttext">Nace el equipo de física → software científico.</div>
         </div>
-    </footer>
+        <div class="titem reveal">
+          <div class="dot"></div>
+          <div class="tdate">Ene 2024</div>
+          <div class="ttext">Fundación oficial de BCC Technologies en Santo Domingo.</div>
+        </div>
+        <div class="titem reveal">
+          <div class="dot"></div>
+          <div class="tdate">2024</div>
+          <div class="ttext">Lanzamos MAP-Nano y paquetes EIS/DLS.</div>
+        </div>
+        <div class="titem reveal">
+          <div class="dot"></div>
+          <div class="tdate">2025</div>
+          <div class="ttext">Integraciones LIMS/ERP y automatizaciones de laboratorio.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CAPACIDADES ================= -->
+  <section class="section section-alt" id="capabilities">
+    <div class="container">
+      <h2>Capacidades & stack</h2>
+      <div class="caps-grid">
+        <div class="cap reveal">
+          <h4>Métodos</h4>
+          <div class="badges">
+            <span class="badge">EIS</span>
+            <span class="badge">DLS</span>
+            <span class="badge">Imagen (SEM/óptica)</span>
+          </div>
+        </div>
+        <div class="cap reveal">
+          <h4>Entregables</h4>
+          <div class="badges">
+            <span class="badge">CSV/PDF/API</span>
+            <span class="badge">SOP & presets</span>
+            <span class="badge">Dashboards</span>
+          </div>
+        </div>
+        <div class="cap reveal">
+          <h4>Entornos</h4>
+          <div class="badges">
+            <span class="badge">On-prem</span>
+            <span class="badge">Cloud</span>
+            <span class="badge">Integración LIMS/ERP/SCADA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA FINAL ================= -->
+  <section class="section cta-final" id="contact-cta">
+    <div class="container cta-inner">
+      <div>
+        <h2>¿Listo para colaborar?</h2>
+        <p class="lead">Cuéntanos tus datos, instrumentos y objetivo. Te proponemos un plan concreto.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-dark" href="./services">Ver servicios</a>
+        <a class="btn btn-ghost" href="./contactUs">Contactar al equipo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container foot-inner">
+      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- JSON-LD básico (Organization + Team leaders mínimos) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"BCC Technologies",
+    "url":"https://bcctechnologies.com.do/",
+    "logo":"https://bcctechnologies.com.do/static/BCC_sf.png"
+  }
+  </script>
+
+  <!-- Scripts mínimos -->
+  <script>
+    // Año + ajustar --nav-h
+    document.getElementById('year').textContent = new Date().getFullYear();
+    (function(){
+      const nav=document.querySelector('.navbar');
+      if(!nav) return;
+      const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+      setH(); addEventListener('resize', setH);
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+      const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+      }, {threshold:.12});
+      els.forEach(el=>io.observe(el));
+    })();
+  </script>
 </body>
 </html>
