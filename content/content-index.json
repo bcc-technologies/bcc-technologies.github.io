@@ -1,0 +1,19 @@
+{
+  "posts": [
+    {
+      "id": "2026-01-30-primera-publicacion",
+      "title": "Primera publicación",
+      "date": "2026-01-30",
+      "section": "Otros",
+      "tags": [
+        "testing",
+        "pruebas"
+      ],
+      "excerpt": "Esto es una prueba, ese es todo el resumen.",
+      "cover": "static\\bcclogo.png",
+      "bodyUrl": "/content/posts/2026-01-30-primera-publicacion.md"
+    }
+  ],
+  "products": [],
+  "services": []
+}
