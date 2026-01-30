@@ -395,3 +395,40 @@
   .search{ min-width: 100%; }
   .modal-inner{ margin: 58px auto; }
 }
+
+
+
+
+/* Styles for blog content */
+.article-figure { margin: 14px 0; }
+.article-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+.article-figure figcaption {
+  margin-top: 8px;
+  font-size: .92rem;
+  opacity: .75;
+}
+
+.bcc-card{
+  border: 1px solid rgba(15,17,21,0.14);
+  border-radius: 16px;
+  padding: 14px;
+  margin: 14px 0;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+}
+.bcc-card-kicker{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  letter-spacing: .12em;
+  font-size: .78rem;
+  opacity: .6;
+}
+.bcc-card-title{ font-weight: 800; margin-top: 4px; }
+.bcc-card-sub{ opacity: .75; margin-top: 2px; }
+.bcc-card-body{ margin-top: 10px; opacity: .9; line-height: 1.5; }
+.bcc-card-list{ margin: 10px 0 0; padding-left: 18px; }
+.bcc-card-link{ display: inline-block; margin-top: 10px; text-decoration: none; font-weight: 700; }

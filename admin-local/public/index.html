@@ -44,31 +44,8 @@
     <section class="panel">
       <!-- POSTS -->
       <section class="tab is-active" id="tab-posts">
-        <div class="grid2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">Entradas</div>
-                <div class="muted" id="postsCount">—</div>
-              </div>
-              <button class="btn btn-ghost" id="btnNewPost" type="button">Nueva</button>
-            </div>
-
-            <div class="toolbar">
-              <input class="input" id="postsSearch" type="search" placeholder="Buscar por título, tag, sección…" />
-              <select class="input" id="postsSectionFilter">
-                <option value="">Todas las secciones</option>
-                <option>Empresa</option>
-                <option>Investigación</option>
-                <option>Productos</option>
-                <option>Servicios</option>
-                <option>Otros</option>
-              </select>
-            </div>
-
-            <div class="list" id="postsList"></div>
-          </div>
-
+        <div class="posts-layout">
+          <!-- Editor (PRIORIDAD) -->
           <div class="card">
             <div class="card-head">
               <div>
@@ -82,8 +59,11 @@
             </div>
 
             <div class="form">
-              <input class="input" id="postId" type="text" placeholder="id (auto) — se genera si lo dejas vacío" />
-              <input class="input" id="postTitle" type="text" placeholder="Título" />
+              <div class="row">
+                <input class="input" id="postTitle" type="text" placeholder="Título" />
+                <input class="input mono" id="postId" type="text" placeholder="id (auto)" />
+              </div>
+
               <div class="row">
                 <input class="input" id="postDate" type="date" />
                 <select class="input" id="postSection">
@@ -94,39 +74,87 @@
                   <option>Otros</option>
                 </select>
               </div>
-              <input class="input" id="postTags" type="text" placeholder="Tags (separados por coma)" />
-              <input class="input" id="postCover" type="text" placeholder="Cover URL (ej: /img/posts/x.png)" />
+
+              <div class="row">
+                <input class="input" id="postTags" type="text" placeholder="Tags (coma)" />
+                <input class="input" id="postCover" type="text" placeholder="Cover URL (opcional)" />
+              </div>
+
               <textarea class="textarea" id="postExcerpt" placeholder="Excerpt (resumen corto)"></textarea>
 
-              <div class="split">
-                <div>
-                  <div class="mono muted">Markdown</div>
-                  <textarea class="textarea tall" id="postBody" placeholder="# Título&#10;&#10;Contenido…"></textarea>
+              <div class="editor-shell">
+                <div class="editor-toolbar">
+                  <button class="tbtn" data-cmd="h2" type="button">H2</button>
+                  <button class="tbtn" data-cmd="h3" type="button">H3</button>
+                  <span class="sep"></span>
+
+                  <button class="tbtn" data-cmd="bold" type="button"><b>B</b></button>
+                  <button class="tbtn" data-cmd="italic" type="button"><i>I</i></button>
+                  <button class="tbtn" data-cmd="code" type="button">{ }</button>
+                  <span class="sep"></span>
+
+                  <button class="tbtn" data-cmd="ul" type="button">• Lista</button>
+                  <button class="tbtn" data-cmd="ol" type="button">1. Lista</button>
+                  <button class="tbtn" data-cmd="quote" type="button">❝</button>
+                  <button class="tbtn" data-cmd="hr" type="button">—</button>
+                  <span class="sep"></span>
+
+                  <button class="tbtn" data-cmd="link" type="button">Link</button>
+                  <button class="tbtn tbtn-accent" data-cmd="image" type="button">Imagen</button>
+                  <span class="sep"></span>
+
+                  <button class="tbtn" data-cmd="service" type="button">Insertar Servicio</button>
+                  <button class="tbtn" data-cmd="product" type="button">Insertar Producto</button>
+
+                  <div class="grow"></div>
+                  <button class="tbtn" id="btnTogglePreview" type="button">Preview</button>
                 </div>
-                <div>
-                  <div class="mono muted">Preview (rápido)</div>
+
+                <div class="editor-split" id="editorSplit">
+                  <textarea class="textarea tall mono" id="postBody" placeholder="Escribe aquí. Usa la barra de herramientas para insertar imágenes, links, listas, etc."></textarea>
                   <div class="preview" id="postPreview"></div>
                 </div>
               </div>
+
+              <div class="muted mono" style="margin-top:6px;">
+                Tip: Inserta bloques con <code>[[service:ID]]</code> y <code>[[product:ID]]</code> (la UI lo hace por ti).
+              </div>
             </div>
+          </div>
+
+          <!-- Library (compacta) -->
+          <div class="card library" id="postsLibrary">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Entradas</div>
+                <div class="muted" id="postsCount">—</div>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="btnNewPost" type="button">Nueva</button>
+                <button class="btn btn-ghost" id="btnCollapseLibrary" type="button">↔</button>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <input class="input" id="postsSearch" type="search" placeholder="Buscar…" />
+              <select class="input" id="postsSectionFilter">
+                <option value="">Todas</option>
+                <option>Empresa</option>
+                <option>Investigación</option>
+                <option>Productos</option>
+                <option>Servicios</option>
+                <option>Otros</option>
+              </select>
+            </div>
+
+            <div class="list compact" id="postsList"></div>
           </div>
         </div>
       </section>
 
       <!-- PRODUCTS -->
       <section class="tab" id="tab-products">
-        <div class="grid2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">Productos</div>
-                <div class="muted" id="productsCount">—</div>
-              </div>
-              <button class="btn btn-ghost" id="btnNewProduct" type="button">Nuevo</button>
-            </div>
-            <div class="list" id="productsList"></div>
-          </div>
-
+        <div class="grid2 wide-first">
           <div class="card">
             <div class="card-head">
               <div>
@@ -140,8 +168,10 @@
             </div>
 
             <div class="form">
-              <input class="input" id="productId" type="text" placeholder="id (auto)" />
-              <input class="input" id="productName" type="text" placeholder="Nombre" />
+              <div class="row">
+                <input class="input" id="productName" type="text" placeholder="Nombre" />
+                <input class="input mono" id="productId" type="text" placeholder="id (auto)" />
+              </div>
               <div class="row">
                 <input class="input" id="productCategory" type="text" placeholder="Categoría" />
                 <select class="input" id="productStatus">
@@ -150,28 +180,30 @@
                   <option>Legacy</option>
                 </select>
               </div>
-              <input class="input" id="productPageUrl" type="text" placeholder="URL (ej: /products.html#maps)" />
-              <input class="input" id="productTags" type="text" placeholder="Tags (coma)" />
+              <div class="row">
+                <input class="input" id="productPageUrl" type="text" placeholder="URL (ej: /products.html#maps)" />
+                <input class="input" id="productTags" type="text" placeholder="Tags (coma)" />
+              </div>
               <textarea class="textarea" id="productSummary" placeholder="Resumen / descripción breve"></textarea>
             </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Productos</div>
+                <div class="muted" id="productsCount">—</div>
+              </div>
+              <button class="btn btn-ghost" id="btnNewProduct" type="button">Nuevo</button>
+            </div>
+            <div class="list compact" id="productsList"></div>
           </div>
         </div>
       </section>
 
       <!-- SERVICES -->
       <section class="tab" id="tab-services">
-        <div class="grid2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">Servicios</div>
-                <div class="muted" id="servicesCount">—</div>
-              </div>
-              <button class="btn btn-ghost" id="btnNewService" type="button">Nuevo</button>
-            </div>
-            <div class="list" id="servicesList"></div>
-          </div>
-
+        <div class="grid2 wide-first">
           <div class="card">
             <div class="card-head">
               <div>
@@ -185,15 +217,38 @@
             </div>
 
             <div class="form">
-              <input class="input" id="serviceId" type="text" placeholder="id (auto)" />
-              <input class="input" id="serviceName" type="text" placeholder="Nombre" />
+              <div class="row">
+                <input class="input" id="serviceName" type="text" placeholder="Nombre" />
+                <input class="input mono" id="serviceId" type="text" placeholder="id (auto)" />
+              </div>
               <input class="input" id="serviceCategory" type="text" placeholder="Categoría" />
-              <input class="input" id="servicePageUrl" type="text" placeholder="URL (ej: /services.html#diagnostico)" />
-              <input class="input" id="serviceTags" type="text" placeholder="Tags (coma)" />
+              <div class="row">
+                <input class="input" id="servicePageUrl" type="text" placeholder="URL (ej: /services.html#diagnostico)" />
+                <input class="input" id="serviceTags" type="text" placeholder="Tags (coma)" />
+              </div>
+
               <textarea class="textarea" id="serviceSummary" placeholder="Resumen / pitch"></textarea>
+
+              <textarea class="textarea" id="serviceCapabilities" placeholder="Capacidades (una por línea)"></textarea>
+
               <textarea class="textarea" id="serviceDeliverables" placeholder="Entregables (texto)"></textarea>
               <textarea class="textarea" id="serviceRequirements" placeholder="Requisitos / inputs del cliente"></textarea>
+
+              <div class="muted mono">
+                Tip: En el blog puedes insertar este servicio con <code>[[service:ID]]</code>.
+              </div>
             </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Servicios</div>
+                <div class="muted" id="servicesCount">—</div>
+              </div>
+              <button class="btn btn-ghost" id="btnNewService" type="button">Nuevo</button>
+            </div>
+            <div class="list compact" id="servicesList"></div>
           </div>
         </div>
       </section>
@@ -201,5 +256,66 @@
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </section>
   </main>
+
+  <!-- Dialog: Insert Image -->
+  <dialog id="dlgImage" class="dlg">
+    <form method="dialog" class="dlg-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title">Insertar imagen</div>
+          <div class="muted">Sube una imagen al repo (static/uploads) o pega una URL.</div>
+        </div>
+        <button class="btn btn-ghost" value="cancel" type="submit">Cerrar</button>
+      </div>
+
+      <div class="dlg-body">
+        <div class="row">
+          <input id="imgAlt" class="input" type="text" placeholder="Caption / alt (recomendado)" />
+          <input id="imgUrl" class="input" type="text" placeholder="URL (opcional si subes)" />
+        </div>
+
+        <div class="row">
+          <input id="imgFile" class="input" type="file" accept="image/*" />
+          <button class="btn btn-primary" id="btnUploadImage" type="button">Subir</button>
+        </div>
+
+        <div class="muted mono" id="imgUploadHint">—</div>
+      </div>
+
+      <div class="dlg-foot">
+        <button class="btn btn-primary" id="btnInsertImage" value="ok" type="button">Insertar en texto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog: Insert Service/Product -->
+  <dialog id="dlgInsertBlock" class="dlg">
+    <form method="dialog" class="dlg-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title">Insertar bloque</div>
+          <div class="muted">Inserta un bloque vivo: servicio o producto.</div>
+        </div>
+        <button class="btn btn-ghost" value="cancel" type="submit">Cerrar</button>
+      </div>
+
+      <div class="dlg-body">
+        <div class="row">
+          <select id="blockType" class="input">
+            <option value="service">Servicio</option>
+            <option value="product">Producto</option>
+          </select>
+          <select id="blockId" class="input"></select>
+        </div>
+
+        <div class="preview" id="blockPreview" style="min-height:120px;"></div>
+        <div class="muted mono">Se insertará como <code>[[service:ID]]</code> o <code>[[product:ID]]</code>.</div>
+      </div>
+
+      <div class="dlg-foot">
+        <button class="btn btn-primary" id="btnInsertBlock" value="ok" type="button">Insertar</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

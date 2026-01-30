@@ -1,29 +1,32 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
+import multer from "multer";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Asumimos: /admin-local está dentro del repo
 const REPO_ROOT = path.resolve(__dirname, "..");
 
 const CONTENT_DIR = path.join(REPO_ROOT, "content");
 const POSTS_DIR = path.join(CONTENT_DIR, "posts");
 const INDEX_PATH = path.join(CONTENT_DIR, "content-index.json");
 
-const app = express();
-app.use(express.json({ limit: "5mb" }));
+const STATIC_DIR = path.join(REPO_ROOT, "static");
+const UPLOAD_DIR = path.join(STATIC_DIR, "uploads");
 
-// Sirve la UI del admin
+const app = express();
+app.use(express.json({ limit: "10mb" }));
 app.use("/", express.static(path.join(__dirname, "public")));
 
-// Helpers
 function ensureDirs() {
   if (!fs.existsSync(CONTENT_DIR)) fs.mkdirSync(CONTENT_DIR, { recursive: true });
   if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true });
+  if (!fs.existsSync(STATIC_DIR)) fs.mkdirSync(STATIC_DIR, { recursive: true });
+  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
   if (!fs.existsSync(INDEX_PATH)) {
     fs.writeFileSync(
       INDEX_PATH,
@@ -62,7 +65,59 @@ function run(cmd, args, cwd = REPO_ROOT) {
   return (out.stdout || "").trim();
 }
 
-// API
+// ---------- Uploads (images) ----------
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
+    const original = file.originalname || "image";
+    const ext = path.extname(original).toLowerCase();
+    const base = normSlug(path.basename(original, ext)) || "image";
+    const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+    cb(null, `${stamp}-${base}${ext}`);
+  }
+});
+
+function isAllowedImage(file) {
+  const okMime = new Set([
+    "image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"
+  ]);
+  const ext = path.extname(file.originalname || "").toLowerCase();
+  const okExt = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"]);
+  return okMime.has(file.mimetype) && okExt.has(ext);
+}
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, isAllowedImage(file))
+});
+
+app.post("/api/uploads/image", upload.single("file"), (req, res) => {
+  try {
+    ensureDirs();
+    if (!req.file) return res.status(400).json({ ok: false, error: "No file received" });
+    const url = `/static/uploads/${req.file.filename}`;
+    res.json({ ok: true, url, filename: req.file.filename });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+app.get("/api/uploads/list", (_req, res) => {
+  try {
+    ensureDirs();
+    const files = fs.readdirSync(UPLOAD_DIR)
+      .filter(f => !f.startsWith("."))
+      .sort()
+      .reverse()
+      .slice(0, 200);
+    res.json({ ok: true, files: files.map(f => ({ url: `/static/uploads/${f}`, name: f })) });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+// ---------- API ----------
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 app.get("/api/index", (_req, res) => {
@@ -87,10 +142,6 @@ app.get("/api/posts/body", (req, res) => {
   }
 });
 
-/**
- * Upsert Post
- * body: { id?, title, date(YYYY-MM-DD), section, tags[], excerpt, cover, body(md) }
- */
 app.post("/api/posts/upsert", (req, res) => {
   try {
     const {
@@ -112,21 +163,19 @@ app.post("/api/posts/upsert", (req, res) => {
       ? String(idIn).trim()
       : `${date}-${normSlug(title)}`;
 
-    const mdFilename = `${id}.md`;
-    const mdPath = path.join(POSTS_DIR, mdFilename);
     ensureDirs();
-    fs.writeFileSync(mdPath, body, "utf-8");
+    fs.writeFileSync(path.join(POSTS_DIR, `${id}.md`), body, "utf-8");
 
     const idx = readIndex();
     const post = {
       id,
       title,
       date,
-      section,            // Empresa | Investigación | Productos | Servicios | Otros
+      section,
       tags: Array.isArray(tags) ? tags : [],
       excerpt,
       cover,
-      bodyUrl: `/content/posts/${mdFilename}`
+      bodyUrl: `/content/posts/${id}.md`
     };
 
     const i = idx.posts.findIndex(p => p.id === id);
@@ -158,18 +207,12 @@ app.post("/api/posts/delete", (req, res) => {
   }
 });
 
-/**
- * Upsert Product
- * body: { id?, name, category, status, summary, pageUrl, tags[] }
- */
 app.post("/api/products/upsert", (req, res) => {
   try {
     const { id: idIn, name, category = "", status = "Activo", summary = "", pageUrl = "", tags = [] } = req.body || {};
     if (!name) return res.status(400).json({ ok: false, error: "name requerido" });
 
-    const id = idIn && idIn.trim()
-      ? String(idIn).trim()
-      : normSlug(name);
+    const id = idIn && idIn.trim() ? String(idIn).trim() : normSlug(name);
 
     const idx = readIndex();
     const item = { id, name, category, status, summary, pageUrl, tags: Array.isArray(tags) ? tags : [] };
@@ -199,10 +242,6 @@ app.post("/api/products/delete", (req, res) => {
   }
 });
 
-/**
- * Upsert Service
- * body: { id?, name, category, summary, deliverables, requirements, pageUrl, tags[] }
- */
 app.post("/api/services/upsert", (req, res) => {
   try {
     const {
@@ -210,6 +249,7 @@ app.post("/api/services/upsert", (req, res) => {
       name,
       category = "",
       summary = "",
+      capabilities = "",
       deliverables = "",
       requirements = "",
       pageUrl = "",
@@ -218,13 +258,13 @@ app.post("/api/services/upsert", (req, res) => {
 
     if (!name) return res.status(400).json({ ok: false, error: "name requerido" });
 
-    const id = idIn && idIn.trim()
-      ? String(idIn).trim()
-      : normSlug(name);
+    const id = idIn && idIn.trim() ? String(idIn).trim() : normSlug(name);
 
     const idx = readIndex();
     const item = {
-      id, name, category, summary, deliverables, requirements, pageUrl,
+      id, name, category, summary,
+      capabilities, deliverables, requirements,
+      pageUrl,
       tags: Array.isArray(tags) ? tags : []
     };
 
@@ -253,7 +293,6 @@ app.post("/api/services/delete", (req, res) => {
   }
 });
 
-// Git status (para indicador)
 app.get("/api/git/status", (_req, res) => {
   try {
     const out = run("git", ["status", "--porcelain"]);
@@ -263,21 +302,21 @@ app.get("/api/git/status", (_req, res) => {
   }
 });
 
-// Publish: git add + commit + push
 app.post("/api/git/publish", (req, res) => {
   try {
     const message = String(req.body?.message || "Update content").trim() || "Update content";
 
-    run("git", ["add", "content"]);
-    // commit puede fallar si no hay cambios; lo manejamos suave
+    // OJO: -A para que incluya uploads, deletes, y nuevos archivos.
+    run("git", ["add", "-A"]);
+
     try {
       run("git", ["commit", "-m", message]);
     } catch (e) {
       const m = String(e.message || "");
       if (!m.toLowerCase().includes("nothing to commit")) throw e;
     }
-    run("git", ["push"]);
 
+    run("git", ["push"]);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e.message || e) });
