@@ -12,14 +12,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- <link rel="stylesheet" href="css/layout.css"> -->
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/index.css">
-  <script src="js/layout.js" defer></script>
 
+  <script src="js/layout.js" defer></script>
+  <script src="js/index.js" defer></script>
 
   <!-- Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
@@ -29,10 +29,6 @@
     gtag('js', new Date());
     gtag('config', 'G-L9FYNRKVNH');
   </script>
-
-  <!-- Shopify + interactions -->
-  <script defer src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-  <script defer src="js/index.js"></script>
 </head>
 
 <body>
@@ -46,11 +42,10 @@
 
       <nav>
         <a href="./" class="logo-link">
-           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
-            <span class="logo-text"><strong>BCC</strong></span>
-            <span class="logo-symbol"><strong>∴</strong></span>
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
         </a>
-
 
         <ul class="nav-links" id="primary-nav">
           <li><a href="./aboutUs.html">Nosotros</a></li>
@@ -59,12 +54,10 @@
           <li><a href="./blog.html">Journal</a></li>
           <li><a href="./contactUs.html" class="nav-cta">Contacto</a></li>
         </ul>
-        
+
         <div class="nav-actions">
-          <!-- <a class="btn btn-ghost" href="login.html" style="border-radius: 10%; margin-left: 1000%;">Ingresar</a> -->
-           <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
         </div>
-        
       </nav>
     </div>
   </header>
@@ -72,7 +65,6 @@
   <main class="with-header-offset">
     <section class="section hero-section">
       <div class="container hero-bento">
-
         <div class="glass-panel hero-main reveal">
           <div class="status-indicator">
             <span class="status-dot"></span> Sistema Operativo
@@ -100,41 +92,24 @@
           <div class="stat-number">99.8%</div>
           <div class="stat-desc">Precisión en análisis de repetición.</div>
         </div>
-
       </div>
     </section>
 
+    <!-- Journal -->
     <section class="section">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">BCC Journal</h2>
-          <a href="./blog" class="link-arrow">Ver archivo completo &rarr;</a>
+          <a href="./blog.html" class="link-arrow">Ver archivo completo &rarr;</a>
         </div>
 
-        <div class="journal-index reveal">
+        <!-- JS reemplaza este contenido con las entradas reales -->
+        <div class="journal-index reveal" id="journal-index">
           <article class="journal-row">
-            <div class="journal-date">OCT 24</div>
+            <div class="journal-date">—</div>
             <div class="journal-content">
-              <span class="journal-tag">Metodología</span>
-              <h3 class="journal-title"><a href="./blog">Estandarización de parámetros en microscopía óptica de bajo contraste.</a></h3>
-            </div>
-            <div class="journal-action">&nearr;</div>
-          </article>
-
-          <article class="journal-row">
-            <div class="journal-date">SEP 12</div>
-            <div class="journal-content">
-              <span class="journal-tag">Caso de Estudio</span>
-              <h3 class="journal-title"><a href="./blog">Reduciendo el ruido en señales EIS mediante filtrado adaptativo.</a></h3>
-            </div>
-            <div class="journal-action">&nearr;</div>
-          </article>
-
-          <article class="journal-row">
-            <div class="journal-date">AGO 05</div>
-            <div class="journal-content">
-              <span class="journal-tag">Ingeniería</span>
-              <h3 class="journal-title"><a href="./blog">Por qué la interfaz es parte del instrumento científico.</a></h3>
+              <span class="journal-tag">Journal</span>
+              <h3 class="journal-title"><a href="./blog.html">Cargando entradas…</a></h3>
             </div>
             <div class="journal-action">&nearr;</div>
           </article>
@@ -142,6 +117,7 @@
       </div>
     </section>
 
+    <!-- Tecnología disponible (estática por ahora) -->
     <section class="section section-grey">
       <div class="container">
         <div class="section-header reveal">
@@ -164,7 +140,8 @@
         <div class="split-content">
           <h2 class="section-title">Productos originales</h2>
           <p class="prose">
-            Basados en investigaciones y conocimientos en programación, electrónica e instrumentación científica, desarrollamos productos que simplifican la adquisición y análisis de datos complejos.
+            Basados en investigaciones y conocimientos en programación, electrónica e instrumentación científica,
+            desarrollamos productos que simplifican la adquisición y análisis de datos complejos.
           </p>
 
           <ul class="tech-list">
@@ -185,7 +162,7 @@
         <h2 class="cta-head">¿Proyecto complejo?</h2>
         <p>Hablemos de viabilidad técnica y próximos pasos.</p>
         <div class="cta-buttons">
-          <a href="./contactUs" class="btn btn-primary">Iniciar Conversación</a>
+          <a href="./contactUs.html" class="btn btn-primary">Iniciar Conversación</a>
           <a href="mailto:info@bcctech.com" class="btn btn-ghost">info@bcctech.com</a>
         </div>
       </div>

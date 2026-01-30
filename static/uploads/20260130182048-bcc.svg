@@ -1,0 +1,142 @@
+<svg id="cube" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 385 384" role="img" aria-label="BCC cube">
+  <defs>
+    <!-- “Glass bevel” sutil: highlight arriba-izq + sombra abajo-der -->
+    <filter id="glassBevel" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow in="SourceGraphic" dx="-0.6" dy="-0.6" stdDeviation="0.45"
+                    flood-color="#ffffff" flood-opacity="0.22" result="hi"/>
+      <feDropShadow in="SourceGraphic" dx="0.7" dy="0.9" stdDeviation="0.65"
+                    flood-color="#000000" flood-opacity="0.10" result="sh"/>
+      <feMerge>
+        <feMergeNode in="sh"/>
+        <feMergeNode in="hi"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Volumen mínimo en nodos -->
+    <radialGradient id="nodeGrad" cx="30%" cy="28%" r="72%">
+      <stop offset="0%"  stop-color="#ff6b52"/>
+      <stop offset="60%" stop-color="#ed4624"/>
+      <stop offset="100%" stop-color="#d63c1e"/>
+    </radialGradient>
+
+    <style>
+      svg { shape-rendering: geometricPrecision; }
+
+      /* Mantiene grosor estable al escalar */
+      .edgeBase, .edgeCore, .edgeHi,
+      .bondBase, .bondCore, .bondHi, .bondGrain,
+      .nodeStroke { vector-effect: non-scaling-stroke; }
+
+      /* Aristas del cubo (glass sutil) */
+      .edgeBase  { stroke:#cfcfcf; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.56; filter:url(#glassBevel); }
+      .edgeCore  { stroke:#9a9a9a; stroke-width:0.9; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.26; }
+      .edgeHi    { stroke:#ffffff; stroke-width:0.75; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.14; mix-blend-mode:screen; }
+
+      /* Enlaces al centro (glass sutil + presencia) */
+      .bondBase  { stroke:#bdbdbd; stroke-width:7.4; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.50; filter:url(#glassBevel); }
+      .bondCore  { stroke:#888888; stroke-width:1.15; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.24; }
+      .bondHi    { stroke:#ffffff; stroke-width:1.05; stroke-linecap:round; stroke-linejoin:round; fill:none; opacity:.12; mix-blend-mode:screen; }
+
+      /* Textura mínima (opcional) */
+      .bondGrain { stroke:#ffffff; stroke-width:1.0; stroke-linecap:round; fill:none; opacity:.06; stroke-dasharray:2 8; mix-blend-mode:overlay; }
+
+      /* Nodos */
+      .nodeBack  { fill:url(#nodeGrad); opacity:.88; }
+      .nodeFront { fill:url(#nodeGrad); }
+      .nodeStroke{ stroke:#ffffff; stroke-width:0.7; opacity:.18; fill:none; }
+
+    </style>
+  </defs>
+
+  <!-- =========================
+       GEOMETRÍA (definida 1 vez)
+       ========================= -->
+
+  <!-- Aristas del cubo -->
+  <g id="geomEdges">
+    <!-- Back face -->
+    <line x1="111.035" y1="22.647"  x2="360.562" y2="22.521"/>
+    <line x1="360.562" y1="22.521"  x2="360.538" y2="272.178"/>
+    <line x1="360.538" y1="272.178" x2="109.726" y2="270.736"/>
+    <line x1="109.726" y1="270.736" x2="111.035" y2="22.647"/>
+
+    <!-- Connectors between faces -->
+    <line x1="24.636"  y1="107.167" x2="111.035" y2="22.647"/>
+    <line x1="274.020" y1="107.175" x2="360.562" y2="22.521"/>
+    <line x1="273.968" y1="358.544" x2="360.538" y2="272.178"/>
+    <line x1="24.624"  y1="358.513" x2="109.726" y2="270.736"/>
+
+    <!-- Front face -->
+    <line x1="24.636"  y1="107.167" x2="274.020" y2="107.175"/>
+    <line x1="274.020" y1="107.175" x2="273.968" y2="358.544"/>
+    <line x1="273.968" y1="358.544" x2="24.624"  y2="358.513"/>
+    <line x1="24.624"  y1="358.513" x2="24.636"  y2="107.167"/>
+  </g>
+
+  <!-- Bonds “por dentro” (atrás) -->
+  <g id="geomBondsBack">
+    <line x1="192.615" y1="206.000" x2="111.035" y2="22.647"/>
+    <line x1="192.615" y1="206.000" x2="360.562" y2="22.521"/>
+    <line x1="192.615" y1="206.000" x2="360.538" y2="272.178"/>
+    <line x1="192.615" y1="206.000" x2="109.726" y2="270.736"/>
+  </g>
+
+  <!-- Bonds “por fuera” (delante) -->
+  <g id="geomBondsFront">
+    <line x1="192.615" y1="206.000" x2="24.636"  y2="107.167"/>
+    <line x1="192.615" y1="206.000" x2="274.020" y2="107.175"/>
+    <line x1="192.615" y1="206.000" x2="273.968" y2="358.544"/>
+    <line x1="192.615" y1="206.000" x2="24.624"  y2="358.513"/>
+  </g>
+
+  <!-- =========================
+       RENDER ORDER (perspectiva)
+       ========================= -->
+
+  <!-- 1) NODOS BACK -->
+  <g id="nodesBack">
+    <circle class="nodeBack" cx="111.035" cy="22.647"  r="14.5"/>
+    <circle class="nodeBack" cx="360.562" cy="22.521"  r="14.5"/>
+    <circle class="nodeBack" cx="360.538" cy="272.178" r="14.5"/>
+    <circle class="nodeBack" cx="109.726" cy="270.736" r="14.5"/>
+
+    <!-- stroke sutil -->
+    <circle class="nodeStroke" cx="111.035" cy="22.647"  r="14.5"/>
+    <circle class="nodeStroke" cx="360.562" cy="22.521"  r="14.5"/>
+    <circle class="nodeStroke" cx="360.538" cy="272.178" r="14.5"/>
+    <circle class="nodeStroke" cx="109.726" cy="270.736" r="14.5"/>
+  </g>
+
+  <!-- 2) BONDS BACK (por dentro) -->
+  <use href="#geomBondsBack" class="bondBase"/>
+  <use href="#geomBondsBack" class="bondCore"/>
+  <use href="#geomBondsBack" class="bondHi"/>
+  <use href="#geomBondsBack" class="bondGrain"/>
+
+  <!-- 3) EDGES del cubo -->
+  <use href="#geomEdges" class="edgeBase"/>
+  <use href="#geomEdges" class="edgeCore"/>
+  <use href="#geomEdges" class="edgeHi"/>
+
+  <!-- 4) BONDS FRONT (por fuera) -->
+  <use href="#geomBondsFront" class="bondBase"/>
+  <use href="#geomBondsFront" class="bondCore"/>
+  <use href="#geomBondsFront" class="bondHi"/>
+  <use href="#geomBondsFront" class="bondGrain"/>
+
+  <!-- 5) NODOS FRONT + CENTRO -->
+  <g id="nodesFront">
+    <circle class="nodeFront" cx="24.636"  cy="107.167" r="14.5"/>
+    <circle class="nodeFront" cx="274.020" cy="107.175" r="14.5"/>
+    <circle class="nodeFront" cx="24.624"  cy="358.513" r="14.5"/>
+    <circle class="nodeFront" cx="273.968" cy="358.544" r="14.5"/>
+    <circle class="nodeFront" cx="192.615" cy="206.000" r="14.5"/>
+
+    <circle class="nodeStroke" cx="24.636"  cy="107.167" r="14.5"/>
+    <circle class="nodeStroke" cx="274.020" cy="107.175" r="14.5"/>
+    <circle class="nodeStroke" cx="24.624"  cy="358.513" r="14.5"/>
+    <circle class="nodeStroke" cx="273.968" cy="358.544" r="14.5"/>
+    <circle class="nodeStroke" cx="192.615" cy="206.000" r="14.5"/>
+  </g>
+</svg>

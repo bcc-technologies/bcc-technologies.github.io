@@ -1,17 +1,19 @@
 {
   "posts": [
     {
-      "id": "2026-01-30-primera-publicacion",
-      "title": "Primera publicación",
+      "id": "2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo",
+      "title": "Bienvenidos al BCC Journal: Simplificando lo complejo.",
       "date": "2026-01-30",
-      "section": "Otros",
+      "section": "Empresa",
       "tags": [
-        "testing",
-        "pruebas"
+        "metodología",
+        "instrumentación",
+        "diseño",
+        "trazabilidad"
       ],
-      "excerpt": "Esto es una prueba, ese es todo el resumen.",
-      "cover": "static\\bcclogo.png",
-      "bodyUrl": "/content/posts/2026-01-30-primera-publicacion.md"
+      "excerpt": "Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas.",
+      "cover": "/static/uploads/20260130182048-bcc.svg",
+      "bodyUrl": "/content/posts/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.md"
     }
   ],
   "products": [],

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCC Technologies</title>
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/pages/blog.css">
+    <link rel="icon" type="image/png" href="static/Favi2.png">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 40px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid #ed4624;
+            padding-bottom: 10px;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .modal-content p {
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #ed4624;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L9FYNRKVNH');
+</script>
+
+
+<body>
+<!-- header section -->
+<header>
+    <div class="header-container">
+        <div class="menu-toggle">&#9776;</div>
+        <nav>
+            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <hr class="solid">
+            <ul>
+                <li><a href="./" class="nav_link">Inicio</a></li>
+                <li><a href="./aboutUs" class="nav_link">Nosotros</a></li>
+                <li><a href="./services" class="nav_link">Servicios</a></li>
+                <li><a href="./products" class="nav_link">Productos</a></li>
+                <li><a href="./contactUs" class="nav_link">Contáctanos</a></li>
+                <li><a href="./blog" id="blog-link" class="nav_link">BCC Blog</a></li>
+            </ul>
+        </nav>
+        
+        <button id="theme-toggle" class="theme-toggle">
+            <span class="sun-icon">&#9728;</span>
+            <span class="moon-icon">&#9790;</span>
+        </button>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h2>Explora el <span style="color: #ed4624;">BCC Blog</span></h2>
+        <p>Toma una taza de café y relájate leyendo nuestro Blog. Tenemos mucho que contarte</p>    
+    </div>
+</section>
+
+<div class="contenedor contenido-principal">
+    <main class="blog">
+        <h3 style="color: #784D3C;">Bienvenido al Blog</h3>
+        <div id="blog-posts-container"></div>
+    </main> 
+    <aside class="sidebar" id="services">
+        <hr class="sidebar-divider">
+        <h3>Nuestros Servicios de Consultoría:</h3>
+        <ul class="cursos no-padding" id="services-container"></ul>
+        <button id="back-to-top" title="Volver Arriba">&#8679;</button>
+    </aside>
+</div>
+
+<!-- footer section -->
+<footer>
+    <div class="footer-container">
+        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('nav');
+
+    menuToggle.addEventListener('click', function () {
+        nav.classList.toggle('active');
+    });
+
+    async function fetchShopifyData() {
+        try {
+            const response = await fetch('https://2e2e5e-7c.myshopify.com/api/2024-01/graphql.json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Shopify-Storefront-Access-Token': '60ee1e20cccd72924afe74642353e01c'
+                },
+                body: JSON.stringify({
+                    query: `
+                        {
+                            blogs(first: 1) {
+                                edges {
+                                    node {
+                                        articles(first: 5) {
+                                            edges {
+                                                node {
+                                                    title
+                                                    excerptHtml
+                                                    contentHtml
+                                                    handle
+                                                    image {
+                                                        url
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            products(first: 5) {
+                                edges {
+                                    node {
+                                        title
+                                        handle
+                                        variants(first: 1) {
+                                            edges {
+                                                node {
+                                                    priceV2 {
+                                                        amount
+                                                        currencyCode
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    `
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Shopify API Response:', result);
+
+            if (result.errors) {
+                throw new Error('GraphQL Errors: ' + JSON.stringify(result.errors));
+            }
+
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching from Shopify API:', error);
+            throw error;
+        }
+    }
+
+    function updateBlogPosts(articles) {
+        const blogContainer = document.getElementById('blog-posts-container');
+        if (articles.length === 0) {
+            blogContainer.innerHTML = '<p>No blog posts found.</p>';
+            return;
+        }
+        
+        blogContainer.innerHTML = articles.map((article, index) => `
+            <article class="entrada">
+                <div class="entrada__imagen">
+                    <picture>
+                        <img loading="lazy" src="${article.image ? article.image.url : 'static/Imagen2.JPG'}" alt="${article.title}">
+                    </picture>
+                </div>
+                <div class="entrada__contenido">
+                    <h4 class="no-margin">${article.title}</h4>
+                    <p>${article.excerptHtml}</p>
+                    <button onclick="openArticleModal(${index})" class="boton boton--primario">Leer Entrada</button>
+                </div>
+            </article>
+
+            <div id="articleModal${index}" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeArticleModal(${index})">&times;</span>
+                    <h2>${article.title}</h2>
+                    <img src="${article.image ? article.image.url : 'static/Imagen2.JPG'}" alt="${article.title}">
+                    <div>${article.contentHtml}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateServices(products) {
+        const servicesContainer = document.getElementById('services-container');
+        if (products.length === 0) {
+            servicesContainer.innerHTML = '<p>No products found.</p>';
+            return;
+        }
+        
+        servicesContainer.innerHTML = products.map(product => `
+            <li class="widget-curso">
+                <h4 class="no-margin">${product.title}</h4>
+                <p class="widget-curso__label">Valor: 
+                    <span class="widget-curso__info">${product.variants.edges[0].node.priceV2.amount} (${product.variants.edges[0].node.priceV2.currencyCode})</span>
+                </p>
+                <a href="./services" class="boton boton--secundario">Explorar Servicios</a>
+            </li>
+        `).join('');
+    }
+
+    fetchShopifyData()
+        .then(data => {
+            const articles = data.blogs.edges[0].node.articles.edges.map(edge => edge.node);
+            const products = data.products.edges.map(edge => edge.node);
+            
+            updateBlogPosts(articles);
+            updateServices(products);
+        })
+        .catch(error => {
+            console.error('Failed to fetch and update data:', error);
+            document.getElementById('blog-posts-container').innerHTML = '<p>Failed to load blog posts. Please try again later.</p>';
+            document.getElementById('services-container').innerHTML = '<p>Failed to load services. Please try again later.</p>';
+        });
+
+    // Back to Top Button
+    const backToTopButton = document.getElementById('back-to-top');
+
+    function checkScroll() {
+        if (window.innerWidth <= 768) {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+        } else {
+            backToTopButton.style.display = "none";
+        }
+    }
+
+    window.onscroll = checkScroll;
+    window.onresize = checkScroll;
+    checkScroll();
+
+    backToTopButton.addEventListener('click', function () {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    });
+
+    // Theme Toggle
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    themeToggleButton.addEventListener('click', function () {
+        body.classList.toggle('dark-mode');
+        body.classList.toggle('light-mode');
+    });
+
+    body.classList.add('light-mode');
+});
+
+function openArticleModal(index) {
+    document.getElementById(`articleModal${index}`).style.display = "block";
+    document.body.style.overflow = "hidden";  // Prevent scrolling when modal is open
+}
+
+function closeArticleModal(index) {
+    document.getElementById(`articleModal${index}`).style.display = "none";
+    document.body.style.overflow = "";  // Restore scrolling when modal is closed
+}
+
+// Close the modal if the user clicks outside of it
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
+        document.body.style.overflow = "";  // Restore scrolling
+    }
+}
+</script>
+
+</body>
+</html>

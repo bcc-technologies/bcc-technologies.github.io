@@ -1,6 +1,10 @@
-/* BCC Technologies — Home interactions */
+/* BCC Technologies — Home interactions (NO Shopify) */
 
 (() => {
+  // Ajusta esto si tu “nuevo blog” está en otro archivo (ej: './new_blog.html')
+  const BLOG_PAGE = './blog.html';
+  const CONTENT_INDEX_URL = './content/content-index.json';
+
   // 1) Mobile Navigation
   function setupNav(){
     const toggle = document.querySelector('.menu-toggle');
@@ -25,28 +29,24 @@
       isOpen ? close() : open();
     });
 
-    // Close when clicking outside
     document.addEventListener('click', (e) => {
       const isOpen = nav.classList.contains('active');
       if(!isOpen) return;
-
       const clickedInside = nav.contains(e.target) || toggle.contains(e.target);
       if(!clickedInside) close();
     });
 
-    // Close on ESC
     document.addEventListener('keydown', (e) => {
       if(e.key === 'Escape') close();
     });
 
-    // Close when clicking a link
     list.addEventListener('click', (e) => {
       const a = e.target.closest('a');
       if(a) close();
     });
   }
 
-  // 2) Reveal Animation (Focus effect)
+  // 2) Reveal Animation
   function setupReveal(){
     const els = document.querySelectorAll('.reveal');
     if(!els.length) return;
@@ -63,53 +63,108 @@
     els.forEach(el => observer.observe(el));
   }
 
-  // 3) Shopify Integration (optional)
-  // If ShopifyBuy SDK fails or token is invalid, the fallback HTML stays.
-  async function loadFeaturedProducts(){
-    const grid = document.getElementById('featured-grid');
-    if(!grid || typeof window.ShopifyBuy === 'undefined') return;
+  // 3) Journal preview (reads real posts from ./content/content-index.json)
+  async function loadJournalPreview(){
+    const host = document.getElementById('journal-index');
+    if(!host) return;
+
+    host.innerHTML = `
+      <article class="journal-row">
+        <div class="journal-date">…</div>
+        <div class="journal-content">
+          <span class="journal-tag">Journal</span>
+          <h3 class="journal-title"><a href="${BLOG_PAGE}">Cargando entradas…</a></h3>
+        </div>
+        <div class="journal-action">&nearr;</div>
+      </article>
+    `;
 
     try {
-      const client = window.ShopifyBuy.buildClient({
-        domain: '2e2e5e-7c.myshopify.com',
-        storefrontAccessToken: 'b56c00970b6f4210ceedcb67a43b0a83'
-      });
+      const res = await fetch(CONTENT_INDEX_URL, { cache: 'no-store' });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-      const products = await client.product.fetchAll();
-      const top = (products || []).slice(0, 3);
-      if(!top.length) return;
-
-      grid.innerHTML = '';
-
-      top.forEach(p => {
-        const title = p?.title || 'Producto';
-        const desc = (p?.description || '').trim().replace(/\s+/g,' ').slice(0, 90);
-        const price = p?.variants?.[0]?.price?.amount ? String(p.variants[0].price.amount) : '';
-
-        const card = document.createElement('article');
-        card.className = 'glass-panel product-card reveal';
-        card.innerHTML = `
-          <div class="p-header">HARDWARE / SOFTWARE</div>
-          <h4>${escapeHtml(title)}</h4>
-          <p>${escapeHtml(desc)}${desc.length >= 90 ? '…' : ''}</p>
-          <div class="p-footer" style="margin-top:auto; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:monospace; color:var(--accent);">${price ? '$' + price.split('.')[0] : ''}</span>
-            <a href="./products">Especificaciones &rarr;</a>
-          </div>
+      const posts = Array.isArray(data?.posts) ? data.posts : [];
+      if(!posts.length){
+        host.innerHTML = `
+          <article class="journal-row">
+            <div class="journal-date">—</div>
+            <div class="journal-content">
+              <span class="journal-tag">Journal</span>
+              <h3 class="journal-title"><a href="${BLOG_PAGE}">Aún no hay entradas.</a></h3>
+            </div>
+            <div class="journal-action">&nearr;</div>
+          </article>
         `;
-        grid.appendChild(card);
+        return;
+      }
+
+      // Sort by date desc
+      const sorted = [...posts].sort((a,b) => {
+        const da = Date.parse(a?.date || a?.publishedAt || '') || 0;
+        const db = Date.parse(b?.date || b?.publishedAt || '') || 0;
+        return db - da;
       });
 
-      // Observe new reveal cards
-      const newEls = grid.querySelectorAll('.reveal');
-      newEls.forEach(el => el.classList.add('is-in'));
+      const top = sorted.slice(0, 3);
+
+      host.innerHTML = top.map(p => {
+        const id = getPostId(p);
+        const title = p?.title || 'Entrada';
+        const tag = getPostTag(p);
+        const dateStr = formatCompactDate(p?.date || p?.publishedAt);
+
+        // Deep link a una entrada específica:
+        const href = id ? `${BLOG_PAGE}#post=${encodeURIComponent(id)}` : BLOG_PAGE;
+
+        return `
+          <article class="journal-row">
+            <div class="journal-date">${escapeHtml(dateStr || '—')}</div>
+            <div class="journal-content">
+              <span class="journal-tag">${escapeHtml(tag)}</span>
+              <h3 class="journal-title"><a href="${href}">${escapeHtml(title)}</a></h3>
+            </div>
+            <div class="journal-action">&nearr;</div>
+          </article>
+        `;
+      }).join('');
+
     } catch (e) {
-      // Keep fallback HTML
-      console.warn('Shopify featured products: fallback used.', e);
+      console.warn('Journal preview: fallback used.', e);
+      host.innerHTML = `
+        <article class="journal-row">
+          <div class="journal-date">—</div>
+          <div class="journal-content">
+            <span class="journal-tag">Journal</span>
+            <h3 class="journal-title"><a href="${BLOG_PAGE}">Ver Journal</a></h3>
+          </div>
+          <div class="journal-action">&nearr;</div>
+        </article>
+      `;
     }
   }
 
-  // Tiny HTML escaper to prevent accidental markup injection
+  function getPostId(p){
+    // tolerante: id / slug / handle
+    return (p?.id || p?.slug || p?.handle || '').toString().trim();
+  }
+
+  function getPostTag(p){
+    // tolerante: section o primer tag
+    if (typeof p?.section === 'string' && p.section.trim()) return p.section.trim();
+    if (Array.isArray(p?.tags) && p.tags.length) return String(p.tags[0]);
+    return 'Journal';
+  }
+
+  function formatCompactDate(iso){
+    const d = new Date(iso);
+    if(Number.isNaN(d.getTime())) return '';
+    const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    const mm = months[d.getMonth()] || '';
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${mm} ${dd}`;
+  }
+
   function escapeHtml(str){
     return String(str)
       .replace(/&/g,'&amp;')
@@ -122,6 +177,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     setupNav();
     setupReveal();
-    loadFeaturedProducts();
+    loadJournalPreview();
   });
 })();
