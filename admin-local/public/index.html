@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BCC Admin Local</title>
+  <link rel="stylesheet" href="./admin.css" />
+  <script src="./admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="kicker">ADMIN LOCAL</div>
+      <div class="title">BCC Content Manager</div>
+    </div>
+
+    <div class="top-actions">
+      <div class="status" id="gitStatus">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="status-text">Revisando repo…</span>
+      </div>
+
+      <button class="btn btn-ghost" id="btnRefresh" type="button">Refrescar</button>
+
+      <div class="publish">
+        <input class="input" id="commitMsg" type="text" placeholder="Mensaje de commit (ej: Add post)" />
+        <button class="btn btn-primary" id="btnPublish" type="button">Publicar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="side">
+      <button class="nav-item is-active" data-tab="posts" type="button">Entradas</button>
+      <button class="nav-item" data-tab="products" type="button">Productos</button>
+      <button class="nav-item" data-tab="services" type="button">Servicios</button>
+
+      <div class="side-foot">
+        <div class="mono">DB:</div>
+        <div class="muted">/content/content-index.json</div>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <!-- POSTS -->
+      <section class="tab is-active" id="tab-posts">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Entradas</div>
+                <div class="muted" id="postsCount">—</div>
+              </div>
+              <button class="btn btn-ghost" id="btnNewPost" type="button">Nueva</button>
+            </div>
+
+            <div class="toolbar">
+              <input class="input" id="postsSearch" type="search" placeholder="Buscar por título, tag, sección…" />
+              <select class="input" id="postsSectionFilter">
+                <option value="">Todas las secciones</option>
+                <option>Empresa</option>
+                <option>Investigación</option>
+                <option>Productos</option>
+                <option>Servicios</option>
+                <option>Otros</option>
+              </select>
+            </div>
+
+            <div class="list" id="postsList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Editor de entrada</div>
+                <div class="muted" id="postEditorHint">—</div>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="btnDeletePost" type="button">Eliminar</button>
+                <button class="btn btn-primary" id="btnSavePost" type="button">Guardar</button>
+              </div>
+            </div>
+
+            <div class="form">
+              <input class="input" id="postId" type="text" placeholder="id (auto) — se genera si lo dejas vacío" />
+              <input class="input" id="postTitle" type="text" placeholder="Título" />
+              <div class="row">
+                <input class="input" id="postDate" type="date" />
+                <select class="input" id="postSection">
+                  <option>Empresa</option>
+                  <option>Investigación</option>
+                  <option>Productos</option>
+                  <option>Servicios</option>
+                  <option>Otros</option>
+                </select>
+              </div>
+              <input class="input" id="postTags" type="text" placeholder="Tags (separados por coma)" />
+              <input class="input" id="postCover" type="text" placeholder="Cover URL (ej: /img/posts/x.png)" />
+              <textarea class="textarea" id="postExcerpt" placeholder="Excerpt (resumen corto)"></textarea>
+
+              <div class="split">
+                <div>
+                  <div class="mono muted">Markdown</div>
+                  <textarea class="textarea tall" id="postBody" placeholder="# Título&#10;&#10;Contenido…"></textarea>
+                </div>
+                <div>
+                  <div class="mono muted">Preview (rápido)</div>
+                  <div class="preview" id="postPreview"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+      <section class="tab" id="tab-products">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Productos</div>
+                <div class="muted" id="productsCount">—</div>
+              </div>
+              <button class="btn btn-ghost" id="btnNewProduct" type="button">Nuevo</button>
+            </div>
+            <div class="list" id="productsList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Editor de producto</div>
+                <div class="muted" id="productEditorHint">—</div>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="btnDeleteProduct" type="button">Eliminar</button>
+                <button class="btn btn-primary" id="btnSaveProduct" type="button">Guardar</button>
+              </div>
+            </div>
+
+            <div class="form">
+              <input class="input" id="productId" type="text" placeholder="id (auto)" />
+              <input class="input" id="productName" type="text" placeholder="Nombre" />
+              <div class="row">
+                <input class="input" id="productCategory" type="text" placeholder="Categoría" />
+                <select class="input" id="productStatus">
+                  <option>Activo</option>
+                  <option>Experimental</option>
+                  <option>Legacy</option>
+                </select>
+              </div>
+              <input class="input" id="productPageUrl" type="text" placeholder="URL (ej: /products.html#maps)" />
+              <input class="input" id="productTags" type="text" placeholder="Tags (coma)" />
+              <textarea class="textarea" id="productSummary" placeholder="Resumen / descripción breve"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICES -->
+      <section class="tab" id="tab-services">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Servicios</div>
+                <div class="muted" id="servicesCount">—</div>
+              </div>
+              <button class="btn btn-ghost" id="btnNewService" type="button">Nuevo</button>
+            </div>
+            <div class="list" id="servicesList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Editor de servicio</div>
+                <div class="muted" id="serviceEditorHint">—</div>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="btnDeleteService" type="button">Eliminar</button>
+                <button class="btn btn-primary" id="btnSaveService" type="button">Guardar</button>
+              </div>
+            </div>
+
+            <div class="form">
+              <input class="input" id="serviceId" type="text" placeholder="id (auto)" />
+              <input class="input" id="serviceName" type="text" placeholder="Nombre" />
+              <input class="input" id="serviceCategory" type="text" placeholder="Categoría" />
+              <input class="input" id="servicePageUrl" type="text" placeholder="URL (ej: /services.html#diagnostico)" />
+              <input class="input" id="serviceTags" type="text" placeholder="Tags (coma)" />
+              <textarea class="textarea" id="serviceSummary" placeholder="Resumen / pitch"></textarea>
+              <textarea class="textarea" id="serviceDeliverables" placeholder="Entregables (texto)"></textarea>
+              <textarea class="textarea" id="serviceRequirements" placeholder="Requisitos / inputs del cliente"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+</body>
+</html>

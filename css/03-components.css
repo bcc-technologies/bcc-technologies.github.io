@@ -1,0 +1,53 @@
+/* 03-components.css
+   Shared UI components. Keep it class-based to avoid side effects.
+   (Start minimal; grow as you migrate page CSS.)
+*/
+
+/* Glass panel helper */
+.glass{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-soft);
+}
+
+/* Card */
+.card{
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Button (optional, class-based) */
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.btn-primary{
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover{ transform: translateY(-1px); }
+
+.btn-ghost{
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink);
+}
+.btn-ghost:hover{
+  border-color: var(--border-strong);
+  background: rgba(15,17,21,0.03);
+  transform: translateY(-1px);
+}

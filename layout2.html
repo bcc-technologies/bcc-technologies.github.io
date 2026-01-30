@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BCC Technologies</title>
+  <link rel="stylesheet" href="layout.css">
+  <link rel="icon" type="image/png" href="static/Favi2.png">
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="menu-toggle" aria-label="Abrir menú" role="button" tabindex="0">&#9776;</div>
+      <nav>
+        <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+        <hr class="solid">
+        <ul>
+          <li><a href="./">Inicio</a></li>
+          <li><a href="./aboutUs">Nosotros</a></li>
+          <li><a href="./services">Servicios</a></li>
+          <li><a href="./products">Productos</a></li>
+          <li><a href="./contactUs">Contáctanos</a></li>
+          <li><a href="./blog" id="blog-link">BCC Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Menu toggle (template pages)
+    document.addEventListener('DOMContentLoaded', function () {
+      const menuToggle = document.querySelector('.menu-toggle');
+      const nav = document.querySelector('nav');
+      if (!menuToggle || !nav) return;
+
+      function toggle(){ nav.classList.toggle('active'); }
+      menuToggle.addEventListener('click', toggle);
+      menuToggle.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+    });
+  </script>
+</body>
+</html>

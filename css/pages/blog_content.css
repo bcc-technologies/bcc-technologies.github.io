@@ -1,0 +1,175 @@
+/* Variables globales */
+:root {
+    --fuenteHeading: 'Arial', sans-serif;
+    --fuenteParrafos: 'Arial', sans-serif;
+    --secundario: #784D3C;
+    --gris: #e1e1e1;
+    --blanco: #ffffff;
+    --primario: #000000;
+}
+
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    color: #333333;
+}
+
+/* Configuración básica */
+html {
+    box-sizing: border-box;
+    font-size: 62.5%; /* 1 rem = 10px */
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+body {
+    font-family: var(--fuenteParrafos);
+    font-size: 1.6rem;
+    line-height: 2;
+    color: #333; /* Color de texto principal */
+    margin: 0; /* Eliminar márgenes predeterminados */
+}
+
+/* Sección de héroe */
+.hero {
+    position: relative;
+    background-image: url('banner.jpg');
+    text-align: center;
+    padding: 150px 0;
+    color: #ffffff;
+    overflow: hidden;
+    height: 60rem;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+}
+
+.hero h2,
+.hero p {
+    margin: 0 auto;
+    max-width: 600px;
+    color: #ffffff;
+}
+
+/* Contenedor principal */
+.contenedor {
+    width: min(90%, 120rem);
+    margin: 0 auto;
+    padding: 0 20px; /* Agregar espacio alrededor del contenido */
+}
+
+/* Enlaces */
+a {
+    text-decoration: none;
+    color: var(--primario); /* Color de enlaces */
+}
+
+a:hover {
+    color: var(--secundario); /* Color de enlaces al pasar el mouse */
+}
+
+/* Encabezados */
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--fuenteHeading);
+    line-height: 1.2;
+    color: var(--primario); /* Color de encabezados */
+    margin-top: 2rem; /* Agregar espacio superior para encabezados */
+}
+
+h1 {
+    font-size: 4.8rem;
+    margin-bottom: 2rem; /* Espaciado inferior para encabezado de nivel 1 */
+}
+
+h2 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem; /* Espaciado inferior para encabezado de nivel 2 */
+}
+
+h3 {
+    font-size: 3.2rem;
+    margin-bottom: 1.25rem; /* Espaciado inferior para encabezado de nivel 3 */
+}
+
+h4 {
+    font-size: 2.8rem;
+    margin-bottom: 1rem; /* Espaciado inferior para encabezado de nivel 4 */
+}
+
+/* Imágenes */
+.contenedor img {
+    max-width: 100%;
+    height: auto; /* Evitar distorsión de imágenes */
+    border-radius: 1%; /* Bordes redondeados para imágenes */
+    margin-bottom: 1.5rem; /* Agregar espacio inferior para imágenes */
+}
+
+/* Utilidades */
+.no-margin {
+    margin: 0;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.centrar-texto {
+    text-align: center;
+}
+
+
+/* Barra de navegación */
+.barra {
+    padding-top: 4rem;
+}
+
+.navegacion {
+    display: flex;
+    gap: 2rem;
+}
+
+.navegacion__enlace {
+    display: block;
+    text-align: center;
+    font-size: 1.8rem;
+    color: var(--blanco);
+}
+
+/* Sección principal */
+.contenido-principal {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: 3rem;
+}
+
+/* Entradas del blog */
+.entrada {
+    border-bottom: 1px solid var(--gris);
+    margin-bottom: 2rem;
+}
+
+.entrada:last-of-type {
+    border: none;
+    margin-bottom: 0;
+}
+
+/* Agregar espacio entre párrafos */
+p {
+    margin-bottom: 1.5rem;
+}

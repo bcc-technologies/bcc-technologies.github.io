@@ -1,0 +1,121 @@
+
+/* Configuración básica */
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+
+/* Sección de héroe */
+.hero {
+    position: relative;
+    background-image: url('static/banner.jpg');
+    text-align: center;
+    padding: 150px 0;
+    color: #ffffff;
+    overflow: hidden;
+    height: 60rem;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+}
+
+
+/* Contenedor principal */
+.contenedor {
+    width: min(90%, 120rem);
+    margin: 0 auto;
+    padding: 0 20px; /* Agregar espacio alrededor del contenido */
+}
+
+/* Contenedor principal */
+.text-container {
+    position: absolute;
+    background-color: #fff;
+    border-radius: 2%;
+    transform: translateY(-50px) translateZ(-100vh);
+    height: 100vh;
+    width: 80vw;
+    margin-left: 10vw;
+    margin: auto;
+}
+
+
+/* Enlaces */
+a {
+    text-decoration: none;
+    color: var(--primario); /* Color de enlaces */
+}
+
+a:hover {
+    color: var(--secundario); /* Color de enlaces al pasar el mouse */
+}
+
+
+/* Imágenes */
+.contenedor img {
+    max-width: 100%;
+    height: auto; /* Evitar distorsión de imágenes */
+    border-radius: 1%; /* Bordes redondeados para imágenes */
+    margin-bottom: 1.5rem; /* Agregar espacio inferior para imágenes */
+}
+
+/* Utilidades */
+.no-margin {
+    margin: 0;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.centrar-texto {
+    text-align: center;
+}
+
+
+/* Barra de navegación */
+.barra {
+    padding-top: 4rem;
+}
+
+.navegacion {
+    display: flex;
+    gap: 2rem;
+}
+
+.navegacion__enlace {
+    display: block;
+    text-align: center;
+    font-size: 1.8rem;
+    color: var(--blanco);
+}
+
+/* Sección principal */
+.contenido-principal {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: 3rem;
+}
+
+/* Entradas del blog */
+.entrada {
+    border-bottom: 1px solid var(--gris);
+    margin-bottom: 2rem;
+}
+
+.entrada:last-of-type {
+    border: none;
+    margin-bottom: 0;
+}
+

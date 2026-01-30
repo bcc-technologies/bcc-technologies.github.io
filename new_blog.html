@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC Technologies | Journal</title>
+  <meta name="description" content="BCC Journal — notas técnicas, casos de estudio y diseño de instrumentación científica." />
+  <link rel="icon" type="image/png" href="static/Favi2.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS system -->
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="css/pages/new_blog.css">
+
+  <!-- Shared layout behavior -->
+  <script src="js/layout.js" defer></script>
+  <!-- Journal logic (Shopify fetch + UI) -->
+  <script src="js/new_blog.js" defer></script>
+
+  <!-- Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L9FYNRKVNH');
+  </script>
+</head>
+
+<body>
+  <header>
+    <div class="header-container">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="./index.html" class="logo-link" aria-label="Ir a inicio">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html" aria-current="page">Journal</a></li>
+          <li><a href="./contactUs.html" class="nav-cta">Contacto</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <!-- Hero -->
+    <section class="journal-hero">
+      <div class="container hero-inner">
+        <div class="hero-kicker">Descubra</div>
+        <h1 class="hero-title">BCC Journal</h1>
+        <!-- <p class="hero-subtitle">
+          Notas de instrumentación, análisis por imagen, trazabilidad y casos reales.
+          Sin ruido. Con método.
+        </p> -->
+      </div>
+    </section>
+
+    <!-- Content -->
+    <section class="journal-section">
+      <div class="container journal-grid">
+        <section class="journal-main">
+          <div class="glass journal-toolbar">
+            <div class="toolbar-left">
+              <div class="toolbar-title">Entradas</div>
+              <div class="toolbar-hint" id="results-hint">Cargando…</div>
+            </div>
+
+            <div class="toolbar-right">
+              <label class="search">
+                <span class="search-label">Buscar</span>
+                <input id="journal-search" type="search" placeholder="título, tag, tema…" autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <!-- NEW: Primary filter by section -->
+          <div class="sectionbar" id="sectionbar" aria-label="Filtrar por sección"></div>
+
+          <!-- Existing: tag filter -->
+          <div class="tagbar" id="tagbar" aria-label="Filtrar por etiquetas"></div>
+
+          <div class="glass journal-list" id="journal-list">
+            <div class="journal-loading">Cargando entradas…</div>
+          </div>
+        </section>
+
+        <aside class="journal-rail" aria-label="Panel lateral">
+          <details class="rail-module" open>
+            <summary class="rail-summary">
+              <span class="rail-head">
+                <span class="rail-kicker">¿Algo le interesa?</span>
+                <span class="rail-title">Iniciar proyecto</span>
+              </span>
+              <span class="rail-chev" aria-hidden="true">▾</span>
+            </summary>
+
+            <div class="rail-body">
+              <p class="rail-text">Instrumentación, software, validación, servicios.</p>
+              <div class="rail-actions">
+                <a class="btn btn-primary" href="./contactUs.html">Contacto</a>
+                <a class="btn btn-ghost" href="./products.html">Productos</a>
+              </div>
+            </div>
+          </details>
+
+          <details class="rail-module">
+            <summary class="rail-summary">
+              <span class="rail-head">
+                <span class="rail-kicker">CATÁLOGO</span>
+                <span class="rail-title">Servicios destacados</span>
+              </span>
+              <span class="rail-chev" aria-hidden="true">▾</span>
+            </summary>
+
+            <div class="rail-body">
+              <ul class="rail-list" id="services-list">
+                <li class="rail-muted">Cargando…</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="rail-module">
+            <summary class="rail-summary">
+              <span class="rail-head">
+                <span class="rail-kicker">¿Tiene una idea?</span>
+                <span class="rail-title">Contacto directo</span>
+              </span>
+              <span class="rail-chev" aria-hidden="true">▾</span>
+            </summary>
+
+            <div class="rail-body">
+              <a class="btn btn-ghost" href="mailto:info@bcctech.com">info@bcctech.com</a>
+            </div>
+          </details>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- Modal Reader -->
+    <div class="modal" id="article-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Lector de artículo">
+      <div class="modal-backdrop" data-close="true"></div>
+
+      <div class="card modal-inner" role="document">
+        <div class="modal-topbar">
+          <div class="modal-meta">
+            <div class="tagrow" id="modal-tags"></div>
+            <div class="modal-date" id="modal-date"></div>
+          </div>
+
+          <button class="btn btn-ghost modal-close" type="button" id="modal-close" aria-label="Cerrar">
+            Cerrar
+          </button>
+        </div>
+
+        <h2 class="modal-title" id="modal-title"></h2>
+        <img class="modal-image" id="modal-image" alt="" loading="lazy" />
+        <div class="modal-content" id="modal-content"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+      </div>
+      <div class="footer-social">
+        <a href="https://linkedin.com">LinkedIn</a>
+        <a href="https://instagram.com">Instagram</a>
+      </div>
+      <div class="footer-copy">&copy; 2024 BCC Tech.</div>
+    </div>
+  </footer>
+</body>
+</html>

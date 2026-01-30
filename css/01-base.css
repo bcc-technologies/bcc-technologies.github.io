@@ -1,0 +1,27 @@
+/* 01-base.css
+   Reset + global element defaults (no page-specific selectors).
+*/
+
+/* Reset */
+*, *::before, *::after{ box-sizing: border-box; }
+html, body{ height: 100%; }
+body{
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.45;
+}
+
+img{ max-width: 100%; height: auto; display: block; }
+
+a{ color: inherit; text-decoration: none; }
+a:hover{ color: var(--accent); }
+
+button, input, select, textarea{ font: inherit; }
+
+:focus-visible{
+  outline: 2px solid rgba(237,70,36,0.75);
+  outline-offset: 2px;
+  border-radius: 8px;
+}

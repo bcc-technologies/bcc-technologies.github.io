@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="contactUs.css">
+    <!-- <link rel="stylesheet" href="css/layout.css"> -->
+    <link rel="stylesheet" href="css/00-tokens.css">
+    <link rel="stylesheet" href="css/01-base.css">
+    <link rel="stylesheet" href="css/02-layout.css">
+    <link rel="stylesheet" href="css/03-components.css">
+    <link rel="stylesheet" href="css/pages/contactUs.css">
     <link rel="icon" type="image/png" href="static/Favi2.png">
     
     <!-- Shopify Buy SDK -->
@@ -48,7 +52,12 @@
     <div class="header-container">
         <div class="menu-toggle">&#9776;</div>
         <nav>
-            <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
+            <!-- <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1> -->
+        <a href="./" class="logo-link">
+           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+            <span class="logo-text"><strong>BCC</strong></span>
+            <span class="logo-symbol" style="display: flex; align-items: center; justify-content: center;"><strong>∴</strong></span>
+        </a>
             <hr class="solid">
             <ul>
                 <li><a href="./">Inicio</a></li>
@@ -73,7 +82,7 @@
         </div>
         <div class="form-container">
             <!-- Formulario de contacto -->
-            <link rel="stylesheet" href="contact_form.css">
+            <link rel="stylesheet" href="css/contact_form.css">
             <div class="form-overlay">
                 <div id="form-container" class="icon fa fa-pencil">
                     <span id="form-close" class="icon fa fa-close"></span>

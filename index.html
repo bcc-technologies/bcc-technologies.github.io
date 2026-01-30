@@ -1,159 +1,210 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-    <link rel="stylesheet" href="index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCC Technologies | Instrumentación Científica</title>
+  <meta name="description" content="Software e instrumentación científica. Claridad en lo complejo." />
 
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" crossorigin="crossorigin" as="font">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    
-    <!-- JavaScript for menu toggle and Shopify integration -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Menu toggle functionality
-        const menuToggle = document.querySelector('.menu-toggle');
-        const nav = document.querySelector('nav');
+  <link rel="icon" type="image/png" href="static/Favi2.png">
 
-        menuToggle.addEventListener('click', function () {
-            nav.classList.toggle('active');
-        });
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        // Shopify integration
-        const client = ShopifyBuy.buildClient({
-            domain: '2e2e5e-7c.myshopify.com',
-            storefrontAccessToken: 'a791b0c74fab70851230df08048bc7dc'
-        });
+  <!-- <link rel="stylesheet" href="css/layout.css"> -->
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="css/pages/index.css">
+  <script src="js/layout.js" defer></script>
 
-        function updateServices(products) {
-            const servicesContainer = document.querySelector('.services-container');
-            servicesContainer.innerHTML = products.slice(0, 3).map(product => `
-                <div class="service-card">
-                    <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
-                    <h3>${product.title}</h3>
-                    <p>${product.description}</p>
-                </div>
-            `).join('');
-        }
 
-        client.product.fetchAll()
-            .then(updateServices)
-            .catch(error => {
-                console.error('Error fetching Shopify products:', error);
-                // Fallback to original content if there's an error
-            });
-    });
-    </script>
+  <!-- Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L9FYNRKVNH');
+  </script>
+
+  <!-- Shopify + interactions -->
+  <script defer src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+  <script defer src="js/index.js"></script>
 </head>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L9FYNRKVNH');
-</script>
-
 <body>
-    <!-- header section -->
-    <header>
-        <div class="header-container">
-            <div class="menu-toggle">&#9776;</div>
-            <nav>
-                <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1>
-                <hr class="solid">
-                <ul>
-                   <li><a href="./">Inicio</a></li>
-                   <li><a href="./aboutUs">Nosotros</a></li>
-                    <li><a href="./services">Servicios</a></li>
-                    <li><a href="./products">Productos</a></li>
-                    <li><a href="./contactUs">Contáctanos</a></li>
-                    <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+  <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
 
-    <!-- Hero section -->
-    <section class="hero">
-        <div class="hero-container">
-            <h2><img src="static/BCC_sf.png" alt="Body Centered Cube" id="cube"></h2>
-            <h3>¿Quiénes somos?</h3>
-            <p>Somos BCC Tech, un apasionado grupo de <span style="color: #ed4624;"><em>científicos-programadores</em></span> dedicados a explorar los límites de la tecnología y la innovación.</p>
+      <nav>
+        <a href="./" class="logo-link">
+           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+            <span class="logo-text"><strong>BCC</strong></span>
+            <span class="logo-symbol"><strong>∴</strong></span>
+        </a>
+
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html">Journal</a></li>
+          <li><a href="./contactUs.html" class="nav-cta">Contacto</a></li>
+        </ul>
+        
+        <div class="nav-actions">
+          <!-- <a class="btn btn-ghost" href="login.html" style="border-radius: 10%; margin-left: 1000%;">Ingresar</a> -->
+           <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
         </div>
+        
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <section class="section hero-section">
+      <div class="container hero-bento">
+
+        <div class="glass-panel hero-main reveal">
+          <div class="status-indicator">
+            <span class="status-dot"></span> Sistema Operativo
+          </div>
+          <h1 class="hero-title">Claridad en <br><span class="muted-text">lo complejo.</span></h1>
+          <p class="hero-desc">
+            Instrumentación y software para imagen científica.
+            Diseñamos herramientas que garantizan <strong>trazabilidad</strong> y eliminan el ruido en tus datos.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="./products.html">Ver Catálogo</a>
+            <span class="tech-spec">v2.4 Compatible con SEM / EIS</span>
+          </div>
+        </div>
+
+        <div class="glass-panel hero-visual reveal">
+          <div class="visual-meta">FIG 01. — BODY CENTERED CUBE</div>
+          <img src="static/bcc.svg" alt="Estructura BCC" class="hero-img" style="object-fit:contain; width:85%; height:85%;">
+          <div class="crosshair ch-tl"></div>
+          <div class="crosshair ch-br"></div>
+        </div>
+
+        <div class="glass-panel hero-stat reveal">
+          <div class="stat-label">REPRODUCIBILIDAD</div>
+          <div class="stat-number">99.8%</div>
+          <div class="stat-desc">Precisión en análisis de repetición.</div>
+        </div>
+
+      </div>
     </section>
 
-    <!-- Block section -->
-    <section class="block">
-        <div class="block-container">
-            <div class="block-content">
-                <h2>Bienvenido al cubo</h2>
-                <p>Hacemos fácil lo complejo y ampliamos lo interesante.</p>
-                <a href="./aboutUs" class="cta-button">Ver más</a>
-            </div>
-            <div class="block-image">
-                <img src="static/Imagen1.JPG" alt="BCC Founders">
-            </div>
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 class="section-title">BCC Journal</h2>
+          <a href="./blog" class="link-arrow">Ver archivo completo &rarr;</a>
         </div>
+
+        <div class="journal-index reveal">
+          <article class="journal-row">
+            <div class="journal-date">OCT 24</div>
+            <div class="journal-content">
+              <span class="journal-tag">Metodología</span>
+              <h3 class="journal-title"><a href="./blog">Estandarización de parámetros en microscopía óptica de bajo contraste.</a></h3>
+            </div>
+            <div class="journal-action">&nearr;</div>
+          </article>
+
+          <article class="journal-row">
+            <div class="journal-date">SEP 12</div>
+            <div class="journal-content">
+              <span class="journal-tag">Caso de Estudio</span>
+              <h3 class="journal-title"><a href="./blog">Reduciendo el ruido en señales EIS mediante filtrado adaptativo.</a></h3>
+            </div>
+            <div class="journal-action">&nearr;</div>
+          </article>
+
+          <article class="journal-row">
+            <div class="journal-date">AGO 05</div>
+            <div class="journal-content">
+              <span class="journal-tag">Ingeniería</span>
+              <h3 class="journal-title"><a href="./blog">Por qué la interfaz es parte del instrumento científico.</a></h3>
+            </div>
+            <div class="journal-action">&nearr;</div>
+          </article>
+        </div>
+      </div>
     </section>
 
-    <!-- Social networks section -->
-    <section class="red">
-        <div class="red-container">
-            <div class="red-text">
-                <h2>También puedes<br>encontrarnos en:</h2>
-            </div>
-            <div class="red-logos">
-                <h1><a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Instagram_sf.png" alt="Instagram">
-                </a></h1>
-                <h1><a href="https://www.linkedin.com/company/bcc-tech/?viewAsMember=true" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Linkedin2_sf.png" alt="Linkedin">
-                </a></h1>
-                <h1><a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">
-                    <img src="static/Fiverr2_sf.png" alt="Fiverr">
-                </a></h1>
-            </div>
+    <section class="section section-grey">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 class="section-title">Tecnología Disponible</h2>
         </div>
+
+        <div class="product-grid reveal" id="featured-grid">
+          <div class="glass-panel product-card">
+            <div class="p-header">Software</div>
+            <h4>MAPs Analysis</h4>
+            <p>Cuantificación de microestructuras.</p>
+            <div class="p-footer"><a href="./product_maps.html">Ver detalles &rarr;</a></div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Services section -->
-    <section class="services">
-        <h2 class="headertekst">Nuestros servicios</h2>
-        <div class="services-container">
-            <!-- This content will be dynamically replaced by Shopify products -->
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/foto-gratis/tiro-medio-mujer-que-trabaja-computadora-portatil_23-2150323516.jpg?size=626&ext=jpg" alt="Gabriel Barreiro"></h2>
-                <h3>Desarrollo web</h3>
-                <p>Creamos sitios web eficientes, poderosos y adaptativos.</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/vector-gratis/tecnologia-fondo-inteligencia-artificial-big-data-vis_598544-333.jpg?size=626&ext=jpg" alt="Saúl Castillo"></h2>
-                <h3>Desarrollo de software científico</h3>
-                <p>Creamos software para su empresa en materia de análisis de datos.</p>
-            </div>
-            <div class="service-card">
-                <h2><img src="https://img.freepik.com/foto-gratis/gente-oficina-analizando-revisando-graficos-financieros_23-2150377131.jpg?size=626&ext=jpg" alt="Enrique Casanova"></h2>
-                <h3>Consultoría de software</h3>
-                <p>Ofrecemos asesoramiento y soluciones de expertos.</p>
-            </div>
+    <section class="section">
+      <div class="container split-layout reveal">
+        <div class="split-content">
+          <h2 class="section-title">Diseño con intención.</h2>
+          <p class="prose">
+            No decoramos. Construimos jerarquías visuales que reducen la carga cognitiva del operador.
+            El color #ed4624 se usa exclusivamente para señalar acción o alerta, nunca por capricho.
+          </p>
+
+          <ul class="tech-list">
+            <li><strong>01.</strong> Datos crudos accesibles siempre.</li>
+            <li><strong>02.</strong> Interfaces de alto contraste.</li>
+            <li><strong>03.</strong> Modularidad real.</li>
+          </ul>
         </div>
+
+        <div class="split-visual glass-panel">
+          <img src="static/Imagen1.JPG" alt="Equipo BCC" style="width:100%; height:100%; object-fit:cover; opacity:0.9;">
+        </div>
+      </div>
     </section>
 
-    <!-- Footer section -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    <section class="section footer-cta">
+      <div class="container glass-panel cta-box reveal">
+        <h2 class="cta-head">¿Proyecto complejo?</h2>
+        <p>Hablemos de viabilidad técnica y próximos pasos.</p>
+        <div class="cta-buttons">
+          <a href="./contactUs" class="btn btn-primary">Iniciar Conversación</a>
+          <a href="mailto:info@bcctech.com" class="btn btn-ghost">info@bcctech.com</a>
         </div>
-    </footer>
+      </div>
+    </section>
+  </main>
 
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+      </div>
+      <div class="footer-social">
+        <a href="https://linkedin.com">LinkedIn</a>
+        <a href="https://instagram.com">Instagram</a>
+      </div>
+      <div class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</div>
+    </div>
+  </footer>
 </body>
 </html>

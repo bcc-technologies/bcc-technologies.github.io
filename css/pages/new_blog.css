@@ -1,0 +1,397 @@
+/* Page: Journal (blog.css) — minimal archive layout */
+
+.journal-hero{
+  padding: clamp(42px, 6vw, 70px) 0 clamp(18px, 3vw, 28px);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(237,70,36,0.08), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(15,17,21,0.06), transparent 45%);
+}
+
+.hero-inner{ padding-top: 18px; }
+.hero-kicker{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: rgba(15,17,21,0.62);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.hero-title{
+  font-family: var(--font-brand);
+  font-size: clamp(2.1rem, 4vw, 3.0rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+}
+.hero-subtitle{
+  margin: 0;
+  max-width: 70ch;
+  color: rgba(15,17,21,0.72);
+  font-size: 1.03rem;
+}
+
+.journal-section{ padding: 26px 0 70px; }
+
+.journal-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(240px, 26vw, 300px);
+  gap: 14px;
+  align-items: start;
+}
+
+.journal-toolbar{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px;
+  border-radius: var(--r-lg);
+}
+
+.toolbar-left{ display: flex; flex-direction: column; gap: 2px; }
+.toolbar-title{
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.toolbar-hint{
+  color: rgba(15,17,21,0.64);
+  font-size: 0.92rem;
+}
+
+.search{ display:flex; flex-direction:column; gap:6px; min-width: min(320px, 52vw); }
+.search-label{
+  font-size: 0.78rem;
+  color: rgba(15,17,21,0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.search input{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.72);
+  outline: none;
+}
+.search input:focus{
+  border-color: rgba(237,70,36,0.35);
+  box-shadow: 0 0 0 4px rgba(237,70,36,0.12);
+}
+
+/* NEW: Section filter (primary) */
+.sectionbar{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 6px;
+}
+
+.section-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+  color: rgba(15,17,21,0.78);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.section-pill:hover{
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.section-pill.is-active{
+  border-color: rgba(237,70,36,0.35);
+  background: rgba(237,70,36,0.08);
+  color: rgba(15,17,21,0.92);
+}
+
+.section-pill .count{
+  font-weight: 750;
+  color: rgba(15,17,21,0.58);
+  font-size: 0.88em;
+}
+
+.tagbar{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 12px;
+}
+
+.tag-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+  color: rgba(15,17,21,0.78);
+  font-weight: 650;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+.tag-pill:hover{
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.tag-pill.is-active{
+  border-color: rgba(237,70,36,0.35);
+  background: rgba(237,70,36,0.08);
+  color: rgba(15,17,21,0.92);
+}
+
+.journal-list{
+  padding: 6px 14px;
+  border-radius: var(--r-lg);
+}
+
+.journal-loading{
+  padding: 18px 2px;
+  color: rgba(15,17,21,0.68);
+}
+
+.journal-row{
+  display: grid;
+  grid-template-columns: clamp(86px, 10vw, 110px) minmax(0, 1fr) 34px;
+  gap: 16px;
+  padding: 16px 2px;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+}
+.journal-row:last-child{ border-bottom: none; }
+
+.journal-date{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  color: rgba(15,17,21,0.58);
+}
+
+.journal-content{ min-width: 0; display:flex; flex-direction:column; gap: 4px; }
+.journal-tag{
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.journal-title{
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.journal-excerpt{
+  margin: 0;
+  color: rgba(15,17,21,0.68);
+  font-size: 0.95rem;
+  max-width: 80ch;
+}
+
+.journal-action{
+  text-align: right;
+  color: rgba(15,17,21,0.55);
+  font-size: 1.2rem;
+}
+
+.journal-open{
+  all: unset;
+  cursor: pointer;
+  display: contents; /* preserves grid layout; click anywhere in row */
+}
+
+/* Rail (aside) — compacto, modular, colapsable */
+.journal-rail{
+  position: sticky;
+  top: 86px;           /* ajusta según tu header real */
+  display: grid;
+  gap: 10px;
+}
+
+.rail-module{
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.rail-summary{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rail-summary::-webkit-details-marker{ display: none; }
+
+.rail-head{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rail-kicker{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(15,17,21,0.58);
+}
+
+.rail-title{
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: rgba(15,17,21,0.90);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-chev{
+  color: rgba(15,17,21,0.55);
+  transition: transform 160ms ease;
+}
+
+.rail-module[open] .rail-chev{ transform: rotate(180deg); }
+
+.rail-body{
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.rail-text{
+  margin: 0 0 10px;
+  color: rgba(15,17,21,0.68);
+  font-size: 0.95rem;
+}
+
+.rail-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rail-list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-list li{
+  padding: 10px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.50);
+}
+
+.rail-muted{ color: rgba(15,17,21,0.62); }
+
+/* En móvil: el rail fluye abajo (no interrumpe) */
+@media (max-width: 980px){
+  .journal-rail{ position: static; }
+}
+
+/* Modal reader */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 1200;
+}
+.modal.is-open{ display: block; }
+
+.modal-backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(15,17,21,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-inner{
+  position: relative;
+  width: min(860px, calc(100vw - 24px));
+  margin: 70px auto;
+  padding: 16px;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+  border-radius: var(--r-lg);
+}
+
+.modal-topbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.tagrow{ display:flex; flex-wrap:wrap; gap: 8px; }
+.tagchip{
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
+  color: rgba(15,17,21,0.74);
+  font-weight: 650;
+}
+.modal-date{
+  color: rgba(15,17,21,0.60);
+  font-size: 0.92rem;
+}
+
+.modal-title{
+  margin: 8px 0 12px;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+}
+
+.modal-image{
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.modal-content{
+  color: rgba(15,17,21,0.78);
+  line-height: 1.6;
+}
+.modal-content p{ margin: 0 0 12px; }
+.modal-content h2, .modal-content h3{ margin: 16px 0 8px; }
+.modal-content a{ text-decoration: underline; text-underline-offset: 3px; }
+
+/* Responsive */
+@media (max-width: 980px){
+  .journal-grid{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px){
+  .journal-row{
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .journal-action{ display:none; }
+  .search{ min-width: 100%; }
+  .modal-inner{ margin: 58px auto; }
+}
