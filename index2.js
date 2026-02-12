@@ -5,27 +5,6 @@
 */
 
 (() => {
-  function setupNav(){
-    const toggle = document.querySelector('.menu-toggle');
-    const nav = document.querySelector('header nav');
-    if(!toggle || !nav) return;
-
-    const toggleNav = () => nav.classList.toggle('active');
-
-    toggle.addEventListener('click', toggleNav);
-    toggle.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        toggleNav();
-      }
-    });
-
-    // Close on link click (mobile)
-    nav.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => nav.classList.remove('active'));
-    });
-  }
-
   function stripHtml(html){
     const tmp = document.createElement('div');
     tmp.innerHTML = html || '';
@@ -107,7 +86,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    setupNav();
     setupReveal();
     loadFeaturedProducts();
   });

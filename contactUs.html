@@ -15,24 +15,22 @@
     <!-- Shopify Buy SDK -->
     <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
 
-    <!-- JavaScript for menu toggle and Shopify initialization -->
+    <!-- Shopify initialization -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
-            menuToggle.addEventListener('click', function () {
-                nav.classList.toggle('active');
-            });
-
             // Shopify client initialization
-            const client = ShopifyBuy.buildClient({
-                domain: '2e2e5e-7c.myshopify.com',
-                storefrontAccessToken: 'afaea8ce351df97799ae462ecd21e8bf'
-            });
+            if (window.ShopifyBuy && ShopifyBuy.buildClient) {
+                ShopifyBuy.buildClient({
+                    domain: '2e2e5e-7c.myshopify.com',
+                    storefrontAccessToken: 'afaea8ce351df97799ae462ecd21e8bf'
+                });
+            }
 
             // You can add any Shopify-related functionality here if needed in the future
         });
     </script>
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
 </head>
 
 <!-- Google tag (gtag.js) -->
@@ -48,28 +46,37 @@
 
 <body>
 <!-- header section -->
-<header>
-    <div class="header-container">
-        <div class="menu-toggle">&#9776;</div>
-        <nav>
-            <!-- <h1><img src="static/Marca2_sf.png" alt="BCC Technologies" class="logo"></h1> -->
+    <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
         <a href="./" class="logo-link">
-           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
-            <span class="logo-text"><strong>BCC</strong></span>
-            <span class="logo-symbol" style="display: flex; align-items: center; justify-content: center;"><strong>∴</strong></span>
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
         </a>
-            <hr class="solid">
-            <ul>
-                <li><a href="./">Inicio</a></li>
-                <li><a href="./aboutUs">Nosotros</a></li>
-                <li><a href="./services">Servicios</a></li>
-                <li><a href="./products">Productos</a></li>
-                <li><a href="./contactUs">Contáctanos</a></li>
-                <li><a href="./blog" id="blog-link">BCC Blog</a></li>
-            </ul>
-        </nav>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html">Journal</a></li>
+          <li><a href="./contactUs.html" class="nav-cta">Contacto</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+        </div>
+      </nav>
     </div>
-</header>
+  </header>
+
+  <main class="with-header-offset">
 
 <!-- Información de contacto -->
 <section class="about">
@@ -113,10 +120,20 @@
     </div>
 </section>
 <!-- Footer section -->
-<footer>
-    <div class="footer-container">
-        <p>&copy; 2024 BCC Technologies. Todos los derechos reservados.</p>
+    </main>
+
+    <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+      </div>
+      <div class="footer-social">
+        <a href="https://linkedin.com">LinkedIn</a>
+        <a href="https://instagram.com">Instagram</a>
+      </div>
+      <div class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</div>
     </div>
-</footer>
+  </footer>
 </body>
 </html>

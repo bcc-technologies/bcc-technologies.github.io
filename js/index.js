@@ -5,48 +5,7 @@
   const BLOG_PAGE = './blog.html';
   const CONTENT_INDEX_URL = './content/content-index.json';
 
-  // 1) Mobile Navigation
-  function setupNav(){
-    const toggle = document.querySelector('.menu-toggle');
-    const nav = document.querySelector('header nav');
-    const list = document.getElementById('primary-nav');
-
-    if(!toggle || !nav || !list) return;
-
-    const close = () => {
-      nav.classList.remove('active');
-      toggle.setAttribute('aria-expanded', 'false');
-    };
-
-    const open = () => {
-      nav.classList.add('active');
-      toggle.setAttribute('aria-expanded', 'true');
-    };
-
-    toggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = nav.classList.contains('active');
-      isOpen ? close() : open();
-    });
-
-    document.addEventListener('click', (e) => {
-      const isOpen = nav.classList.contains('active');
-      if(!isOpen) return;
-      const clickedInside = nav.contains(e.target) || toggle.contains(e.target);
-      if(!clickedInside) close();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if(e.key === 'Escape') close();
-    });
-
-    list.addEventListener('click', (e) => {
-      const a = e.target.closest('a');
-      if(a) close();
-    });
-  }
-
-  // 2) Reveal Animation
+  // 1) Reveal Animation
   function setupReveal(){
     const els = document.querySelectorAll('.reveal');
     if(!els.length) return;
@@ -63,7 +22,7 @@
     els.forEach(el => observer.observe(el));
   }
 
-  // 3) Journal preview (reads real posts from ./content/content-index.json)
+  // 2) Journal preview (reads real posts from ./content/content-index.json)
   async function loadJournalPreview(){
     const host = document.getElementById('journal-index');
     if(!host) return;
@@ -175,7 +134,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    setupNav();
     setupReveal();
     loadJournalPreview();
   });

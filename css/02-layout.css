@@ -161,6 +161,22 @@ nav a:hover{
 
 nav a:active{ transform: translateY(1px); }
 
+nav a.is-current{
+  position: relative;
+  color: var(--ink);
+}
+
+nav a.is-current::after{
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  background: rgba(237,70,36,0.45);
+  border-radius: 999px;
+}
+
 /* ---- Hamburger ---- */
 .menu-toggle{
   display: none; /* enabled on mobile */
@@ -240,26 +256,77 @@ nav a:active{ transform: translateY(1px); }
    ========================================================== */
 
 footer{
-  margin-top: 40px;
-  padding: 22px 12px;
-  color: rgba(15,17,21,0.75);
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--ink-light);
 }
 
-footer p{ margin: 0; font-size: 0.95rem; }
+.footer-inner{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.footer-brand{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-copy{ opacity: 0.85; }
+
+.footer-links{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-contact{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.footer-contact:hover{
+  background: rgba(237,70,36,0.06);
+  color: var(--accent);
+}
 
 .footer-social{
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 16px;
 }
 
-.footer-social a{
-  padding: 6px 8px;
+.social-link{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
+  color: var(--ink-light);
+}
+
+.social-link svg{
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .footer-social a:hover{
   background: rgba(237,70,36,0.06);
   color: var(--accent);
+}
+
+@media (max-width: 860px){
+  .footer-inner{
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
 }

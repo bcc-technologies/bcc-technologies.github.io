@@ -267,7 +267,7 @@ img { max-width: 100%; display: block; }
 .cta-buttons { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
 
 /* FOOTER */
-footer { padding: 40px 0; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--ink-light); }
+footer { padding: 32px 0; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--ink-light); }
 .footer-inner { display: flex; justify-content: space-between; align-items: center; }
 @media (max-width: 860px){
   .footer-inner{

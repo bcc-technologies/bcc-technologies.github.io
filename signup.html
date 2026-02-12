@@ -4,28 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Signup - BCC</title>
-  <link rel="stylesheet" href="css/pages/product_maps2.css">
+    <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+<link rel="stylesheet" href="css/pages/product_maps2.css">
   <link rel="stylesheet" href="css/pages/signup.css">
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
 </head>
 <body>
 
   <!-- Barra de navegación -->
-  <header class="navbar">
-    <img src="static\BCC_sf.png" alt="Logo BCC" class="logo">
-    <nav class="nav-links">
-      <a href="./">Inicio</a>
-      <a href="./aboutUs">Nosotros</a>
-      <a href="./products">Productos</a>
-      <a href="./services">Servicios</a>
-    </nav>
-    <div class="nav-actions">
-      <button class="login-btn" onclick="location.href='login.html'">Login</button>
-      <button class="contact-btn">Contact</button>
+      <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="./" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html">Journal</a></li>
+</ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+        </div>
+      </nav>
     </div>
   </header>
 
   <!-- Contenedor de registro -->
-  <main class="signup-container">
+  <main class="signup-container with-header-offset">
     <section class="signup-card">
       <h1>Create Account</h1>
       <p>Create your <strong>BCC Account</strong> to access tools, dashboards, and exclusive scientific software.</p>

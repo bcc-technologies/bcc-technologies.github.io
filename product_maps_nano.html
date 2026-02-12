@@ -5,10 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalles de MAPs - BCC Technologies</title>
-  <link rel="stylesheet" href="css/pages/login.css">
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
-  <!-- <link rel="stylesheet" href="css/02-layout.css"> -->
+  <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/product_maps_nano.css">
   <link rel="icon" type="image/png" href="static/Favi2.png">
@@ -51,33 +50,45 @@
     <!-- JavaScript for menu toggle -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const nav = document.querySelector('nav');
-    
-            menuToggle.addEventListener('click', function () {
-                nav.classList.toggle('active');
-            });
         });
     </script>
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
 </head>
 
 
 <body>
   <!-- Top navigation (simple) -->
-  <header class="navbar">
-    <img src="static/BCC_sf.png" alt="BCC Technologies" class="logo" />
-    <nav class="nav-links">
-      <a href="./">Inicio</a>
-      <a href="./aboutUs">Nosotros</a>
-      <a href="./products">Productos</a>
-      <a href="./services">Servicios</a>
-      <a href="./blog" id="blog-link">Blog</a>
-    </nav>
-    <div class="nav-actions">
-      <a class="btn btn-ghost" href="login.html">Login</a>
-      <a class= "btn btn-dark" href="./contactUs">Contact</a>
+      <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="./" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html">Journal</a></li>
+</ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+        </div>
+      </nav>
     </div>
   </header>
+
+  <main class="with-header-offset">
 
   <!-- HERO PRODUCT -->
   <section class="hero-product">
@@ -257,14 +268,36 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container foot-inner">
-      <p>© <span id="year"></span> BCC Technologies. All rights reserved.</p>
+      </main>
+
+      <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="./contactUs.html">Contacto</a>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
     </div>
   </footer>
 
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
   </script>
 </body>
 

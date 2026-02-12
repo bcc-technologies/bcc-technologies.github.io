@@ -189,19 +189,44 @@
             margin-bottom: 10px;
         }
     </style>
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
 </head>
 <body>
-    <header>
-        <div class="logo">BCC Technologies</div>
-        <nav>
-            <ul>
-                <li><a href="#about">Inicio</a></li>
-                <li><a href="#pricing">Precios</a></li>
-                <li><a href="#faq">FAQ</a></li>
-                <li><a href="#contact">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+        <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="./" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>∴</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="./aboutUs.html">Nosotros</a></li>
+          <li><a href="./products.html">Tecnología</a></li>
+          <li><a href="./services.html">Servicios</a></li>
+          <li><a href="./blog.html">Journal</a></li>
+</ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
 
     <section id="about" class="hero">
         <div class="hero-content">
