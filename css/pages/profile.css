@@ -13,7 +13,7 @@
     background-image: url('static/banner.jpg');
     text-align: center;
     padding: 150px 0;
-    color: #ffffff;
+    color: var(--ink-inverse);
     overflow: hidden;
     height: 60rem;
     background-size: cover;
@@ -41,7 +41,7 @@
 /* Contenedor principal */
 .text-container {
     position: absolute;
-    background-color: #fff;
+    background-color: var(--surface-solid);
     border-radius: 2%;
     transform: translateY(-50px) translateZ(-100vh);
     height: 100vh;
@@ -118,4 +118,5 @@ a:hover {
     border: none;
     margin-bottom: 0;
 }
+
 

@@ -1,8 +1,51 @@
 // new_blog.js — Local Journal + filters + refined modal reader (NO Shopify)
 
 document.addEventListener('DOMContentLoaded', () => {
-  const CONTENT_INDEX_URL = './content/content-index.json';
-  const DEFAULT_POST_DIR = './content/posts/';
+  const isEn = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+  const i18n = isEn ? {
+    locale: 'en',
+    allTag: 'All',
+    results: (items, total) => `${items} result(s) - ${total} total`,
+    noEntries: 'No entries for this filter.',
+    loadingEntries: 'Loading entries...',
+    loadingShort: 'Loading...',
+    searchPlaceholder: 'title, tag, topic...',
+    readTimeSuffix: 'min',
+    coverAlt: 'Cover',
+    contentError: (path) => `(Could not load content: ${path})`,
+    noContent: '(No content)',
+    errorLoading: 'Error loading.',
+    errorLoadingEntries: 'Could not load entries. Check content-index.json.',
+    tagFallback: 'Journal',
+    services: [
+      { title: 'MAPs Analysis', desc: 'Image analysis - microstructures' },
+      { title: 'Materials diagnostics', desc: 'Characterization - technical report' },
+      { title: 'Custom services', desc: 'Validation - integration - training' }
+    ]
+  } : {
+    locale: 'es',
+    allTag: 'Todos',
+    results: (items, total) => `${items} resultado(s) - ${total} total`,
+    noEntries: 'No hay entradas con ese filtro.',
+    loadingEntries: 'Cargando entradas...',
+    loadingShort: 'Cargando...',
+    searchPlaceholder: 'titulo, tag, tema...',
+    readTimeSuffix: 'min',
+    coverAlt: 'Portada',
+    contentError: (path) => `(No se pudo cargar el contenido: ${path})`,
+    noContent: '(Sin contenido)',
+    errorLoading: 'Error cargando.',
+    errorLoadingEntries: 'No se pudieron cargar las entradas. Revisa content-index.json.',
+    tagFallback: 'Journal',
+    services: [
+      { title: 'MAPs Analysis', desc: 'Analisis por imagen - microestructuras' },
+      { title: 'Diagnostico de materiales', desc: 'Caracterizacion - informe tecnico' },
+      { title: 'Servicios a medida', desc: 'Validacion - integracion - training' }
+    ]
+  };
+
+  const CONTENT_INDEX_URL = '/content/content-index.json';
+  const DEFAULT_POST_DIR = '/content/posts/';
 
   const listEl = document.getElementById('journal-list');
   const tagbarEl = document.getElementById('tagbar');
@@ -22,15 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalContent = document.getElementById('modal-content');
 
   let allArticles = [];
-  let activeTag = 'Todos';
+  let activeTag = i18n.allTag;
   let lastOpenedId = '';
 
   const safeText = (s) => (typeof s === 'string' ? s : '');
 
   function fmtDate(iso) {
     const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString('es', { year: 'numeric', month: 'short', day: '2-digit' }).toUpperCase();
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString(i18n.locale, { year: 'numeric', month: 'short', day: '2-digit' }).toUpperCase();
   }
 
   function getPostId(p) {
@@ -39,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function normalizePost(p) {
     const id = getPostId(p);
-    const title = safeText(p?.title) || 'Entrada';
+    const title = safeText(p?.title) || (isEn ? 'Entry' : 'Entrada');
     const date = safeText(p?.date || p?.publishedAt || '');
     const tags = Array.isArray(p?.tags) ? p.tags.map(String) : [];
     const section = safeText(p?.section || '');
@@ -64,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     articles.forEach(a => (a.tags || []).forEach(t => tags.add(t)));
     articles.forEach(a => { if (a.section) tags.add(a.section); });
 
-    const all = ['Todos', ...Array.from(tags).sort((a, b) => a.localeCompare(b))];
+    const all = [i18n.allTag, ...Array.from(tags).sort((a, b) => a.localeCompare(b))];
 
     tagbarEl.innerHTML = all.map(t => `
       <button type="button" class="tag-pill ${t === activeTag ? 'is-active' : ''}" data-tag="${escapeHtml(t)}">
@@ -75,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tagbarEl.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-tag]');
       if (!btn) return;
-      activeTag = btn.dataset.tag || 'Todos';
+      activeTag = btn.dataset.tag || i18n.allTag;
 
       Array.from(tagbarEl.querySelectorAll('.tag-pill'))
         .forEach(b => b.classList.toggle('is-active', b.dataset.tag === activeTag));
@@ -89,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return allArticles.filter(a => {
       const allTags = new Set([...(a.tags || []), ...(a.section ? [a.section] : [])]);
-      const matchesTag = (activeTag === 'Todos') || allTags.has(activeTag);
+      const matchesTag = (activeTag === i18n.allTag) || allTags.has(activeTag);
       if (!matchesTag) return false;
       if (!q) return true;
 
@@ -100,15 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function render() {
     const items = filteredArticles();
-    hintEl.textContent = `${items.length} resultado(s) • ${allArticles.length} total`;
+    hintEl.textContent = i18n.results(items.length, allArticles.length);
 
     if (!items.length) {
-      listEl.innerHTML = `<div class="journal-loading">No hay entradas con ese filtro.</div>`;
+      listEl.innerHTML = `<div class="journal-loading">${i18n.noEntries}</div>`;
       return;
     }
 
     listEl.innerHTML = items.map((a) => {
-      const tag = a.section || (a.tags?.[0] || 'Journal');
+      const tag = a.section || (a.tags?.[0] || i18n.tagFallback);
       const excerpt = (a.excerpt || '').trim().slice(0, 180);
       const date = fmtDate(a.date);
 
@@ -169,14 +212,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const tags = Array.from(tagSet).slice(0, 8);
     modalTags.innerHTML = tags.length
       ? tags.map(t => `<span class="tagchip">${escapeHtml(t)}</span>`).join('')
-      : `<span class="tagchip">Journal</span>`;
+      : `<span class="tagchip">${i18n.tagFallback}</span>`;
 
     // cover
     const imgUrl = article.cover || '';
     if (imgUrl) {
       modalCoverWrap.hidden = false;
       modalImage.src = imgUrl;
-      modalImage.alt = article.title || 'Portada';
+      modalImage.alt = article.title || i18n.coverAlt;
     } else {
       modalCoverWrap.hidden = true;
       modalImage.removeAttribute('src');
@@ -184,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // loading state
-    modalContent.innerHTML = `<p style="opacity:.75;">Cargando…</p>`;
+    modalContent.innerHTML = `<p style="opacity:.75;">${i18n.loadingShort}</p>`;
     modalReadtime.textContent = '';
     modalReadtime.style.display = 'none';
     modalDot.style.display = 'none';
@@ -194,13 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
       raw = await loadArticleRaw(article);
     } catch (e) {
       console.warn(e);
-      modalContent.innerHTML = `<p>(No se pudo cargar el contenido: ${escapeHtml(article.bodyPath)})</p>`;
+      modalContent.innerHTML = `<p>${i18n.contentError(escapeHtml(article.bodyPath))}</p>`;
     }
 
     // read time
     if (raw) {
       const rt = estimateReadTimeFromText(raw);
-      modalReadtime.textContent = `${rt.minutes} min`;
+      modalReadtime.textContent = `${rt.minutes} ${i18n.readTimeSuffix}`;
       modalReadtime.style.display = 'inline';
       modalDot.style.display = 'inline';
     }
@@ -272,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // fallback: escribe el título en el buscador + filtra
     searchEl.value = article.title;
-    activeTag = 'Todos';
+    activeTag = i18n.allTag;
     Array.from(tagbarEl.querySelectorAll('.tag-pill'))
       .forEach(b => b.classList.toggle('is-active', b.dataset.tag === activeTag));
     render();
@@ -291,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const article = allArticles.find(x => x.id === id);
     if (article && id !== lastOpenedId) {
       searchEl.value = article.title;
-      activeTag = 'Todos';
+      activeTag = i18n.allTag;
       render();
       openModal(article, { pushHash: false });
     }
@@ -300,9 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderServicesFallback() {
     if (!servicesEl) return;
     servicesEl.innerHTML = `
-      <li><div style="font-weight:700; margin-bottom:4px;">MAPs Analysis</div><div style="opacity:.75; font-size:.92rem;">Análisis por imagen • microestructuras</div></li>
-      <li><div style="font-weight:700; margin-bottom:4px;">Diagnóstico de materiales</div><div style="opacity:.75; font-size:.92rem;">Caracterización • informe técnico</div></li>
-      <li><div style="font-weight:700; margin-bottom:4px;">Servicios a medida</div><div style="opacity:.75; font-size:.92rem;">Validación • integración • training</div></li>
+      <li><div style="font-weight:700; margin-bottom:4px;">${i18n.services[0].title}</div><div style="opacity:.75; font-size:.92rem;">${i18n.services[0].desc}</div></li>
+      <li><div style="font-weight:700; margin-bottom:4px;">${i18n.services[1].title}</div><div style="opacity:.75; font-size:.92rem;">${i18n.services[1].desc}</div></li>
+      <li><div style="font-weight:700; margin-bottom:4px;">${i18n.services[2].title}</div><div style="opacity:.75; font-size:.92rem;">${i18n.services[2].desc}</div></li>
     `;
   }
 
@@ -426,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inUl) html += '</ul>';
     if (inOl) html += '</ol>';
 
-    return html || '<p>(Sin contenido)</p>';
+    return html || `<p>${i18n.noContent}</p>`;
   }
 
   // Boot
@@ -442,8 +485,8 @@ document.addEventListener('DOMContentLoaded', () => {
       applyDeepLinkIfAny();
     } catch (err) {
       console.error(err);
-      hintEl.textContent = 'Error cargando.';
-      listEl.innerHTML = `<div class="journal-loading">No se pudieron cargar las entradas. Revisa content-index.json.</div>`;
+      hintEl.textContent = i18n.errorLoading;
+      listEl.innerHTML = `<div class="journal-loading">${i18n.errorLoadingEntries}</div>`;
       renderServicesFallback();
     }
   })();

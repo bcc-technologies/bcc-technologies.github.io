@@ -1,26 +1,13 @@
 :root {
-  /* Paleta "Hard Tech" */
-  --ink: #0f1115;       /* Negro casi puro */
-  --ink-soft: #555962;  /* Gris técnico */
-  --ink-light: #8e94a0; /* Texto secundario */
-  --accent: #ed4624;    /* ROJO BCC */
-  
-  --surface: rgba(255, 255, 255, 0.70);
-  --surface-hover: rgba(255, 255, 255, 0.90);
-  --border: rgba(0, 0, 0, 0.06);
-  --border-strong: rgba(0, 0, 0, 0.12);
-  
-  /* Efectos */
-  --blur: blur(16px);
-  --radius: 8px; /* Radio técnico, no burbuja */
-  --easing: cubic-bezier(0.16, 1, 0.3, 1); /* Movimiento "magnético" */
+  --radius: 8px;
+  --easing: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Base & Reset */
 body {
   font-family: 'Inter', system-ui, sans-serif;
   color: var(--ink);
-  background-color: #f7f7f8;
+  background-color: var(--bg);
   /* Textura de ruido SVG inyectada */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
   line-height: 1.5;
@@ -67,14 +54,14 @@ img { max-width: 100%; display: block; }
   transition: all 0.2s var(--easing);
 }
 .btn-primary {
-  background: var(--ink);
-  color: #fff;
-  border: 1px solid var(--ink);
+  background: var(--button-strong-bg);
+  color: var(--button-strong-ink);
+  border: 1px solid var(--button-strong-bg);
 }
 .btn-primary:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--surface-hover);
+  color: var(--accent-ink);
   transform: translateY(-1px);
 }
 .btn-ghost {
@@ -106,7 +93,7 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: linear-gradient(to bottom right, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+  background: linear-gradient(to bottom right, color-mix(in oklab, var(--surface-solid) 85%, var(--bg) 15%), color-mix(in oklab, var(--surface-solid) 60%, var(--bg) 40%));
 }
 
 .status-indicator {
@@ -146,7 +133,7 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: radial-gradient(circle at 50% 50%, rgba(237,70,36,0.05), transparent 60%);
+  background-image: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--accent) 5%, transparent), transparent 60%);
 }
 .hero-visual{ min-height: 260px; }
 .hero-img{ width: min(75%, 360px); }
@@ -200,7 +187,7 @@ img { max-width: 100%; display: block; }
   align-items: baseline;
   transition: background 0.2s;
 }
-.journal-row:hover { background: rgba(255,255,255,0.4); }
+.journal-row:hover { background: var(--hover); }
 
 .journal-date {
   font-family: monospace;
@@ -261,7 +248,7 @@ img { max-width: 100%; display: block; }
 .cta-box {
   padding: 60px;
   text-align: center;
-  background: radial-gradient(circle at 50% 0%, rgba(237,70,36,0.08), var(--surface));
+  background: radial-gradient(circle at 50% 0%, var(--accent-soft), var(--surface));
 }
 .cta-head { font-size: 2rem; margin: 0 0 12px; letter-spacing: -0.02em; }
 .cta-buttons { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
@@ -317,10 +304,10 @@ footer { padding: 32px 0; border-top: 1px solid var(--border); font-size: 0.85re
     position: absolute;
     top: calc(100% + 10px); left: 0; right: 0;
     border-radius: 12px;
-    background: #fff;
+    background: var(--surface-solid);
     padding: 24px;
     border-bottom: 1px solid var(--border);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow);
   }
 }
 /* Helpers for semantic classes used in index.html */
@@ -328,7 +315,7 @@ footer { padding: 32px 0; border-top: 1px solid var(--border); font-size: 0.85re
 
 .glass-panel-header{ /* marker class; primary styles are on .header-container */ }
 
-.section-grey{ background-color: rgba(15, 17, 21, 0.02); }
+.section-grey{ background-color: var(--hover); }
 
 .journal-content{ display:flex; flex-direction:column; gap: 6px; }
 
@@ -337,3 +324,5 @@ footer { padding: 32px 0; border-top: 1px solid var(--border); font-size: 0.85re
 .footer-cta{ padding-top: 0; }
 .footer-brand{ display:flex; flex-direction:column; gap: 6px; }
 .footer-copy{ opacity: 0.85; }
+
+

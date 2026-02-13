@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -15,49 +15,49 @@
   </script>
 
 <title>Login - BCC</title>
-  <link rel="stylesheet" href="css/00-tokens.css">
-  <link rel="stylesheet" href="css/01-base.css">
-  <link rel="stylesheet" href="css/02-layout.css">
-  <link rel="stylesheet" href="css/03-components.css">
-  <link rel="stylesheet" href="css/pages/login.css">
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
-  <script src="js/prefs.js" defer></script>
-  <link rel="alternate" hreflang="es" href="/login.html">
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+  <link rel="stylesheet" href="/css/pages/login.css">
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/login.html">
+  <link rel="alternate" hreflang="es" href="/login.html">
   <link rel="alternate" hreflang="x-default" href="/login.html">
-  <link rel="canonical" href="/login.html">
+  <link rel="canonical" href="/en/login.html">
 </head>
 <body>
 
   <!-- Barra de navegación -->
             <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/login.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/login.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -74,23 +74,23 @@
   <!-- Contenedor de login -->
   <main class="login-container with-header-offset">
     <section class="login-card">
-      <h1>Iniciar Sesión</h1>
-      <p>Inicie sesión en su <strong>Cuenta BCC</strong> para descargar el software más reciente y acceder a contenido exclusivo</p>
+      <h1>Login</h1>
+      <p>Log in to your <strong>BCC Account</strong> to download the latest software and access exclusive content</p>
       <form>
-        <input type="email" placeholder="Correo corporativo o profesional" required />
+        <input type="email" placeholder="Company or Industrial email" required />
         <button type="submit">
-          ingresar
+          Login
           <span class="arrow">→</span>
         </button>
       </form>
       <p class="register-link">
-        ¿No tienes una cuenta?
-        <a href="./signup">Crea una cuenta gratis.</a>
+        Don’t have an account-
+        <a href="/en/signup.html">Create an account for free.</a>
       </p>
       <div class="legal-links">
-        <a href="#">Términos</a> /
-        <a href="#">Privacidad</a> /
-        <a href="#">Ayuda</a>
+        <a href="#">Terms</a> /
+        <a href="#">Privacy</a> /
+        <a href="#">Help</a>
       </div>
     </section>
   </main>
@@ -104,9 +104,9 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/login.html" aria-label="Switch to English">EN</a>
-        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/login.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
           </svg>

@@ -14,14 +14,14 @@
     })();
   </script>
 
-<title>BCC Technologies</title>
-    <!-- <link rel="stylesheet" href="css/layout.css"> -->
-    <link rel="stylesheet" href="css/00-tokens.css">
-    <link rel="stylesheet" href="css/01-base.css">
-    <link rel="stylesheet" href="css/02-layout.css">
-    <link rel="stylesheet" href="css/03-components.css">
-    <link rel="stylesheet" href="css/pages/contactUs.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
+<title>Contact - BCC Technologies</title>
+    <!-- <link rel="stylesheet" href="/css/layout.css"> -->
+    <link rel="stylesheet" href="/css/00-tokens.css">
+    <link rel="stylesheet" href="/css/01-base.css">
+    <link rel="stylesheet" href="/css/02-layout.css">
+    <link rel="stylesheet" href="/css/03-components.css">
+    <link rel="stylesheet" href="/css/pages/contactUs.css">
+    <link rel="icon" type="image/png" href="/static/Favi2.png">
     
     <!-- Shopify Buy SDK -->
     <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
@@ -40,17 +40,17 @@
             // You can add any Shopify-related functionality here if needed in the future
         });
     </script>
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
-  <script src="js/prefs.js" defer></script>
-  <link rel="alternate" hreflang="es" href="/contactUs.html">
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/contactUs.html">
+  <link rel="alternate" hreflang="es" href="/contactUs.html">
   <link rel="alternate" hreflang="x-default" href="/contactUs.html">
-  <link rel="canonical" href="/contactUs.html">
+  <link rel="canonical" href="/en/contactUs.html">
 </head>
 
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+<script async src="https://www.googletagmanager.com/gtag/js-id=G-L9FYNRKVNH"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -64,31 +64,31 @@
 <!-- header section -->
           <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/contactUs.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/contactUs.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -115,29 +115,29 @@
         </div>
         <div class="form-container">
             <!-- Formulario de contacto -->
-            <link rel="stylesheet" href="css/contact_form.css">
+            <link rel="stylesheet" href="/css/contact_form.css">
             <div class="form-overlay">
                 <div id="form-container" class="icon fa fa-pencil">
                     <span id="form-close" class="icon fa fa-close"></span>
                     <div id="form-content">
                         <div id="form-head">
                             <h1 class="pre">Póngase en contacto</h1>
-                            <p class="pre" style="color: #e9e9e9;">Estamos para servirle</p>
+                            <p class="pre" style="color: #e9e9e9;">We're here to help</p>
                         </div>
                         <form
                             action="https://formspree.io/f/xleqdrag"
                             method="POST"
                         >
-                            <input class="input name" type="text" name="user_name" placeholder="Su nombre">
-                            <input class="input email" type="text" name="user_email" placeholder="Su correo de contacto">
+                            <input class="input name" type="text" name="user_name" placeholder="Your name">
+                            <input class="input email" type="text" name="user_email" placeholder="Your email">
                             <select class="input select" name="subject">
-                                <option disabled selected>¿De qué hablamos?</option>
-                                <option selected>Sobre un nuevo proyecto</option>
-                                <option>Tengo unas preguntas</option>
+                                <option disabled selected>¿De qué hablamos-</option>
+                                <option selected>About a new project</option>
+                                <option>I have some questions</option>
                                 <option>Hagámoslo tomando un café</option>
                             </select>
-                            <textarea class="input message" name="message" placeholder="¿En qué podemos ayudarle?"></textarea>
-                            <input class="input submit" type="submit" value="Enviar mensaje">
+                            <textarea class="input message" name="message" placeholder="¿En qué podemos ayudarle-"></textarea>
+                            <input class="input submit" type="submit" value="Send message">
                         </form>
                     </div>
                 </div>
@@ -156,9 +156,9 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/contactUs.html" aria-label="Switch to English">EN</a>
-        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/contactUs.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
           </svg>

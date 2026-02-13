@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+<title>BCC Technologies | Overview</title>
+  <meta name="description" content="Scientific software and instrumentation. We simplify the complex and expand the interesting." />
+
+  <link rel="icon" type="image/png" href="/static/Favi2.png">
+    <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+  <link rel="stylesheet" href="/index2.css">
+
+  <!-- Shopify Buy SDK (defer: no bloquea el render) -->
+  <script defer src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+  <script defer src="/js/index.js"></script>
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+  <link rel="alternate" hreflang="en" href="/en/index2.html">
+  <link rel="alternate" hreflang="es" href="/index2.html">
+  <link rel="alternate" hreflang="x-default" href="/index2.html">
+  <link rel="canonical" href="/en/index2.html">
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js-id=G-L9FYNRKVNH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-L9FYNRKVNH');
+</script>
+
+<body>
+  <!-- Header -->
+            <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/index2.html">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme" aria-label="Toggle theme">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <!-- HERO: blanco + textura sutil + color estratégico (orbes + acento) -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <p class="kicker">BCC Technologies</p>
+          <h2 class="hero-title">We simplify the complex and expand the interesting.</h2>
+                              <p class="hero-lead">
+            Scientific software and instrumentation for imaging and signal analysis:
+            <span class="lead-mark">explicit methods</span>, <span class="lead-mark">reproducible results</span> and
+            <span class="lead-mark">clear deliverables</span>.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn btn-primary" href="/en/products.html">View products</a>
+            <a class="btn btn-secondary" href="/en/contactUs.html">Talk to the team</a>
+          </div>
+
+          <div class="chips" aria-label="Áreas principales">
+            <span class="chip">Imagen (óptica / SEM)</span>
+            <span class="chip">EIS / sensors</span>
+            <span class="chip">Análisis trazable</span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Brand visual">
+          <div class="hero-orb" aria-hidden="true"></div>
+          <img class="hero-image" src="/static/BCC_sf.png" alt="Cubo BCC (Body Centered Cube)" loading="lazy">
+          <div class="hero-caption"><span class="dot" aria-hidden="true"></span><span>Modular architecture, BCC identity</span></div>
+        </div>
+      </div>
+
+      <div class="container hero-divider" aria-hidden="true"></div>
+    </section>
+
+    <!-- INTENCIÓN / PRINCIPIOS: vida sin ruido -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <h3 class="section-title">Diseño con intención</h3>
+          <p class="muted prose">
+            El “premium” no es una paleta chillona ni un arcoíris por secciones.
+            Es ritmo: jerarquía tipográfica, distancias consistentes y color solo en puntos de decisión.
+          </p>
+        </div>
+
+        <div class="pillars reveal">
+          <article class="pillar pillar--warm">
+            <div class="pillar-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4>Clarity first</h4>
+            <p>Menos fricción cognitiva: lectura limpia, contenedores coherentes y un “sistema” de UI estable.</p>
+          </article>
+
+          <article class="pillar pillar--cool">
+            <div class="pillar-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M4 18c4-6 12-6 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4>Rhythm and spacing</h4>
+            <p>El blanco no es vacío. Es estructura. Las sangrías y separaciones hacen que todo “respire”.</p>
+          </article>
+
+          <article class="pillar pillar--neutral">
+            <div class="pillar-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M7 7h10v10H7z" stroke="currentColor" stroke-width="2" />
+                <path d="M4 4h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4>Color con propósito</h4>
+            <p>Fondos e imágenes solo donde elevan el mensaje: un acento para CTA, una banda para “métodos”.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- DESTACADOS (Shopify) -->
+    <section class="section section-tight">
+      <div class="container">
+        <div class="section-head-row reveal">
+          <div>
+            <h3 class="section-title">Highlights</h3>
+            <p class="muted prose">Una selección corta. Lo justo para entender, sin saturación.</p>
+          </div>
+          <a class="btn btn-tertiary" href="/en/products.html">Ver catálogo</a>
+        </div>
+
+        <div class="featured-grid reveal" id="featured-grid">
+          <!-- Fallback si Shopify falla -->
+          <article class="card">
+            <div class="card-bar" aria-hidden="true"></div>
+            <div class="card-media" aria-hidden="true">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <path d="M7 7h10v10H7z" stroke="currentColor" stroke-width="2"/>
+                <path d="M4 4h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-body">
+              <h4 class="card-title">MAPs</h4>
+              <p class="card-text">Análisis de microestructuras e imágenes científicas.</p>
+              <a class="card-link" href="/en/products.html">Ver →</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-bar" aria-hidden="true"></div>
+            <div class="card-media" aria-hidden="true">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 16c2-2 8-2 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 8c2 2 8 2 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-body">
+              <h4 class="card-title">AquaSpecter</h4>
+              <p class="card-text">Monitoreo electroquímico (EIS) y sensado.</p>
+              <a class="card-link" href="/en/products.html">Ver →</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-bar" aria-hidden="true"></div>
+            <div class="card-media" aria-hidden="true">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="card-body">
+              <h4 class="card-title">Servicios</h4>
+              <p class="card-text">Desarrollo y consultoría técnica, sin humo.</p>
+              <a class="card-link" href="/en/services.html">Ver →</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANDA VISUAL: UNA (intencional) -->
+    <section class="band" aria-label="Métodos y documentación">
+      <div class="container band-inner">
+        <div class="band-copy reveal">
+          <p class="eyebrow eyebrow-light">Métodos y documentación</p>
+          <h3 class="band-title">Menos fricción cognitiva. Más ciencia útil.</h3>
+          <p class="band-lead">
+            Diseñamos para que el foco sea el fenómeno: parámetros auditables, reportes claros y trazabilidad.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="/en/services.html">Ver servicios</a>
+            <a class="btn btn-secondary" href="/en/aboutUs.html">Conocer al equipo</a>
+          </div>
+        </div>
+
+        <div class="band-cards reveal" aria-label="Componentes clave">
+          <div class="band-card">
+            <strong>Parámetros trazables</strong>
+            <span>Configuraciones guardadas y replicables entre sesiones.</span>
+          </div>
+          <div class="band-card">
+            <strong>Reportes limpios</strong>
+            <span>Resultados presentables: tablas, imágenes y cifras sin ruido.</span>
+          </div>
+          <div class="band-card">
+            <strong>Iteración segura</strong>
+            <span>Mejoras sin romper lo anterior. Cambios con intención.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOQUE VISUAL ADICIONAL (sin saturar): una mini-galería -->
+    <section class="section section-tight">
+      <div class="container">
+        <div class="section-head reveal">
+          <h3 class="section-title">A touch of life, under control</h3>
+          <p class="muted prose">
+            Imagen y color como “acentos”: lo suficiente para darle presencia, sin competir con el contenido.
+          </p>
+        </div>
+
+        <div class="gallery reveal" aria-label="Galería">
+          <figure class="shot">
+            <img src="static/Imagen1.JPG" alt="Equipo BCC" loading="lazy">
+            <figcaption><strong>Team & prototyping.</strong> Trabajo aplicado, entregables y documentación.</figcaption>
+          </figure>
+
+          <figure class="shot">
+            <img src="/static/BCC_sf.png" alt="Cubo BCC" loading="lazy">
+            <figcaption><strong>Modular architecture.</strong> Una identidad visual con estructura científica.</figcaption>
+          </figure>
+
+          <figure class="shot shot-pattern">
+            <div class="pattern-box" aria-hidden="true"></div>
+            <figcaption><strong>Editorial style.</strong> Subtle textures and color accents without noise.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO TRABAJAMOS -->
+    <section class="section">
+      <div class="container split">
+        <div class="reveal">
+          <h3 class="section-title">Cómo trabajamos</h3>
+          <p class="muted prose">Un flujo corto, repetible y trazable. Menos reuniones, más claridad.</p>
+
+          <ol class="steps">
+            <li><strong>Diagnóstico:</strong> goals, data, and constraints.</li>
+            <li><strong>Prototype:</strong> validación rápida del método.</li>
+            <li><strong>Delivery:</strong> software o resultados + documentación.</li>
+            <li><strong>Iteración:</strong> improvements without breaking what came before.</li>
+          </ol>
+
+          <a class="card-link" href="/en/contactUs.html">Hablemos →</a>
+        </div>
+
+        <div class="media-card reveal">
+          <img src="static/Imagen1.JPG" alt="Trabajo del equipo BCC" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-tight">
+      <div class="container">
+        <div class="section-head reveal">
+          <h3 class="section-title">Preguntas rápidas</h3>
+          <p class="muted prose">Detalles útiles, sin abrumar.</p>
+        </div>
+
+        <div class="faq reveal">
+          <details>
+            <summary>¿Esto es para academia o industria-</summary>
+            <div class="faq-body">Para ambos. Lo importante es el estándar: resultados trazables y reportes claros.</div>
+          </details>
+          <details>
+            <summary>¿Qué tipo de datos manejan-</summary>
+            <div class="faq-body">Imagen (microscopía, cámaras) y señal (sensores). El formato depende del caso.</div>
+          </details>
+          <details>
+            <summary>¿Pueden adaptar un módulo a mi necesidad-</summary>
+            <div class="faq-body">Sí. Preferimos extensiones limpias antes que excepciones frágiles.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA final -->
+    <section class="section cta">
+      <div class="container cta-inner reveal">
+        <h3 class="cta-title">¿Lo aterrizamos en 15 minutos-</h3>
+        <p class="cta-lead">Objetivo, contexto y próximos pasos claros.</p>
+
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="/en/contactUs.html">Contáctanos</a>
+          <a class="btn btn-secondary" href="/en/blog.html">Ver blog</a>
+        </div>
+
+        <div class="social-row" aria-label="Redes sociales">
+          <a href="https://www.instagram.com/bcc.tech/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
+          <a href="https://www.linkedin.com/company/bcc-tech/-viewAsMember=true" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://www.fiverr.com/bcc_tech" target="_blank" rel="noopener noreferrer">Fiverr</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+              <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/index2.html">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

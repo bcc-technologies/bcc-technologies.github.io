@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+<title>Services - BCC Technologies</title>
+  <link rel="icon" type="image/png" href="/static/Favi2.png" />
+  <link rel="stylesheet" href="/css/pages/services.css" />
+  <link rel="stylesheet" href="/css/00-tokens.css" />
+  <link rel="stylesheet" href="/css/01-base.css" />
+  <link rel="stylesheet" href="/css/02-layout.css" />
+  <link rel="stylesheet" href="/css/03-components.css" />
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+  <link rel="alternate" hreflang="en" href="/en/services.html">
+  <link rel="alternate" hreflang="es" href="/services.html">
+  <link rel="alternate" hreflang="x-default" href="/services.html">
+  <link rel="canonical" href="/en/services.html">
+</head>
+<body>
+  <!-- Navbar (reuse your real one if it already exists) -->
+            <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/services.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero hero-services">
+    <!-- Themed background -->
+    <div class="hero-bg" aria-hidden="true">
+      <div class="layer base"></div>
+      <div class="layer grid"></div>
+      <div class="layer nodes"></div>
+      <div class="layer waves"></div>
+    </div>
+
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">BCC Services</p>
+        <h1>Science and technology services</h1>
+        <p class="lead">
+          Instrumentation integration (EIS/DLS), advanced on-site analysis, lab automation and custom software.
+        </p>
+
+        <div class="chipbar">
+          <span class="chip">Industry</span>
+          <span class="chip">Academia</span>
+          <span class="chip">Startups</span>
+          <span class="chip">Consulting</span>
+          <span class="chip">Turnkey</span>
+          <span class="chip">Ongoing support</span>
+        </div>
+
+        <div class="hero-cta">
+          <a class="btn btn-dark" href="#packages">View packages</a>
+          <a class="btn" href="/en/contactUs.html">Contact the team</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <figure class="hero-figure">
+          <img src="/static/Servicios.png" alt="EIS/DLS integration and scientific analysis" loading="eager" />
+          <figcaption class="media-caption">Solutions: instrumentation + software + methods</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= SECTORS ================= -->
+  <section class="section" id="sectors">
+    <div class="container">
+      <h2>Sectors we serve</h2>
+      <div class="sectors-grid">
+        <div class="sector reveal">
+          <h4>Materials R&D</h4>
+          <ul class="bullets">
+            <li>Advanced analysis of SEM samples</li><li>DLS</li><li>Custom automation</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Enterprise</h4>
+          <ul class="bullets">
+            <li>Custom software</li><li>Automated pipelines</li><li>QA/QC</li><li>Field analysis</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Biotech</h4>
+          <ul class="bullets">
+            <li>Characterization automation</li><li>Impedance analysis</li><li>Monitoring systems</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Agroindustry</h4>
+          <ul class="bullets">
+            <li>Contaminant detection</li><li>Microscopic sample analysis</li><li>Pest identification</li>
+          </ul>
+        </div>
+        <div class="sector reveal">
+          <h4>Academia</h4>
+          <ul class="bullets">
+            <li>Training and consulting</li><li>Educational presentations</li><li>Research support</li>
+          </ul>
+        </div>
+      </div>
+      
+      <hr class="section-divider" style="margin-top: 5rem; margin-bottom: -5rem;" />
+    </div>
+  </section>
+
+
+
+    <!-- ================= ADVISOR (micro-quiz + recommendation) ================= -->
+    <section class="section advisor" id="advisor">
+      <div class="container">
+        <h2>Find your best option</h2>
+        <p class="lead">Answer 3 questions. We'll suggest a package with timelines and deliverables.</p>
+
+        <!-- Micro-quiz -->
+        <form class="quiz">
+        <div class="quiz-row">
+            <!-- Goal -->
+            <div class="quiz-group" role="radiogroup">
+            <div class="label">Goal:</div>
+            <button type="button" class="chip seg is-active" data-group="goal" data-value="caracterizar" aria-pressed="true">Characterize samples</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="integrar" aria-pressed="false">Integrate instrumentation</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="automatizar" aria-pressed="false">Automate workflow</button>
+            <button type="button" class="chip seg" data-group="goal" data-value="prototipar" aria-pressed="false">Prototype</button>
+            </div>
+
+            <!-- Method -->
+            <div class="quiz-group" role="radiogroup">
+            <div class="label">Method:</div>
+            <button type="button" class="chip pill is-active" data-group="method" data-value="imagen" aria-pressed="true">Imaging</button>
+            <button type="button" class="chip pill" data-group="method" data-value="dls" aria-pressed="false">DLS</button>
+            <button type="button" class="chip pill" data-group="method" data-value="eis" aria-pressed="false">EIS</button>
+            <button type="button" class="chip pill" data-group="method" data-value="mixto" aria-pressed="false">Mixed</button>
+            </div>
+
+            <!-- Timeline -->
+            <div class="quiz-group" role="radiogroup">
+            <div class="label">Timeline:</div>
+            <button type="button" class="chip seg is-active" data-group="horizon" data-value="2w" aria-pressed="true">2 weeks</button>
+            <button type="button" class="chip seg" data-group="horizon" data-value="1-3m" aria-pressed="false">1-3 months</button>
+            </div>
+        </div>
+        </form>
+
+        <!-- Recommendation -->
+        <div class="recommendation" id="recommendation">
+        <div class="rec-main">
+            <article class="rec-card reveal">
+            <div class="rec-eyebrow">Recommended</div>
+            <h3 id="rec-title">Pack Imaging + MAP Suite Enablement</h3>
+            <p class="rec-meta" id="rec-meta">Morphology, porosity and roughness with reproducible presets.</p>
+            <ul class="bullets" id="rec-bullets">
+                <li>MAP onboarding and per-sample presets</li>
+                <li>CSV/PDF/API and masking examples</li>
+                <li>Quality checklist</li>
+            </ul>
+            <!-- <p class="small" id="rec-time">Typical time: <strong>2 weeks</strong></p> -->
+            <div class="row-cta">
+                <a class="btn btn-dark" id="rec-primary" href="./contactUs-demo=1">Get a quote</a>
+                <a class="btn btn-ghost" id="rec-secondary" href="#packages">View details</a>
+                <a class="btn btn-ghost" id="rec-compare" href="#compare">Compare</a>
+            </div>
+            </article>
+
+            <aside class="reasoning reveal">
+            <div class="why">Why this</div>
+            <ul id="rec-reasons">
+                <li>You need reproducible image metrics.</li>
+                <li>Near-term timeline (2 weeks).</li>
+            </ul>
+            </aside>
+        </div>
+
+        <div class="rec-alt">
+            <article class="rec-card alt reveal">
+            <div class="rec-eyebrow">Alternative</div>
+            <h4 id="alt-title">Sprint de Prototipado (2 weeks)</h4>
+            <p class="small" id="alt-meta">Executable prototype + roadmap.</p>
+            <div class="row-cta">
+                <a class="btn" id="alt-link" href="./contactUs-demo=1">Evaluate this option</a>
+            </div>
+            </article>
+        </div>
+        </div>
+    </div>
+    </section>
+
+
+
+    <!-- ================ Categories (Master Selector) ================ -->
+    <section class="section section-alt needs" id="navigator">
+    <div class="container needs-wrap">
+        <div class="needs-head">
+        <h2>Still deciding?</h2>
+        <p class="lead">Explore our service line. Select one to see scope, deliverables, and next steps.</p>
+        </div>
+
+        <div class="needs-grid" role="tablist">
+        <!-- Software -->
+        <article class="need-card is-active" role="tab" aria-selected="true" tabindex="0" data-key="software">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="/static/vid_software.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-programador_114360-2284.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Software development</h3>
+            <p>Apps for web/desktop/mobile, pipelines, and APIs tailored to your needs.</p>
+        </article>
+
+        <!-- Integration -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="integracion">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="/static/vid_integracion.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-orientacion-multidispositivo_114360-7405.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Instrumentation integration</h3>
+            <p>EIS, DLS, microscopy: drivers, control, and validation.</p>
+        </article>
+
+        <!-- Analysis (with before/after demo, no video) -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="analisis">
+            <div class="need-media demo-beforeafter" data-demo="before-after">
+            <!-- <img class="img-before" src="/static/demo_imaging_before.jpg" alt="" aria-hidden="true">
+            <img class="img-after"  src="/static/demo_imaging_after.jpg"  alt="" aria-hidden="true"> -->
+            <!-- <input class="demo-slider" type="range" min="0" max="100" value="50"> -->
+             <video muted playsinline loop preload="none" data-src="/static/vid_analisis.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-estadisticas-sitio_114360-1434.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Analysis and algorithms</h3>
+            <p>Signals (EIS/DLS), imaging (SEM/optical), fitting and models.</p>
+        </article>
+
+        <!-- Automation -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="automatizacion">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="/static/vid_automatizacion.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-seleccionar_114360-383.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Lab automation</h3>
+            <p>Orchestration, analysis queues, reporting, and traceability.</p>
+        </article>
+
+        <!-- Training -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="training">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="/static/vid_training.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-analisis_114360-1119.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Training and knowledge transfer</h3>
+            <p>Talleres EIS/DLS/Imaging, reproducibilidad y reporting.</p>
+        </article>
+
+        <!-- Soporte -->
+        <article class="need-card" role="tab" aria-selected="false" tabindex="-1" data-key="soporte">
+            <div class="need-media">
+            <video muted playsinline loop preload="none" data-src="/static/vid_soporte.mp4" poster="https://img.freepik.com/vector-gratis/ilustracion-concepto-servidor_114360-287.jpg?size=626&ext=jpg" aria-hidden="true"></video>
+            </div>
+            <h3>Support & maintenance</h3>
+            <p>SLAs, updates, health checks and ongoing advisory.</p>
+        </article>
+        </div>
+
+        <!-- Panel detalle sticky -->
+        <aside class="need-detail" id="needDetail" role="tabpanel" aria-live="polite">
+        <div class="detail-eyebrow">Selected</div>
+        <h3 id="needTitle">Custom scientific software</h3>
+        <p class="detail-sub" id="needSub">Desktop/web apps, pipelines and APIs for reproducible analysis. Integrations with hardware and lightweight LIMS.</p>
+
+        <ul class="bullets" id="needBullets">
+            <li>Reproducibility and versioning</li>
+            <li>APIs and on-prem/cloud deployment</li>
+            <li>Documentation and tests</li>
+        </ul>
+
+        <div class="quick-specs">
+            <!-- <span class="badge" id="needTime">Typical time: 2-6 weeks</span> -->
+            <span class="badge" id="needDeliver">Deliverables: code, docs, pipelines</span>
+        </div>
+
+        <div class="row-cta">
+            <a class="btn btn-dark" id="needPrimary" href="#packages">View packages</a>
+            <a class="btn btn-ghost" id="needSecondary" href="./contactUs-demo=1">Contact the team</a>
+        </div>
+        </aside>
+    </div>
+    </section>
+
+
+
+
+  
+
+
+  <!-- ================= COMPARISON ================= -->
+  <section class="section section-alt" id="compare">
+    <div class="container">
+      <h2>Service comparison</h2>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Includes</th>
+              <th>Deliverables</th>
+              <!-- <th>Typical time</th> -->
+              <th>Engagement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EIS Implementation</td>
+              <td>Installation, drivers, template, base fitting</td>
+              <td>SOP, example curves, PDF</td>
+              <!-- <td>2-4 weeks</td> -->
+              <td>Project</td>
+            </tr>
+            <tr>
+              <td>DLS Rapid</td>
+              <td>PSD pipeline, validation, training</td>
+              <td>CSV, report, guide</td>
+              <!-- <td>1-3 weeks</td> -->
+              <td>Project</td>
+            </tr>
+            <tr>
+              <td>Imaging + MAP</td>
+              <td>Onboarding, presets, and exports</td>
+              <td>CSV/PDF/API, examples, checklist</td>
+              <!-- <td>~2 weeks</td> -->
+              <td>Project</td>
+            </tr>
+            <tr>
+              <td>Ongoing support</td>
+              <td>Updates, health checks, advisory</td>
+              <td>Improvement plan, incident log</td>
+              <!-- <td>Monthly/Quarterly</td> -->
+              <td>Retainer</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TEAM ================= -->
+  <section class="section" id="team">
+    <div class="container">
+      <h2>Team and credentials</h2>
+      <div class="team-blurb">
+        <p>
+          Multidisciplinary team in physics, engineering, chemistry, and biology. Standards for reproducibility, versioning, and cross-validation.
+          On-prem or cloud support and role-based access.
+        </p>
+        <ul class="badges">
+          <li>Confidentiality (NDA)</li>
+          <li>Traceability</li>
+          <li>LIMS/ERP/SCADA integrations</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section section-alt" id="faq">
+    <div class="container">
+      <h2>Frequently asked questions</h2>
+      <div class="accordion">
+        <details class="faq">
+          <summary>Who owns the IP of the deliverables?</summary>
+          <div class="faq-body">The NDA guarantees ownership of your data and deliverables. Product IP usually belongs to BCC, but there can be exceptions depending on the case.</div>
+        </details>
+
+        <details class="faq">
+          <summary>On-prem or cloud?</summary>
+          <div class="faq-body">We support both models and recommend based on your constraints and compliance.</div>
+        </details>
+
+        <details class="faq">
+          <summary>What does support include?</summary>
+          <div class="faq-body">Updates, health checks, agreed response time, and a dedicated channel.</div>
+        </details>
+
+        <details class="faq">
+          <summary>Do you integrate with existing systems?</summary>
+          <div class="faq-body">Yes: LIMS/ERP/SCADA and supported devices. We define the scope in the proposal.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CTA ================= -->
+  <section class="section cta-final" id="contact-cta">
+    <div class="container cta-inner">
+      <div>
+        <h2>Ready to accelerate your project?</h2>
+        <p class="lead">Tell us the goal, the data, and the timeline. We will propose a concrete plan.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-dark" href="/en/contactUs.html">Contact the team</a>
+        <a class="btn btn-ghost" href="/en/products.html">View products</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+      </main>
+
+            <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/services.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= Minimal scripts ================= -->
+  <script>
+    // Year + adjust --nav-h to the real navbar height
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    (function(){
+      const nav=document.querySelector('.navbar');
+      if(!nav) return;
+      const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+      setH(); addEventListener('resize', setH);
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+      const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+      }, {threshold:.12});
+      els.forEach(el=>io.observe(el));
+    })();
+
+    // Accordion: open only one at a time (optional)
+    (function(){
+      const items = document.querySelectorAll('.accordion details');
+      items.forEach(d=>{
+        d.addEventListener('toggle', ()=>{
+          if(d.open){
+            items.forEach(o=>{ if(o!==d) o.removeAttribute('open'); });
+          }
+        });
+      });
+    })();
+  </script>
+
+
+
+      <script>
+    /* ===== Micro-quiz & Recommendation ===== */
+    (function(){
+      const $ = (s, r=document)=>r.querySelector(s);
+      const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+      const state = { goal:'caracterizar', method:'imagen', horizon:'2w' };
+
+      const chips = $$('.quiz .chip');
+      const rec = {
+        title: $('#rec-title'),
+        meta:  $('#rec-meta'),
+        bullets: $('#rec-bullets'),
+        time:  $('#rec-time'),
+        primary: $('#rec-primary'),
+        secondary: $('#rec-secondary'),
+        compare: $('#rec-compare'),
+        reasons: $('#rec-reasons'),
+        altTitle: $('#alt-title'),
+        altMeta:  $('#alt-meta'),
+        altLink:  $('#alt-link'),
+      };
+
+      chips.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const group = btn.dataset.group;
+          const value = btn.dataset.value;
+          $$('.quiz .chip[data-group="'+group+'"]')
+            .forEach(b=>{
+              b.classList.toggle('is-active', b===btn);
+              b.setAttribute('aria-pressed', String(b===btn));
+            });
+          state[group] = value;
+          render();
+        });
+      });
+
+      function pickRecommendation({goal, method, horizon}){
+        let main = {
+          id:'map', title:'Imaging + MAP Suite Enablement',
+          meta:'Morphology, porosity and roughness with reproducible presets.',
+          bullets:['MAP onboarding and per-sample presets','CSV/PDF/API and masking examples','Quality checklist'],
+          time: (horizon==='2w' ? '2 weeks' : '3-4 weeks'),
+          primaryHref:'./product_maps#map-nano',
+          secondaryHref:'#packages'
+        };
+        let alt = { title:'Prototyping Sprint (2 weeks)', meta:'Executable prototype + roadmap.', href:'./contactUs-demo=1' };
+        const reasons = [];
+
+        if(goal==='integrar'){
+          main = {
+            id:'integracion', title:'Instrumentation integration',
+            meta:'Drivers, control, acquisition and standards-based validation.',
+            bullets:['Measurement templates and SOP','Example curves and validation','Team onboarding'],
+            time:(horizon==='2w' ? '2-3 weeks' : '3-6 weeks'),
+            primaryHref:'./contactUs-demo=1', secondaryHref:'#packages'
+          };
+          alt = { title:'EIS Implementation', meta:'Installation + base fitting (R(QR)).', href:'#packages' };
+          reasons.push('Primary goal: hardware integration.');
+        } else if(goal==='automatizar'){
+          main = {
+            id:'auto', title:'Lab automation',
+            meta:'Task orchestration, analysis queues, reporting and traceability.',
+            bullets:['Auditable workflows','Dashboards and alerts','Roles and permissions'],
+            time:(horizon==='2w' ? '2-4 weeks' : '1-3 months'),
+            primaryHref:'./contactUs-demo=1', secondaryHref:'#packages'
+          };
+          alt = { title:'Imaging + MAP (presets + reporting)', meta:'Quick win for imaging teams.', href:'#packages' };
+          reasons.push('You need to reduce manual steps and gain traceability.');
+        } else if(goal==='prototipar'){
+          main = {
+            id:'sprint', title:'Prototyping Sprint (2 weeks)',
+            meta:'Design -> executable prototype -> roadmap.',
+            bullets:['Hypotheses and scope','Rapid implementation','Phased backlog'],
+            time:'2 weeks',
+            primaryHref:'./contactUs-demo=1', secondaryHref:'#packages'
+          };
+          alt = { title:'Method-specific pack', meta:'Pick an EIS / DLS / MAP pack.', href:'#packages' };
+          reasons.push('You want a fast validation with tangible impact.');
+        } else {
+          reasons.push('Goal: characterize samples with reproducible metrics.');
+        }
+
+        if(method==='eis'){
+          if(goal!=='automatizar' && goal!=='prototipar'){
+            main = {
+              id:'eis', title:'EIS Implementation Pack',
+              meta:'Installation, drivers, template and base fitting (R(QR)).',
+              bullets:['Example curves','PDF report + SOP','Fitted parameters'],
+              time:(horizon==='2w' ? '2-4 weeks' : '3-6 weeks'),
+              primaryHref:'./contactUs-demo=1', secondaryHref:'#packages'
+            };
+            alt = { title:'EIS + Toolkit (software)', meta:'Measurement + reproducible fitting.', href:'#packages' };
+          }
+          reasons.push('You work with EIS; we focus on installation and fitting.');
+        }
+        if(method==='dls'){
+          if(goal!=='automatizar' && goal!=='prototipar'){
+            main = {
+              id:'dls', title:'DLS Rapid Characterization Pack',
+              meta:'PSD pipeline + validation with standards and training.',
+              bullets:['CSV exports and report','Sample prep guides','Hands-on session'],
+              time:(horizon==='2w' ? '1-3 weeks' : '2-4 weeks'),
+              primaryHref:'./contactUs-demo=1', secondaryHref:'#packages'
+            };
+            alt = { title:'DLS + MAP-Bio (bundle)', meta:'PSD + morphology in one view.', href:'#packages' };
+          }
+          reasons.push('You work with DLS; we prioritize validated PSD.');
+        }
+        if(method==='imagen'){
+          if(goal==='caracterizar'){
+            main = { ...main, id:'map' };
+          }
+          reasons.push('Primary method: imaging (SEM/optical).');
+        }
+        if(method==='mixto'){
+          reasons.push('Mixed methods: we combine deliverables by phase.');
+          alt = { title:'Hybrid bundle (EIS/DLS/Imaging)', meta:'Combined package for your case.', href:'#packages' };
+        }
+
+        reasons.push(horizon==='2w' ? 'Near-term timeline: we prioritize quick wins.' : 'Longer timeline: we can include integrations.');
+
+        return { main, alt, reasons };
+      }
+
+      function render(){
+        const { main, alt, reasons } = pickRecommendation(state);
+        rec.title.textContent = main.title;
+        rec.meta.textContent  = main.meta;
+        rec.bullets.innerHTML = main.bullets.map(li=>`<li>${li}</li>`).join('');
+        rec.primary.href      = main.primaryHref;
+        rec.secondary.href    = main.secondaryHref;
+        rec.compare.href      = '#compare';
+        rec.reasons.innerHTML = reasons.map(r=>`<li>${r}</li>`).join('');
+        rec.altTitle.textContent = alt.title;
+        rec.altMeta.textContent  = alt.meta;
+        rec.altLink.href         = alt.href;
+      }
+
+      render();
+    })();
+  </script>
+
+
+      <script>
+    /* ============== Master Selector: state, lazy video, demo slider ============== */
+    (function(){
+      const $ = (s, r=document)=>r.querySelector(s);
+      const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+
+      const DATA = {
+        software: {
+          title: 'Custom software',
+          sub: 'Desktop/web apps, pipelines and APIs for reproducible analysis. Integrations with hardware and lightweight LIMS.',
+          bullets: ['Reproducibility and versioning','APIs and on-prem/cloud deployment','Documentation and tests'],
+          deliver: 'Deliverables: code, docs, pipelines',
+          primaryHref: '#packages', primaryText: 'View packages',
+          secondaryHref: './contactUs', secondaryText: 'Contact'
+        },
+        integracion: {
+          title: 'Instrumentation integration',
+          sub: 'EIS, DLS, microscopy and peripherals: drivers, control, acquisition and validation.',
+          bullets: ['Measurement templates and SOP','Example curves and validation','Team onboarding'],
+          deliver: 'Deliverables: SOP, datasets, report',
+          primaryHref: '#packages', primaryText: 'View packages',
+          secondaryHref: './contactUs-demo=1', secondaryText: 'Get quote'
+        },
+        analisis: {
+          title: 'Analysis and algorithms',
+          sub: 'Signals (EIS/DLS), imaging (SEM/optical), fitting and models.',
+          bullets: ['Pipelines and notebooks','CSV/PDF/API','Cross-validation'],
+          deliver: 'Deliverables: scripts, reports, presets',
+          primaryHref: '#packages', primaryText: 'View packages',
+          secondaryHref: './contactUs-demo=1', secondaryText: 'Schedule call'
+        },
+        automatizacion: {
+          title: 'Lab automation',
+          sub: 'Task orchestration, analysis queues, reporting and traceability.',
+          bullets: ['Auditable workflows','Dashboards and alerts','Roles and permissions'],
+          deliver: 'Deliverables: workflows, dashboards, APIs',
+          primaryHref: './contactUs', primaryText: 'Contact',
+          secondaryHref: '#packages', secondaryText: 'View packages'
+        },
+        training: {
+          title: 'Training and knowledge transfer',
+          sub: 'EIS/DLS/Imaging workshops, reproducibility and reporting with materials and datasets.',
+          bullets: ['Manuals and recordings','Hands-on sessions','Final evaluation'],
+          deliver: 'Deliverables: materials, datasets, certificate',
+          primaryHref: './contactUs-demo=1', primaryText: 'Schedule workshop',
+          secondaryHref: '#packages', secondaryText: 'View packages'
+        },
+        soporte: {
+          title: 'Support and maintenance',
+          sub: 'SLAs, updates, health checks and ongoing advisory.',
+          bullets: ['Improvement plan','Incident log','Dedicated channel'],
+          deliver: 'Deliverables: reports and roadmap',
+          primaryHref: './contactUs-demo=1', primaryText: 'Design SLA',
+          secondaryHref: '#packages', secondaryText: 'View packages'
+        }
+      };
+
+      const cards = $$('.need-card');
+      if (!cards.length) return;
+
+      const detail = {
+        title: $('#needTitle'), sub: $('#needSub'), bullets: $('#needBullets'),
+        time: $('#needTime'), deliver: $('#needDeliver'),
+        p: $('#needPrimary'), s: $('#needSecondary')
+      };
+
+      function setActive(card){
+        cards.forEach(c=>{
+          const active = (c===card);
+          c.classList.toggle('is-active', active);
+          c.setAttribute('aria-selected', String(active));
+          c.setAttribute('tabindex', active ? '0' : '-1');
+        });
+        const key = card.dataset.key;
+        const d = DATA[key];
+        if(!d) return;
+        if (detail.title) detail.title.textContent = d.title;
+        if (detail.sub) detail.sub.textContent   = d.sub;
+        if (detail.bullets) detail.bullets.innerHTML = d.bullets.map(x=>`<li>${x}</li>`).join('');
+        if (detail.time) detail.time.textContent  = d.time || '';
+        if (detail.deliver) detail.deliver.textContent = d.deliver;
+        if (detail.p) { detail.p.href = d.primaryHref;  detail.p.textContent = d.primaryText; }
+        if (detail.s) { detail.s.href = d.secondaryHref; detail.s.textContent = d.secondaryText; }
+
+        if (window.matchMedia('(max-width:1080px)').matches) {
+          const panel = $('#needDetail');
+          if (panel) panel.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      }
+
+      cards.forEach(card=>{
+        card.addEventListener('click', ()=>setActive(card));
+        card.addEventListener('keydown', (e)=>{
+          if(e.key==='Enter' || e.key===' ') { e.preventDefault(); setActive(card); }
+          if(e.key==='ArrowRight' || e.key==='ArrowDown'){ e.preventDefault(); move(1); }
+          if(e.key==='ArrowLeft'  || e.key==='ArrowUp'){   e.preventDefault(); move(-1); }
+          function move(dir){
+            const idx = cards.indexOf(card);
+            const next = cards[(idx + dir + cards.length) % cards.length];
+            next.focus(); setActive(next);
+          }
+        });
+      });
+
+      setActive(cards[0]);
+
+      if ('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{
+            const v = entry.target;
+            if(entry.isIntersecting){
+              const src = v.getAttribute('data-src');
+              if(src && !v.src){ v.src = src; v.load(); v.play().catch(()=>{}); }
+            } else {
+              v.pause();
+            }
+          });
+        }, {threshold: .25});
+        $$('video[data-src]').forEach(v=>io.observe(v));
+      }
+
+      $$('.demo-beforeafter').forEach(box=>{
+        const slider = $('.demo-slider', box);
+        if(!slider) return;
+        const apply = ()=> box.style.setProperty('--split', slider.value);
+        slider.addEventListener('input', apply); apply();
+      });
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        $$('video').forEach(v=>{ v.removeAttribute('autoplay'); v.pause(); });
+      }
+    })();
+  </script>
+
+
+      <script>
+    /* ============== Process v2: dynamic tracks ============== */
+    (function(){
+      const $  = (s,r=document)=>r.querySelector(s);
+      const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+      const pgrid = $('#pgrid');
+      const tabs  = $$('.process-tabs .ptab');
+      const readyList = $('#readyList');
+      if (!pgrid || !tabs.length || !readyList) return;
+
+      const TRACKS = {
+        quickstart: {
+          label:'Quickstart / Training',
+          phases:{
+            f0:{ dur:'1-2 days', del:['NDA','Access checklist','Schedule and channels'], gate:'Access ready', cli:['Designated technical contact','Availability for sessions'] },
+            f1:{ dur:'1-2 days', del:['Scope and objectives','Session plan','Baseline materials'], gate:'Agenda approved', cli:['Content expectations','Example cases'] },
+            f2:{ dur:'-', del:[], gate:'N/A', cli:[] },
+            f3:{ dur:'2-5 days', del:['Workshop/sessions','Materials and datasets','Final evaluation'], gate:'Attendance and feedback', cli:['Participants confirmed'] },
+            f4:{ dur:'2-5 days', del:['Recordings and manual','Operations checklist'], gate:'Checklist completed', cli:['Q&A channel'] },
+            f5:{ dur:'Optional', del:['Improvement plan'], gate:'SLA agreed', cli:['Availability for support'] }
+          }
+        },
+        integracion:{
+          label:'Instrumentation Integration (EIS/DLS)',
+          phases:{
+            f0:{ dur:'3-5 days', del:['NDA','Ports/driver checklist','Team schedule'], gate:'Physical/log access', cli:['Instrument access','IT point of contact'] },
+            f1:{ dur:'1-2 weeks', del:['Scope document','Acceptance criteria','Validation plan'], gate:'Scope v1 approved', cli:['Samples/standards','Security requirements'] },
+            f2:{ dur:'1-3 weeks', del:['Driver/control','Standard test','Initial validation report'], gate:'Reproducibility >= X% / Error <= Y', cli:['Instrument availability windows'] },
+            f3:{ dur:'1-3 weeks', del:['SOPs and templates','Example curves','Base fitting (e.g., R(QR))'], gate:'Acceptance criteria met', cli:['Operator available'] },
+            f4:{ dur:'2-5 days', del:['Training sessions','Documentation and recordings'], gate:'Operations checklist OK', cli:['User team'] },
+            f5:{ dur:'2 weeks', del:['Minor hotfixes','Basic monitoring'], gate:'Stability accepted', cli:['Support channel'] }
+          }
+        },
+        map:{
+          label:'Imaging + MAP Suite',
+          phases:{
+            f0:{ dur:'1-2 days', del:['NDA','Dataset checklist','Schedule'], gate:'Sample dataset', cli:['10-50 representative images'] },
+            f1:{ dur:'2-4 days', del:['Scope and metrics (IoU/precision)','Validation plan'], gate:'Metrics approved', cli:['Labels/ground truth if applicable'] },
+            f2:{ dur:'1-2 weeks', del:['Initial presets','Example report'], gate:'IoU/prec >= X% in validation', cli:['Feedback on results'] },
+            f3:{ dur:'1-2 weeks', del:['Final presets','CSV/PDF/API exports','Quality checklist'], gate:'Time per batch <= T', cli:['Target environment access'] },
+            f4:{ dur:'2-5 days', del:['Handover and docs','Recordings'], gate:'Operations checklist OK', cli:['Key users'] },
+            f5:{ dur:'2 weeks', del:['Minor tweaks','Basic monitoring'], gate:'Stability accepted', cli:['Support channel'] }
+          }
+        },
+        automatizacion:{
+          label:'Lab automation',
+          phases:{
+            f0:{ dur:'5-7 days', del:['NDA','LIMS/ERP/SCADA checklist','Initial architecture'], gate:'IT access and policies', cli:['IT point of contact','Process owner'] },
+            f1:{ dur:'2-3 weeks', del:['Scope','Workflow design','Test plan'], gate:'Scope v1 and prioritization', cli:['Process mapping'] },
+            f2:{ dur:'2-4 weeks', del:['MVP (1-2 workflows)','Logs/roles','Validation report'], gate:'Traceability 100% / retries OK', cli:['Test data'] },
+            f3:{ dur:'3-8 weeks', del:['Full orchestration','Dashboards/alerts','Hardening and security'], gate:'KPIs green', cli:['Pilot users'] },
+            f4:{ dur:'1 week', del:['Handover and training','Rollback plan'], gate:'Stable operation', cli:['Operations team'] },
+            f5:{ dur:'2-4 weeks', del:['Extended support','Improvement plan'], gate:'SLA defined', cli:['Channel and windows'] }
+          }
+        },
+        software:{
+          label:'Custom software',
+          phases:{
+            f0:{ dur:'5-10 days', del:['NDA','Technical checklist','Preliminary architecture'], gate:'Stack and environment defined', cli:['Requirements and constraints'] },
+            f1:{ dur:'2-4 weeks', del:['SOW/scope','Success metrics','Validation plan'], gate:'SOW signed', cli:['Priorities and assumptions'] },
+            f2:{ dur:'3-6 weeks', del:['Functional MVP','Initial validation report'], gate:'Coverage of critical cases', cli:['Representative data'] },
+            f3:{ dur:'4-10 weeks', del:['v1 features','Tests','On-prem/cloud deploy'], gate:'Acceptance criteria OK', cli:['Environment access'] },
+            f4:{ dur:'2-5 days', del:['Handover/Training','Documentation'], gate:'Operations checklist OK', cli:['Adoption team'] },
+            f5:{ dur:'2-4 weeks', del:['Stabilization','Support and improvements'], gate:'SLA operational', cli:['Support channel'] }
+          }
+        }
+      };
+
+      function renderTrack(key){
+        const t = TRACKS[key]; if(!t) return;
+        $$('.pstep', pgrid).forEach(step=>{
+          const phase = step.dataset.phase;
+          const d = t.phases[phase] || {};
+          $('.p-duration', step).textContent = d.dur || '-';
+          const ulDel = $('.p-deliverables', step);
+          ulDel.innerHTML = (d.del||[]).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>';
+          $('.p-gate', step).textContent = d.gate || '-';
+          const ulCli = $('.p-client', step);
+          ulCli.innerHTML = (d.cli||[]).map(x=>`<li>${x}</li>`).join('') || '<li>-</li>';
+        });
+      }
+
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          tabs.forEach(b=>{ b.classList.toggle('is-active', b===btn); b.setAttribute('aria-selected', String(b===btn)); });
+          renderTrack(btn.dataset.track);
+        });
+      });
+
+      renderTrack('quickstart');
+
+      const checks = $$('#readyList input[type="checkbox"]');
+      const fill   = $('#riskFill');
+      const label  = $('#riskText');
+      function updateRisk(){
+        const n = checks.filter(c=>c.checked).length;
+        const pct = (n/5)*100;
+        if (fill) fill.style.width = pct + '%';
+        let txt = 'High';
+        if (n>=4) txt='Low';
+        else if (n>=2) txt='Medium';
+        if (label) label.textContent = txt;
+      }
+      checks.forEach(c=>c.addEventListener('change', updateRisk));
+      updateRisk();
+    })();
+  </script>
+
+
+<script>
+  /* ===== Process Compact: data + render ===== */
+  (function(){
+    const root = document.getElementById('process');
+    if (!root) return;
+    // This section is currently disabled in the HTML. Re-enable and restore
+    // the compact process renderer when needed.
+  })();
+</script>
+
+
+
+</body>
+</html>

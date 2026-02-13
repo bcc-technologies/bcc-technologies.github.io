@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+<title>MAPs Platform - BCC Technologies</title>
+    <link rel="stylesheet" href="/css/00-tokens.css">
+    <link rel="stylesheet" href="/css/01-base.css">
+    <link rel="stylesheet" href="/css/02-layout.css">
+    <link rel="stylesheet" href="/css/03-components.css">
+    <link rel="icon" type="image/png" href="/static/Favi2.png">
+    <link rel="stylesheet" href="/css/pages/product_maps.css">
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2-family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" crossorigin="crossorigin" as="font">
+    <link href="https://fonts.googleapis.com/css2-family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Shopify Buy SDK -->
+    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
+    
+    <!-- JavaScript for menu toggle and Shopify integration -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Shopify integration
+        const client = ShopifyBuy.buildClient({
+            domain: '2e2e5e-7c.myshopify.com',
+            storefrontAccessToken: 'a791b0c74fab70851230df08048bc7dc'
+        });
+
+        function updateServices(products) {
+            const servicesContainer = document.querySelector('.services-container');
+            servicesContainer.innerHTML = products.slice(0, 3).map(product => `
+                <div class="service-card">
+                    <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
+                    <h3>${product.title}</h3>
+                    <p>${product.description}</p>
+                </div>
+            `).join('');
+        }
+
+        client.product.fetchAll()
+            .then(updateServices)
+            .catch(error => {
+                console.error('Error fetching Shopify products:', error);
+                // Fallback to original content if there's an error
+            });
+    });
+    </script>
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+  <link rel="alternate" hreflang="en" href="/en/product_maps.html">
+  <link rel="alternate" hreflang="es" href="/product_maps.html">
+  <link rel="alternate" hreflang="x-default" href="/product_maps.html">
+  <link rel="canonical" href="/en/product_maps.html">
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js-id=G-L9FYNRKVNH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-L9FYNRKVNH');
+</script>
+
+<body>
+  <!-- Top navigation (simple) -->
+            <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/product_maps.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+    <main class="with-header-offset">
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+        <div class="hero-copy reveal">
+            <p class="eyebrow">Image -> Decision</p>
+            <h1>We open new paths for <span class="accent">microstructural discovery</span></h1>
+            <p class="sub">
+            Our platform turns microscopy into reproducible metrics for materials, biology, and engineering.
+            </p>
+            <div class="hero-cta">
+            <a class="btn btn-dark" href="#platform">Explore the platform</a>
+            <a class="btn btn-ghost" href="/en/product_maps_nano.html">Try MAP-Nano</a>
+            </div>
+            <p class="meta">SEM/optical compatible - Robust segmentation - Roughness, porosity and morphology</p>
+        </div>
+        <div class="hero-media reveal">
+        <!-- Use your real product image -->
+        <img src="/static/MAP3.png" alt="Platform overview" />
+        <!-- <div class="media-caption">Watch the 2-min platform demo</div> -->
+        <div class="media-caption">Try MAPs</div>
+        </div>
+        </div>
+    </section>
+
+    <!-- SOLUTIONS BY SECTOR -->
+    <section id="solutions" class="section">
+        <div class="container">
+        <h2>Solutions by sector</h2>
+        <p class="lead">Choose your area to see use cases, workflows, and measurable outcomes.</p>
+        <div class="grid-4 cards">
+            <a class="card" href="/en/products.html#nano">
+            <div class="card-thumb">
+                <!-- Image stretches to fit the card-thumb dimensions -->
+                 <img src="/static/particles.jpg" alt="Nanotechnology" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Nanotechnology</div>
+            <div class="card-text">Quantitative characterization of surfaces and particles.</div>
+            <div class="card-link">See use cases -></div>
+            </a>
+            <a class="card" href="/en/products.html#bio">
+            <div class="card-thumb">
+                <img src="/static/spores.jpeg" alt="coming soon" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Biology / Cell Cultures</div>
+            <div class="card-text">Nuclei detection, cell counting, viability.</div>
+            <div class="card-link">See use cases -></div>
+            </a>
+            <a class="card" href="/en/products.html#ing">
+            <div class="card-thumb">
+                <img src="/static/hormigon.jpg" alt="Engineering" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Engineering / Materials</div>
+            <div class="card-text">Roughness, porosity, defects, and quality control.</div>
+            <div class="card-link">See use cases -></div>
+            </a>
+            <a class="card" href="/en/products.html#med">
+            <div class="card-thumb">
+                <img src="/static/blood_cells.webp" alt="Medicine" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Medicine (coming soon)</div>
+            <div class="card-text">Support for imaging diagnosis and telemetry.</div>
+            <div class="card-link">See use cases -></div>
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- PLATFORM -->
+    <section id="platform" class="section section-alt">
+        <div class="container grid-2">
+        <div>
+            <h2>BCC Platform: from image to decision</h2>
+            <p class="lead">
+            Suite for ingestion, segmentation, measurement, and reporting. Principles: precision, reproducibility, traceability,
+            automation, and collaboration.
+            </p>
+            <ul class="feature-list">
+            <li>Configurable pipelines (threshold, morphology, textures, shape fitting)</li>
+            <li>Metrics: distributions (Weibull/Gaussian), roughness, porosity, and contour</li>
+            <li>Exports: PDF/CSV reports, API, and dashboards</li>
+            <li>Cross-platform (desktop & web), version control, and audit trail</li>
+            </ul>
+            <div class="row-cta">
+            <a class="btn btn-dark" href="/contactUs-demo=1">Schedule a demo</a>
+            <a class="btn btn-ghost" href="/en/blog.html">View documentation</a>
+            </div>
+        </div>
+        <div>
+            <div class="panel">
+            <div class="panel-title">Platform components</div>
+            <div class="grid-2 cards cards-tight">
+                <a class="card" href="/en/product_maps_nano.html">
+                <div class="card-thumb sm">
+                 <img src="/static/map_nano_logo.png" alt="MAP-Nano" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Nano</div>
+                <div class="card-text">Microstructure and surface analysis.</div>
+                <div class="card-link">View product -></div>
+                </a>
+                <a class="card" href="/en/product_maps.html#map-bio">
+                <div class="card-thumb sm">
+                    <img src="/static/map_bio_logo.png" alt="MAP-Bio" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Bio</div>
+                <div class="card-text">Cell counting/detection and morphology.</div>
+                <div class="card-link">View product -></div>
+                </a>
+                <a class="card" href="/en/product_maps.html#map-ing">
+                <div class="card-thumb sm">
+                    <img src="/static/map_ing_logo.png" alt="MAP-Ing" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Ing</div>
+                <div class="card-text">Porosity, defects, and quality control.</div>
+                <div class="card-link">View product -></div>
+                </a>
+                <a class="card" href="/en/product_maps.html#map-med">
+                <div class="card-thumb sm">
+                    <img src="/static/map_med_logo.png" alt="MAP-Med" style="width:100%; height:100%; object-fit:contain;" />
+                </div>
+                <div class="card-title">MAP-Med</div>
+                <div class="card-text">Clinical imaging assistants (R&D).</div>
+                <div class="card-link">View product -></div>
+                </a>
+            </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- USE CASES -->
+    <section class="section">
+        <div class="container">
+        <h2>Highlighted use cases</h2>
+        <div class="grid-3 cards">
+            <a class="card">
+            <div class="card-thumb">
+                <!-- Image stretches to fit the card-thumb dimensions -->
+                 <img src="/static/MAP3.png" alt="Surface roughness" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Surface roughness</div>
+            <div class="card-text">Reproducible pipeline for Ra/Rq/Rz with masks and batch.</div>
+            <!-- <div class="card-link">See workflow -></div> -->
+            </a>
+            <a class="card">
+            <div class="card-thumb">
+                <img src="/static/defect.png" alt="Defect detection" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Irregularity detection</div>
+            <div class="card-text">Multiple methods to identify defects in samples.</div>
+            <!-- <div class="card-link">See workflow -></div> -->
+            </a>
+            <a class="card">
+            <div class="card-thumb">
+                <img src="/static/gyrosigma.png" alt="Morphological classification" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
+            </div>
+            <div class="card-title">Cell analysis</div>
+            <div class="card-text">Cell counting and morphological analysis.</div>
+            <!-- <div class="card-link">See workflow -></div> -->
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- RESOURCES -->
+    <section id="resources" class="section section-alt">
+        <div class="container">
+        <div class="row-between">
+            <div>
+            <h2>Resources</h2>
+            <p class="lead">Learn with guides, webinars, and release notes.</p>
+            </div>
+            <a class="btn btn-ghost" href="/en/blog.html">View all</a>
+        </div>
+        <div class="grid-3 cards">
+            <a class="card" href="/en/blog.html">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">MAP-Nano quick guide</div>
+            <div class="card-text">PDF - 8 min read</div>
+            <div class="card-link">Open -></div>
+            </a>
+            <a class="card" href="/en/blog.html">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">Webinar: Practical porosity</div>
+            <div class="card-text">Video - 24 min</div>
+            <div class="card-link">Open -></div>
+            </a>
+            <a class="card" href="/en/blog.html">
+            <div class="card-thumb">
+                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+            </div>
+            <div class="card-title">Release notes 2025-Q3</div>
+            <div class="card-text">Changelog - BCC Platform</div>
+            <div class="card-link">Open -></div>
+            </a>
+        </div>
+        </div>
+    </section>
+
+    <!-- PRESS / AWARDS -->
+    <section class="section">
+        <div class="container">
+        <hr class="divider" style="border: none; border-top: 1px solid var(--line); margin: 40px 0;">
+        <h2>In the press and awards</h2>
+        <div class="logo-row">
+            <div class="logo-box">
+                <!-- image centered inside the logo-box -->
+                <img src="/static/mescyt_logo.png" alt="Mescyt" style="max-height: 190%; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+            <div class="logo-box">
+                <img src="/static/proindustria_logo.png" alt="Proindustria" style="max-height: 160%; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+            <!-- <div class="logo-box"></div>
+            <div class="logo-box"></div>
+            <div class="logo-box"></div>
+            <div class="logo-box"></div> -->
+        </div>
+        <p class="meta">ProIndustria Award 2025 - 2nd place MESCyT 2024 - National coverage</p>
+        <!-- Subtle horizontal line for visual division-->
+        <hr class="divider" style="border: none; border-top: 1px solid var(--line); margin: 10px 0;">
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="section cta-final">
+        <div class="container center">
+        <h2>Ready to see MAPs in action?</h2>
+        <p class="lead">Schedule a demo or start the MAP-Nano trial. We respond in under 24 hours.</p>
+        <div class="hero-cta">
+            <a class="btn btn-dark" href="/contactUs-demo=1">Schedule a demo</a>
+            <a class="btn btn-ghost" href="/en/product_maps.html">Download trial</a>
+        </div>
+        </div>
+    </section>
+    </main>
+
+      <!-- FOOTER -->
+              <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/product_maps.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+    <script>
+    // Year in footer
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Toggle nav on mobile
+    const navToggle = document.getElementById('navToggle');
+    const mainNav = document.getElementById('mainNav');
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+        mainNav.classList.toggle('open');
+        });
+    }
+    </script>
+    <!-- ===== /HOME BCC ===== -->
+
+
+    <script>
+    (function(){
+    const els = document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){ els.forEach(el=>el.classList.add('is-visible')); return; }
+    const io = new IntersectionObserver((es)=>{
+        es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); }});
+    }, {threshold:.15});
+    els.forEach(el=>io.observe(el));
+    })();
+    </script>
+
+    <script>
+    (function(){
+    const nav=document.querySelector('.navbar');
+    if(!nav) return;
+    const setH=()=>document.documentElement.style.setProperty('--nav-h', nav.offsetHeight+'px');
+    setH(); addEventListener('resize', setH);
+    })();
+    </script>
+
+    <script>
+    (function(){
+    const img = document.querySelector('.hero-media img');
+    if(!img) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;  // respeta accesibilidad
+    const hasRoom = () => (window.innerHeight || 0) >= 640;              // solo si hay altura
+    const onScroll = () => {
+        if(!hasRoom()) { img.style.transform = ''; return; }
+        const y = Math.min(1, window.scrollY / ((window.innerHeight||1)));
+        img.style.transform = `translateY(${y * 12}px)`;                   // 0->12px
+    };
+    onScroll(); addEventListener('scroll', onScroll, {passive:true});
+    addEventListener('resize', onScroll);
+    })();
+    </script>
+
+
+
+
+</body>
+</html>

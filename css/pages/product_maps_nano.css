@@ -3,29 +3,18 @@
    Notes:
    - Keeps existing class names and visual behavior.
    - Deduplicates variables/rules; organizes sections; preserves all effects.
-   - Accent color: #ed4624 (via --accent).
+   - Accent color: var(--accent) (via --accent).
    ========================================================================== */
 
 /* ==========================================================================
    1) DESIGN TOKENS & BASE
    ========================================================================== */
 :root{
-  /* Colors */
-  --ink:#0f172a;
-  --muted:#475569;
-  --line:#e2e8f0;
-  --bg:#ffffff;
-  --bg-alt:#f8fafc;
-  --accent:#ed4624;          /* BCC accent */
-  --accent-ink:#ffffff;
-  --chip:#0b1220;
-
-  /* Radii & Shadows */
   --radius: 12px;
   --radius-lg: 18px;
   --radius-xl: 20px;
-  --shadow-sm: 0 6px 16px rgba(2,6,23,.08);
-  --shadow-md: 0 12px 28px rgba(2,6,23,.12);
+  --shadow-sm: var(--shadow-soft);
+  --shadow-md: var(--shadow);
 
   /* Typography scale */
   --step--1: clamp(12px,.85vw,14px);
@@ -51,7 +40,7 @@ html,body{
 }
 img{ max-width:100%; display:block; }
 a{ text-decoration:none; color:inherit; }
-::selection{ background: rgba(237,70,36,.18); }
+::selection{ background: var(--accent-soft); }
 :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
 /* ==========================================================================
@@ -61,7 +50,7 @@ a{ text-decoration:none; color:inherit; }
 .section{ padding: var(--section-y) 0; }
 .section-alt{ background: var(--bg-alt); }
 .lead{ color:var(--muted); margin:8px 0 0; }
-.meta{ color:#64748b; font-size:12px; margin-top:8px; }
+.meta{ color:var(--ink-muted); font-size:12px; margin-top:8px; }
 
 /* Simple grids */
 .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap: clamp(18px, 3vw, 32px); }
@@ -81,7 +70,7 @@ a{ text-decoration:none; color:inherit; }
    ========================================================================== */
 .navbar{
   position:sticky; top:0; z-index:50;
-  background:rgba(255,255,255,.9);
+  background: var(--surface);
   backdrop-filter:blur(6px);
   border-bottom:1px solid var(--line);
   box-shadow: 0 1px 0 var(--line);
@@ -116,9 +105,9 @@ a{ text-decoration:none; color:inherit; }
 }
 .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .btn:active{ transform: translateY(0); box-shadow: none; }
-.btn-dark{ background:#0b1220; color:#fff; border-color:#0b1220; }
-.btn-ghost:hover{ background:#f1f5f9; }
-.btn-outline{ background:#fff; color:#0b1220; border-color: var(--ink); }
+.btn-dark{ background:var(--button-strong-bg); color: var(--button-strong-ink); border-color:var(--button-strong-bg); }
+.btn-ghost:hover{ background: var(--button-ghost-hover); }
+.btn-outline{ background:var(--surface-solid); color:var(--ink-strong); border-color: var(--ink); }
 .btn-accent{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
 .btn-accent:hover{ filter: brightness(.98); }
 .btn-sm{ padding:8px 12px; font-size: var(--step--1); border-radius:10px; }
@@ -141,7 +130,7 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: linear-gradient(180deg,#fff,#fff);
+  background: linear-gradient(180deg,var(--surface-solid),var(--surface-solid));
 
   /* Fullscreen (works with sticky navbar) */
   min-height: calc(100vh - var(--nav-h));
@@ -157,7 +146,7 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
   content:"";
   position:absolute; inset:-30% -40%;
   background:
-    radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, #fff 65%) 0%, transparent 70%) no-repeat;
+    radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, var(--surface-solid) 65%) 0%, transparent 70%) no-repeat;
   filter: blur(40px); opacity:.35; transform: rotate(0deg); z-index:-2;
   animation: heroHalo 36s linear infinite;
 }
@@ -193,7 +182,7 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
 .hero-copy h1{ position:relative; padding-left:14px; }
 .hero-copy h1::before{
   content:""; position:absolute; left:0; top:.15em; bottom:.15em; width:3px;
-  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 70%, #fff 30%), transparent);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 70%, var(--surface-solid) 30%), transparent);
   border-radius:2px; opacity:.75;
 }
 .hero-copy .sub{ color:var(--muted); font-size: clamp(16px, 1.6vw, 18px); margin-top:10px; }
@@ -201,7 +190,7 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
 .chip{
   background: rgba(2,6,23,.06);
   border:1px solid var(--line);
-  color:#0b1220;
+  color:var(--ink-strong);
   border-radius:999px; padding:6px 10px; font-size:12px;
 }
 .cta-row{ display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
@@ -209,16 +198,16 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
 .hero-media{ display:flex; flex-direction:column; gap:6px; align-items:center; position:relative; }
 .hero-media img{
   /* border-radius:20px; */
-  /* border:1px solid color-mix(in oklab, var(--line) 90%, #fff 10%); */
-  /* background:#fff; */
+  /* border:1px solid color-mix(in oklab, var(--line) 90%, var(--surface-solid) 10%); */
+  /* background:var(--surface-solid); */
   /* box-shadow:
     0 30px 60px rgba(2,6,23,.18),
     0 12px 24px rgba(2,6,23,.10),
-    inset 0 1px 0 rgba(255,255,255,.6); */
+    inset 0 1px 0 color-mix(in oklab, var(--surface-solid) 70%, transparent); */
   max-height: min(60dvh, 520px);
   height:auto; width:auto; object-fit:contain;
 }
-.hero-media figcaption{ font-size:12px; color:#64748b; opacity:.8; }
+.hero-media figcaption{ font-size:12px; color:var(--ink-muted); opacity:.8; }
 
 
 /* === HERO IMG: más grande y columna de imagen más ancha === */
@@ -280,21 +269,21 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 .cards .card{
   border:1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding:16px; background:#fff;
+  padding:16px; background:var(--surface-solid);
   transition: transform .2s cubic-bezier(.22,.61,.36,1), box-shadow .25s ease, border-color .25s ease;
   will-change: transform;
 }
 .cards .card:hover{
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(237,70,36,.35);
+  border-color: color-mix(in oklab, var(--accent) 35%, transparent);
 }
 .card-thumb{
-  height:160px; background:#e5e7eb;
+  height:160px; background:var(--surface-muted);
   border-radius: calc(var(--radius) + 2px);
   margin-bottom:10px;
   background-size:cover; background-position:center;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--surface-solid) 70%, transparent);
 }
 .card-title{ font-weight:600; margin-bottom:4px; }
 .card-text{ color:var(--muted); font-size:14px; }
@@ -303,17 +292,17 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 .panel{
   border:1px solid var(--line);
   border-radius: var(--radius-lg);
-  background:#fff;
-  box-shadow: 0 1px 0 rgba(255,255,255,.6);
+  background:var(--surface-solid);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--surface-solid) 70%, transparent);
 }
 
 /* Badges (optional) */
 .badge{
   display:inline-flex; align-items:center; gap:6px;
   border-radius:999px; padding:4px 10px; font-size: var(--step--1);
-  border:1px solid var(--line); background:#fff;
+  border:1px solid var(--line); background:var(--surface-solid);
 }
-.badge--accent{ background: rgba(237,70,36,.08); border-color: rgba(237,70,36,.28); color:#b43320; }
+.badge--accent{ background: var(--accent-soft); border-color: var(--accent-soft-border); color:var(--accent-strong); }
 
 /* ==========================================================================
    7) FEATURE ROWS
@@ -325,7 +314,7 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 .feature-copy p{ color:var(--muted); margin:0 0 8px; }
 .feature-bullets{ margin:8px 0 0 18px; }
 .feature-bullets li{ margin:6px 0; }
-.feature-media img{ border-radius:12px; border:1px solid var(--line); background:#fff; }
+.feature-media img{ border-radius:12px; border:1px solid var(--line); background:var(--surface-solid); }
 
 /* ==========================================================================
    8) SPECS GRID
@@ -336,9 +325,9 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 /* ==========================================================================
    9) FOOTER
    ========================================================================== */
-.footer{ border-top:1px solid var(--line); padding:28px 0; background:#fff; }
+.footer{ border-top:1px solid var(--line); padding:28px 0; background:var(--surface-solid); }
 .foot-inner{ display:flex; justify-content:center; }
-.footer p{ color:#64748b; font-size:12px; margin:0; }
+.footer p{ color:var(--ink-muted); font-size:12px; margin:0; }
 
 /* ==========================================================================
    10) REVEAL ON SCROLL (safe)
@@ -382,3 +371,6 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
   .section{ padding: 20px 0 !important; }
   .cards .card{ box-shadow:none !important; }
 }
+
+
+

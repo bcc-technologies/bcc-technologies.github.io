@@ -1,48 +1,24 @@
 body {
     font-family: 'Segoe UI', sans-serif;
-    background-color: #fff;
-    color: #1a1a1a;
+    background-color: var(--bg);
+    color: var(--ink);
     margin: 0;
   }
   
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 40px;
-    background-color: white;
-    border-bottom: 1px solid #eee;
-  }
   
   .logo {
     height: 40px;
   }
-  
-  .nav-links a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #ed4624;
-    font-weight: bold;
-    font-size: 1.2em;
-  }
-  
-  .nav-actions button {
-    margin-left: 10px;
-    padding: 10px 20px;
-    border: none;
-    font-weight: bold;
-    border-radius: 20px;
-    cursor: pointer;
-  }
+
   
   .login-btn {
-    background-color: #000;
-    color: #fff;
+    background-color: var(--button-strong-bg);
+    color: var(--button-strong-ink);
   }
   
   .contact-btn {
-    background-color: #ed4624;
-    color: #fff;
+    background-color: var(--accent);
+    color: var(--accent-ink);
   }
   
   .signup-container {
@@ -50,16 +26,17 @@ body {
     justify-content: center;
     align-items: center;
     height: 85vh;
-    background: linear-gradient(to bottom, #fff, #f9f9f9);
+    background: linear-gradient(to bottom, var(--bg), var(--bg-alt));
   }
   
   .signup-card {
-    background-color: #1a1a1a;
-    color: #ededed;
+    background-color: var(--surface-solid);
+    color: var(--ink);
     padding: 40px;
     border-radius: 25px;
     width: 450px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
   }
   
   .signup-card h1 {
@@ -80,23 +57,23 @@ body {
   .signup-card input {
     padding: 12px 15px;
     border: none;
-    border-bottom: 2px solid #ccc;
+    border-bottom: 2px solid var(--line-strong);
     margin-bottom: 15px;
     background: transparent;
-    color: #fff;
+    color: var(--ink);
     font-size: 1em;
   }
   
   .signup-card input::placeholder {
-    color: #aaa;
+    color: var(--ink-muted);
   }
   
   .signup-card button {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ff6d4d;
-    color: #fff;
+    background-color: var(--accent-bright);
+    color: var(--accent-ink);
     font-weight: bold;
     border: none;
     padding: 12px;
@@ -112,7 +89,7 @@ body {
   }
   
   .signup-card button:hover {
-    background-color: #ff7e3f;
+    background-color: var(--accent-hover);
   }
   
   .login-link {
@@ -121,7 +98,7 @@ body {
   }
   
   .login-link a {
-    color: #9cdfff;
+    color: var(--info);
     text-decoration: underline;
   }
   
@@ -131,8 +108,9 @@ body {
   }
   
   .legal-links a {
-    color: #aaa;
+    color: var(--ink-muted);
     margin: 0 5px;
     text-decoration: none;
   }
   
+

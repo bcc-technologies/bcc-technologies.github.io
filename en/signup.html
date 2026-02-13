@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <script data-bcc-theme-init>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script data-bcc-theme-init>
     (function() {
       try {
         var t = localStorage.getItem('bcc-theme');
@@ -14,63 +14,51 @@
     })();
   </script>
 
-<title>BCC Technologies</title>
-    <link rel="stylesheet" href="css/00-tokens.css" />
-    <link rel="stylesheet" href="css/01-base.css" />
-    <link rel="stylesheet" href="css/02-layout.css" />
-    <link rel="stylesheet" href="css/03-components.css" />
-    <link rel="stylesheet" href="css/pages/profile.css">
-    <link rel="icon" type="image/png" href="static/Favi2.png">
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
-  <script src="js/prefs.js" defer></script>
-  <link rel="alternate" hreflang="es" href="/profile_enrique.html">
-  <link rel="alternate" hreflang="en" href="/en/profile_enrique.html">
-  <link rel="alternate" hreflang="x-default" href="/profile_enrique.html">
-  <link rel="canonical" href="/profile_enrique.html">
+<title>Signup - BCC</title>
+    <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+<link rel="stylesheet" href="/css/pages/product_maps2.css">
+  <link rel="stylesheet" href="/css/pages/signup.css">
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+  <link rel="alternate" hreflang="en" href="/en/signup.html">
+  <link rel="alternate" hreflang="es" href="/signup.html">
+  <link rel="alternate" hreflang="x-default" href="/signup.html">
+  <link rel="canonical" href="/en/signup.html">
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L9FYNRKVNH');
-</script>
-
-
 <body>
 
-<!-- header section -->
-          <header>
+  <!-- Barra de navegación -->
+            <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/profile_enrique.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/signup.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -84,33 +72,37 @@
     </div>
   </header>
 
-<!-- Hero Section -->
-<!-- <section class="hero" style="background-image: url('static/saul_fb.png'); size: (100vw, 100vh);background-position-y: top; background-position-y: -10vw;">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <h2>Explora el <span style="color: #ed4624;">BCC Blog</span></h2>
-        <p>Toma una tasa de café y relájate leyendo nuestro Blog. Tenemos mucho que contarte</p>      
-    </div>
-</section> -->
+  <!-- Contenedor de registro -->
+  <main class="signup-container with-header-offset">
+    <section class="signup-card">
+      <h1>Create Account</h1>
+      <p>Create your <strong>BCC Account</strong> to access tools, dashboards, and exclusive scientific software.</p>
+      <form>
+        <input type="text" placeholder="Full Name" required />
+        <input type="email" placeholder="Company or Work Email" required />
+        <input type="text" placeholder="Company Name" required />
+        <input type="text" placeholder="Job Title" />
+        <input type="password" placeholder="Password" required />
+        <input type="password" placeholder="Confirm Password" required />
+        <button type="submit">
+          SIGN UP
+          <span class="arrow">→</span>
+        </button>
+      </form>
+      <p class="login-link">
+        Already have an account-
+        <a href="/en/login.html">Login here</a>
+      </p>
+      <div class="legal-links">
+        <a href="#">Terms</a> /
+        <a href="#">Privacy</a> /
+        <a href="#">Help</a>
+      </div>
+    </section>
+  </main>
 
-<!-- Blog Container -->
-<main class="contenedor with-header-offset">
-    <img src="static/Enrique_fb.png" alt="imagen blog1" style="border-radius: 1vw; height: 70vh; margin-left: 32%; margin-top: 10vh; background-color: #ed4624;">
 
-    <!-- <div class="text-container"></div> -->
-    <h3 class="centrar-texto">Enrique Casanova</h3>
-    
-    <body>
-        <p>I am an undergraduate physics student, I have English, Spanish and French knowledge. I'm a very organized and ambitious person. I am looking for a job where I can gain new knowledge and experience and offer my skills. My favorite areas are theoretical and particle physics.</p>
-    
-        <p>I like reading and learning, specially physics, math and programming stuff. I also learned python and c++ by my own, I am also interested in Linux and wolfram language. I would love to be a researcher some day using programs made by myself.</p>
-      </body>
-    </html>
-    
-</main>
-
-<!-- footer section -->
-            <footer>
+                  <footer>
     <div class="container footer-inner">
       <div class="footer-brand">
         <strong>BCC Technologies</strong>
@@ -119,7 +111,7 @@
       </div>
       <div class="footer-links">
         <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/profile_enrique.html" aria-label="Switch to English">EN</a>
+        <a class="pref-btn lang-switch" href="/en/signup.html" aria-label="Switch to English">EN</a>
         <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
@@ -143,5 +135,6 @@
       </div>
     </div>
   </footer>
+  
 </body>
 </html>

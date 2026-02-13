@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCC Technologies</title>
+      <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+<title>BCC Technologies</title>
       <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
@@ -13,6 +24,11 @@
 
   <script src="js/layout.js" defer></script>
   <script src="js/nav.js" defer></script>
+  <script src="js/prefs.js" defer></script>
+  <link rel="alternate" hreflang="es" href="/cotizacion.html">
+  <link rel="alternate" hreflang="en" href="/en/cotizacion.html">
+  <link rel="alternate" hreflang="x-default" href="/cotizacion.html">
+  <link rel="canonical" href="/cotizacion.html">
 </head>
 
 <!-- Google tag (gtag.js) -->
@@ -29,30 +45,41 @@
 <body>
 
     <!-- header section -->
-        <header>
+              <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="./" class="logo-link">
+        <a href="/" class="logo-link">
           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
-          <span class="logo-symbol"><strong>∴</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="./aboutUs.html">Nosotros</a></li>
-          <li><a href="./products.html">Tecnología</a></li>
-          <li><a href="./services.html">Servicios</a></li>
-          <li><a href="./blog.html">Journal</a></li>
-</ul>
+          <li><a href="/aboutUs.html">Nosotros</a></li>
+          <li><a href="/products.html">Tecnología</a></li>
+          <li><a href="/services.html">Servicios</a></li>
+          <li><a href="/blog.html">Journal</a></li>
+        </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/en/cotizacion.html" aria-label="Switch to English">EN</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
     </div>
@@ -321,7 +348,7 @@
     <!-- footer section -->
         </main>
 
-      <footer>
+            <footer>
     <div class="container footer-inner">
       <div class="footer-brand">
         <strong>BCC Technologies</strong>
@@ -329,7 +356,16 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="./contactUs.html">Contacto</a>
+        <a class="footer-contact" href="/contactUs.html">Contacto</a>
+        <a class="pref-btn lang-switch" href="/en/cotizacion.html" aria-label="Switch to English">EN</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
       </div>
       <div class="footer-social">
         <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">

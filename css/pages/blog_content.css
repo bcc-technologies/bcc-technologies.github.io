@@ -2,16 +2,16 @@
 :root {
     --fuenteHeading: 'Arial', sans-serif;
     --fuenteParrafos: 'Arial', sans-serif;
-    --secundario: #784D3C;
-    --gris: #e1e1e1;
-    --blanco: #ffffff;
-    --primario: #000000;
+    --secundario: var(--button-strong-bg);
+    --gris: var(--line);
+    --blanco: var(--ink-inverse);
+    --primario: var(--ink);
 }
 
 body {
-    background-color: #f0f0f0;
+    background-color: var(--bg);
     font-family: Arial, sans-serif;
-    color: #333333;
+    color: var(--ink);
 }
 
 /* Configuración básica */
@@ -30,7 +30,7 @@ body {
     font-family: var(--fuenteParrafos);
     font-size: 1.6rem;
     line-height: 2;
-    color: #333; /* Color de texto principal */
+    color: var(--ink); /* Color de texto principal */
     margin: 0; /* Eliminar márgenes predeterminados */
 }
 
@@ -40,7 +40,7 @@ body {
     background-image: url('banner.jpg');
     text-align: center;
     padding: 150px 0;
-    color: #ffffff;
+    color: var(--ink-inverse);
     overflow: hidden;
     height: 60rem;
     background-size: cover;
@@ -61,7 +61,7 @@ body {
 .hero p {
     margin: 0 auto;
     max-width: 600px;
-    color: #ffffff;
+    color: var(--ink-inverse);
 }
 
 /* Contenedor principal */
@@ -173,3 +173,5 @@ h4 {
 p {
     margin-bottom: 1.5rem;
 }
+
+

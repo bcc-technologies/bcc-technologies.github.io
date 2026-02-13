@@ -37,7 +37,7 @@
 
 .btn-primary{
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
 }
 .btn-primary:hover{ transform: translateY(-1px); }
 
@@ -48,6 +48,7 @@
 }
 .btn-ghost:hover{
   border-color: var(--border-strong);
-  background: rgba(15,17,21,0.03);
+  background: var(--hover);
   transform: translateY(-1px);
 }
+

@@ -1,18 +1,18 @@
 /* Estilo para el formulario */
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: #FAFAFA;
+  background-color: var(--bg);
   margin: 0;
   padding: 0;
 }
 
 #form-container {
   cursor: auto;
-  color: #FFF;
+  color: var(--accent-ink);
   z-index: 1000;
   position: relative; /* Cambiado a relativo para que el formulario flote correctamente entre el header y el footer */
   margin: 20px auto; /* Añadido espacio alrededor del formulario */
-  background-color: #f72f4e;
+  background-color: var(--accent);
   overflow: hidden;
   border-radius: 8px; /* para un aspecto más agradable */
   width: 100%; /* Se ajustó para ocupar todo el ancho */
@@ -32,7 +32,7 @@ body {
   text-align: center;
 
   form {
-    color: #FFF;
+    color: var(--accent-ink);
     width: 100%;
     padding: 0;
     box-sizing: border-box;
@@ -40,7 +40,7 @@ body {
   }
 
   .input {
-    background: rgba(0, 0, 0, 0.2);
+    background: color-mix(in oklab, var(--ink) 20%, transparent);
     display: block;
     width: 100%;
     margin: 10px 0;
@@ -50,12 +50,12 @@ body {
     border: none;
     outline: none;
     box-shadow: none;
-    color: #FFF; /* Añadido para mejorar la visibilidad del texto */
+    color: var(--accent-ink); /* Añadido para mejorar la visibilidad del texto */
     font-size: 16px; /* el tamaño del texto */
   }
 
   .input::placeholder {
-    color: rgba(255, 255, 255, 0.8);
+    color: color-mix(in oklab, var(--accent-ink) 80%, transparent);
     font-size: 90%;
   }
 
@@ -66,8 +66,8 @@ body {
   }
 
   .input.submit {
-    background-color: #FFF;
-    color: #f72f4e;
+    background-color: var(--accent-ink);
+    color: var(--accent);
     font-size: 120%;
     height: 60px; /* para mejorar el aspecto del botón */
     box-shadow: 0 5px rgba(0, 0, 0, 0.5);
@@ -81,12 +81,12 @@ body {
 
   .input.form-error {
     animation: error 0.8s ease;
-    background: rgba(0, 0, 0, 0.7);
+    background: color-mix(in oklab, var(--ink) 70%, transparent);
   }
 
   select option {
-    background: #f72f4e;
-    color: #FFF;
+    background: var(--accent);
+    color: var(--accent-ink);
     border: none;
     box-shadow: none;
     outline: none;
@@ -94,7 +94,7 @@ body {
 
   select option:disabled {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.9);
+    color: color-mix(in oklab, var(--accent-ink) 90%, transparent);
     font-size: 90%;
   }
 }
@@ -104,3 +104,5 @@ body {
   10%, 30%, 50%, 70%, 90% {transform: translateX(-6px);}
   20%, 40%, 60%, 80% {transform: translateX(6px);}
 }
+
+

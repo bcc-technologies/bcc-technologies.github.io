@@ -5,7 +5,7 @@
 /* About Us */
 .about {
     min-height: 72vh;
-    background-color: #fff;
+    background-color: var(--bg);
     padding: 10vh 2vw; /* Ajuste del padding para pantallas pequeñas */
     text-align: center;
     display: flex;
@@ -15,7 +15,7 @@
 
 .about h2 {
     font-size: 3.5em; 
-    color: #333;
+    color: var(--ink);
     margin-bottom: 2vh;
     width: 100%; /* Ancho completo en pantallas pequeñas */
 }
@@ -42,7 +42,7 @@
 .about p {
     font-size: 1.5em; 
     line-height: 1.6; /* Unidad sin medida para mejor adaptabilidad */
-    color: #555;
+    color: var(--ink-soft);
     margin-bottom: 2vh;
 }
 
@@ -52,7 +52,7 @@
 
 .about-quote {
     font-style: italic;
-    color: #777;
+    color: var(--ink-muted);
     margin-top: 1.5vh;
 }
 
@@ -60,7 +60,7 @@
 .about-separator {
     width: 15vw;
     height: 0.4vh;
-    background-color: #ed4624;
+    background-color: var(--accent);
     margin: 1.5vh auto;
 }
 
@@ -71,8 +71,8 @@
 
 .about-cta a {
     display: inline-block;
-    background-color: #ed4624;
-    color: #fff;
+    background-color: var(--accent);
+    color: var(--accent-ink);
     padding: 2vh 4vw;
     text-decoration: none;
     border-radius: 5px;
@@ -82,7 +82,7 @@
 }
 
 .about-cta a:hover {
-    background-color: #ff7e3f;
+    background-color: var(--accent-hover);
 }
 
 /* Media Query para pantallas pequeñas */
@@ -116,3 +116,4 @@
         font-size: 2.5vw; /* Ajustando el tamaño del texto del botón para pantallas pequeñas */
     }
 }
+

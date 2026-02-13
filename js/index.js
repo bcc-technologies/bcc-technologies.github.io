@@ -1,9 +1,22 @@
 /* BCC Technologies — Home interactions (NO Shopify) */
 
 (() => {
-  // Ajusta esto si tu “nuevo blog” está en otro archivo (ej: './new_blog.html')
-  const BLOG_PAGE = './blog.html';
-  const CONTENT_INDEX_URL = './content/content-index.json';
+  const isEn = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+  const BLOG_PAGE = isEn ? '/en/blog.html' : '/blog.html';
+  const CONTENT_INDEX_URL = '/content/content-index.json';
+  const i18n = isEn ? {
+    loading: 'Loading entries...',
+    noEntries: 'No entries yet.',
+    viewJournal: 'View Journal',
+    months: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
+    journalTag: 'Journal'
+  } : {
+    loading: 'Cargando entradas...',
+    noEntries: 'Aun no hay entradas.',
+    viewJournal: 'Ver Journal',
+    months: ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'],
+    journalTag: 'Journal'
+  };
 
   // 1) Reveal Animation
   function setupReveal(){
@@ -29,10 +42,10 @@
 
     host.innerHTML = `
       <article class="journal-row">
-        <div class="journal-date">…</div>
+        <div class="journal-date">...</div>
         <div class="journal-content">
-          <span class="journal-tag">Journal</span>
-          <h3 class="journal-title"><a href="${BLOG_PAGE}">Cargando entradas…</a></h3>
+          <span class="journal-tag">${i18n.journalTag}</span>
+          <h3 class="journal-title"><a href="${BLOG_PAGE}">${i18n.loading}</a></h3>
         </div>
         <div class="journal-action">&nearr;</div>
       </article>
@@ -49,8 +62,8 @@
           <article class="journal-row">
             <div class="journal-date">—</div>
             <div class="journal-content">
-              <span class="journal-tag">Journal</span>
-              <h3 class="journal-title"><a href="${BLOG_PAGE}">Aún no hay entradas.</a></h3>
+              <span class="journal-tag">${i18n.journalTag}</span>
+              <h3 class="journal-title"><a href="${BLOG_PAGE}">${i18n.noEntries}</a></h3>
             </div>
             <div class="journal-action">&nearr;</div>
           </article>
@@ -94,8 +107,8 @@
         <article class="journal-row">
           <div class="journal-date">—</div>
           <div class="journal-content">
-            <span class="journal-tag">Journal</span>
-            <h3 class="journal-title"><a href="${BLOG_PAGE}">Ver Journal</a></h3>
+            <span class="journal-tag">${i18n.journalTag}</span>
+            <h3 class="journal-title"><a href="${BLOG_PAGE}">${i18n.viewJournal}</a></h3>
           </div>
           <div class="journal-action">&nearr;</div>
         </article>
@@ -112,14 +125,13 @@
     // tolerante: section o primer tag
     if (typeof p?.section === 'string' && p.section.trim()) return p.section.trim();
     if (Array.isArray(p?.tags) && p.tags.length) return String(p.tags[0]);
-    return 'Journal';
+    return i18n.journalTag;
   }
 
   function formatCompactDate(iso){
     const d = new Date(iso);
     if(Number.isNaN(d.getTime())) return '';
-    const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-    const mm = months[d.getMonth()] || '';
+    const mm = i18n.months[d.getMonth()] || '';
     const dd = String(d.getDate()).padStart(2,'0');
     return `${mm} ${dd}`;
   }

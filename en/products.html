@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,50 +14,50 @@
     })();
   </script>
 
-<title>Productos — BCC Technologies</title>
-  <link rel="icon" type="image/png" href="static/Favi2.png" />
-  <link rel="stylesheet" href="css/pages/products.css" />
-  <link rel="stylesheet" href="css/00-tokens.css" />
-  <link rel="stylesheet" href="css/01-base.css" />
-  <link rel="stylesheet" href="css/02-layout.css" />
-  <link rel="stylesheet" href="css/03-components.css" />
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
-  <script src="js/prefs.js" defer></script>
-  <link rel="alternate" hreflang="es" href="/products.html">
+<title>Products - BCC Technologies</title>
+  <link rel="icon" type="image/png" href="/static/Favi2.png" />
+  <link rel="stylesheet" href="/css/pages/products.css" />
+  <link rel="stylesheet" href="/css/00-tokens.css" />
+  <link rel="stylesheet" href="/css/01-base.css" />
+  <link rel="stylesheet" href="/css/02-layout.css" />
+  <link rel="stylesheet" href="/css/03-components.css" />
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/products.html">
+  <link rel="alternate" hreflang="es" href="/products.html">
   <link rel="alternate" hreflang="x-default" href="/products.html">
-  <link rel="canonical" href="/products.html">
+  <link rel="canonical" href="/en/products.html">
 </head>
 <body>
-  <!-- Navbar de tu sitio -->
+  <!-- Site navbar -->
             <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/products.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/products.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -75,7 +75,7 @@
 
   <!-- ================= HERO: Portfolio Navigator ================= -->
   <section class="hero" data-theme="software">
-    <!-- Fondo temático del hero -->
+    <!-- Themed hero background -->
     <div class="hero-bg" aria-hidden="true">
       <div class="layer base"></div>
       <div class="layer grid"></div>
@@ -87,64 +87,64 @@
     <div class="container hero-grid">
       <!-- Copy -->
       <div class="hero-copy">
-        <p class="eyebrow">Portafolio BCC</p>
-        <h1>Instrumentación y software para caracterización y análisis</h1>
+        <p class="eyebrow">BCC Portfolio</p>
+        <h1>Instrumentation and software for characterization and analysis</h1>
         <p class="lead">
-          Desde espectrometría de impedancia (EIS) y DLS, hasta la suite MAPs para análisis de imagen.
-          Encuentra el producto ideal en segundos.
+          From impedance spectroscopy (EIS) and DLS to the MAPs image analysis suite.
+          Find the right product in seconds.
         </p>
 
         <nav class="hero-tabs" role="tablist">
           <button role="tab" aria-selected="true"  aria-controls="pane-software"        id="tab-software"        data-pane="#pane-software">Software</button>
-          <button role="tab" aria-selected="false" aria-controls="pane-instrumentacion" id="tab-instrumentacion" data-pane="#pane-instrumentacion">Instrumentación</button>
+          <button role="tab" aria-selected="false" aria-controls="pane-instrumentacion" id="tab-instrumentacion" data-pane="#pane-instrumentacion">Instrumentation</button>
           <button role="tab" aria-selected="false" aria-controls="pane-bundles"         id="tab-bundles"         data-pane="#pane-bundles">Bundles</button>
         </nav>
 
         <div class="hero-cta">
-          <a class="btn btn-dark" href="#catalogo">Ver productos</a>
-          <a class="btn" href="#comparador">Comparar</a>
+          <a class="btn btn-dark" href="#catalogo">View products</a>
+          <a class="btn" href="#comparador">Compare</a>
         </div>
       </div>
 
-      <!-- Panel visual dinámico -->
+      <!-- Dynamic visual panel -->
       <div class="hero-visual">
         <!-- Software -->
         <div class="hero-pane active" id="pane-software" role="tabpanel" aria-labelledby="tab-software">
           <div class="hero-showcase">
-            <a class="showcase-item" href="./product_maps_nano.html">
-              <img src="static/defect.png" alt="MAP-Nano" loading="lazy" />
+            <a class="showcase-item" href="/en/product_maps_nano.html">
+              <img src="/static/defect.png" alt="MAP-Nano" loading="lazy" />
               <strong>MAP-Nano</strong>
-              <div class="showcase-meta">Rugosidad, porosidad y morfología</div>
+              <div class="showcase-meta">Roughness, porosity and morphology</div>
             </a>
-            <a class="showcase-item" href="./product_maps#map-bio">
-              <img src="static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
+            <a class="showcase-item" href="/en/product_maps.html#map-bio">
+              <img src="/static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
               <strong>MAP-Bio</strong>
-              <div class="showcase-meta">Conteo y análisis morfológico</div>
+              <div class="showcase-meta">Counting and morphological analysis</div>
             </a>
             <a class="showcase-item" href="#">
-              <img src="static/eis_signal_sample.jpeg" alt="EIS Toolkit" loading="lazy" />
+              <img src="/static/eis_signal_sample.jpeg" alt="EIS Toolkit" loading="lazy" />
               <strong>EIS-Toolkit</strong>
-              <div class="showcase-meta">Ajuste de circuitos equivalentes</div>
+              <div class="showcase-meta">Equivalent circuit fitting</div>
             </a>
           </div>
         </div>
-        <!-- Instrumentación -->
+        <!-- Instrumentation -->
         <div class="hero-pane" id="pane-instrumentacion" role="tabpanel" aria-labelledby="tab-instrumentacion">
           <div class="hero-showcase">
             <a class="showcase-item" href="#catalogo" data-scroll-to="eis">
-              <img src="static/generated_eis.png" alt="EIS" loading="lazy" />
+              <img src="/static/generated_eis.png" alt="EIS" loading="lazy" />
               <strong>EIS</strong>
-              <div class="showcase-meta">Diferentes opciones para análisis de líquidos, metales, recubrimientos y baterías</div>
+              <div class="showcase-meta">Options for liquids, metals, coatings and batteries</div>
             </a>
             <a class="showcase-item" href="#catalogo" data-scroll-to="dls">
-              <img src="static/DLS.svg" alt="DLS-Pro" loading="lazy" />
+              <img src="/static/DLS.svg" alt="DLS-Pro" loading="lazy" />
               <strong>DLS-Pro</strong>
-              <div class="showcase-meta">caracterización de muestras de partículas suspendidas en líquido</div>
+              <div class="showcase-meta">Characterization of particles suspended in liquids</div>
             </a>
             <a class="showcase-item" href="#catalogo" data-scroll-to="dls">
-              <img src="static/dls_mini.png" alt="DLS-Mini" loading="lazy" />
+              <img src="/static/dls_mini.png" alt="DLS-Mini" loading="lazy" />
               <strong>DLS-Mini</strong>
-              <div class="showcase-meta">Compacto para docencia y análisis sencillos</div>
+              <div class="showcase-meta">Compact for teaching and simple analyses</div>
             </a>
           </div>
         </div>
@@ -152,19 +152,19 @@
         <div class="hero-pane" id="pane-bundles" role="tabpanel" aria-labelledby="tab-bundles">
           <div class="hero-showcase">
             <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
-              <img src="static/cultivo_celular.png" alt="DLS-Pro + MAP-Bio" loading="lazy" />
+              <img src="/static/cultivo_celular.png" alt="DLS-Pro + MAP-Bio" loading="lazy" />
               <strong>EIS + MAP-Bio</strong>
-              <div class="showcase-meta">Análisis y monitoreo de cultivos</div>
+              <div class="showcase-meta">Analysis and monitoring of cultures</div>
             </a>
             <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
-              <img src="static/diagrama_de_bode.gif" alt="EIS-2000 + EIS-Toolkit" loading="lazy" />
+              <img src="/static/diagrama_de_bode.gif" alt="EIS-2000 + EIS-Toolkit" loading="lazy" />
               <strong>EIS + EIS-Toolkit</strong>
-              <div class="showcase-meta">Medición + fitting reproducible</div>
+              <div class="showcase-meta">Measurement + reproducible fitting</div>
             </a>
             <a class="showcase-item" href="#catalogo" data-scroll-to="bundles">
-              <img src="static/sem_image.webp" alt="Microscopía + MAP-Nano" loading="lazy" />
-              <strong>Microscopía + MAP-Nano</strong>
-              <div class="showcase-meta">Imagen → métrica → reporte</div>
+              <img src="/static/sem_image.webp" alt="Microscopy + MAP-Nano" loading="lazy" />
+              <strong>Microscopy + MAP-Nano</strong>
+              <div class="showcase-meta">Image -> metric -> report</div>
             </a>
 
           </div>
@@ -178,40 +178,40 @@
     <div class="container">
       <form id="filtersForm" class="filters" role="search">
         <div class="filters-row">
-          <!-- Familia: selección única (segmentado) -->
+          <!-- Family: single selection (segmented) -->
           <div class="group" role="radiogroup">
-            <span class="label">Familia:</span>
-            <button type="button" class="seg is-active" data-group="family" data-value="all" aria-pressed="true">Todo</button>
+            <span class="label">Family:</span>
+            <button type="button" class="seg is-active" data-group="family" data-value="all" aria-pressed="true">All</button>
             <button type="button" class="seg" data-group="family" data-value="software" aria-pressed="false">Software</button>
-            <button type="button" class="seg" data-group="family" data-value="instrumentacion" aria-pressed="false">Instrumentación</button>
+            <button type="button" class="seg" data-group="family" data-value="instrumentacion" aria-pressed="false">Instrumentation</button>
             <button type="button" class="seg" data-group="family" data-value="bundles" aria-pressed="false">Bundles</button>
           </div>
 
-          <!-- Método: multi-select (pills) -->
+          <!-- Method: multi-select (pills) -->
           <div class="group">
-            <span class="label">Método:</span>
+            <span class="label">Method:</span>
             <button type="button" class="pill" data-group="method" data-value="EIS" aria-pressed="false">EIS</button>
             <button type="button" class="pill" data-group="method" data-value="DLS" aria-pressed="false">DLS</button>
             <button type="button" class="pill" data-group="method" data-value="Imaging" aria-pressed="false">Imaging</button>
           </div>
 
-          <!-- Uso: multi-select (pills) -->
+          <!-- Use: multi-select (pills) -->
           <div class="group">
-            <span class="label">Uso:</span>
-            <button type="button" class="pill" data-group="use" data-value="ID" aria-pressed="false">I+D</button>
+            <span class="label">Use:</span>
+            <button type="button" class="pill" data-group="use" data-value="ID" aria-pressed="false">R&D</button>
             <button type="button" class="pill" data-group="use" data-value="QA" aria-pressed="false">QA/QC</button>
-            <button type="button" class="pill" data-group="use" data-value="Teaching" aria-pressed="false">Docencia</button>
+            <button type="button" class="pill" data-group="use" data-value="Teaching" aria-pressed="false">Teaching</button>
           </div>
 
-          <!-- Búsqueda -->
+          <!-- Search -->
           <div class="group search">
-            <label for="filterSearch" class="visually-hidden">Buscar</label>
-            <input id="filterSearch" type="search" placeholder="Buscar por nombre, método o etiqueta…" inputmode="search" />
+            <label for="filterSearch" class="visually-hidden">Search</label>
+            <input id="filterSearch" type="search" placeholder="Search by name, method, or tag..." inputmode="search" />
           </div>
 
           <!-- Acciones -->
           <div class="group actions">
-            <button type="button" id="clearFilters" class="btn btn-ghost" hidden>Limpiar</button>
+            <button type="button" id="clearFilters" class="btn btn-ghost" hidden>Clear</button>
           </div>
         </div>
 
@@ -227,167 +227,167 @@
   <!-- ================= Grid de productos ================= -->
   <section class="products section">
     <div class="container">
-      <h2>Catálogo</h2>
+      <h2>Catalog</h2>
       <div class="products-grid" id="productsGrid">
-        <!-- Instrumentación → EIS -->
+        <!-- Instrumentation -> EIS -->
         <!-- <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="ID,QA" id="eis">
-          <img src="static/product_eis.jpg" alt="EIS-2000" loading="lazy" />
+          <img src="/static/product_eis.jpg" alt="EIS-2000" loading="lazy" />
           <h3>EIS-2000</h3>
-          <p>10 µHz–1 MHz • 10 µV–5 V • Rack</p>
-          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <p>10 uHz-1 MHz - 10 uV-5 V - Rack</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article> -->
 
         <!-- <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="Teaching,ID">
-          <img src="static/product_eis2.jpg" alt="EIS-1000" loading="lazy" />
+          <img src="/static/product_eis2.jpg" alt="EIS-1000" loading="lazy" />
           <h3>EIS-1000</h3>
-          <p>1 mHz–500 kHz • Benchtop</p>
-          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <p>1 mHz-500 kHz - Benchtop</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article> -->
 
 
         <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="ID,QA" id="eis">
-          <img src="static/render_as.jpg" alt="AquaSpecter" loading="lazy" />
+          <img src="/static/render_as.jpg" alt="AquaSpecter" loading="lazy" />
           <h3>AquaSpecter</h3>
-          <p>EIS de bolsillo para análisis simples y frecuentes</p>
-          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <p>Pocket EIS for simple, frequent analysis</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article>
         <article class="product-card reveal" data-family="instrumentacion" data-method="EIS" data-use="ID,QA" id="eis">
-          <img src="static/render_ast.jpg" alt="AquaSpecter de tubería" loading="lazy" />
-          <h3>AquaSpecter de tubería</h3>
-          <p>EIS incorporado para análisis constante de muestras líquidas</p>
-          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrumento</span></div>
+          <img src="/static/render_ast.jpg" alt="Inline AquaSpecter" loading="lazy" />
+          <h3>Inline AquaSpecter</h3>
+          <p>Embedded EIS for continuous liquid-sample analysis</p>
+          <div class="product-tags"><span class="tag">EIS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article>
 
-        <!-- Instrumentación → DLS -->
+        <!-- Instrumentation -> DLS -->
         <!-- <article class="product-card reveal" data-family="instrumentacion" data-method="DLS" data-use="ID,QA" id="dls">
-          <img src="static/product_dls.jpg" alt="DLS-Pro" loading="lazy" />
+          <img src="/static/product_dls.jpg" alt="DLS-Pro" loading="lazy" />
           <h3>DLS-Pro</h3>
-          <p>1–5,000 nm • 15–90 °C • PSD</p>
-          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrumento</span></div>
+          <p>1-5,000 nm - 15-90 C - PSD</p>
+          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article> -->
         <article class="product-card reveal" data-family="instrumentacion" data-method="DLS" data-use="Teaching">
-          <img src="static/render_dls_mini.jpg" alt="DLS-Mini" loading="lazy" />
+          <img src="/static/render_dls_mini.jpg" alt="DLS-Mini" loading="lazy" />
           <h3>DLS-Mini</h3>
-          <p>Compacto, para muestras pequeñas • PSD básico</p>
-          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrumento</span></div>
+          <p>Compact for small samples - basic PSD</p>
+          <div class="product-tags"><span class="tag">DLS</span><span class="tag">Instrument</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha técnica</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article>
 
-        <!-- Software → MAP Suite -->
+        <!-- Software -> MAP Suite -->
         <article class="product-card reveal" data-family="software" data-method="Imaging" data-use="ID,QA">
-          <img src="static/mapnano.png" alt="MAP-Nano" loading="lazy" />
+          <img src="/static/mapnano.png" alt="MAP-Nano" loading="lazy" />
           <h3>MAP-Nano</h3>
-          <p>Rugosidad, porosidad y morfología • Web/Desktop</p>
+          <p>Roughness, porosity and morphology - Web/Desktop</p>
           <div class="product-tags"><span class="tag">Imaging</span><span class="tag">Software</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./product_maps_nano">Ver más</a>
-            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+            <a class="btn btn-dark" href="/en/product_maps_nano.html">Learn more</a>
+            <a class="btn btn-ghost" href="./contactUs-demo=1">Demo</a>
           </div>
         </article>
         <article class="product-card reveal" data-family="software" data-method="Imaging" data-use="ID">
-          <img src="static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
+          <img src="/static/gyrosigma.png" alt="MAP-Bio" loading="lazy" />
           <h3>MAP-Bio</h3>
-          <p>Conteo, clasificación y morfología • Web/Desktop</p>
+          <p>Counting, classification and morphology - Web/Desktop</p>
           <div class="product-tags"><span class="tag">Imaging</span><span class="tag">Software</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./product_maps">Ver más</a>
-            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+            <a class="btn btn-dark" href="/en/product_maps.html">Learn more</a>
+            <a class="btn btn-ghost" href="./contactUs-demo=1">Demo</a>
           </div>
         </article>
         <!-- <article class="product-card reveal" data-family="software" data-method="EIS" data-use="ID,QA">
-          <img src="static/product_placeholder.png" alt="EIS-Toolkit" loading="lazy" />
+          <img src="/static/product_placeholder.png" alt="EIS-Toolkit" loading="lazy" />
           <h3>EIS-Toolkit</h3>
-          <p>Fitting de circuitos equivalentes • Desktop</p>
+          <p>Equivalent circuit fitting - Desktop</p>
           <div class="product-tags"><span class="tag">EIS</span><span class="tag">Software</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="#">Ver más</a>
-            <a class="btn btn-ghost" href="./contactUs?demo=1">Demo</a>
+            <a class="btn btn-dark" href="#">Learn more</a>
+            <a class="btn btn-ghost" href="./contactUs-demo=1">Demo</a>
           </div>
         </article> -->
 
         <!-- Bundles -->
         <article class="product-card reveal" data-family="bundles" data-method="EIS,Imaging" data-use="QA,ID" id="bundles">
-          <img src="static/cultivo_celular_dibujo.png" alt="EIS + MAP-Bio" loading="lazy" />
+          <img src="/static/cultivo_celular_dibujo.png" alt="EIS + MAP-Bio" loading="lazy" />
           <h3>EIS + MAP-Bio</h3>
-          <p>Monitoreo de impedancia, conteo y caracterización de cultivos celulares</p>
+          <p>Impedance monitoring, counting and characterization of cell cultures</p>
           <div class="product-tags"><span class="tag">Bundle</span><span class="tag">EIS + Imaging</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article>
         <article class="product-card reveal" data-family="bundles" data-method="EIS" data-use="ID,QA">
-          <img src="static/diagrama_de_bode.gif" alt="EIS + EIS-Toolkit" loading="lazy" />
+          <img src="/static/diagrama_de_bode.gif" alt="EIS + EIS-Toolkit" loading="lazy" />
           <h3>EIS + EIS-Toolkit</h3>
-          <p>Medición + fitting reproducible</p>
+          <p>Measurement + reproducible fitting</p>
           <div class="product-tags"><span class="tag">Bundle</span><span class="tag">EIS</span></div>
           <div class="card-cta">
-            <a class="btn btn-dark" href="./contactUs?demo=1">Cotizar</a>
-            <a class="btn btn-ghost" href="#">Ficha</a>
+            <a class="btn btn-dark" href="./contactUs-demo=1">Get quote</a>
+            <a class="btn btn-ghost" href="#">Spec sheet</a>
           </div>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- ================= Comparador simple ================= -->
+  <!-- ================= Simple comparison ================= -->
   <section class="compare section" id="comparador">
     <div class="container">
-      <h2>Comparador rápido</h2>
-      <div class="lead">Especificaciones clave por familia (valores de ejemplo; ajustar a tus modelos reales).</div>
+      <h2>Quick comparison</h2>
+      <div class="lead">Key specs by family (example values; adjust to your real models).</div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Producto</th>
-              <th>Método</th>
-              <th>Rango clave</th>
-              <th>Salidas</th>
-              <th>Formato</th>
+              <th>Product</th>
+              <th>Method</th>
+              <th>Key range</th>
+              <th>Outputs</th>
+              <th>Form factor</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>EIS-2000</td>
               <td>EIS</td>
-              <td>10 µHz–1 MHz; 10 µV–5 V</td>
-              <td>Bode, Nyquist, parámetros</td>
+              <td>10 uHz-1 MHz; 10 uV-5 V</td>
+              <td>Bode, Nyquist, parameters</td>
               <td>Rack</td>
             </tr>
             <tr>
               <td>DLS-Pro</td>
               <td>DLS</td>
-              <td>1–5,000 nm; 15–90 °C</td>
-              <td>PSD, ζ</td>
+              <td>1-5,000 nm; 15-90 C</td>
+              <td>PSD, zeta</td>
               <td>Benchtop</td>
             </tr>
             <tr>
               <td>MAP-Nano</td>
               <td>Imaging</td>
-              <td>Rugosidad, porosidad, morfología</td>
+              <td>Roughness, porosity, morphology</td>
               <td>CSV, PDF, API</td>
               <td>Web/Desktop</td>
             </tr>
@@ -408,9 +408,9 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/products.html" aria-label="Switch to English">EN</a>
-        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/products.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
           </svg>
@@ -436,11 +436,11 @@
 
   <!-- ================= Scripts ================= -->
   <script>
-    // Año
+    // Year
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // Ajustar --nav-h a la altura real del navbar
+    // Adjust --nav-h to the real navbar height
     (function(){
       const nav=document.querySelector('.navbar');
       if(!nav) return;
@@ -448,7 +448,7 @@
       setH(); addEventListener('resize', setH);
     })();
 
-    // Tabs del hero (tema + panes)
+    // Hero tabs (theme + panes)
     (function(){
       const tabs  = document.querySelectorAll('.hero-tabs [role="tab"]');
       const panes = document.querySelectorAll('.hero-pane');
@@ -458,10 +458,11 @@
         const theme = id==='tab-instrumentacion' ? 'instrumentacion'
                     : id==='tab-bundles'         ? 'bundles'
                     : 'software';
-        hero?.setAttribute('data-theme', theme);
+        hero.setAttribute('data-theme', theme);
       }
-      // Tema inicial según tab seleccionado
-      setThemeFromTab(document.querySelector('.hero-tabs [aria-selected="true"]')?.id || 'tab-software');
+      // Initial theme
+      const activeTab = document.querySelector('.hero-tabs [aria-selected="true"]');
+      setThemeFromTab(activeTab ? activeTab.id : 'tab-software');
 
       tabs.forEach(btn=>{
         btn.addEventListener('click', ()=>{
@@ -475,7 +476,7 @@
       });
     })();
 
-    // Scroll a secciones desde items del hero
+    // Scroll to sections from hero items
     document.querySelectorAll('[data-scroll-to]').forEach(el=>{
       el.addEventListener('click',(e)=>{
         const id = el.getAttribute('data-scroll-to');
@@ -494,7 +495,7 @@
       els.forEach(el=>io.observe(el));
     })();
 
-    /* ===== Filters v2: estado, URL sync, búsqueda, chips ===== */
+    /* ===== Filters v2: state, URL sync, search, chips ===== */
     (function(){
       const grid = document.getElementById('productsGrid');
       if(!grid) return;
@@ -504,10 +505,10 @@
       const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
       const normalize = (s='') => s.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-      // Estado
+      // State
       const state = { family:'all', method:[], use:[], search:'' };
 
-      // Elementos
+      // Elements
       const cards = $$('.product-card', grid);
       const segs  = $$('.seg');
       const pills = $$('.pill');
@@ -516,14 +517,14 @@
       const chipsWrap = $('#activeChips');
       const resultCount = $('#resultCount');
 
-      // Cargar desde URL
+      // Load from URL
       const params = new URLSearchParams(location.search);
       if (params.has('family')) state.family = params.get('family') || 'all';
       if (params.has('method')) state.method = params.get('method').split(',').filter(Boolean);
       if (params.has('use'))    state.use    = params.get('use').split(',').filter(Boolean);
       if (params.has('q'))      state.search = params.get('q') || '';
 
-      // UI inicial
+      // Initial UI
       function syncUIFromState(){
         segs.forEach(b=>{
           const active = b.dataset.value === state.family || (state.family==='all' && b.dataset.value==='all');
@@ -531,7 +532,7 @@
           b.setAttribute('aria-pressed', String(active));
         });
         pills.forEach(b=>{
-          const selected = state[b.dataset.group]?.includes(b.dataset.value);
+          const selected = (state[b.dataset.group] || []).includes(b.dataset.value);
           b.setAttribute('aria-pressed', String(!!selected));
         });
         if (input) input.value = state.search;
@@ -555,7 +556,7 @@
         const addChip = (label, group, value) => {
           const chip = document.createElement('span');
           chip.className = 'chip';
-          chip.innerHTML = `${label} <button>×</button>`;
+          chip.innerHTML = `${label} <button>&times;</button>`;
           chip.querySelector('button').addEventListener('click', ()=>{
             if (group==='family') state.family = 'all';
             else if (Array.isArray(state[group])) state[group] = state[group].filter(v=>v!==value);
@@ -563,13 +564,13 @@
           });
           chipsWrap.appendChild(chip);
         };
-        if (state.family!=='all') addChip(`Familia: ${state.family}`, 'family', state.family);
-        state.method.forEach(v => addChip(`Método: ${v}`, 'method', v));
-        state.use.forEach(v => addChip(`Uso: ${v}`, 'use', v));
-        if (state.search) addChip(`Buscar: “${state.search}”`, 'search', '');
+        if (state.family!=='all') addChip(`Family: ${state.family}`, 'family', state.family);
+        state.method.forEach(v => addChip(`Method: ${v}`, 'method', v));
+        state.use.forEach(v => addChip(`Use: ${v}`, 'use', v));
+        if (state.search) addChip(`Search: "${state.search}"`, 'search', '');
       }
 
-      // Filtrado
+      // Filter
       function apply(){
         const q = normalize(state.search);
         let visible = 0;
@@ -588,13 +589,13 @@
           if (ok) visible++;
         });
 
-        resultCount.textContent = `${visible} producto${visible===1?'':'s'}`;
+        resultCount.textContent = `${visible} product${visible===1?'':'s'}`;
         clear.hidden = (state.family==='all' && !state.method.length && !state.use.length && !state.search);
         renderChips();
         syncURL();
       }
 
-      // Eventos
+      // Events
       segs.forEach(btn=>{
         btn.addEventListener('click', ()=>{
           state.family = btn.dataset.value;

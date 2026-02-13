@@ -3,7 +3,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #fff;
+    background-color: var(--bg);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -29,16 +29,16 @@ header, .content {
 h1 {
     text-align: center;
     margin-top: 20px;
-    color: #000;
+    color: var(--ink);
 }
 
 form {
     display: flex;
     flex-direction: column;
     align-items: left; /* Alinear al centro en pantallas pequeñas */
-    background-color: #ed4624;
+    background-color: var(--accent);
     padding: 20px;
-    color: #fff;
+    color: var(--accent-ink);
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
@@ -49,7 +49,7 @@ form {
 form label {
     display: block;
     margin-bottom: 10px;
-    color: #fff;
+    color: var(--accent-ink);
 }
 
 .button-container{
@@ -61,8 +61,8 @@ form label {
 
 button {
     margin-top: 20px;
-    background-color: #000;
-    color: #fff;
+    background-color: var(--button-strong-bg);
+    color: var(--button-strong-ink);
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -72,7 +72,7 @@ button {
 }
 
 button:hover {
-    background-color: #40bf77;
+    background-color: var(--success);
 }
 
 /* Total Styles */
@@ -81,8 +81,8 @@ button:hover {
     top: 50%;
     right: 0;
     padding-top: 2%;
-    background-color: #40bf77;
-    color: #fff;
+    background-color: var(--success);
+    color: var(--success-ink);
     border-radius: 5px;
     z-index: 1;
     word-wrap: break-word;
@@ -117,3 +117,4 @@ button:hover {
         width: 90vw;
     }
 }
+

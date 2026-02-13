@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,72 +15,72 @@
   </script>
 
 <title>BCC Technologies | Journal</title>
-  <meta name="description" content="BCC Journal — notas técnicas, casos de estudio y diseño de instrumentación científica." />
-  <link rel="icon" type="image/png" href="static/Favi2.png">
+  <meta name="description" content="BCC Journal - technical notes, case studies, and scientific instrumentation design." />
+  <link rel="icon" type="image/png" href="/static/Favi2.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2-family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 
   <!-- Core CSS system -->
-  <link rel="stylesheet" href="css/00-tokens.css">
-  <link rel="stylesheet" href="css/01-base.css">
-  <link rel="stylesheet" href="css/02-layout.css">
-  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
 
   <!-- Page CSS -->
-  <link rel="stylesheet" href="css/pages/new_blog.css">
+  <link rel="stylesheet" href="/css/pages/new_blog.css">
 
   <!-- Shared layout behavior -->
-  <script src="js/layout.js" defer></script>
+  <script src="/js/layout.js" defer></script>
   <!-- Journal logic (Shopify fetch + UI) -->
-  <script src="js/new_blog2.js" defer></script>
+  <script src="/js/new_blog2.js" defer></script>
 
   <!-- Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js-id=G-L9FYNRKVNH"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-L9FYNRKVNH');
   </script>
-  <script src="js/nav.js" defer></script>
-  <script src="js/prefs.js" defer></script>
-  <link rel="alternate" hreflang="es" href="/blog.html">
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/blog.html">
+  <link rel="alternate" hreflang="es" href="/blog.html">
   <link rel="alternate" hreflang="x-default" href="/blog.html">
-  <link rel="canonical" href="/blog.html">
+  <link rel="canonical" href="/en/blog.html">
 </head>
 
 <body>
             <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+        <a href="/en/index.html" class="logo-link">
+          <link href="https://fonts.googleapis.com/css2-family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Journal</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/blog.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -98,7 +98,7 @@
     <!-- Hero -->
     <section class="journal-hero">
       <div class="container hero-inner">
-        <div class="hero-kicker">Descubra</div>
+        <div class="hero-kicker">Discover</div>
         <h1 class="hero-title">BCC Journal</h1>
         <!-- <p class="hero-subtitle">
           Notas de instrumentación, análisis por imagen, trazabilidad y casos reales.
@@ -113,13 +113,13 @@
         <section class="journal-main">
           <div class="glass journal-toolbar">
             <div class="toolbar-left">
-              <div class="toolbar-title">Entradas</div>
-              <div class="toolbar-hint" id="results-hint">Cargando…</div>
+              <div class="toolbar-title">Entries</div>
+              <div class="toolbar-hint" id="results-hint">Loading...</div>
             </div>
 
             <div class="toolbar-right">
               <label class="search">
-                <span class="search-label">Buscar</span>
+                <span class="search-label">Search</span>
                 <input id="journal-search" type="search" placeholder="título, tag, tema…" autocomplete="off" />
               </label>
             </div>
@@ -132,7 +132,7 @@
           <div class="tagbar" id="tagbar"></div>
 
           <div class="glass journal-list" id="journal-list">
-            <div class="journal-loading">Cargando entradas…</div>
+            <div class="journal-loading">Loading entries...</div>
           </div>
         </section>
 
@@ -140,17 +140,17 @@
           <details class="rail-module" open>
             <summary class="rail-summary">
               <span class="rail-head">
-                <span class="rail-kicker">¿Algo le interesa?</span>
-                <span class="rail-title">Iniciar proyecto</span>
+                <span class="rail-kicker">Interested in something?</span>
+                <span class="rail-title">Start a project</span>
               </span>
               <span class="rail-chev" aria-hidden="true">▾</span>
             </summary>
 
             <div class="rail-body">
-              <p class="rail-text">Instrumentación, software, validación, servicios.</p>
+              <p class="rail-text">Instrumentation, software, validation, services.</p>
               <div class="rail-actions">
-                <a class="btn btn-primary" href="./contactUs.html">Contacto</a>
-                <a class="btn btn-ghost" href="./products.html">Productos</a>
+                <a class="btn btn-primary" href="/en/contactUs.html">Contact</a>
+                <a class="btn btn-ghost" href="/en/products.html">Products</a>
               </div>
             </div>
           </details>
@@ -158,15 +158,15 @@
           <details class="rail-module">
             <summary class="rail-summary">
               <span class="rail-head">
-                <span class="rail-kicker">CATÁLOGO</span>
-                <span class="rail-title">Servicios destacados</span>
+                <span class="rail-kicker">Catalog</span>
+                <span class="rail-title">Featured services</span>
               </span>
               <span class="rail-chev" aria-hidden="true">▾</span>
             </summary>
 
             <div class="rail-body">
               <ul class="rail-list" id="services-list">
-                <li class="rail-muted">Cargando…</li>
+                <li class="rail-muted">Loading...</li>
               </ul>
             </div>
           </details>
@@ -174,8 +174,8 @@
           <details class="rail-module">
             <summary class="rail-summary">
               <span class="rail-head">
-                <span class="rail-kicker">¿Tiene una idea?</span>
-                <span class="rail-title">Contacto directo</span>
+                <span class="rail-kicker">You have an idea?</span>
+                <span class="rail-title">Contact us</span>
               </span>
               <span class="rail-chev" aria-hidden="true">▾</span>
             </summary>
@@ -237,9 +237,9 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
-        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/blog.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
           </svg>
