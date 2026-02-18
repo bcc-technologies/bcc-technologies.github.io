@@ -47,14 +47,16 @@
 
       /* Motion layers (subtle, premium) */
       .hero-breath{
-        animation: heroBreath 4.6s ease-in-out infinite;
+        animation: none;
         transform-origin: 694px 412px;
         transform-box: fill-box;
+        transform: translateY(0) scale(1);
       }
       .hero-sway{
-        animation: heroSway 8.4s ease-in-out infinite;
+        animation: none;
         transform-origin: 694px 412px;
         transform-box: fill-box;
+        transform: translateY(0) rotate(-0.4deg);
       }
       #hero_hover{
         transition: transform 220ms ease;
@@ -65,13 +67,13 @@
         fill: var(--accent);
         opacity: 0.14;
         filter: url(#glow);
-        animation: glowPulse 5.2s ease-in-out infinite;
+        animation: none;
       }
       .inner-shadow{
         fill: #000;
         opacity: 0.12;
         filter: url(#softBlur);
-        animation: shadowPulse 4.0s ease-in-out infinite;
+        animation: none;
         transform-origin: 694px 648.5px;
         transform-box: fill-box;
       }
@@ -80,6 +82,10 @@
       @media (hover: hover) and (pointer: fine){
         #centerWrap:hover #hero_hover{ transform: translateY(-3px); }
         #centerWrap:hover #center_glow{ opacity: 0.28; }
+        #centerWrap:hover .hero-breath{ animation: heroBreath 4.6s ease-in-out infinite; animation-fill-mode: both; animation-delay: -1.1s; }
+        #centerWrap:hover .hero-sway{ animation: heroSway 8.4s ease-in-out infinite; animation-fill-mode: both; animation-delay: -2.2s; }
+        #centerWrap:hover .center-glow{ animation: glowPulse 5.2s ease-in-out infinite; animation-fill-mode: both; animation-delay: -1.3s; }
+        #centerWrap:hover .inner-shadow{ animation: shadowPulse 4.0s ease-in-out infinite; animation-fill-mode: both; animation-delay: -0.9s; }
       }
       #centerWrap:active #hero_hover{ transform: translateY(-2px); }
       #centerWrap:active #center_glow{ opacity: 0.24; }
@@ -223,7 +229,7 @@
       <g id="hero_anim" class="hero-breath">
         <g id="hero_sway" class="hero-sway">
           <g id="hero" transform="translate(694 412)">
-            <g id="hero_offset" transform="translate(0 58.5)">
+            <g id="hero_offset" transform="translate(0 64.5)">
               <g id="hero_xform" transform="rotate(0) scale(1)">
                 <g transform="translate(-694 -412)">
 
