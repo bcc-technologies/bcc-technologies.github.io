@@ -56,7 +56,7 @@
         <div class="nav-actions">
           <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/services.html" aria-label="Switch to Spanish">ES</a>
+            <a id="langToggle" class="pref-btn lang-switch" href="/services.html" aria-label="Switch to Spanish">ES</a>
             <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
@@ -108,7 +108,9 @@
 
       <div class="hero-visual">
         <figure class="hero-figure">
-          <img src="/static/Servicios.png" alt="EIS/DLS integration and scientific analysis" loading="eager" />
+          <object id="servicesSvg" class="hero-figure-media" type="image/svg+xml" data="/static/servicios.svg" aria-label="EIS/DLS integration and scientific analysis" style="visibility:hidden">
+            EIS/DLS integration and scientific analysis
+          </object>
           <figcaption class="media-caption">Solutions: instrumentation + software + methods</figcaption>
         </figure>
       </div>
@@ -917,6 +919,59 @@
     // This section is currently disabled in the HTML. Re-enable and restore
     // the compact process renderer when needed.
   })();
+</script>
+
+
+<script>
+(() => {
+  const btn = document.getElementById('langToggle');
+  const svgObj = document.getElementById('servicesSvg');
+  if (!btn || !svgObj) return;
+
+  function getGroups() {
+    const doc = svgObj.contentDocument;
+    if (!doc) return null;
+    const es = doc.getElementById('labels_es');
+    const en = doc.getElementById('labels_en');
+    if (!es || !en) return null;
+    return { es, en };
+  }
+
+  function setLang(lang) {
+    const groups = getGroups();
+    if (!groups) {
+      svgObj.style.visibility = 'visible';
+      return;
+    }
+    const isEN = lang === 'en';
+    groups.es.classList.toggle('is-hidden', isEN);
+    groups.en.classList.toggle('is-hidden', !isEN);
+    btn.textContent = isEN ? 'ES' : 'EN';
+    btn.setAttribute('aria-label', isEN ? 'Switch to Spanish' : 'Switch to English');
+    svgObj.style.visibility = 'visible';
+  }
+
+  function inferLang() {
+    const htmlLang = (document.documentElement.lang || 'en').toLowerCase();
+    return htmlLang.startsWith('en') ? 'en' : 'es';
+  }
+
+  function langFromHref(href) {
+    return href && href.indexOf('/en/') !== -1 ? 'en' : 'es';
+  }
+
+  const ensure = () => setLang(inferLang());
+  svgObj.addEventListener('load', ensure);
+  if (svgObj.contentDocument) ensure();
+
+  btn.addEventListener('click', (e) => {
+    const href = btn.getAttribute('href');
+    if (!href) return;
+    e.preventDefault();
+    setLang(langFromHref(href));
+    setTimeout(() => { window.location.href = href; }, 80);
+  });
+})();
 </script>
 
 

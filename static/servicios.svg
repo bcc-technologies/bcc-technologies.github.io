@@ -1,1 +1,359 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="768" shape-rendering="geometricPrecision" viewBox="0 0 1366 768"><rect width="100%" height="100%" fill="#fff"/><path fill="#1b1819" fill-rule="evenodd" d="m838 558-13-7 2 7-14 16Zm89-24v10h10Zm95-1-10 11h10Zm-65 11h35l-11-14-4 3-9-3Zm17-21-2 4 4 1Zm25-15-11 8-2 13 7 10 13 2 11-8 2-10-7-12Zm-55 0-11 7-3 11 8 13 13 2 10-7 2-14-8-10Zm54-17 19 15 5 10v-24Zm-32 0 4 5-1 8 5-3 6 3 1-12Zm-15 0-24 1v24l5-10Zm-163-17-21 55 6 14 10 4h7l15-17-4-18 12-14ZM462 339l-5 34 3 47 14 46 20 36-59 16-22 86 64 61 82-22 18-67 27 10 11-26 19-26-8-16-7-44-18 12-20 7-25-5-16-14-21-46 2-5-18-64-24-16Zm6 217 18-1 12 8 12-8h13l9 5 8 11 1 12-5 11-38 37-44-45 1-17Zm420-396-9 9v11l8 9 11 1 9-7 2-12-6-9Z"/><path fill="#1b1819" fill-rule="evenodd" d="M851 131v73l53 1v-13l-9 3-36-2v-5h20l-3-5-19-1 1-3h16v-5h-16l-1-3 18-2 2-5h-19l-1-3 24-1 8-5 17 4v-12l-16-2v-15Zm6 21 21-2 2 4-22 1Z"/><path fill="#1b1819" fill-rule="evenodd" d="m424 135 14 82 73 27-27 37-15 35 11 5 21 1-8-10 9-4 27 16 7 9 3 26 23 44h5l7 9 76-48 41-11 5-9h-14l-20-16-6-11-2-16 6-17 15-19 18-34 22-14 22-6 26 3 23 12 16 18 9 29-2 23-10 29 2 23-12 12-15 1-9-4 59 48 60 83 4 9-4 19 7-5 41 67 89-2 41-78-45-73-90 1 5-32-4-52-13-41-13-25-19-26 64-18 22-83-62-63-84 21-23 80-53-18-62-5-47 6-57 20-14-80-77-29Zm498 353 104-1 1 61-104 1ZM534 150v7l-3-4Zm-7-8 4 3-2 3-4-2Zm10-4 4 5-5 4-3-5Zm312-11 44-1 18 18 3 30-3 11 17 14 1 5-4 5h-7l-7-8-8 9h-50l-6-4-1-75Zm-360-11 18-2 19 9 8 11-11-10-13-6-21 2-10 6-9 13v25l9 12 9 5 21 2 13-5 9-8 7-17-1 12-13 15 1 4-16 3-28-1 32 3 12-4 5 18-2 10-6-4-3-13-6-3-7 1-4 12-4-2-2-11h-7l-6 5-2 11-9 2 7-31-12-14-3-18 7-18Z"/><path fill="#e75e42" fill-rule="evenodd" d="m521 426 10 28 17 27 21 10 25-3 25-16 1-33 8-28 14-24 16-14 1 2-20 24-11 26-5 27 2 55 7 22 22 13 12 3 56-1 31-9 2 2 12-9 19-56-27-30-8-13 2-3 24 31 38 37 24-13 4 3-14 6-24 24v10l4 9 17 18 14 7 7-2 31-31 8-18v-12l-4-8-58-80-64-54-2 6-4-10-24 6-32-8-5 14-2-4-36 9-35 20v-2l-1 3h-4l-40 26 20 33 2 9-33-51-16 18-11 5Z"/><path fill="#4e4d4d" fill-rule="evenodd" d="m412 662-5 2-2-2v13l1-10 3-3Zm-20 0h5l1 4-6 2-2 2v4l5 1 3-2 3 2-2-1v-10l-2-2Zm5 5 1 5-3 3h-3l-2-5Zm-40-5v11l5 2-5-3Zm-5 0-6 12-5-12 5 13-1 4-4 2-1-1 3 1 3-3Zm-25 1 6-1 2 3-3 3-5 1-1 4 5 2h-2l-3-4 3-3 5-1 1 4-2 3 1-1 3 2-2-2v-10Zm-19-1 6 1zl-2 3 9 6-3 4-6-2 3 2 6-2-1-4-7-3Zm-14 0-3 5 1 6 7 2 2-2-5 2-4-3v-3l10-1v-3l-3-3Zm-2 3 3-3h4l2 5-8 1Zm-19-3 6 1zl-2 2 1 3 7 3-2 5-6-2 2 2h4l3-3-1-3-5-1-3-3Zm-15 0-3 4v5l2 3 5 1 4-3v-7l-3-3Zm1 0h4l3 3v6l-4 4h-3l-4-6Zm-15 0 5 2v11-12Zm-13 0v13l1-10 3-3 5 2v11l1-11-2-2h-4l-2 2Zm-13 0-3 4v5l2 3 5 1 3-2-6 2-4-6 11-2-3-5Zm-2 2 2-2h5l2 5-8 1Zm-12-2h4l2 2-1-2-7 1-2 7 4 5h4l2-3-3 3-6-3v-7Zm-18 1 6-1 2 2-1 3-7 2v5l4 1-4-2v-3l7-3 1 5-2 2 2-1 2 2-2-2v-10Zm-12-1h3l3 4v9-11l-2-2Zm-24 0-3 4v5l2 3 5 1 3-2-6 2-4-6 11-2-3-5Zm-2 2 2-2h5l2 5-8 1Zm-17-2 1 12 5 1 1-1-3 1-3-2Zm-16 1-1 9 3 3h3l-6-4 1-7 2-2h4l3 3 1 5-3 4h3v6-18l-1 2-3-2Zm-21-1-3 3v7l7 3 4-3v-7l-3-3Zm0 0h5l3 4v4l-4 5h-3l-4-4
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1366" height="768"
+     viewBox="0 0 1366 768"
+     preserveAspectRatio="xMidYMid meet"
+     shape-rendering="geometricPrecision"
+     role="img" aria-labelledby="t d">
+
+  <title id="t">Values</title>
+  <desc id="d">Composition with 4 hexagons with icons, a central circle, a hero illustration and descriptive text labels (ES/EN toggle).</desc>
+
+  <defs>
+    <style>
+      :root{
+        --bg:#ffffff;
+        --ink:#1b1819;
+        --muted:#6f6f6f;
+        --text:#4e4d4d;
+        --accent:#ec4524;
+        --accent2:#e75e42;
+        --skin:#fccabe;
+        --brown:#714138;
+      }
+
+      .bg { fill: var(--bg); }
+      .hex { fill: var(--ink); }
+
+      .iconStroke{
+        fill:none;
+        stroke:#ffffff;
+        stroke-width:3;
+        stroke-linejoin:round;
+        stroke-linecap:round;
+        stroke-miterlimit:2;
+        vector-effect: non-scaling-stroke;
+      }
+
+      /* Typography */
+      .text {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        fill: var(--text);
+      }
+      .h { font-size:48px; font-weight:700; fill: var(--ink); }
+      .p { font-size:26px; font-weight:400; fill: var(--muted); }
+
+      /* i18n toggling */
+      .is-hidden { display:none; }
+
+      /* Motion layers (subtle, premium) */
+      .hero-breath{
+        animation: heroBreath 4.6s ease-in-out infinite;
+        transform-origin: 694px 412px;
+        transform-box: fill-box;
+      }
+      .hero-sway{
+        animation: heroSway 8.4s ease-in-out infinite;
+        transform-origin: 694px 412px;
+        transform-box: fill-box;
+      }
+      #hero_hover{
+        transition: transform 220ms ease;
+        transform-origin: 694px 412px;
+        transform-box: fill-box;
+      }
+      .center-glow{
+        fill: var(--accent);
+        opacity: 0.14;
+        filter: url(#glow);
+        animation: glowPulse 5.2s ease-in-out infinite;
+      }
+      .inner-shadow{
+        fill: #000;
+        opacity: 0.12;
+        filter: url(#softBlur);
+        animation: shadowPulse 4.0s ease-in-out infinite;
+        transform-origin: 694px 648.5px;
+        transform-box: fill-box;
+      }
+
+      /* Hover / tap (only for hover-capable pointers) */
+      @media (hover: hover) and (pointer: fine){
+        #centerWrap:hover #hero_hover{ transform: translateY(-3px); }
+        #centerWrap:hover #center_glow{ opacity: 0.28; }
+      }
+      #centerWrap:active #hero_hover{ transform: translateY(-2px); }
+      #centerWrap:active #center_glow{ opacity: 0.24; }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce){
+        .hero-breath, .hero-sway, .center-glow, .inner-shadow{ animation: none !important; }
+        #hero_hover{ transition: none !important; }
+      }
+
+      @keyframes heroBreath{
+        0%{ transform: translateY(0) scale(1); }
+        50%{ transform: translateY(-2px) scale(1.012); }
+        100%{ transform: translateY(0) scale(1); }
+      }
+      @keyframes heroSway{
+        0%{ transform: translateY(0) rotate(-0.4deg); }
+        50%{ transform: translateY(-3px) rotate(0.4deg); }
+        100%{ transform: translateY(0) rotate(-0.4deg); }
+      }
+      @keyframes glowPulse{
+        0%{ opacity: 0.10; }
+        50%{ opacity: 0.22; }
+        100%{ opacity: 0.10; }
+      }
+      @keyframes shadowPulse{
+        0%{ opacity: 0.10; transform: scaleX(1); }
+        50%{ opacity: 0.18; transform: scaleX(0.97); }
+        100%{ opacity: 0.10; transform: scaleX(1); }
+      }
+    </style>
+    <!-- Filters / clipping for premium motion -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0
+                0 0.55 0 0 0
+                0 0 0.35 0 0
+                0 0 0 0.85 0" result="colored"/>
+      <feMerge>
+        <feMergeNode in="colored"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softBlur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+
+    <!-- Clip exacto del circulo central para que la base de la falda siga el arco perfectamente -->
+    <clipPath id="clip_center_circle" clipPathUnits="userSpaceOnUse">
+      <circle cx="694" cy="412" r="236.5"/>
+    </clipPath>
+  </defs>
+
+  <!-- =========================
+       BACKGROUND
+       ========================= -->
+  <g id="bg">
+    <rect class="bg" width="100%" height="100%"/>
+  </g>
+
+  <!-- =========================
+       HEXES (transformables)
+       ========================= -->
+  <g id="hexes">
+    <!-- Bottom-Left (Heart) -->
+    <g id="hex_BL" transform="translate(484 630) rotate(0) scale(1)">
+      <path class="hex"
+        d="M -16 82.5 L -79.4 27.3 L -63.4 -55.1 L 16 -82.5 L 79.4 -27.3 L 63.4 55.1 Z"/>
+      <path class="iconStroke"
+        d="M -27 -27 L -9 -28 L 3 -20 L 15 -28 L 28 -28 L 37 -23 L 45 -12 L 46 0 L 41 11 L 3 48 L -41 3 L -40 -14 Z"/>
+    </g>
+
+    <!-- Bottom-Right (Headphones) -->
+    <g id="hex_BR" transform="translate(990 474) rotate(0) scale(1)">
+      <path class="hex"
+        d="M -18.9 81.8 L -80.3 24.6 L -61.4 -57.3 L 18.9 -81.8 L 80.3 -24.6 L 61.4 57.3 Z"/>
+
+      <g id="headphones-body"
+         transform="translate(-41 -44) scale(0.17)"
+         fill="#ffffff"
+         fill-rule="evenodd">
+        <path d="M510.868,327.816c-0.61-4.281-1.471-8.474-2.528-12.572l0.733-0.095c0,0-42.276-112.08-51.077-151.655
+          c-7.37-29.951-28.899-53.445-56.26-64.216c-0.697-2.495-1.275-4.744-1.706-6.664c-5.963-24.275-29.473-40.554-54.752-36.975
+          c-25.276,3.58-43.345,25.75-42.336,50.727c0.203,3.229,0.466,7.382,0.765,12.102c-18.842,17.961-29.939,43.56-28.831,70.96
+          c0.047,0.765,0.096,1.546,0.143,2.359h-38.042c0.047-0.813,0.095-1.594,0.148-2.359c1.104-27.401-9.986-52.999-28.836-70.96
+          c0.299-4.719,0.563-8.873,0.766-12.102c1.008-24.977-17.057-47.147-42.337-50.727c-25.276-3.58-48.789,12.7-54.752,36.975
+          c-0.43,1.921-1.008,4.169-1.706,6.664c-27.36,10.77-48.889,34.265-56.26,64.216C45.199,203.069,2.923,315.149,2.923,315.149
+          l0.733,0.095c-1.056,4.098-1.917,8.291-2.523,12.572c-8.765,61.872,34.296,119.143,96.168,127.905
+          c61.872,8.761,119.14-34.296,127.901-96.168c0.606-4.289,0.94-8.546,1.064-12.779l0.733,0.112c0,0,0.195-3.029,0.538-8.267h56.922
+          c0.343,5.238,0.538,8.267,0.538,8.267l0.734-0.112c0.124,4.233,0.458,8.49,1.064,12.779
+          c8.762,61.872,66.029,104.929,127.901,96.168C476.576,446.96,519.629,389.688,510.868,327.816z M187.861,354.268
+          c-5.848,41.24-44.022,69.955-85.274,64.112c-41.248-5.844-69.952-44.031-64.108-85.27c5.84-41.248,44.018-69.956,85.266-64.113
+          C164.996,274.842,193.7,313.012,187.861,354.268z M409.41,418.38c-41.252,5.843-79.426-22.872-85.274-64.112
+          c-5.839-41.256,22.864-79.426,64.116-85.271c41.252-5.843,79.426,22.864,85.267,64.113
+          C479.362,374.35,450.658,412.537,409.41,418.38z"/>
+      </g>
+    </g>
+
+    <!-- Top-Right (Document) -->
+    <g id="hex_TR" transform="translate(885 180) rotate(0) scale(1)">
+      <path class="hex"
+        d="M 68 49.4 L -8.8 83.5 L -76.7 34.2 L -68 -49.4 L 8.8 -83.5 L 76.7 -34.2 Z"/>
+
+      <path fill="#ffffff" fill-rule="evenodd"
+        d="M-36 -34l44-1 18 18 3 30-3 11 17 14 1 5-4 5h-7l-7-8-8 9h-50l-6-4-1-75Z"/>
+      <path fill="#1b1819" fill-rule="evenodd"
+        d="M-34 -30v73l53 1v-13l-9 3-36-2v-5h20l-3-5-19-1 1-3h16v-5h-16l-1-3 18-2 2-5h-19l-1-3 24-1 8-5 17 4v-12l-16-2v-15Z
+           M-28 -9l21-2 2 4-22 1Z"/>
+      <path fill="#1b1819" fill-rule="evenodd"
+        d="M 3 -1 L -6 8 L -6 19 L 2 28 L 13 29 L 22 22 L 24 10 L 18 1 Z"/>
+    </g>
+
+    <!-- Top-Left (Crystal Ball) -->
+    <g id="hex_TL" transform="translate(507 180) rotate(0) scale(1)">
+      <path class="hex"
+        d="M 68 -49.4 L 76.7 34.2 L 8.8 83.5 L -68 49.4 L -76.7 -34.2 L -8.8 -83.5 Z"/>
+
+      <path fill="#ffffff" fill-rule="evenodd"
+        d="M-18 -40l18-2 19 9 8 11-11-10-13-6-21 2-10 6-9 13v25l9 12 9 5 21 2 13-5 9-8 7-17-1 12-13 15 1 4-16 3-28-1 32 3 12-4 5 18-2 10-6-4-3-13-6-3-7 1-4 12-4-2-2-11h-7l-6 5-2 11-9 2 7-31-12-14-3-18 7-18Z"/>
+      <path fill="#ffffff" fill-rule="evenodd"
+        d="M27 -6v7l-3-4Z M20 -14l4 3-2 3-4-2Z M30 -18l4 5-5 4-3-5Z"/>
+    </g>
+  </g>
+
+  <!-- =========================
+       CENTER
+       ========================= -->
+  <g id="centerWrap">
+    <g id="center">
+      <circle id="center_glow" class="center-glow" cx="694" cy="412" r="236.5"/>
+      <circle id="center_circle" cx="694" cy="412" r="236.5" fill="#1b1819"/>
+    </g>
+
+  <!-- =========================
+       HERO (clipped to circle for perfect arc base)
+       ========================= -->
+  <g id="hero_clipped" clip-path="url(#clip_center_circle)">
+    <ellipse id="inner_shadow" class="inner-shadow" cx="694" cy="638.5" rx="150" ry="38"/>
+    <g id="hero_hover">
+      <g id="hero_anim" class="hero-breath">
+        <g id="hero_sway" class="hero-sway">
+          <g id="hero" transform="translate(694 412)">
+            <g id="hero_offset" transform="translate(0 58.5)">
+              <g id="hero_xform" transform="rotate(0) scale(1)">
+                <g transform="translate(-694 -412)">
+
+            <path fill="#e75e42" fill-rule="evenodd" d="m521 426 10 28 17 27 21 10 25-3 25-16 1-33 8-28 14-24 16-14 1 2-20 24-11 26-5 27 2 55 7 22 22 13 12 3 56-1 31-9 2 2 12-9 19-56-27-30-8-13 2-3 24 31 38 37 24-13 4 3-14 6-24 24v10l4 9 17 18 14 7 7-2 31-31 8-18v-12l-4-8-58-80-64-54-2 6-4-10-24 6-32-8-5 14-2-4-36 9-35 20v-2l-1 3h-4l-40 26 20 33 2 9-33-51-16 18-11 5Z"/>
+
+            <path fill="#ec4524" fill-rule="evenodd"
+                  stroke="#ec4524" stroke-width="1.25"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="M606 584v3l48 8 69 1 26-2-3-6-5-4-5-14 10-17 12-11v-6l-5 4-34 9-16 2h-27l-24-5-9-4-8-7-10 11-8 13Zm91-355-9 10-11 25-15 19-6 14v15l6 14 8 9 13 8 11 1 7-4 2-10-8-10-6-23 1-18 4-14 7-12 11-9 20-7 14 1 6 3 7 7 3 6 7 7 3 8-3 24-7 16-10 15-2 9 1 6 8 9 1 4 9 6 11 2 14-4 5-6 1-4-2-24 11-33-1-26-10-23-9-10-11-8-26-9-24 1-12 4Z"/>
+
+            <path fill="#fccabe" fill-rule="evenodd"
+                  stroke="#fccabe" stroke-width="1.6"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="m826 554-14-15-5-9-19 21h-7l-20-6-6 1-9 9-9 16 2 6 7-13 8-9 7-4h5l1 3-8 3-8 8-6 11-4 4-1-1 5 7 17-19 6-1 2 2-7 4-11 14-5 2 4 6-1 1h-12l18-1 6-12 8-6 4 4-7 3-7 13h2l8-8 9 1 6 3 11-2 12-11 18-22Z"/>
+            <path fill="#fccabe" fill-rule="evenodd"
+                  stroke="#fccabe" stroke-width="1.6"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="m759 536 1 5h5l7 3-6-14ZM450 330l7 6 11 2-12-4Z"/>
+            <path fill="#fccabe" fill-rule="evenodd"
+                  stroke="#fccabe" stroke-width="1.6"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="m435 305 34 27-2 1-20-13 5 7 16 7 4 3-2 2 6 1 12 6 17 13 18 66h17l11-6 6-6 4-9-21-38-4-12-1-19-6-9-22-14-8-3-4 2v3l8 8-1 2-19-2 26 4 9 5-3 2-16-5-16-1-25-12-13-10Zm294-66-21 9-9 10-4 8-4 16v19l3 10 10 15 9 5 18 1 17-8 2 1-6 6-12 5-11 1-16-5-2 11 20 7h16l14-5-4-8v-8l17-31 4-17v-15l-4-7-15-17-7-3Zm-31 54 2-2 11 8h14l1 3-7 3-8-1-7-3Zm40-17 2 2v4l-5 4-3-5 4-5Zm-18-4 2 2-2 4-6 5-5 1 1 4-3 1-2-2v-6l8-3Zm-8-11 1 6-5 4-3-3 1-4 3-3Z"/>
+
+            <path fill="#714138" fill-rule="evenodd"
+                  stroke="#714138" stroke-width="1.35"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="M771 578h-3l-5 5-5 12 6-10 5-5h3Zm-3-10h-5l-16 18 4-1 6-8Zm-3-16-7 2-9 8-8 16 10-15 7-7 7-2Zm-8-8h7l20 6 4-1-25-7h-4Zm-126-6 4-4 8 7 19 7 14 2h27l31-5 19-6 1-3-27 8-19 3-42-1-12-3-19-12h-2l2 3Zm122-111-1 2 3 6 13 17 19 21 27 25-2 3-4 2 1 1-7 8 2 10 1-10 24-23 13-5-3-2-6 2-15 11h-3l-39-38Zm-190-24-1 1 2-1 4 4 29 47-26-46-4-4Zm95-29h-2l-13 13-7 10-12 29-5 31v16l5 31-2-52 5-27 11-26Z"/>
+            <path fill="#714138" fill-rule="evenodd"
+                  stroke="#714138" stroke-width="1.35"
+                  stroke-linejoin="round" stroke-linecap="round"
+                  stroke-miterlimit="2" paint-order="stroke fill"
+                  d="m759 350-2-3-4-1-11 5-17 1-28-9-1 2-1-1 1 1-5 9-39 10-34 22 6-2 31-19 16-3 17-6h3l2 4 2-10 3-4h5l14 6 13 2 13-2 11-4 3 3 1 7Zm-65-37 3 9 7 8 14 5 15-1 15-8-15 7-14 1-13-5-7-7Zm-244-5 29 16 23 3 14 4-13-5-22-3Zm-16-1 16 22 20 8-19-9-5-6v-4l21 13Zm266-14v2l7 6 8 2 9-1-14-2Zm38-15-4 2v4l4-1Zm-18-4-6 5-8 3 2 6v-4l8-4Zm-9-12-4 3 1 4 3-1Z"/>
+
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  </g>
+
+  <!-- =========================
+       LABELS (ES + EN)
+       ========================= -->
+  <g id="labels" class="text">
+    <!-- Spanish -->
+    <g id="labels_es">
+      <g id="label_proactividad_es">
+        <text class="h" x="70" y="150">Proactividad</text>
+        <text class="p" x="70" y="198">
+          <tspan x="70" dy="0">Tenemos la iniciativa y</tspan>
+          <tspan x="70" dy="32">la creatividad para</tspan>
+          <tspan x="70" dy="32">adelantarnos a tus</tspan>
+          <tspan x="70" dy="32">problemas.</tspan>
+        </text>
+      </g>
+
+      <g id="label_pasion_es">
+        <text class="h" x="70" y="540">Pasión</text>
+        <text class="p" x="70" y="588">
+          <tspan x="70" dy="0">Amamos lo que hacemos</tspan>
+          <tspan x="70" dy="32">y lo que hacemos es</tspan>
+          <tspan x="70" dy="32">ayudar.</tspan>
+        </text>
+      </g>
+
+      <g id="label_investigacion_es">
+        <text class="h" x="1045" y="130">Investigación</text>
+        <text class="p" x="1045" y="178">
+          <tspan x="1045" dy="0">No puedes solucionar</tspan>
+          <tspan x="1045" dy="32">lo que no comprendes.</tspan>
+        </text>
+      </g>
+
+      <g id="label_vanguardia_es">
+        <text class="h" x="1075" y="510">Vanguardia</text>
+        <text class="p" x="1075" y="558">
+          <tspan x="1075" dy="0">Nuevos tiempos</tspan>
+          <tspan x="1075" dy="32">requieren nuevas</tspan>
+          <tspan x="1075" dy="32">soluciones.</tspan>
+        </text>
+      </g>
+    </g>
+
+    <!-- English (hidden by default) -->
+    <g id="labels_en" class="is-hidden">
+      <g id="label_proactivity_en">
+        <text class="h" x="70" y="150">Proactivity</text>
+        <text class="p" x="70" y="198">
+          <tspan x="70" dy="0">We take initiative and</tspan>
+          <tspan x="70" dy="32">use creativity to</tspan>
+          <tspan x="70" dy="32">anticipate your</tspan>
+          <tspan x="70" dy="32">problems.</tspan>
+        </text>
+      </g>
+
+      <g id="label_passion_en">
+        <text class="h" x="70" y="540">Passion</text>
+        <text class="p" x="70" y="588">
+          <tspan x="70" dy="0">We love what we do,</tspan>
+          <tspan x="70" dy="32">and what we do is</tspan>
+          <tspan x="70" dy="32">help.</tspan>
+        </text>
+      </g>
+
+      <g id="label_research_en">
+        <text class="h" x="1055" y="130">Research</text>
+        <text class="p" x="1055" y="178">
+          <tspan x="1055" dy="0">You can’t solve what</tspan>
+          <tspan x="1055" dy="32">you don’t understand.</tspan>
+        </text>
+      </g>
+
+      <g id="label_frontier_en">
+        <text class="h" x="1075" y="510">Frontier</text>
+        <text class="p" x="1075" y="558">
+          <tspan x="1075" dy="0">New times</tspan>
+          <tspan x="1075" dy="32">require new</tspan>
+          <tspan x="1075" dy="32">solutions.</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>
+
+

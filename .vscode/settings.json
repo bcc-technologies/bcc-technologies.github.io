@@ -2,5 +2,6 @@
     "CodeGPT.apiKey": "CodeGPT Plus Beta",
     "cSpell.words": [
         "accionables"
-    ]
+    ],
+    "svg.preview.background": "editor"
 }
