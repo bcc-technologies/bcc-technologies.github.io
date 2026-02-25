@@ -196,6 +196,7 @@ function renderPosts() {
         <div class="item-title">${escapeHtml(p.title || "(sin título)")}</div>
         <div class="meta">
           <span class="badge">${escapeHtml(p.section || "Otros")}</span>
+          <span class="badge">${escapeHtml((p.lang || "es").toUpperCase())}</span>
           <span class="badge">${escapeHtml(p.date || "")}</span>
         </div>
       </div>
@@ -219,6 +220,7 @@ async function loadPost(id) {
   $("#postTitle").value = p.title || "";
   $("#postDate").value = p.date || "";
   $("#postSection").value = p.section || "Otros";
+  $("#postLang").value = (p.lang || "es");
   $("#postTags").value = (p.tags || []).join(", ");
   $("#postCover").value = p.cover || "";
   $("#postExcerpt").value = p.excerpt || "";
@@ -235,6 +237,7 @@ function clearPostEditor() {
   $("#postTitle").value = "";
   $("#postDate").value = new Date().toISOString().slice(0, 10);
   $("#postSection").value = "Empresa";
+  $("#postLang").value = "es";
   $("#postTags").value = "";
   $("#postCover").value = "";
   $("#postExcerpt").value = "";
@@ -258,6 +261,7 @@ $("#btnSavePost").addEventListener("click", async () => {
       title: $("#postTitle").value.trim(),
       date: $("#postDate").value,
       section: $("#postSection").value,
+      lang: $("#postLang").value,
       tags: parseTags($("#postTags").value),
       excerpt: $("#postExcerpt").value.trim(),
       cover: $("#postCover").value.trim(),
@@ -676,3 +680,8 @@ $("#btnRefresh").addEventListener("click", async () => {
     toast(`Error cargando: ${e.message}`, false);
   }
 })();
+
+
+
+
+

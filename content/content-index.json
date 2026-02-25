@@ -1,10 +1,27 @@
 {
   "posts": [
     {
+      "id": "2026-02-25-welcome-to-bcc-journal",
+      "title": "Welcome to BCC Journal:",
+      "date": "2026-01-30",
+      "section": "Empresa",
+      "lang": "en",
+      "tags": [
+        "methodology",
+        "instrumentation",
+        "design",
+        "traceability"
+      ],
+      "excerpt": "Why we treat software like scientific instrumentation: traceability, reproducibility, and more robust decisions.",
+      "cover": "/static/uploads/20260130182048-bcc.svg",
+      "bodyUrl": "/content/posts/2026-02-25-welcome-to-bcc-journal.md"
+    },
+    {
       "id": "2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo",
       "title": "Bienvenidos al BCC Journal: Simplificando lo complejo.",
       "date": "2026-01-30",
       "section": "Empresa",
+      "lang": "es",
       "tags": [
         "metodología",
         "instrumentación",

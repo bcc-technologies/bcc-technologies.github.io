@@ -70,6 +70,14 @@
     return new URL(href, window.location.href).pathname;
   }
 
+  function getLangTargets() {
+    const meta = document.querySelector('meta[name="bcc-lang-targets"]');
+    if (!meta) return null;
+    const content = (meta.getAttribute('content') || '').toLowerCase();
+    const list = content.split(',').map(x => normalizeLang(x.trim())).filter(Boolean);
+    return list.length ? Array.from(new Set(list)) : null;
+  }
+
   function resolveLangTarget(lang) {
     return getAlternateHref(lang) || getSwitchHref(lang) || mapPathToLang(window.location.pathname, lang);
   }
@@ -78,6 +86,8 @@
     const saved = getSavedLang();
     const desired = saved || detectBrowserLang();
     const current = getPathLang();
+    const targets = getLangTargets();
+    if (targets && !targets.includes(desired)) return;
     if (desired === current) return;
     const targetPath = resolveLangTarget(desired);
     if (!targetPath || targetPath === window.location.pathname) return;
@@ -136,3 +146,6 @@
   maybeRedirectLang();
   document.addEventListener('DOMContentLoaded', init);
 })();
+
+
+

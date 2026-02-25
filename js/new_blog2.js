@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const isEn = (document.documentElement.lang || '').toLowerCase().startsWith('en');
+  const pageLang = isEn ? "en" : "es";
   const i18n = isEn ? {
     locale: 'en',
     allTag: 'All',
@@ -86,12 +87,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const date = safeText(p?.date || p?.publishedAt || '');
     const tags = Array.isArray(p?.tags) ? p.tags.map(String) : [];
     const section = safeText(p?.section || '');
+    const lang = safeText(p?.lang || "");
+    const postLang = lang.toLowerCase().startsWith("en") ? "en" : "es";
     const excerpt = safeText(p?.excerpt || p?.summary || '');
     const cover = safeText(p?.cover || p?.image || '');
     const file = safeText(p?.file || p?.path || p?.body || '');
 
     const bodyPath = file ? file : (id ? `${DEFAULT_POST_DIR}${id}.md` : '');
-    return { id, title, date, tags, section, excerpt, cover, bodyPath };
+    return { id, title, date, tags, section, excerpt, cover, bodyPath, lang: postLang };
+  }
+
+  function postUrl(article) {
+    const base = pageLang === "en" ? "/en/blog/" : "/blog/";
+    return `${base}${encodeURIComponent(article.id)}.html`;
   }
 
   async function fetchIndex() {
@@ -99,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     const posts = Array.isArray(json?.posts) ? json.posts : [];
-    return posts.map(normalizePost).filter(p => p.id);
+    return posts.map(normalizePost).filter(p => p.id && p.lang === pageLang);
   }
 
   function buildTagbar(articles) {
@@ -154,9 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const tag = a.section || (a.tags?.[0] || i18n.tagFallback);
       const excerpt = (a.excerpt || '').trim().slice(0, 180);
       const date = fmtDate(a.date);
+      const url = postUrl(a);
 
       return `
-        <button class="journal-open" type="button" data-id="${escapeHtml(a.id)}">
+        <a class="journal-open" href="${escapeHtml(url)}" data-id="${escapeHtml(a.id)}" aria-label="${escapeHtml(a.title)}">
           <div class="journal-row">
             <div class="journal-date">${escapeHtml(date)}</div>
             <div class="journal-content">
@@ -166,17 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="journal-action">↗</div>
           </div>
-        </button>
+        </a>
       `;
     }).join('');
-
-    listEl.querySelectorAll('button[data-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id || '';
-        const article = allArticles.find(x => x.id === id);
-        if (article) openModal(article, { pushHash: true });
-      });
-    });
   }
 
   async function loadArticleRaw(article) {
@@ -313,31 +314,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const article = allArticles.find(x => x.id === id);
     if (!article) return;
 
-    // fallback: escribe el título en el buscador + filtra
-    searchEl.value = article.title;
-    activeTag = i18n.allTag;
-    Array.from(tagbarEl.querySelectorAll('.tag-pill'))
-      .forEach(b => b.classList.toggle('is-active', b.dataset.tag === activeTag));
-    render();
-
-    // abre directamente
-    openModal(article, { pushHash: false });
+    window.location.replace(postUrl(article));
   }
 
   window.addEventListener('hashchange', () => {
     const id = getHashPostId();
-    if (!id) {
-      if (modal.classList.contains('is-open')) closeModal({ clearHash: false });
-      return;
-    }
-
+    if (!id) return;
     const article = allArticles.find(x => x.id === id);
-    if (article && id !== lastOpenedId) {
-      searchEl.value = article.title;
-      activeTag = i18n.allTag;
-      render();
-      openModal(article, { pushHash: false });
-    }
+    if (article) window.location.replace(postUrl(article));
   });
 
   function renderServicesFallback() {
@@ -491,3 +475,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -203,11 +203,15 @@
 }
 
 .journal-open{
-  all: unset;
-  cursor: pointer;
-  display: contents; /* preserves grid layout; click anywhere in row */
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
-
+.journal-open:focus-visible{
+  outline: 2px solid var(--accent-soft-border);
+  outline-offset: 4px;
+  border-radius: var(--r-md);
+}
 /* Rail (aside) — compacto, modular, colapsable */
 .journal-rail{
   position: sticky;
@@ -599,5 +603,6 @@
 .bcc-card-body{ margin-top: 10px; opacity: .9; line-height: 1.5; }
 .bcc-card-list{ margin: 10px 0 0; padding-left: 18px; }
 .bcc-card-link{ display: inline-block; margin-top: 10px; text-decoration: none; font-weight: 700; }
+
 
 
