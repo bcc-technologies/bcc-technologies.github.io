@@ -66,6 +66,3 @@ We will publish content designed to be applicable in real analysis and measureme
 If your team works with scientific images (optical, SEM, or other modalities) or instrumentation data, it is common to encounter friction associated with repetition, inconsistencies, manual reports, or recurring discussions of parameters. If this is the case, we can evaluate the problem and propose an initial operational diagnosis.
 
 > Next article: **"Standardization of parameters: the first step before automating analysis"**
-
-*** Translated with www.DeepL.com/Translator (free version) ***
-
