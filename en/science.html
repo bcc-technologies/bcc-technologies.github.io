@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <title>BCC Technologies | Science</title>
+  <meta name="description" content="Curated science resources: ArXiv, Blog, and NASA APOD." />
+  <meta name="bcc-lang-targets" content="es,en" />
+  <link rel="icon" type="image/png" href="/static/Favi2.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS system -->
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="/css/pages/science.css">
+
+  <!-- Shared layout behavior -->
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+  <script src="/js/science.js" defer></script>
+
+  <link rel="alternate" hreflang="en" href="/en/science.html">
+  <link rel="alternate" hreflang="es" href="/science.html">
+  <link rel="alternate" hreflang="x-default" href="/science.html">
+  <link rel="canonical" href="/en/science.html">
+</head>
+
+<body>
+  <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/en/index.html" class="logo-link">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/science.html">Science</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Blog</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/science.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <section class="science-hero science-hero-apod" id="science-hero-apod">
+      <div class="container apod-hero-grid">
+        <div class="apod-hero-copy">
+          <div class="hero-kicker">SCIENCE RESOURCES</div>
+          <h1 class="apod-hero-title">Science</h1>
+          <p class="apod-hero-subtitle">Curated science resources by BCC: research, analysis, and applied data.</p>
+          <div class="apod-hero-meta">
+            <div class="apod-hero-meta-item">
+              <span class="apod-hero-meta-label">Last update</span>
+              <span class="apod-hero-meta-value" id="science-global-updated">--</span>
+            </div>
+            <div class="apod-hero-meta-item">
+              <span class="apod-hero-meta-label">APOD date</span>
+              <span class="apod-hero-meta-value" id="hero-apod-date">--</span>
+            </div>
+          </div>
+        </div>
+
+        <article class="apod-hero-card">
+          <div class="apod-hero-chip"><span class="apod-hero-chip-kicker">NASA APOD</span><span class="apod-hero-chip-text">Astronomy Picture of the Day - A look into the universe.</span></div>
+          <div class="apod-hero-media" id="hero-apod-media">
+            <div class="science-loading">Loading NASA APOD...</div>
+          </div>
+          <div class="apod-hero-content">
+            <h2 class="apod-hero-media-title" id="hero-apod-title">NASA APOD</h2>
+            <p class="apod-hero-media-desc" id="hero-apod-desc">Explore astronomy imagery and explanations curated by NASA.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="hero-chip-bar">
+      <div class="container">
+        <div class="hero-chip-bar-inner">
+          <a class="hero-chip" href="#widget-board">Smartboard</a>
+          <a class="hero-chip" href="#arxiv">ArXiv Explorer</a>
+          <a class="hero-chip" href="#research-archive">Research Archive</a>
+        </div>
+      </div>
+    </section>
+    <section class="science-intro">
+      <div class="container intro-inner">
+        <div class="hero-kicker">SMARTBOARD</div>
+        <h1 class="hero-title">Smart card decks</h1>
+        <p class="hero-subtitle">
+          Browse sources, open decks, and compose charts by linking input, output, calibration, and style cards.
+        </p>
+</div>
+    </section>
+
+    
+
+    
+
+
+    <section class="science-widgetboard is-collapsed" id="widget-board">
+      <div class="container">
+        <div class="widgetboard-head widgetboard-head-compact">
+          <button class="widgetboard-collapse-btn" type="button" id="widgetboard-collapse-toggle" aria-expanded="false" aria-label="Expand smart board" title="Expand smart board">
+            <svg class="widgetboard-collapse-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg>
+          </button>
+          <div class="widgetboard-actions">
+          <button class="btn btn-ghost widget-action" type="button" id="widget-templates" data-widget-action="templates">Templates</button>
+          <button class="btn btn-ghost widget-action" type="button" id="widget-export-png" data-widget-action="export-png">Export PNG</button>
+          <button class="btn btn-ghost widget-action" type="button" id="widget-export-csv" data-widget-action="export-csv">Export CSV</button>
+          <button class="btn btn-ghost widget-action" type="button" id="widget-share-link" data-widget-action="share">Share URL</button>
+          <button class="btn btn-ghost widget-action" type="button" id="widget-clear" data-widget-action="clear">Clear board</button>
+        </div>
+        </div>
+
+        <div class="widgetboard-body" id="widgetboard-body">
+        <div class="deck-rail-wrap glass">
+          <button class="deck-scroll-btn" type="button" data-scroll="left" aria-label="Scroll decks left">&#10094;</button>
+          <div class="deck-rail" id="deck-rail"></div>
+          <button class="deck-scroll-btn" type="button" data-scroll="right" aria-label="Scroll decks right">&#10095;</button>
+        </div>
+
+        <div class="widget-canvas-shell glass" id="widget-canvas-shell">
+          <div class="widget-canvas-head">
+            <div class="canvas-title">Active board</div>
+            <div class="canvas-head-actions">
+              <div class="canvas-meta" id="widget-canvas-meta">0 cards</div>
+              <button class="canvas-help-btn" type="button" id="widget-help-toggle" aria-expanded="false" aria-label="Show board help" title="Show board help">?</button>
+            </div>
+          </div>
+          <div class="widget-help-popover" id="widget-help-popover" hidden></div>
+          <div class="widget-canvas" id="widget-canvas">
+            <div class="widget-empty" id="widget-empty">Select a deck to start adding cards to the canvas.</div>
+          </div>
+          <div class="inspector-gap-controls" id="widget-gap-controls" role="group" aria-label="Board space controls">
+            <button class="inspector-gap-toggle is-less" id="widget-gap-less" type="button" aria-label="Decrease board space" title="Decrease board space">
+              <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg></span>
+              <span class="inspector-gap-label">Decrease board space</span>
+            </button>
+            <button class="inspector-gap-toggle is-more" id="widget-gap-more" type="button" aria-label="Increase board space" title="Increase board space">
+              <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m5.4 12.2 4.6-4.4 4.6 4.4"></path></svg></span>
+              <span class="inspector-gap-label">Increase board space</span>
+            </button>
+          </div>
+          <div class='inspector-gap-step-row' role='group' aria-label='Step size'>
+            <span class='inspector-gap-step-label' id='widget-gap-step-label'>Step size</span>
+            <div class='inspector-gap-step-list'>
+              <button class='inspector-gap-step' type='button' data-gap-step='80' aria-pressed='false'>80</button>
+              <button class='inspector-gap-step is-active' type='button' data-gap-step='120' aria-pressed='true'>120</button>
+              <button class='inspector-gap-step' type='button' data-gap-step='180' aria-pressed='false'>180</button>
+            </div>
+          </div>
+          <section class="widget-inspector" id="widget-inspector" aria-live="polite"></section>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="widget-modal" id="widget-modal" hidden aria-hidden="true">
+      <div class="widget-modal-backdrop" data-close-modal></div>
+      <div class="widget-modal-dialog glass" role="dialog" aria-modal="true" aria-labelledby="widget-modal-title">
+        <div class="widget-modal-head">
+          <div class="widget-modal-head-main">
+            <button class="modal-back" id="widget-modal-back" type="button" hidden aria-label="Back" title="Back">&#10094;</button>
+            <h3 id="widget-modal-title">Available cards</h3>
+          </div>
+          <button class="modal-close" type="button" data-close-modal aria-label="Close">x</button>
+        </div>
+        <div class="widget-modal-list" id="widget-modal-list"></div>
+      </div>
+    </div>
+    <section class="science-intro science-intro-arxiv" id="arxiv">
+      <div class="container intro-inner">
+        <div class="hero-kicker">ARXIV EXPLORER</div>
+        <h2 class="hero-title">ArXiv Explorer</h2>
+        <p class="hero-subtitle">Technical selection with fast filters to browse recent papers by area.</p>
+      </div>
+    </section>
+
+    <section class="science-widgetboard science-widgetboard-arxiv is-collapsed" id="arxiv-board">
+      <div class="container">
+        <div class="widgetboard-head widgetboard-head-compact">
+          <button class="widgetboard-collapse-btn" type="button" id="arxivboard-collapse-toggle" aria-expanded="false" aria-label="Expand ArXiv explorer" title="Expand ArXiv explorer">
+            <svg class="widgetboard-collapse-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg>
+          </button>
+          <div class="widgetboard-actions">
+            <span class="widget-action widget-action-meta" id="arxiv-updated">Last update: --</span>
+            <a class="btn btn-ghost widget-action" href="https://arxiv.org" target="_blank" rel="noopener noreferrer">Open arXiv.org</a>
+          </div>
+        </div>
+
+        <div class="widgetboard-body" id="arxivboard-body">
+          <article class="science-card glass arxiv-explorer-card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">ArXiv Explorer</div>
+                <div class="card-subtitle">Technical selection with fast filters.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="filter-bar" id="arxiv-filters"></div>
+              <div class="arxiv-list" id="arxiv-list">
+                <div class="science-loading">Loading ArXiv...</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="science-section">
+      <div class="container science-grid science-grid-main-only">
+        <section class="science-main">
+          <article class="science-card glass research-archive-placeholder" id="research-archive">
+            <div class="research-archive-head">
+              <span class="research-archive-status" aria-label="Coming soon">Coming soon</span>
+            </div>
+            <div class="research-archive-body">
+              <h3 class="research-archive-title">BCC Research Archive</h3>
+              <p class="research-archive-copy">Curated repository of BCC research, datasets, and technical notes. This section will be available soon.</p>
+            </div>
+          </article>
+
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/science.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+
+
+

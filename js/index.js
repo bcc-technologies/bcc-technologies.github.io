@@ -7,15 +7,15 @@
   const i18n = isEn ? {
     loading: 'Loading entries...',
     noEntries: 'No entries yet.',
-    viewJournal: 'View Journal',
+    viewJournal: 'View Blog',
     months: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
-    journalTag: 'Journal'
+    journalTag: 'Blog'
   } : {
     loading: 'Cargando entradas...',
     noEntries: 'Aun no hay entradas.',
-    viewJournal: 'Ver Journal',
+    viewJournal: 'Ver Blog',
     months: ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'],
-    journalTag: 'Journal'
+    journalTag: 'Blog'
   };
 
   // 1) Reveal Animation
@@ -35,7 +35,7 @@
     els.forEach(el => observer.observe(el));
   }
 
-  // 2) Journal preview (reads real posts from ./content/content-index.json)
+  // 2) Blog preview (reads real posts from ./content/content-index.json)
   async function loadJournalPreview(){
     const host = document.getElementById('journal-index');
     if(!host) return;
@@ -102,7 +102,7 @@
       }).join('');
 
     } catch (e) {
-      console.warn('Journal preview: fallback used.', e);
+      console.warn('Blog preview: fallback used.', e);
       host.innerHTML = `
         <article class="journal-row">
           <div class="journal-date">—</div>

@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="/css/pages/new_blog.css">
   <link rel="stylesheet" href="/css/pages/blog_post.css">
 
-  <link rel="canonical" href="{{CANONICAL}}">
+  <link rel="canonical" href="{{CANONICAL}}">\n  {{HREFLANG_ES}}\n  {{HREFLANG_EN}}
   <meta property="og:type" content="article" />
   <meta property="og:title" content="{{OG_TITLE}}" />
   <meta property="og:description" content="{{OG_DESC}}" />
@@ -71,7 +71,6 @@
 
       <nav>
         <a href="/" class="logo-link">
-          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
@@ -79,14 +78,15 @@
         <ul class="nav-links" id="primary-nav">
           <li><a href="/aboutUs.html">Nosotros</a></li>
           <li><a href="/products.html">Tecnología</a></li>
+          <li><a href="/science.html">Ciencia</a></li>
           <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Journal</a></li>
+          <li><a href="/blog.html">Blog</a></li>
         </ul>
 
         <div class="nav-actions">
           <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
+            <a class="pref-btn lang-switch" href="{{LANG_SWITCH_HREF}}" aria-label="Switch to English">EN</a>
             <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
@@ -104,9 +104,9 @@
   <main class="with-header-offset">
     <section class="journal-hero">
       <div class="container hero-inner">
-        <div class="hero-kicker">Journal</div>
+        <div class="hero-kicker">Blog</div>
         <h1 class="hero-title">{{POST_TITLE}}</h1>
-        <a class="post-back" href="/blog.html">Volver al Journal</a>
+        <a class="post-back" href="/blog.html">Volver al Blog</a>
       </div>
     </section>
 
@@ -115,7 +115,7 @@
         <article class="post-card glass">
           <div class="post-head">
             <div>
-              <div class="post-kicker">BCC Journal</div>
+              <div class="post-kicker">BCC Blog</div>
               <div class="post-meta">
                 <span class="post-date">{{POST_DATE}}</span>
                 <span class="post-dot">&bull;</span>
@@ -144,7 +144,7 @@
       </div>
       <div class="footer-links">
         <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
+        <a class="pref-btn lang-switch" href="{{LANG_SWITCH_HREF}}" aria-label="Switch to English">EN</a>
         <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
@@ -170,3 +170,6 @@
   </footer>
 </body>
 </html>
+
+
+

@@ -1,0 +1,11 @@
+# Manually update the science cache
+
+Run this from the project root:
+
+```bash
+node scripts/update-science-cache.mjs
+```
+
+This refreshes:
+- `static/data/arxiv.json`
+- `static/data/nasa-apod.json`

@@ -267,6 +267,17 @@ function generateBlogPages() {
   const idx = readIndex();
   const posts = Array.isArray(idx.posts) ? idx.posts : [];
 
+  const translationMap = new Map();
+  for (const post of posts) {
+    if (!post?.id) continue;
+    const key = String(post.translationId || "").trim();
+    if (!key) continue;
+    const lang = String(post.lang || "es").toLowerCase().startsWith("en") ? "en" : "es";
+    const entry = translationMap.get(key) || {};
+    entry[lang] = post.id;
+    translationMap.set(key, entry);
+  }
+
   const keepEs = new Set();
   const keepEn = new Set();
 
@@ -274,6 +285,15 @@ function generateBlogPages() {
     if (!post?.id) continue;
     const lang = String(post.lang || "es").toLowerCase().startsWith("en") ? "en" : "es";
     const tpl = getTemplate(lang);
+
+    const translationKey = String(post.translationId || "").trim();
+    const pair = translationKey ? translationMap.get(translationKey) : null;
+    const altEsId = pair?.es;
+    const altEnId = pair?.en;
+    const hrefEs = altEsId ? `/blog/${altEsId}.html` : "";
+    const hrefEn = altEnId ? `/en/blog/${altEnId}.html` : "";
+    const langTargets = (altEsId && altEnId) ? "es,en" : lang;
+    const langSwitchHref = lang === "en" ? (hrefEs || "/blog.html") : (hrefEn || "/en/blog.html");
 
     const mdPath = path.join(POSTS_DIR, `${post.id}.md`);
     const raw = fs.existsSync(mdPath) ? fs.readFileSync(mdPath, "utf-8") : "";
@@ -317,7 +337,10 @@ function generateBlogPages() {
 
     const data = {
       GEN_MARKER: BLOG_GEN_MARKER,
-      LANG_TARGETS: lang,
+      LANG_TARGETS: langTargets,
+      LANG_SWITCH_HREF: langSwitchHref,
+      HREFLANG_ES: hrefEs ? `<link rel="alternate" hreflang="es" href="${hrefEs}" />` : "",
+      HREFLANG_EN: hrefEn ? `<link rel="alternate" hreflang="en" href="${hrefEn}" />` : "",
       TITLE: escapeHtml(`${post.title || ""} | BCC Journal`),
       DESCRIPTION: escapeHtml(description || (lang === "en" ? "BCC Journal article." : "Entrada de BCC Journal.")),
       CANONICAL: canonical,
@@ -431,8 +454,7 @@ app.post("/api/posts/upsert", (req, res) => {
       id: idIn,
       title,
       date,
-      section,
-      lang = "es",
+      section,\n      lang = "es",\n      translationId = "",
       tags = [],
       excerpt = "",
       cover = "",
@@ -455,8 +477,7 @@ app.post("/api/posts/upsert", (req, res) => {
       id,
       title,
       date,
-      section,
-      lang,
+      section,\n      lang,\n      translationId,
       tags: Array.isArray(tags) ? tags : [],
       excerpt,
       cover,
@@ -615,6 +636,11 @@ app.listen(PORT, () => {
   ensureDirs();
   console.log(`Admin local: http://localhost:${PORT}`);
 });
+
+
+
+
+
 
 
 

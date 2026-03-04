@@ -1,4 +1,4 @@
-// new_blog.js — Shopify fetch + render Journal archive + filters + modal reader
+// new_blog.js — Shopify fetch + render Blog archive + filters + modal reader
 
 document.addEventListener('DOMContentLoaded', () => {
   const SHOPIFY_DOMAIN = '2e2e5e-7c.myshopify.com';
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tags = (article.tags || []).slice(0, 6);
     modalTags.innerHTML = tags.length
       ? tags.map(t => `<span class="tagchip">${t}</span>`).join('')
-      : `<span class="tagchip">Journal</span>`;
+      : `<span class="tagchip">Blog</span>`;
 
     const imgUrl = article.image?.url || '';
     modalImage.style.display = imgUrl ? 'block' : 'none';

@@ -1,0 +1,69 @@
+<!-- Legacy hero backup (EN): Science Maps hero removed on APOD redesign -->
+<section class="science-hero">
+  <div class="container hero-dashboard">
+    <div class="hero-summary">
+      <div class="summary-title">Science Maps</div>
+      <div class="summary-current">Select what to visualize</div>
+      <div class="summary-select">
+        <button class="summary-pill is-active" type="button">ArXiv Pulse</button>
+        <button class="summary-pill is-muted" type="button" disabled>Trends Map</button>
+      </div>
+      <div class="summary-lead">
+        <div class="summary-label">Leading category</div>
+        <div class="summary-value" id="hero-top">--</div>
+      </div>
+
+      <article class="hero-control-card glass">
+        <div class="control-title">Controls</div>
+        <div class="control-block">
+          <div class="control-label">Areas</div>
+          <div class="chart-filters" id="hero-filters"></div>
+        </div>
+      </article>
+      <div class="chart-switch" aria-label="Chart selector">
+        <button class="chart-switch-btn is-active" type="button" data-chart="line">Line</button>
+        <button class="chart-switch-btn" type="button" data-chart="radar">Radar</button>
+        <button class="chart-switch-btn" type="button" data-chart="heatmap">Heatmap</button>
+      </div>
+    </div>
+
+    <div class="hero-chart">
+      <div class="chart-range-row">
+        <div class="chart-subtitle" id="hero-range-label">Last 6 months</div>
+        <div class="chart-range time-range" id="hero-range">
+          <button type="button" data-range="3">3m</button>
+          <button type="button" data-range="6" class="is-active">6m</button>
+          <button type="button" data-range="9">9m</button>
+          <button type="button" data-range="12">12m</button>
+        </div>
+      </div>
+
+      <div class="chart-canvas" id="hero-chart-wrap">
+        <svg id="hero-chart" viewBox="0 0 720 280" role="img" aria-label="ArXiv Pulse"></svg>
+        <div class="chart-tooltip" id="hero-tooltip" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="hero-side-meta">
+        <div class="meta-item">
+          <div class="meta-label">Last update</div>
+          <div class="meta-value" id="science-global-updated">--</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Monthly growth</div>
+          <div class="meta-value" id="hero-growth">--</div>
+        </div>
+      </div>
+
+      <article class="hero-total-card glass">
+        <div class="total-header">
+          <span class="total-logo" aria-label="arXiv">arXiv</span>
+        </div>
+        <div class="total-value" id="hero-total">--</div>
+        <div class="total-label" id="hero-total-label">Total papers (6m)</div>
+        <ul class="total-breakdown" id="hero-breakdown"></ul>
+      </article>
+    </div>
+  </div>
+</section>

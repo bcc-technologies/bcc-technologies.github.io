@@ -221,6 +221,7 @@ async function loadPost(id) {
   $("#postDate").value = p.date || "";
   $("#postSection").value = p.section || "Otros";
   $("#postLang").value = (p.lang || "es");
+  $("#postTranslationId").value = (p.translationId || "");
   $("#postTags").value = (p.tags || []).join(", ");
   $("#postCover").value = p.cover || "";
   $("#postExcerpt").value = p.excerpt || "";
@@ -238,6 +239,7 @@ function clearPostEditor() {
   $("#postDate").value = new Date().toISOString().slice(0, 10);
   $("#postSection").value = "Empresa";
   $("#postLang").value = "es";
+  $("#postTranslationId").value = "";
   $("#postTags").value = "";
   $("#postCover").value = "";
   $("#postExcerpt").value = "";
@@ -262,6 +264,7 @@ $("#btnSavePost").addEventListener("click", async () => {
       date: $("#postDate").value,
       section: $("#postSection").value,
       lang: $("#postLang").value,
+      translationId: $("#postTranslationId").value.trim(),
       tags: parseTags($("#postTags").value),
       excerpt: $("#postExcerpt").value.trim(),
       cover: $("#postCover").value.trim(),
@@ -680,6 +683,9 @@ $("#btnRefresh").addEventListener("click", async () => {
     toast(`Error cargando: ${e.message}`, false);
   }
 })();
+
+
+
 
 
 

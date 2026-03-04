@@ -1,4 +1,4 @@
-// new_blog.js — Local Journal + filters + refined modal reader (NO Shopify)
+// new_blog.js — Local Blog + filters + refined modal reader (NO Shopify)
 
 document.addEventListener('DOMContentLoaded', () => {
   const isEn = (document.documentElement.lang || '').toLowerCase().startsWith('en');
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     noContent: '(No content)',
     errorLoading: 'Error loading.',
     errorLoadingEntries: 'Could not load entries. Check content-index.json.',
-    tagFallback: 'Journal',
+    tagFallback: 'Blog',
     services: [
       { title: 'MAPs Analysis', desc: 'Image analysis - microstructures' },
       { title: 'Materials diagnostics', desc: 'Characterization - technical report' },
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     noContent: '(Sin contenido)',
     errorLoading: 'Error cargando.',
     errorLoadingEntries: 'No se pudieron cargar las entradas. Revisa content-index.json.',
-    tagFallback: 'Journal',
+    tagFallback: 'Blog',
     services: [
       { title: 'MAPs Analysis', desc: 'Analisis por imagen - microestructuras' },
       { title: 'Diagnostico de materiales', desc: 'Caracterizacion - informe tecnico' },
