@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-03T14:13:54.210Z",
+  "updatedAt": "2026-03-08T03:25:37.000Z",
   "groups": [
     {
       "id": "physics",
@@ -6974,27 +6974,6 @@
       "group": "math"
     },
     {
-      "id": "http://arxiv.org/abs/2603.02191v1",
-      "link": "http://arxiv.org/abs/2603.02191v1",
-      "title": "Algebraic statistics of Hüsler-Reiss graphical models in multivariate extremes",
-      "summary": "The field of extreme value statistics is concerned with modeling and predicting rare events. In a Hüsler-Reiss graphical model, a graph represents extremal conditional independence (CI) relations between random variables. These models are exponential families parameterized by a graph Laplacian and are considered the analogue of multivariate Gaussian models in the extremal setting. We study these models from the perspective of algebraic geometry. Translating the CI relations into polynomial constraints in the parameters, we define extremal CI ideals and find a determinantal representation of their generators. In terms of parametric inference, we study the extremal maximum likelihood degree as the number of solutions to a conditionally negative definite matrix completion problem. We also define and analyze the extremal maximum likelihood threshold for Hüsler-Reiss graphical models, which provides a certificate for the existence of a surrogate MLE in terms of the dimensionality of the point configuration that realizes the underlying summary statistic as a Euclidean distance matrix. We highlight throughout many interesting similarities but also differences with respect to Gaussian graphical models.",
-      "published": "2026-03-02T18:53:28Z",
-      "updated": "2026-03-02T18:53:28Z",
-      "authors": [
-        "Carlos Améndola",
-        "Jane Ivy Coons",
-        "Alexandros Grosdos",
-        "Frank Röttger"
-      ],
-      "categories": [
-        "math.ST",
-        "math.AG"
-      ],
-      "primaryCategory": "math.ST",
-      "sourceGroup": "math",
-      "group": "stat"
-    },
-    {
       "id": "http://arxiv.org/abs/2603.05490v1",
       "link": "http://arxiv.org/abs/2603.05490v1",
       "title": "Chromatic thresholds for linear equations and recurrence",
@@ -7013,6 +6992,24 @@
       "primaryCategory": "math.CO",
       "sourceGroup": "math",
       "group": "math"
+    },
+    {
+      "id": "http://arxiv.org/abs/2503.04876v4",
+      "link": "http://arxiv.org/abs/2503.04876v4",
+      "title": "Estimation of relative risk, odds ratio and their logarithms with guaranteed accuracy and controlled sample size ratio",
+      "summary": "Given two populations from which independent binary observations are taken with parameters $p_1$ and $p_2$ respectively, estimators are proposed for the relative risk $p_1/p_2$, the odds ratio $p_1(1-p_2)/(p_2(1-p_1))$ and their logarithms. The sampling strategy used by the estimators is based on two-stage sequential sampling applied to each population, where the sample sizes of the second stage depend on the results observed in the first stage. The estimators guarantee that the relative mean-square error, or the mean-square error for the logarithmic versions, is less than a target value for any $p_1, p_2 \\in (0,1)$, and the ratio of average sample sizes from the two populations is close to a prescribed value. The estimators can also be used with group sampling, whereby samples are taken in batches of fixed size from the two populations simultaneously, each batch containing samples from the two populations. The efficiency of the estimators with respect to the Cramér-Rao bound is good, and in particular it is close to $1$ for small values of the target error.",
+      "published": "2025-03-06T17:33:21Z",
+      "updated": "2026-03-05T18:56:15Z",
+      "authors": [
+        "Luis Mendo"
+      ],
+      "categories": [
+        "stat.ME",
+        "math.ST"
+      ],
+      "primaryCategory": "stat.ME",
+      "sourceGroup": "math",
+      "group": "stat"
     },
     {
       "id": "http://arxiv.org/abs/2503.21494v2",
@@ -15641,6 +15638,27 @@
       "group": "cs"
     },
     {
+      "id": "http://arxiv.org/abs/2603.05296v1",
+      "link": "http://arxiv.org/abs/2603.05296v1",
+      "title": "Latent Policy Steering through One-Step Flow Policies",
+      "summary": "Offline reinforcement learning (RL) allows robots to learn from offline datasets without risky exploration. Yet, offline RL's performance often hinges on a brittle trade-off between (1) return maximization, which can push policies outside the dataset support, and (2) behavioral constraints, which typically require sensitive hyperparameter tuning. Latent steering offers a structural way to stay within the dataset support during RL, but existing offline adaptations commonly approximate action values using latent-space critics learned via indirect distillation, which can lose information and hinder convergence. We propose Latent Policy Steering (LPS), which enables high-fidelity latent policy improvement by backpropagating original-action-space Q-gradients through a differentiable one-step MeanFlow policy to update a latent-action-space actor. By eliminating proxy latent critics, LPS allows an original-action-space critic to guide end-to-end latent-space optimization, while the one-step MeanFlow policy serves as a behavior-constrained generative prior. This decoupling yields a robust method that works out-of-the-box with minimal tuning. Across OGBench and real-world robotic tasks, LPS achieves state-of-the-art performance and consistently outperforms behavioral cloning and strong latent steering baselines.",
+      "published": "2026-03-05T15:38:08Z",
+      "updated": "2026-03-05T15:38:08Z",
+      "authors": [
+        "Hokyun Im",
+        "Andrey Kolobov",
+        "Jianlong Fu",
+        "Youngwoon Lee"
+      ],
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "primaryCategory": "cs.RO",
+      "sourceGroup": "cs",
+      "group": "cs"
+    },
+    {
       "id": "http://arxiv.org/abs/2603.02047v1",
       "link": "http://arxiv.org/abs/2603.02047v1",
       "title": "NICO-RAG: Multimodal Hypergraph Retrieval-Augmented Generation for Understanding the Nicotine Public Health Crisis",
@@ -15656,27 +15674,62 @@
       "categories": [
         "cs.CV"
       ],
-      "primaryCategory": "cs.IR",
+      "primaryCategory": "cs.CV",
       "sourceGroup": "cs",
       "group": "cs"
     },
     {
-      "id": "http://arxiv.org/abs/2603.02045v1",
-      "link": "http://arxiv.org/abs/2603.02045v1",
-      "title": "Expanding LLM Agent Boundaries with Strategy-Guided Exploration",
-      "summary": "Reinforcement learning (RL) has demonstrated notable success in post-training large language models (LLMs) as agents for tasks such as computer use, tool calling, and coding. However, exploration remains a central challenge in RL for LLM agents, especially as they operate in language-action spaces with complex observations and sparse outcome rewards. In this work, we address exploration for LLM agents by leveraging the ability of LLMs to plan and reason in language about the environment to shift exploration from low-level actions to higher-level language strategies. We thus propose Strategy-Guided Exploration (SGE), which first generates a concise natural-language strategy that describes what to do to make progress toward the goal, and then generates environment actions conditioned on that strategy. By exploring in the space of strategies rather than the space of actions, SGE induces structured and diverse exploration that targets different environment outcomes. To increase strategy diversity during RL, SGE introduces mixed-temperature sampling, which explores diverse strategies in parallel, along with a strategy reflection process that grounds strategy generation on the outcomes of previous strategies in the environment. Across UI interaction, tool-calling, coding, and embodied agent environments, SGE consistently outperforms exploration-focused RL baselines, improving both learning efficiency and final performance. We show that SGE enables the agent to learn to solve tasks too difficult for the base model.",
-      "published": "2026-03-02T16:28:39Z",
-      "updated": "2026-03-02T16:28:39Z",
+      "id": "http://arxiv.org/abs/2603.05296v1",
+      "link": "http://arxiv.org/abs/2603.05296v1",
+      "title": "Latent Policy Steering through One-Step Flow Policies",
+      "summary": "Offline reinforcement learning (RL) allows robots to learn from offline datasets without risky exploration. Yet, offline RL's performance often hinges on a brittle trade-off between (1) return maximization, which can push policies outside the dataset support, and (2) behavioral constraints, which typically require sensitive hyperparameter tuning. Latent steering offers a structural way to stay within the dataset support during RL, but existing offline adaptations commonly approximate action values using latent-space critics learned via indirect distillation, which can lose information and hinder convergence. We propose Latent Policy Steering (LPS), which enables high-fidelity latent policy improvement by backpropagating original-action-space Q-gradients through a differentiable one-step MeanFlow policy to update a latent-action-space actor. By eliminating proxy latent critics, LPS allows an original-action-space critic to guide end-to-end latent-space optimization, while the one-step MeanFlow policy serves as a behavior-constrained generative prior. This decoupling yields a robust method that works out-of-the-box with minimal tuning. Across OGBench and real-world robotic tasks, LPS achieves state-of-the-art performance and consistently outperforms behavioral cloning and strong latent steering baselines.",
+      "published": "2026-03-05T15:38:08Z",
+      "updated": "2026-03-05T15:38:08Z",
       "authors": [
-        "Andrew Szot",
-        "Michael Kirchhof",
-        "Omar Attia",
-        "Alexander Toshev"
+        "Hokyun Im",
+        "Andrey Kolobov",
+        "Jianlong Fu",
+        "Youngwoon Lee"
       ],
       "categories": [
+        "cs.RO",
         "cs.LG"
       ],
       "primaryCategory": "cs.RO",
+      "sourceGroup": "cs",
+      "group": "cs"
+    },
+    {
+      "id": "http://arxiv.org/abs/2602.13704v2",
+      "link": "http://arxiv.org/abs/2602.13704v2",
+      "title": "Pailitao-VL: Unified Embedding and Reranker for Real-Time Multi-Modal Industrial Search",
+      "summary": "In this work, we presented Pailitao-VL, a comprehensive multi-modal retrieval system engineered for high-precision, real-time industrial search. We here address three critical challenges in the current SOTA solution: insufficient retrieval granularity, vulnerability to environmental noise, and prohibitive efficiency-performance gap. Our primary contribution lies in two fundamental paradigm shifts. First, we transitioned the embedding paradigm from traditional contrastive learning to an absolute ID-recognition task. Through anchoring instances to a globally consistent latent space defined by billions of semantic prototypes, we successfully overcome the stochasticity and granularity bottlenecks inherent in existing embedding solutions. Second, we evolved the generative reranker from isolated pointwise evaluation to the compare-and-calibrate listwise policy. By synergizing chunk-based comparative reasoning with calibrated absolute relevance scoring, the system achieves nuanced discriminative resolution while circumventing the prohibitive latency typically associated with conventional reranking methods. Extensive offline benchmarks and online A/B tests on Alibaba e-commerce platform confirm that Pailitao-VL achieves state-of-the-art performance and delivers substantial business impact. This work demonstrates a robust and scalable path for deploying advanced MLLM-based retrieval architectures in demanding, large-scale production environments.",
+      "published": "2026-02-14T10:13:48Z",
+      "updated": "2026-03-05T15:38:08Z",
+      "authors": [
+        "Lei Chen",
+        "Chen Ju",
+        "Xu Chen",
+        "Zhicheng Wang",
+        "Yuheng Jiao",
+        "Hongfeng Zhan",
+        "Zhaoyang Li",
+        "Shihao Xu",
+        "Zhixiang Zhao",
+        "Tong Jia",
+        "Lin Li",
+        "Yuan Gao",
+        "Jun Song",
+        "Jinsong Lan",
+        "Xiaoyong Zhu",
+        "Bo Zheng"
+      ],
+      "categories": [
+        "cs.IR",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "primaryCategory": "cs.IR",
       "sourceGroup": "cs",
       "group": "cs"
     },

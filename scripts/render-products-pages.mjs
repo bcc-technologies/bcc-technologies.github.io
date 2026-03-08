@@ -37,12 +37,31 @@ function familyIconClass(family) {
   return 'family-icon family-icon--software';
 }
 
+function statusToneClass(tone) {
+  if (!tone) return 'product-status';
+  return `product-status product-status--${escapeHtml(tone)}`;
+}
+
+function getDecisionEntries(localeContent, product) {
+  const labels = localeContent.cardLabels || {};
+  return [
+    { key: 'bestFor', label: labels.bestFor || '', value: product.bestFor || '' },
+    { key: 'outputs', label: labels.outputs || '', value: product.outputs || '' },
+    { key: 'deployment', label: labels.deployment || '', value: product.deployment || '' },
+    { key: 'readiness', label: labels.readiness || '', value: product.readiness || '' }
+  ].filter((entry) => entry.label && entry.value);
+}
+
 function renderAction(action, { enableHashScroll = false } = {}) {
   const attrs = [
     `class="${buttonClass(action.variant)}"`,
     `href="${escapeHtml(action.href || '#')}"`
   ];
 
+  if (action.detailId) {
+    attrs.push(`data-product-detail="${escapeHtml(action.detailId)}"`);
+    attrs.push('aria-haspopup="dialog"');
+  }
   if (action.scrollTarget) {
     attrs.push(`data-scroll-to="${escapeHtml(action.scrollTarget)}"`);
   } else if (enableHashScroll && action.href && action.href.startsWith('#')) {
@@ -50,6 +69,12 @@ function renderAction(action, { enableHashScroll = false } = {}) {
   }
 
   return `<a ${attrs.join(' ')}>${escapeHtml(action.label || '')}</a>`;
+}
+
+function renderHeroOutcomes(pane) {
+  const outcomes = pane.outcomes || [];
+  if (!outcomes.length) return '';
+  return `<div class="hero-family-list">${outcomes.map((item) => `<span class="hero-family-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
 }
 
 function renderHero(hero) {
@@ -108,6 +133,7 @@ function renderHero(hero) {
                   <p class="hero-family-kicker"><span class="${familyIconClass(pane.id)}" aria-hidden="true"></span>${escapeHtml(pane.kicker || '')}</p>
                   <h3 class="hero-family-title">${escapeHtml(pane.title || '')}</h3>
                   <p class="hero-family-text">${escapeHtml(pane.text || '')}</p>
+                  ${renderHeroOutcomes(pane)}
                 </div>
                 <div class="hero-family-actions">${(pane.actions || []).map((action) => renderAction(action)).join('')}</div>
               </div>
@@ -188,13 +214,22 @@ function renderFilters(filters, locale) {
   </div>`;
 }
 
+function renderProductDecision(localeContent, product) {
+  return `<dl class="product-decision">${getDecisionEntries(localeContent, product).map((entry) => `<div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.value)}</dd></div>`).join('')}</dl>`;
+}
+
+function renderProductCard(localeContent, product) {
+  const status = product.status || {};
+  return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(localeContent, product)}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
+}
+
 function renderProducts(localeContent) {
   return `
   <section class="products section">
     <div class="container">
       <h2 id="productsCatalogTitle">${escapeHtml(localeContent.catalogTitle || '')}</h2>
       <div class="products-grid" id="productsGrid">
-        ${(localeContent.products || []).map((product) => `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><h3>${escapeHtml(product.title || '')}</h3><p>${escapeHtml(product.description || '')}</p><div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`).join('')}
+        ${(localeContent.products || []).map((product) => renderProductCard(localeContent, product)).join('')}
       </div>
       <noscript>
         <p class="lead">Interactive filters require JavaScript / Los filtros interactivos requieren JavaScript.</p>

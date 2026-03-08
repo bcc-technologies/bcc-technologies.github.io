@@ -578,11 +578,13 @@ function loadProductsPage({ lang = 'es', search = '' } = {}) {
 test('products page renders shared Spanish content and initial count', () => {
   const { document } = loadProductsPage({ lang: 'es' });
 
-  assert.equal(document.getElementById('productsHeroTitle').textContent, 'Tecnología BCC');
-  assert.equal(document.getElementById('productsCatalogTitle').textContent, 'Catálogo');
+  assert.equal(document.getElementById('productsHeroTitle').textContent, 'Empieza por lo que necesitas lograr');
+  assert.equal(document.getElementById('productsCatalogTitle').textContent, 'Tecnologia disponible');
   assert.equal(document.getElementById('productsGrid').querySelectorAll('.product-card').length, 8);
   assert.equal(document.getElementById('resultCount').textContent, '8 productos');
   assert.match(document.getElementById('productsCompareHead').innerHTML, /<th>Producto<\/th>/);
+  assert.match(document.getElementById('productsGrid').innerHTML, /data-product-detail="map-nano"/);
+  assert.doesNotMatch(document.getElementById('productsGrid').innerHTML, /href="#"/);
 });
 
 test('legacy family alias normalizes to current value and filters English catalog', () => {

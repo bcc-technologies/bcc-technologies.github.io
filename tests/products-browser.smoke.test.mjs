@@ -304,6 +304,18 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       assert.equal(tabState.active, 'pane-instrumentacion');
       assert.equal(tabState.theme, 'instrumentacion');
 
+      const detailState = await evaluate(cdp, `(() => {
+        const trigger = document.querySelector('[data-product-detail="map-nano"]');
+        trigger?.click();
+        const shell = document.getElementById('productDetailDialog');
+        const title = shell ? shell.querySelector('#productDetailTitle')?.textContent?.trim() : null;
+        const hidden = shell ? shell.hidden : null;
+        shell?.querySelector('[data-product-detail-close]')?.click();
+        return { title, hidden };
+      })()`);
+      assert.equal(detailState.hidden, false);
+      assert.match(detailState.title, /MAP-Nano/);
+
       const filterState = await evaluate(cdp, `(() => {
         const toggle = document.getElementById('filtersToggle');
         const controls = document.getElementById('filtersControls');
@@ -343,7 +355,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       height: 1024,
       locale: 'es',
       familyLabel: 'Familia:',
-      expectedTitle: 'Tecnología BCC'
+      expectedTitle: 'Empieza por lo que necesitas lograr'
     });
 
     await openAndCheck({
@@ -352,7 +364,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       height: 844,
       locale: 'es',
       familyLabel: 'Familia:',
-      expectedTitle: 'Tecnología BCC'
+      expectedTitle: 'Empieza por lo que necesitas lograr'
     });
 
     await openAndCheck({
@@ -361,7 +373,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       height: 1024,
       locale: 'en',
       familyLabel: 'Family:',
-      expectedTitle: 'BCC Technology'
+      expectedTitle: 'Start from what you need to achieve'
     });
 
     await openAndCheck({
@@ -370,7 +382,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       height: 844,
       locale: 'en',
       familyLabel: 'Family:',
-      expectedTitle: 'BCC Technology'
+      expectedTitle: 'Start from what you need to achieve'
     });
 
     assert.equal(exceptions.length, 0, `Browser exceptions: ${JSON.stringify(exceptions, null, 2)}`);

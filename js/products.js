@@ -137,9 +137,28 @@
     return 'family-icon family-icon--software';
   }
 
+  function statusToneClass(tone) {
+    if (!tone) return 'product-status';
+    return `product-status product-status--${escapeHtml(tone)}`;
+  }
+
+  function getDecisionEntries(product) {
+    const labels = content.cardLabels || {};
+    return [
+      { key: 'bestFor', label: labels.bestFor || '', value: product.bestFor || '' },
+      { key: 'outputs', label: labels.outputs || '', value: product.outputs || '' },
+      { key: 'deployment', label: labels.deployment || '', value: product.deployment || '' },
+      { key: 'readiness', label: labels.readiness || '', value: product.readiness || '' }
+    ].filter((entry) => entry.label && entry.value);
+  }
+
   function renderAction(action, options = {}) {
     const attrs = [`class="${buttonClass(action.variant)}"`, `href="${escapeHtml(action.href || '#')}"`];
 
+    if (action.detailId) {
+      attrs.push(`data-product-detail="${escapeHtml(action.detailId)}"`);
+      attrs.push('aria-haspopup="dialog"');
+    }
     if (action.scrollTarget) {
       attrs.push(`data-scroll-to="${escapeHtml(action.scrollTarget)}"`);
     } else if (options.enableHashScroll && action.href && action.href.startsWith('#')) {
@@ -147,6 +166,44 @@
     }
 
     return `<a ${attrs.join(' ')}>${escapeHtml(action.label || '')}</a>`;
+  }
+
+  function renderHeroOutcomes(pane) {
+    const outcomes = pane.outcomes || [];
+    if (!outcomes.length) return '';
+    return `<div class="hero-family-list">${outcomes.map((item) => `<span class="hero-family-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
+  }
+
+  function renderProductDecision(product) {
+    return `
+      <dl class="product-decision">
+        ${getDecisionEntries(product).map((entry) => `
+          <div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}">
+            <dt>${escapeHtml(entry.label)}</dt>
+            <dd>${escapeHtml(entry.value)}</dd>
+          </div>
+        `).join('')}
+      </dl>
+    `;
+  }
+
+  function renderProductCard(product) {
+    const status = product.status || {};
+    return `
+      <article class="product-card reveal${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}>
+        <img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" />
+        <div class="product-card-head">
+          <div class="product-card-topline">
+            ${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}
+          </div>
+          <h3>${escapeHtml(product.title || '')}</h3>
+          <p class="product-summary">${escapeHtml(product.description || '')}</p>
+        </div>
+        ${renderProductDecision(product)}
+        <div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
+        <div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div>
+      </article>
+    `;
   }
 
   function renderHero() {
@@ -206,6 +263,7 @@
               <p class="hero-family-kicker"><span class="${familyIconClass(pane.id)}" aria-hidden="true"></span>${escapeHtml(pane.kicker || '')}</p>
               <h3 class="hero-family-title">${escapeHtml(pane.title || '')}</h3>
               <p class="hero-family-text">${escapeHtml(pane.text || '')}</p>
+              ${renderHeroOutcomes(pane)}
             </div>
             <div class="hero-family-actions">
               ${(pane.actions || []).map((action) => renderAction(action)).join('')}
@@ -280,15 +338,83 @@
     if (title) title.textContent = content.catalogTitle || '';
     if (!grid) return;
 
-    grid.innerHTML = (content.products || []).map((product) => `
-      <article class="product-card reveal${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}>
-        <img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" />
-        <h3>${escapeHtml(product.title || '')}</h3>
-        <p>${escapeHtml(product.description || '')}</p>
-        <div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
-        <div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div>
-      </article>
-    `).join('');
+    grid.innerHTML = (content.products || []).map((product) => renderProductCard(product)).join('');
+  }
+
+  function buildProductDetailMarkup(product) {
+    const panel = content.detailPanel || {};
+    const status = product.status || {};
+    const actions = (product.actions || []).filter((action) => !action.detailId);
+    return `
+      <div class="product-detail-backdrop" data-product-detail-close></div>
+      <section class="product-detail-panel" role="dialog" aria-modal="true" aria-labelledby="productDetailTitle">
+        <button type="button" class="product-detail-close" data-product-detail-close aria-label="${escapeHtml(panel.close || 'Close')}">&times;</button>
+        <div class="product-detail-header">
+          <p class="product-detail-eyebrow">${escapeHtml(panel.badge || '')}</p>
+          ${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}
+          <h2 id="productDetailTitle">${escapeHtml(product.title || '')}</h2>
+          <p class="product-detail-summary">${escapeHtml(product.description || '')}</p>
+        </div>
+        <div class="product-detail-body">
+          ${renderProductDecision(product)}
+          <div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
+        </div>
+        <div class="product-detail-actions">${actions.map((action) => renderAction(action)).join('')}</div>
+      </section>
+    `;
+  }
+
+  function ensureProductDetailShell() {
+    let shell = document.getElementById('productDetailDialog');
+    if (shell) return shell;
+
+    shell = document.createElement('div');
+    shell.id = 'productDetailDialog';
+    shell.className = 'product-detail-shell';
+    shell.hidden = true;
+    document.body.appendChild(shell);
+    return shell;
+  }
+
+  function setupProductDetails() {
+    const productsById = new Map((content.products || []).map((product) => [String(product.id || ''), product]));
+    if (!productsById.size) return;
+
+    const shell = ensureProductDetailShell();
+    let openId = '';
+
+    const closeDetail = () => {
+      if (shell.hidden) return;
+      shell.hidden = true;
+      shell.innerHTML = '';
+      openId = '';
+      document.body.classList.remove('product-detail-open');
+    };
+
+    const openDetail = (productId) => {
+      const product = productsById.get(String(productId || ''));
+      if (!product) return;
+      if (openId === product.id && !shell.hidden) return;
+      shell.innerHTML = buildProductDetailMarkup(product);
+      shell.hidden = false;
+      openId = product.id;
+      document.body.classList.add('product-detail-open');
+
+      shell.querySelectorAll('[data-product-detail-close]').forEach((element) => {
+        element.addEventListener('click', closeDetail);
+      });
+    };
+
+    document.querySelectorAll('[data-product-detail]').forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        openDetail(trigger.getAttribute('data-product-detail'));
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeDetail();
+    });
   }
 
   function renderCompare() {
@@ -736,5 +862,6 @@
     setupScrollLinks();
     setupReveal();
     setupFilters();
+    setupProductDetails();
   });
 })();
