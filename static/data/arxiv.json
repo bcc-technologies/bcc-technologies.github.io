@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-07T06:36:29.382Z",
+  "updatedAt": "2026-03-08T06:38:57.391Z",
   "groups": [
     {
       "id": "physics",
@@ -15738,6 +15738,27 @@
       "group": "cs"
     },
     {
+      "id": "http://arxiv.org/abs/2603.05296v1",
+      "link": "http://arxiv.org/abs/2603.05296v1",
+      "title": "Latent Policy Steering through One-Step Flow Policies",
+      "summary": "Offline reinforcement learning (RL) allows robots to learn from offline datasets without risky exploration. Yet, offline RL's performance often hinges on a brittle trade-off between (1) return maximization, which can push policies outside the dataset support, and (2) behavioral constraints, which typically require sensitive hyperparameter tuning. Latent steering offers a structural way to stay within the dataset support during RL, but existing offline adaptations commonly approximate action values using latent-space critics learned via indirect distillation, which can lose information and hinder convergence. We propose Latent Policy Steering (LPS), which enables high-fidelity latent policy improvement by backpropagating original-action-space Q-gradients through a differentiable one-step MeanFlow policy to update a latent-action-space actor. By eliminating proxy latent critics, LPS allows an original-action-space critic to guide end-to-end latent-space optimization, while the one-step MeanFlow policy serves as a behavior-constrained generative prior. This decoupling yields a robust method that works out-of-the-box with minimal tuning. Across OGBench and real-world robotic tasks, LPS achieves state-of-the-art performance and consistently outperforms behavioral cloning and strong latent steering baselines.",
+      "published": "2026-03-05T15:38:08Z",
+      "updated": "2026-03-05T15:38:08Z",
+      "authors": [
+        "Hokyun Im",
+        "Andrey Kolobov",
+        "Jianlong Fu",
+        "Youngwoon Lee"
+      ],
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "primaryCategory": "cs.RO",
+      "sourceGroup": "cs",
+      "group": "cs"
+    },
+    {
       "id": "http://arxiv.org/abs/2602.13704v2",
       "link": "http://arxiv.org/abs/2602.13704v2",
       "title": "Pailitao-VL: Unified Embedding and Reranker for Real-Time Multi-Modal Industrial Search",
@@ -15768,27 +15789,6 @@
         "cs.CV"
       ],
       "primaryCategory": "cs.IR",
-      "sourceGroup": "cs",
-      "group": "cs"
-    },
-    {
-      "id": "http://arxiv.org/abs/2603.05296v1",
-      "link": "http://arxiv.org/abs/2603.05296v1",
-      "title": "Latent Policy Steering through One-Step Flow Policies",
-      "summary": "Offline reinforcement learning (RL) allows robots to learn from offline datasets without risky exploration. Yet, offline RL's performance often hinges on a brittle trade-off between (1) return maximization, which can push policies outside the dataset support, and (2) behavioral constraints, which typically require sensitive hyperparameter tuning. Latent steering offers a structural way to stay within the dataset support during RL, but existing offline adaptations commonly approximate action values using latent-space critics learned via indirect distillation, which can lose information and hinder convergence. We propose Latent Policy Steering (LPS), which enables high-fidelity latent policy improvement by backpropagating original-action-space Q-gradients through a differentiable one-step MeanFlow policy to update a latent-action-space actor. By eliminating proxy latent critics, LPS allows an original-action-space critic to guide end-to-end latent-space optimization, while the one-step MeanFlow policy serves as a behavior-constrained generative prior. This decoupling yields a robust method that works out-of-the-box with minimal tuning. Across OGBench and real-world robotic tasks, LPS achieves state-of-the-art performance and consistently outperforms behavioral cloning and strong latent steering baselines.",
-      "published": "2026-03-05T15:38:08Z",
-      "updated": "2026-03-05T15:38:08Z",
-      "authors": [
-        "Hokyun Im",
-        "Andrey Kolobov",
-        "Jianlong Fu",
-        "Youngwoon Lee"
-      ],
-      "categories": [
-        "cs.RO",
-        "cs.LG"
-      ],
-      "primaryCategory": "cs.RO",
       "sourceGroup": "cs",
       "group": "cs"
     },
