@@ -146,55 +146,87 @@
           <button class="widgetboard-collapse-btn" type="button" id="widgetboard-collapse-toggle" aria-expanded="false" aria-label="Expandir pizarra inteligente" title="Expandir pizarra inteligente">
             <svg class="widgetboard-collapse-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg>
           </button>
-          <div class="widgetboard-actions">
-          <button class="btn btn-ghost widget-action" type="button" id="widget-templates" data-widget-action="templates">Plantillas</button>
-          <button class="btn btn-ghost widget-action" type="button" id="widget-export-png" data-widget-action="export-png">Exportar PNG</button>
-          <button class="btn btn-ghost widget-action" type="button" id="widget-export-csv" data-widget-action="export-csv">Exportar CSV</button>
-          <button class="btn btn-ghost widget-action" type="button" id="widget-share-link" data-widget-action="share">Compartir URL</button>
-          <button class="btn btn-ghost widget-action" type="button" id="widget-clear" data-widget-action="clear">Limpiar pizarra</button>
-        </div>
-        </div>
-
-        <div class="widgetboard-body" id="widgetboard-body">
-        <div class="deck-rail-wrap glass">
-          <button class="deck-scroll-btn" type="button" data-scroll="left" aria-label="Desplazar tarjeteros a la izquierda">&#10094;</button>
-          <div class="deck-rail" id="deck-rail"></div>
-          <button class="deck-scroll-btn" type="button" data-scroll="right" aria-label="Desplazar tarjeteros a la derecha">&#10095;</button>
-        </div>
-
-        <div class="widget-canvas-shell glass" id="widget-canvas-shell">
-          <div class="widget-canvas-head">
-            <div class="canvas-title">Pizarra activa</div>
-            <div class="canvas-head-actions">
-              <div class="canvas-meta" id="widget-canvas-meta">0 tarjetas</div>
-              <button class="canvas-help-btn" type="button" id="widget-help-toggle" aria-expanded="false" aria-label="Mostrar ayuda de pizarra" title="Mostrar ayuda de pizarra">?</button>
+          <div class="widgetboard-actions" id="widget-actions-bar">
+            <button class="btn btn-ghost widget-action" type="button" id="widget-templates" data-widget-action="templates">Plantillas</button>
+            <button class="btn btn-ghost widget-action" type="button" id="widget-share-link" data-widget-action="share">Compartir URL</button>
+            <button class="btn btn-ghost widget-action widget-action-more" type="button" id="widget-actions-toggle" data-widget-action="more" aria-expanded="false" aria-label="Mas acciones" title="Mas acciones">Mas</button>
+            <div class="widget-actions-overflow" id="widget-actions-overflow" aria-hidden="true">
+              <button class="btn btn-ghost widget-action" type="button" id="widget-export-png" data-widget-action="export-png">Exportar PNG</button>
+              <button class="btn btn-ghost widget-action" type="button" id="widget-export-csv" data-widget-action="export-csv">Exportar CSV</button>
+              <button class="btn btn-ghost widget-action" type="button" id="widget-clear" data-widget-action="clear">Limpiar pizarra</button>
             </div>
           </div>
-          <div class="widget-help-popover" id="widget-help-popover" hidden></div>
-          <div class="widget-canvas" id="widget-canvas">
-            <div class="widget-empty" id="widget-empty">Selecciona un tarjetero para agregar tarjetas al canvas.</div>
+        </div>
+
+        <div class="widgetboard-body" id="widgetboard-body" data-mobile-view="decks">
+          <div class="widget-mobile-nav" id="widget-mobile-nav" role="tablist" aria-label="Vistas del smartboard">
+            <button class="widget-mobile-tab is-active" type="button" data-mobile-view="decks" aria-pressed="true">Tarjeteros</button>
+            <button class="widget-mobile-tab" type="button" data-mobile-view="board" aria-pressed="false">Pizarra</button>
+            <button class="widget-mobile-tab" type="button" data-mobile-view="inspector" aria-pressed="false">Inspector</button>
           </div>
-          <div class="inspector-gap-controls" id="widget-gap-controls" role="group" aria-label="Ajuste de espacio en pizarra">
-            <button class="inspector-gap-toggle is-less" id="widget-gap-less" type="button" aria-label="Reducir espacio en pizarra" title="Reducir espacio en pizarra">
-              <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg></span>
-              <span class="inspector-gap-label">Reducir espacio en pizarra</span>
-            </button>
-            <button class="inspector-gap-toggle is-more" id="widget-gap-more" type="button" aria-label="Aumentar espacio en pizarra" title="Aumentar espacio en pizarra">
-              <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m5.4 12.2 4.6-4.4 4.6 4.4"></path></svg></span>
-              <span class="inspector-gap-label">Aumentar espacio en pizarra</span>
-            </button>
+
+          <div class="deck-rail-wrap glass">
+            <button class="deck-scroll-btn" type="button" data-scroll="left" aria-label="Desplazar tarjeteros a la izquierda">&#10094;</button>
+            <div class="deck-rail" id="deck-rail"></div>
+            <button class="deck-scroll-btn" type="button" data-scroll="right" aria-label="Desplazar tarjeteros a la derecha">&#10095;</button>
           </div>
-          <div class='inspector-gap-step-row' role='group' aria-label='Tamano de paso'>
-            <span class='inspector-gap-step-label' id='widget-gap-step-label'>Tamano de paso</span>
-            <div class='inspector-gap-step-list'>
-              <button class='inspector-gap-step' type='button' data-gap-step='80' aria-pressed='false'>80</button>
-              <button class='inspector-gap-step is-active' type='button' data-gap-step='120' aria-pressed='true'>120</button>
-              <button class='inspector-gap-step' type='button' data-gap-step='180' aria-pressed='false'>180</button>
+
+          <div class="widget-canvas-shell glass" id="widget-canvas-shell">
+            <div class="widget-canvas-head">
+              <div class="canvas-head-main">
+                <div class="canvas-title">Pizarra activa</div>
+                <div class="widget-touch-mode" id="widget-touch-mode" role="group" aria-label="Modo tactil">
+                  <button class="widget-touch-chip is-active" type="button" data-touch-mode="select" aria-pressed="true">Seleccionar</button>
+                  <button class="widget-touch-chip" type="button" data-touch-mode="move" aria-pressed="false">Mover</button>
+                </div>
+              </div>
+              <div class="canvas-head-actions">
+                <div class="canvas-meta" id="widget-canvas-meta">0 tarjetas</div>
+                <div class="canvas-head-buttons">
+                  <button class="canvas-settings-btn" type="button" id="widget-canvas-settings-toggle" aria-expanded="false" aria-label="Mostrar ajustes de lienzo" title="Mostrar ajustes de lienzo">Ajustes</button>
+                  <button class="canvas-help-btn" type="button" id="widget-help-toggle" aria-expanded="false" aria-label="Mostrar ayuda de pizarra" title="Mostrar ayuda de pizarra">?</button>
+                </div>
+              </div>
+            </div>
+            <div class="widget-help-popover" id="widget-help-popover" hidden></div>
+            <div class="widget-canvas" id="widget-canvas">
+              <div class="widget-empty" id="widget-empty">Selecciona un tarjetero para agregar tarjetas al canvas.</div>
+            </div>
+            <div class="widget-canvas-settings-panel" id="widget-canvas-settings-panel" aria-hidden="false">
+              <div class="inspector-gap-controls" id="widget-gap-controls" role="group" aria-label="Ajuste de espacio en pizarra">
+                <button class="inspector-gap-toggle is-less" id="widget-gap-less" type="button" aria-label="Reducir espacio en pizarra" title="Reducir espacio en pizarra">
+                  <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M5.4 7.8 10 12.2l4.6-4.4"></path></svg></span>
+                  <span class="inspector-gap-label">Reducir espacio en pizarra</span>
+                </button>
+                <button class="inspector-gap-toggle is-more" id="widget-gap-more" type="button" aria-label="Aumentar espacio en pizarra" title="Aumentar espacio en pizarra">
+                  <span class="inspector-gap-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m5.4 12.2 4.6-4.4 4.6 4.4"></path></svg></span>
+                  <span class="inspector-gap-label">Aumentar espacio en pizarra</span>
+                </button>
+              </div>
+              <div class='inspector-gap-step-row' role='group' aria-label='Tamano de paso'>
+                <span class='inspector-gap-step-label' id='widget-gap-step-label'>Tamano de paso</span>
+                <div class='inspector-gap-step-list'>
+                  <button class='inspector-gap-step' type='button' data-gap-step='80' aria-pressed='false'>80</button>
+                  <button class='inspector-gap-step is-active' type='button' data-gap-step='120' aria-pressed='true'>120</button>
+                  <button class='inspector-gap-step' type='button' data-gap-step='180' aria-pressed='false'>180</button>
+                </div>
+              </div>
+            </div>
+            <section class="widget-inspector" id="widget-inspector" aria-live="polite"></section>
+          </div>
+
+          <div class="widget-mobile-selection-bar" id="widget-mobile-selection-bar" hidden aria-hidden="true">
+            <div class="widget-mobile-selection-summary" id="widget-mobile-selection-summary">0 seleccionadas</div>
+            <div class="widget-mobile-selection-actions">
+              <button class="widget-mobile-selection-btn is-primary" type="button" data-mobile-selection-action="inspect">Editar</button>
+              <button class="widget-mobile-selection-btn" type="button" data-mobile-selection-action="duplicate">Duplicar</button>
+              <button class="widget-mobile-selection-btn" type="button" data-mobile-selection-action="detach">Desimantar</button>
+              <button class="widget-mobile-selection-btn is-danger" type="button" data-mobile-selection-action="remove">Eliminar</button>
             </div>
           </div>
-          <section class="widget-inspector" id="widget-inspector" aria-live="polite"></section>
         </div>
-        </div>
+
+        <div class="widget-inspector-backdrop" id="widget-inspector-backdrop" hidden></div>
       </div>
     </section>
 

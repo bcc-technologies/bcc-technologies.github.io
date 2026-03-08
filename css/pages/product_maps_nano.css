@@ -289,6 +289,74 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 .card-text{ color:var(--muted); font-size:14px; }
 .card-link{ margin-top:8px; color:var(--accent); font-size:14px; }
 
+/* Solutions cards: refined style + more breathing room */
+.solutions-section{
+  padding-top: clamp(72px, 10vh, 118px);
+}
+
+.solutions-section .lead{
+  max-width: 62ch;
+}
+
+.solutions-cards{
+  margin-top: clamp(18px, 2.6vw, 30px);
+  align-items: stretch;
+}
+
+.solutions-cards .card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 14px;
+  border-color: color-mix(in oklab, var(--line) 88%, transparent);
+  background: linear-gradient(168deg, color-mix(in oklab, var(--surface-solid) 96%, transparent), color-mix(in oklab, var(--surface-solid) 86%, var(--bg-alt) 14%));
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
+}
+
+.solutions-cards .card::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(90% 65% at 12% 0%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 72%);
+  opacity: 0.55;
+  transition: opacity 180ms ease;
+}
+
+.solutions-cards .card:hover{
+  transform: translateY(-5px);
+  border-color: color-mix(in oklab, var(--accent) 38%, transparent);
+  box-shadow: 0 18px 34px rgba(2, 6, 23, 0.10);
+}
+
+.solutions-cards .card:hover::before{
+  opacity: 0.8;
+}
+
+.solutions-cards .card-thumb{
+  height: 176px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in oklab, var(--line) 82%, transparent);
+}
+
+.solutions-cards .card-title{
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.solutions-cards .card-text{
+  color: var(--ink-muted);
+  line-height: 1.42;
+}
+
+.solutions-cards .card-link{
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--accent-strong);
+}
+
 .panel{
   border:1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -316,6 +384,7 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 .feature-bullets li{ margin:6px 0; }
 .feature-media img{ border-radius:12px; border:1px solid var(--line); background:var(--surface-solid); }
 .feature-media img.img-no-bg{ background: transparent !important; }
+.feature-media img.img-no-border{ border: 0 !important; }
 
 /* ==========================================================================
    8) SPECS GRID
@@ -351,6 +420,7 @@ max-width: 1320px; /* antes 1200px; ajusta 1280–1400 a gusto */
 @media (max-width: 960px){
   .hero-grid{ grid-template-columns:1fr; }
   .grid-2{ grid-template-columns:1fr; }
+  .solutions-section{ padding-top: clamp(52px, 8vh, 80px); }
   .feature-row{ grid-template-columns:1fr; }
   .specs-grid{ grid-template-columns:1fr 1fr; }
   .grid-3{ grid-template-columns:1fr 1fr; }

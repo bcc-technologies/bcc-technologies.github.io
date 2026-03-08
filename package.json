@@ -1,0 +1,13 @@
+{
+  "name": "bcc-technologies.github.io",
+  "private": true,
+  "scripts": {
+    "render:products": "node scripts/render-products-pages.mjs",
+    "check:products": "node scripts/render-products-pages.mjs --check",
+    "test": "node --test tests/*.mjs",
+    "test:ci": "node --test tests/products-page.regression.test.mjs tests/science-widgetboard.regression.test.mjs",
+    "test:products": "node --test tests/products-page.regression.test.mjs",
+    "test:products:browser": "node --test tests/products-browser.smoke.test.mjs",
+    "test:science:browser": "node --test tests/science-browser.smoke.test.mjs"
+  }
+}

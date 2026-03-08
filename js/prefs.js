@@ -82,6 +82,11 @@
     return getAlternateHref(lang) || getSwitchHref(lang) || mapPathToLang(window.location.pathname, lang);
   }
 
+  function isAutoLangLanding() {
+    const path = window.location.pathname.toLowerCase();
+    return path === '/' || path === '/index.html' || path === '/en/' || path === '/en/index.html';
+  }
+
   function maybeRedirectLang() {
     const saved = getSavedLang();
     const desired = saved || detectBrowserLang();
@@ -89,6 +94,7 @@
     const targets = getLangTargets();
     if (targets && !targets.includes(desired)) return;
     if (desired === current) return;
+    if (!saved && !isAutoLangLanding()) return;
     const targetPath = resolveLangTarget(desired);
     if (!targetPath || targetPath === window.location.pathname) return;
     const next = targetPath + window.location.search + window.location.hash;

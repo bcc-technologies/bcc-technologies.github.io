@@ -188,6 +188,15 @@
   const chartDatasetMemo = new Map();
   const chartDatasetMemoStats = { hits: 0, misses: 0 };
   const CHART_DATASET_MEMO_LIMIT = 160;
+  const metricContextMemo = new Map();
+  const metricContextMemoStats = { hits: 0, misses: 0 };
+  const METRIC_CONTEXT_MEMO_LIMIT = 48;
+  const chartLegendMemo = new Map();
+  const CHART_LEGEND_MEMO_LIMIT = 160;
+  const chartPreviewMarkupMemo = new Map();
+  const CHART_PREVIEW_MEMO_LIMIT = 160;
+  let traceRenderContextMemoKey = '';
+  let traceRenderContextMemoValue = null;
 
   const safeText = (s) => (typeof s === 'string' ? s : '');
   const FETCH_CACHE_MODE = {
@@ -285,6 +294,11 @@
   function bumpScienceCacheRevision() {
     scienceCacheRevision += 1;
     chartDatasetMemo.clear();
+    metricContextMemo.clear();
+    chartLegendMemo.clear();
+    chartPreviewMarkupMemo.clear();
+    traceRenderContextMemoKey = '';
+    traceRenderContextMemoValue = null;
   }
 
   function postUrl(id) {
@@ -887,6 +901,60 @@
     return styleConfig;
   }
 
+  function getChartStyleSignature(chartNode) {
+    if (!chartNode || chartNode.role !== 'chart') return 'default';
+
+    const styleNodes = getChartLinkedNodes(chartNode, 'bottom');
+    if (!styleNodes.length) return 'default';
+
+    return styleNodes.map((node) => {
+      if (!node || node.role !== 'style') {
+        return `${String(node?.uid || '')}:${String(node?.cardId || '')}`;
+      }
+
+      ensureNodeSettings(node);
+
+      if (node.cardId === 'style-depth') {
+        const settings = normalizeStyleDepthSettings(node.settings?.styleDepth);
+        return `${node.uid}:depth:${settings.depth}:${settings.glow}`;
+      }
+
+      if (node.cardId === 'style-color') {
+        const settings = normalizeStyleColorSettings(node.settings?.styleColor);
+        return `${node.uid}:color:${settings.palette}:${settings.contrast}`;
+      }
+
+      if (node.cardId === 'style-3d') {
+        const settings = normalizeStyleThreeDSettings(node.settings?.style3d);
+        return `${node.uid}:three-d:${settings.relief}:${settings.softness}`;
+      }
+
+      return `${node.uid}:${String(node.cardId || '')}:${JSON.stringify(node.settings || {})}`;
+    }).join('|');
+  }
+
+  function getBoardChartPreviewCacheKey(chartNode) {
+    if (!chartNode || chartNode.role !== 'chart') return '';
+    const kind = getChartKindFromCard(chartNode);
+    const expandedFlag = isExpandedChartLegend(chartNode) ? 'expanded' : 'compact';
+    return [
+      pageLang,
+      kind,
+      expandedFlag,
+      getChartDatasetMemoKey(chartNode),
+      getChartStyleSignature(chartNode)
+    ].join('|');
+  }
+
+  function pushChartPreviewMarkupMemo(cacheKey, markup) {
+    if (!cacheKey || !markup) return;
+    if (chartPreviewMarkupMemo.size >= CHART_PREVIEW_MEMO_LIMIT) {
+      const oldestKey = chartPreviewMarkupMemo.keys().next().value;
+      if (oldestKey) chartPreviewMarkupMemo.delete(oldestKey);
+    }
+    chartPreviewMarkupMemo.set(cacheKey, markup);
+  }
+
   function summarizeSourceBlendValue(rawValue) {
     const normalized = String(rawValue || '').replace(/\s*[|+]\s*/g, ' / ').replace(/\s{2,}/g, ' ').trim();
     if (!normalized) return '--';
@@ -1346,7 +1414,34 @@
     return String(node?.settings?.metric || getDefaultMetricForCard(node?.cardId)).toLowerCase();
   }
 
+  function getMetricContextMemoKey(range = heroState.range || 6, sourceBlend = SOURCE_DEFAULT_BLEND) {
+    const normalizedBlend = normalizeSourceBlend(sourceBlend || SOURCE_DEFAULT_BLEND);
+    return [
+      scienceCacheRevision,
+      clampRangeMonths(range),
+      normalizedBlend.arxiv,
+      normalizedBlend.journal,
+      normalizedBlend.nasa
+    ].join('|');
+  }
+
+  function pushMetricContextMemo(cacheKey, context) {
+    if (!cacheKey || !context) return;
+    if (metricContextMemo.size >= METRIC_CONTEXT_MEMO_LIMIT) {
+      const oldestKey = metricContextMemo.keys().next().value;
+      if (oldestKey) metricContextMemo.delete(oldestKey);
+    }
+    metricContextMemo.set(cacheKey, context);
+  }
+
   function buildMetricContext(range = heroState.range || 6, sourceBlend = SOURCE_DEFAULT_BLEND) {
+    const cacheKey = getMetricContextMemoKey(range, sourceBlend);
+    if (cacheKey && metricContextMemo.has(cacheKey)) {
+      metricContextMemoStats.hits += 1;
+      return metricContextMemo.get(cacheKey) || null;
+    }
+    metricContextMemoStats.misses += 1;
+
     const arxivData = scienceCache.arxiv || heroState.data;
     const normalizedBlend = normalizeSourceBlend(sourceBlend || SOURCE_DEFAULT_BLEND);
 
@@ -1408,7 +1503,7 @@
     const items = getArxivItemsInMonths(arxivData?.items || [], months);
     const topKeyword = extractTopKeyword(items);
 
-    return {
+    const context = {
       months,
       series,
       items,
@@ -1420,6 +1515,9 @@
         nasa: nasaSeries.map((value) => value * nasaWeight)
       }
     };
+
+    if (cacheKey) pushMetricContextMemo(cacheKey, context);
+    return context;
   }
 
   function buildMetricSeries(metricId, context, keywordHint = '') {
@@ -1495,7 +1593,7 @@
   }
 
 
-  function updateNodeMetricSnapshot(node, rangeHint = heroState.range || 6) {
+  function updateNodeMetricSnapshot(node, rangeHint = heroState.range || 6, options = null) {
     if (!node) return;
 
     ensureNodeSettings(node);
@@ -1559,7 +1657,7 @@
       }
     }
 
-    const context = buildMetricContext(effectiveRange, sourceBlend);
+    const context = options?.context || buildMetricContext(effectiveRange, options?.sourceBlend || sourceBlend);
     const metric = resolveMetricForNode(node);
     const keyword = node.settings.keyword || '';
     const metricSeries = buildMetricSeries(metric, context, keyword);
@@ -2641,9 +2739,19 @@
     return isEn ? `${summary} of ${subject}` : `${summary} de ${subject}`;
   }
 
+  function getAutoChartTitleCacheKey(chartNode) {
+    if (!chartNode || chartNode.role !== 'chart') return '';
+    return `${pageLang}|${chartNode.uid}|${chartNode.cardId || ''}|${getChartDatasetMemoKey(chartNode)}`;
+  }
+
   function syncAutoChartTitle(chartNode) {
     if (!chartNode || chartNode.role !== 'chart') return;
+    const titleCacheKey = getAutoChartTitleCacheKey(chartNode);
+    if (chartNode.__autoTitleCacheKey === titleCacheKey) return;
+
+    boardPerfCounters.autoTitleBuilds += 1;
     const nextTitle = String(buildAutoChartTitle(chartNode) || '').trim();
+    chartNode.__autoTitleCacheKey = titleCacheKey;
     if (!nextTitle || chartNode.title === nextTitle) return;
     chartNode.title = nextTitle;
   }
@@ -2657,6 +2765,13 @@
     if (!dataset.channels.length) {
       return `<div class="chart-preview-empty">${isEn ? 'Add input cards on the left slot.' : 'Agrega tarjetas de entrada en el slot izquierdo.'}</div>`;
     }
+
+    const cacheKey = getBoardChartPreviewCacheKey(chartNode);
+    if (cacheKey && chartPreviewMarkupMemo.has(cacheKey)) {
+      return chartPreviewMarkupMemo.get(cacheKey) || '';
+    }
+
+    boardPerfCounters.chartPreviewBuilds += 1;
 
     const kind = getChartKindFromCard(chartNode);
     const styleConfig = getChartStyleConfig(chartNode, dataset);
@@ -2683,11 +2798,14 @@
     const leadLabel = top ? truncate(top.label, 42) : '--';
     const meta = `${isEn ? 'Lead' : 'Lider'}: ${leadLabel}`;
 
-    return `
+    const markup = `
       ${svg}
       ${legend}
       <div class="chart-preview-meta">${escapeHtml(meta)}</div>
     `;
+
+    if (cacheKey) pushChartPreviewMarkupMemo(cacheKey, markup);
+    return markup;
   }
 
   function syncBoardNodesFromTemplates(els) {
@@ -4353,6 +4471,23 @@
     inspectorChartLinks: 'Chart links',
     inspectorNoLinks: 'No linked cards yet',
     inspectorRemove: 'Remove card',
+    mobileViewsLabel: 'Smartboard views',
+    mobileViewDecks: 'Decks',
+    mobileViewBoard: 'Board',
+    mobileViewInspector: 'Inspector',
+    mobileTouchModeLabel: 'Touch mode',
+    mobileTouchSelect: 'Select',
+    mobileTouchMove: 'Move',
+    mobileMoreActions: 'More actions',
+    mobileHideActions: 'Hide extra actions',
+    mobileCanvasSettings: 'Settings',
+    mobileCanvasSettingsOpen: 'Show canvas settings',
+    mobileCanvasSettingsClose: 'Hide canvas settings',
+    mobileCloseInspector: 'Close inspector',
+    mobileQuickEdit: 'Edit',
+    mobileEmptyTemplates: 'Use a template',
+    mobileEmptyDecks: 'Browse decks',
+    mobileSelectionSummary: (n) => n === 1 ? '1 card selected' : `${n} cards selected`,
     traceSource: 'Source',
     traceTimestamp: 'Timestamp',
     traceFormula: 'Formula',
@@ -4434,6 +4569,23 @@
     inspectorChartLinks: 'Enlaces del grafico',
     inspectorNoLinks: 'Aun sin tarjetas enlazadas',
     inspectorRemove: 'Eliminar tarjeta',
+    mobileViewsLabel: 'Vistas del smartboard',
+    mobileViewDecks: 'Tarjeteros',
+    mobileViewBoard: 'Pizarra',
+    mobileViewInspector: 'Inspector',
+    mobileTouchModeLabel: 'Modo tactil',
+    mobileTouchSelect: 'Seleccionar',
+    mobileTouchMove: 'Mover',
+    mobileMoreActions: 'Mas acciones',
+    mobileHideActions: 'Ocultar acciones extra',
+    mobileCanvasSettings: 'Ajustes',
+    mobileCanvasSettingsOpen: 'Mostrar ajustes de lienzo',
+    mobileCanvasSettingsClose: 'Ocultar ajustes de lienzo',
+    mobileCloseInspector: 'Cerrar inspector',
+    mobileQuickEdit: 'Editar',
+    mobileEmptyTemplates: 'Usar plantilla',
+    mobileEmptyDecks: 'Ver tarjeteros',
+    mobileSelectionSummary: (n) => n === 1 ? '1 tarjeta seleccionada' : `${n} tarjetas seleccionadas`,
     traceSource: 'Fuente',
     traceTimestamp: 'Marca temporal',
     traceFormula: 'Formula',
@@ -4707,6 +4859,17 @@
   let boardPersistenceEnabled = false;
   let boardNodeFocusTimer = 0;
   let boardInspectorFocusTimer = 0;
+  let boardTemplateImportPending = false;
+  const boardPerfCounters = {
+    renderBoardCanvas: 0,
+    refreshLinkedDataNodes: 0,
+    historySerialize: 0,
+    autoTitleBuilds: 0,
+    legendMapBuilds: 0,
+    traceContextBuilds: 0,
+    chartPreviewBuilds: 0,
+    slotRealigns: 0
+  };
   const boardRenderCache = {
     mode: '',
     nodeOrder: [],
@@ -4720,6 +4883,26 @@
     index: -1,
     limit: 90,
     suspended: false
+  };
+  let boardHistoryDirty = true;
+
+  function markBoardHistoryDirty() {
+    boardHistoryDirty = true;
+  }
+
+  function clearBoardHistoryDirty() {
+    boardHistoryDirty = false;
+  }
+
+  const BOARD_MOBILE_BREAKPOINT = 860;
+  const BOARD_MOBILE_VIEWS = ['decks', 'board', 'inspector'];
+  const BOARD_TOUCH_MODES = ['select', 'move'];
+  const boardMobileState = {
+    view: 'decks',
+    touchMode: 'select',
+    actionsMenuOpen: false,
+    canvasSettingsOpen: false,
+    inspectorSheetOpen: false
   };
 
   const boardMarquee = {
@@ -5008,6 +5191,7 @@
       renderBoardCanvas(els);
     }
 
+    clearBoardHistoryDirty();
     return nodes.length > 0;
   }
 
@@ -5418,14 +5602,59 @@
     if (!button) return;
 
     const loading = !!isLoading;
-    button.classList.toggle('is-loading', loading);
+    button.classList?.toggle?.('is-loading', loading);
+    if ('disabled' in button) {
+      button.disabled = loading;
+    }
     if (loading) {
-      button.setAttribute('aria-busy', 'true');
+      button.setAttribute?.('aria-busy', 'true');
     } else {
-      button.removeAttribute('aria-busy');
+      button.removeAttribute?.('aria-busy');
     }
 
     syncBoardActionButtons(widgetBoardEls);
+  }
+
+  function setTemplateImportLoading(els, activeButton, isLoading) {
+    const loading = !!isLoading;
+    const buttons = Array.from(els?.modalList?.querySelectorAll?.('[data-apply-template]') || []);
+
+    buttons.forEach((button) => {
+      if (button === activeButton) {
+        setBoardActionLoading(button, loading);
+        return;
+      }
+
+      if ('disabled' in button) {
+        button.disabled = loading;
+      }
+      button.classList?.toggle?.('is-busy-peer', loading);
+      if (loading) {
+        button.setAttribute?.('aria-disabled', 'true');
+      } else {
+        button.removeAttribute?.('aria-disabled');
+      }
+    });
+
+    if (activeButton && !buttons.includes(activeButton)) {
+      setBoardActionLoading(activeButton, loading);
+    }
+
+    els?.modalList?.classList?.toggle?.('is-busy', loading);
+  }
+
+  function waitForNextBoardPaint() {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => resolve());
+        return;
+      }
+
+      const schedule = typeof window !== 'undefined' && typeof window.setTimeout === 'function'
+        ? window.setTimeout.bind(window)
+        : setTimeout;
+      schedule(resolve, 0);
+    });
   }
 
   async function runBoardAction(button, action) {
@@ -5612,6 +5841,12 @@
 
 
   function buildTraceRenderContext() {
+    const cacheKey = `${pageLang}|${scienceCacheRevision}`;
+    if (traceRenderContextMemoKey === cacheKey && traceRenderContextMemoValue) {
+      return traceRenderContextMemoValue;
+    }
+
+    boardPerfCounters.traceContextBuilds += 1;
     const latestBySource = {
       arxiv: getSourceLatestIso('arxiv'),
       journal: getSourceLatestIso('journal'),
@@ -5624,11 +5859,14 @@
       latestBySource.nasa
     ]);
 
-    return {
+    traceRenderContextMemoKey = cacheKey;
+    traceRenderContextMemoValue = {
       latestBySource,
       latestAny,
       defaultSourceBlend: formatSourceBlendForTrace(getDefaultSourceBlendFromCache())
     };
+
+    return traceRenderContextMemoValue;
   }
 
   function buildNodeTraceSourceContext(node, traceContext = null) {
@@ -5914,6 +6152,9 @@
     if (boardState.optionsNodeId) boardState.optionsNodeId = '';
 
     renderBoardCanvas(els);
+    if (isBoardMobileUI()) {
+      closeBoardInspectorSheet(els, { view: 'board' });
+    }
 
     window.requestAnimationFrame(() => {
       if (!els?.canvas) return;
@@ -5959,11 +6200,25 @@
 
     window.requestAnimationFrame(() => {
       if (!els?.inspector) return;
+      if (isBoardMobileUI()) {
+        openBoardInspectorSheet(els);
+        highlightInspectorPanel(els);
+        return;
+      }
       els.inspector.scrollIntoView({ behavior: 'smooth', block: 'center' });
       highlightInspectorPanel(els);
     });
 
     return true;
+  }
+
+  function getBoardEmptyActionsMarkup() {
+    return `
+      <div class="widget-empty-actions">
+        <button type="button" class="widget-empty-action is-primary" data-board-empty-action="templates">${boardText.mobileEmptyTemplates}</button>
+        <button type="button" class="widget-empty-action" data-board-empty-action="decks">${boardText.mobileEmptyDecks}</button>
+      </div>
+    `;
   }
 
   function getBoardQuickHelpMarkup() {
@@ -6131,19 +6386,26 @@
   }
 
   function pushBoardHistoryState() {
-    if (boardHistory.suspended) return;
+    if (boardHistory.suspended || !boardHistoryDirty) return false;
 
     let serialized = '';
     try {
+      boardPerfCounters.historySerialize += 1;
       serialized = JSON.stringify(buildBoardHistorySnapshot());
     } catch {
-      return;
+      return false;
     }
 
-    if (!serialized) return;
+    if (!serialized) {
+      clearBoardHistoryDirty();
+      return false;
+    }
 
     const current = boardHistory.index >= 0 ? boardHistory.stack[boardHistory.index] : '';
-    if (serialized === current) return;
+    if (serialized === current) {
+      clearBoardHistoryDirty();
+      return false;
+    }
 
     if (boardHistory.index < boardHistory.stack.length - 1) {
       boardHistory.stack = boardHistory.stack.slice(0, boardHistory.index + 1);
@@ -6155,11 +6417,14 @@
     }
 
     boardHistory.index = boardHistory.stack.length - 1;
+    clearBoardHistoryDirty();
+    return true;
   }
 
   function initBoardHistoryState() {
     boardHistory.stack = [];
     boardHistory.index = -1;
+    markBoardHistoryDirty();
     pushBoardHistoryState();
   }
 
@@ -6225,6 +6490,7 @@
       renderBoardCanvas(els);
     } finally {
       boardHistory.suspended = false;
+      clearBoardHistoryDirty();
     }
 
     return true;
@@ -6455,6 +6721,7 @@
   }
 
   function adjustCanvasSpace(direction, els) {
+    markBoardHistoryDirty();
     const step = normalizeCanvasStep(boardState.canvasStep);
     const normalized = direction > 0 ? 1 : -1;
     if (!step || !normalized) return;
@@ -6490,6 +6757,11 @@
     return {
       section: document.getElementById('widget-board'),
       body: document.getElementById('widgetboard-body'),
+      actionsBar: document.getElementById('widget-actions-bar'),
+      actionsToggleBtn: document.getElementById('widget-actions-toggle'),
+      actionsOverflow: document.getElementById('widget-actions-overflow'),
+      mobileNav: document.getElementById('widget-mobile-nav'),
+      mobileViewButtons: Array.from(document.querySelectorAll('#widget-mobile-nav [data-mobile-view]')),
       collapseToggleBtn: document.getElementById('widgetboard-collapse-toggle'),
       arxivSection: document.getElementById('arxiv-board'),
       arxivBody: document.getElementById('arxivboard-body'),
@@ -6499,13 +6771,22 @@
       modalBack: document.getElementById('widget-modal-back'),
       modalTitle: document.getElementById('widget-modal-title'),
       modalList: document.getElementById('widget-modal-list'),
+      canvasShell: document.getElementById('widget-canvas-shell'),
       canvas: document.getElementById('widget-canvas'),
       canvasMeta: document.getElementById('widget-canvas-meta'),
+      canvasSettingsToggleBtn: document.getElementById('widget-canvas-settings-toggle'),
+      canvasSettingsPanel: document.getElementById('widget-canvas-settings-panel'),
+      touchMode: document.getElementById('widget-touch-mode'),
+      touchModeButtons: Array.from(document.querySelectorAll('#widget-touch-mode [data-touch-mode]')),
       gapLessBtn: document.getElementById('widget-gap-less'),
       gapMoreBtn: document.getElementById('widget-gap-more'),
       gapStepLabel: document.getElementById('widget-gap-step-label'),
       gapStepButtons: Array.from(document.querySelectorAll('[data-gap-step]')),
       inspector: document.getElementById('widget-inspector'),
+      inspectorBackdrop: document.getElementById('widget-inspector-backdrop'),
+      mobileSelectionBar: document.getElementById('widget-mobile-selection-bar'),
+      mobileSelectionSummary: document.getElementById('widget-mobile-selection-summary'),
+      mobileSelectionActionButtons: Array.from(document.querySelectorAll('#widget-mobile-selection-bar [data-mobile-selection-action]')),
       clearBtn: document.getElementById('widget-clear'),
       templatesBtn: document.getElementById('widget-templates'),
       exportPngBtn: document.getElementById('widget-export-png'),
@@ -6514,6 +6795,267 @@
       helpToggleBtn: document.getElementById('widget-help-toggle'),
       helpPopover: document.getElementById('widget-help-popover')
     };
+  }
+
+  function isBoardMobileUI() {
+    if (typeof window === 'undefined') return false;
+    if (typeof window.matchMedia === 'function') {
+      return window.matchMedia(`(max-width: ${BOARD_MOBILE_BREAKPOINT}px)`).matches;
+    }
+    return window.innerWidth <= BOARD_MOBILE_BREAKPOINT;
+  }
+
+  function normalizeBoardMobileView(raw) {
+    const view = String(raw || '').toLowerCase();
+    return BOARD_MOBILE_VIEWS.includes(view) ? view : 'board';
+  }
+
+  function normalizeBoardTouchMode(raw) {
+    const mode = String(raw || '').toLowerCase();
+    return BOARD_TOUCH_MODES.includes(mode) ? mode : 'select';
+  }
+
+  function closeBoardTransientPanels(els, options = {}) {
+    if (!options.keepMenu) boardMobileState.actionsMenuOpen = false;
+    if (!options.keepSettings) boardMobileState.canvasSettingsOpen = false;
+    if (!options.keepInspector) {
+      boardMobileState.inspectorSheetOpen = false;
+      if (boardMobileState.view === 'inspector') {
+        boardMobileState.view = boardState.nodes.length ? 'board' : 'decks';
+      }
+    }
+    if (!options.keepHelp && boardState.helpOpen) {
+      setBoardHelpOpen(false, els);
+    }
+    syncBoardMobileUI(els);
+  }
+
+  function setBoardActionsMenuOpen(nextOpen, els) {
+    const open = isBoardMobileUI() && !!nextOpen;
+    boardMobileState.actionsMenuOpen = open;
+    if (open) {
+      boardMobileState.canvasSettingsOpen = false;
+      boardMobileState.inspectorSheetOpen = false;
+      if (boardState.helpOpen) setBoardHelpOpen(false, els);
+    }
+    syncBoardMobileUI(els);
+  }
+
+  function setCanvasSettingsOpen(nextOpen, els) {
+    const open = isBoardMobileUI() && !!nextOpen;
+    boardMobileState.canvasSettingsOpen = open;
+    if (open) {
+      boardMobileState.actionsMenuOpen = false;
+      if (boardState.helpOpen) setBoardHelpOpen(false, els);
+      boardMobileState.view = 'board';
+    }
+    syncBoardMobileUI(els);
+  }
+
+  function setBoardMobileTouchMode(nextMode, els) {
+    boardMobileState.touchMode = normalizeBoardTouchMode(nextMode);
+    syncBoardMobileUI(els);
+  }
+
+  function setBoardMobileView(nextView, els, options = {}) {
+    if (!isBoardMobileUI()) {
+      boardMobileState.view = 'board';
+      boardMobileState.actionsMenuOpen = false;
+      boardMobileState.canvasSettingsOpen = false;
+      boardMobileState.inspectorSheetOpen = false;
+      syncBoardMobileUI(els);
+      return;
+    }
+
+    const view = normalizeBoardMobileView(nextView);
+    boardMobileState.view = view;
+    boardMobileState.actionsMenuOpen = false;
+    boardMobileState.canvasSettingsOpen = false;
+    boardMobileState.inspectorSheetOpen = view === 'inspector';
+    if (view === 'inspector') {
+      boardState.inspectorCollapsed = false;
+    }
+    if (!options.keepHelp && view !== 'board' && boardState.helpOpen) {
+      setBoardHelpOpen(false, els);
+    }
+
+    syncBoardMobileUI(els);
+
+    if (view === 'board' && options.scroll !== false) {
+      window.requestAnimationFrame(() => {
+        els?.canvasShell?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
+  function openBoardInspectorSheet(els, options = {}) {
+    if (!isBoardMobileUI()) return;
+    boardMobileState.view = 'inspector';
+    boardMobileState.inspectorSheetOpen = true;
+    boardState.inspectorCollapsed = false;
+    boardMobileState.actionsMenuOpen = false;
+    boardMobileState.canvasSettingsOpen = false;
+    if (!options.keepHelp && boardState.helpOpen) {
+      setBoardHelpOpen(false, els);
+    }
+    syncBoardMobileUI(els);
+  }
+
+  function closeBoardInspectorSheet(els, options = {}) {
+    boardMobileState.inspectorSheetOpen = false;
+    if (isBoardMobileUI()) {
+      boardMobileState.view = options.view
+        ? normalizeBoardMobileView(options.view)
+        : (boardState.nodes.length ? 'board' : 'decks');
+    }
+    syncBoardMobileUI(els);
+  }
+
+  function buildMobileSelectionSummary() {
+    return boardText.mobileSelectionSummary(getSelectedBoardNodeIds().length);
+  }
+
+  function syncBoardMobileSelectionBar(els) {
+    const bar = els?.mobileSelectionBar;
+    if (!bar) return;
+
+    const mobile = isBoardMobileUI();
+    const selectionIds = getSelectedBoardNodeIds();
+    const count = selectionIds.length;
+    const singleNode = count === 1 ? (getNodeById(selectionIds[0]) || getActiveBoardNode()) : null;
+    const show = mobile
+      && count > 0
+      && boardMobileState.view === 'board'
+      && !boardMobileState.inspectorSheetOpen
+      && !els?.section?.classList.contains('is-collapsed');
+
+    bar.hidden = !show;
+    bar.setAttribute('aria-hidden', show ? 'false' : 'true');
+
+    if (els.mobileSelectionSummary) {
+      els.mobileSelectionSummary.textContent = count ? buildMobileSelectionSummary() : '';
+    }
+
+    const canDetach = !!(singleNode && singleNode.role !== 'chart' && singleNode.attachedTo);
+    (Array.isArray(els.mobileSelectionActionButtons) ? els.mobileSelectionActionButtons : []).forEach((button) => {
+      const action = button.getAttribute('data-mobile-selection-action') || '';
+      if (action === 'inspect') button.textContent = boardText.mobileQuickEdit;
+      if (action === 'duplicate') button.textContent = boardText.inspectorDuplicate;
+      if (action === 'detach') button.textContent = boardText.inspectorDetach;
+      if (action === 'remove') button.textContent = boardText.inspectorRemove;
+
+      if (action === 'detach') {
+        button.hidden = !canDetach;
+        button.disabled = !canDetach;
+        return;
+      }
+
+      button.hidden = false;
+      button.disabled = !count;
+    });
+  }
+
+  function syncBoardMobileUI(els) {
+    if (!els?.section) return;
+
+    const mobile = isBoardMobileUI();
+    if (!mobile) {
+      boardMobileState.view = 'board';
+      boardMobileState.actionsMenuOpen = false;
+      boardMobileState.canvasSettingsOpen = false;
+      boardMobileState.inspectorSheetOpen = false;
+    }
+
+    const view = mobile ? normalizeBoardMobileView(boardMobileState.view) : 'board';
+    const touchMode = normalizeBoardTouchMode(boardMobileState.touchMode);
+    const menuOpen = mobile && boardMobileState.actionsMenuOpen;
+    const settingsOpen = mobile && boardMobileState.canvasSettingsOpen;
+    const inspectorOpen = mobile && boardMobileState.inspectorSheetOpen && !els.section.classList.contains('is-collapsed');
+
+    boardMobileState.view = view;
+    boardMobileState.touchMode = touchMode;
+
+    els.section.classList.toggle('is-mobile-ui', mobile);
+    els.section.classList.toggle('is-mobile-inspector-open', inspectorOpen);
+    els.section.classList.toggle('is-mobile-actions-open', menuOpen);
+    els.section.classList.toggle('is-mobile-settings-open', settingsOpen);
+    els.section.classList.toggle('is-touch-mode-select', touchMode === 'select');
+    els.section.classList.toggle('is-touch-mode-move', touchMode === 'move');
+
+    if (els.body) {
+      els.body.setAttribute('data-mobile-view', view);
+    }
+
+    if (els.actionsBar) {
+      els.actionsBar.classList.toggle('is-menu-open', menuOpen);
+    }
+
+    if (els.actionsToggleBtn) {
+      const label = menuOpen ? boardText.mobileHideActions : boardText.mobileMoreActions;
+      els.actionsToggleBtn.hidden = !mobile;
+      els.actionsToggleBtn.textContent = menuOpen ? (isEn ? 'Close' : 'Cerrar') : (isEn ? 'More' : 'Mas');
+      els.actionsToggleBtn.setAttribute('aria-expanded', menuOpen ? 'true' : 'false');
+      els.actionsToggleBtn.setAttribute('aria-label', label);
+      els.actionsToggleBtn.setAttribute('title', label);
+    }
+
+    if (els.actionsOverflow) {
+      els.actionsOverflow.setAttribute('aria-hidden', mobile && !menuOpen ? 'true' : 'false');
+    }
+
+    if (els.mobileNav) {
+      els.mobileNav.hidden = !mobile;
+      els.mobileNav.setAttribute('aria-label', boardText.mobileViewsLabel);
+    }
+
+    (Array.isArray(els.mobileViewButtons) ? els.mobileViewButtons : []).forEach((button) => {
+      const targetView = normalizeBoardMobileView(button.getAttribute('data-mobile-view'));
+      const active = mobile && targetView === view;
+      const labelMap = {
+        decks: boardText.mobileViewDecks,
+        board: boardText.mobileViewBoard,
+        inspector: boardText.mobileViewInspector
+      };
+      button.textContent = labelMap[targetView] || targetView;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (els.touchMode) {
+      els.touchMode.hidden = !mobile;
+      els.touchMode.setAttribute('aria-label', boardText.mobileTouchModeLabel);
+    }
+
+    (Array.isArray(els.touchModeButtons) ? els.touchModeButtons : []).forEach((button) => {
+      const mode = normalizeBoardTouchMode(button.getAttribute('data-touch-mode'));
+      const active = touchMode === mode;
+      button.textContent = mode === 'move' ? boardText.mobileTouchMove : boardText.mobileTouchSelect;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (els.canvasSettingsToggleBtn) {
+      const label = settingsOpen ? boardText.mobileCanvasSettingsClose : boardText.mobileCanvasSettingsOpen;
+      els.canvasSettingsToggleBtn.hidden = !mobile;
+      els.canvasSettingsToggleBtn.textContent = boardText.mobileCanvasSettings;
+      els.canvasSettingsToggleBtn.setAttribute('aria-expanded', settingsOpen ? 'true' : 'false');
+      els.canvasSettingsToggleBtn.setAttribute('aria-label', label);
+      els.canvasSettingsToggleBtn.setAttribute('title', label);
+    }
+
+    if (els.canvasSettingsPanel) {
+      els.canvasSettingsPanel.setAttribute('aria-hidden', mobile && !settingsOpen ? 'true' : 'false');
+    }
+
+    if (els.canvasShell) {
+      els.canvasShell.classList.toggle('is-settings-open', settingsOpen);
+    }
+
+    if (els.inspectorBackdrop) {
+      els.inspectorBackdrop.hidden = !inspectorOpen;
+    }
+
+    syncBoardMobileSelectionBar(els);
   }
 
   function syncWidgetBoardCollapseUI(els) {
@@ -6542,10 +7084,12 @@
 
     if (shouldCollapse) {
       closeModal(els.modal);
-      if (boardState.helpOpen) setBoardHelpOpen(false, els);
+      closeBoardTransientPanels(els);
+      boardMobileState.view = boardState.nodes.length ? 'board' : 'decks';
     }
 
     syncWidgetBoardCollapseUI(els);
+    syncBoardMobileUI(els);
 
     if (!shouldCollapse && els.deckRail) {
       window.requestAnimationFrame(() => {
@@ -6725,6 +7269,9 @@
 
   function openModal(modal) {
     if (!modal) return;
+    if (widgetBoardEls) {
+      closeBoardTransientPanels(widgetBoardEls);
+    }
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
   }
@@ -6882,10 +7429,17 @@
 
     const mode = options.mode === 'replace' ? 'replace' : 'append';
     if (mode === 'replace') {
-      resetWidgetBoard(els);
+      resetWidgetBoard(els, { deferRender: true });
     }
 
-    const chartNode = addCardToBoard(template.chart.deckId, template.chart.cardId, els, { deferRender: true });
+    const templateNodeOptions = {
+      deferRender: true,
+      skipSelection: true,
+      skipLinkedRefresh: true,
+      skipSlotRealign: true
+    };
+
+    const chartNode = addCardToBoard(template.chart.deckId, template.chart.cardId, els, templateNodeOptions);
     if (!chartNode || chartNode.role !== 'chart') {
       renderBoardCanvas(els);
       closeModal(els.modal);
@@ -6893,21 +7447,46 @@
     }
 
     (template.cards || []).forEach((entry) => {
-      const node = addCardToBoard(entry.deckId, entry.cardId, els, { deferRender: true });
+      const node = addCardToBoard(entry.deckId, entry.cardId, els, templateNodeOptions);
       if (!node) return;
       if (entry.settings) {
         applyTemplateSettingsToNode(node, entry.settings);
       }
     });
 
+    realignChartSlots(chartNode, els.canvas);
+    refreshLinkedDataNodes(chartNode);
+
     boardState.selectedChartId = chartNode.uid;
     boardState.activeNodeId = chartNode.uid;
+    boardState.detailNodeId = '';
+    boardState.optionsNodeId = '';
+    if (isBoardMobileUI()) {
+      boardMobileState.view = 'board';
+      boardMobileState.actionsMenuOpen = false;
+      boardMobileState.canvasSettingsOpen = false;
+      boardMobileState.inspectorSheetOpen = false;
+    }
     setBoardSelection([chartNode.uid], { activeId: chartNode.uid });
-    refreshLinkedDataNodes(chartNode);
-    updateCanvasSize(els);
     renderBoardCanvas(els);
     closeModal(els.modal);
     return true;
+  }
+
+  async function importBoardTemplate(templateId, els, options = {}) {
+    if (boardTemplateImportPending) return false;
+
+    const activeButton = options.triggerButton || null;
+    boardTemplateImportPending = true;
+    setTemplateImportLoading(els, activeButton, true);
+
+    try {
+      await waitForNextBoardPaint();
+      return applyBoardTemplate(templateId, els, options);
+    } finally {
+      setTemplateImportLoading(els, activeButton, false);
+      boardTemplateImportPending = false;
+    }
   }
 
   function getNodeById(nodeId) {
@@ -6919,10 +7498,14 @@
   }
 
   function refreshLinkedDataNodes(chartOrId, rangeHint) {
+    boardPerfCounters.refreshLinkedDataNodes += 1;
+
     const chart = typeof chartOrId === 'string' ? getNodeById(chartOrId) : chartOrId;
     if (!chart || chart.role !== 'chart' || !chart.links) return false;
 
     const range = clampRangeMonths(rangeHint || getChartRange(chart));
+    const sourceBlend = getChartSourceBlend(chart);
+    const metricContext = buildMetricContext(range, sourceBlend);
     let changed = false;
 
     (chart.links.top || []).forEach((nodeId) => {
@@ -6941,7 +7524,7 @@
       if (!node || node.role !== 'data') return;
       const prevValue = String(node.value || '');
       const prevTitle = String(node.title || '');
-      updateNodeMetricSnapshot(node, range);
+      updateNodeMetricSnapshot(node, range, { context: metricContext, sourceBlend });
       if (prevValue !== String(node.value || '') || prevTitle !== String(node.title || '')) {
         changed = true;
       }
@@ -7187,6 +7770,7 @@
 
   function beginCanvasSelection(event, els) {
     if (!els?.canvas || boardDrag.active || boardResize.active || boardHold.active) return false;
+    if (event.pointerType === 'touch' && isBoardMobileUI()) return false;
     if (typeof event.button === 'number' && event.button !== 0) return false;
     if (event.target.closest('.board-node')) return false;
     if (event.target.closest('[data-resize-dir]')) return false;
@@ -7428,6 +8012,10 @@
 
     if (boardResize.moved) boardDrag.skipClick = true;
 
+    if (boardResize.moved) {
+      markBoardHistoryDirty();
+    }
+
     clearBoardResize();
 
     if (els?.canvas) {
@@ -7447,6 +8035,7 @@
   }
 
   function detachNode(nodeId) {
+    markBoardHistoryDirty();
     boardState.nodes.forEach((node) => {
       if (node.uid === nodeId) {
         node.attachedTo = '';
@@ -7556,23 +8145,63 @@
     };
   }
 
+  function getChartSlotLayoutCacheKey(chart, canvas) {
+    if (!chart || chart.role !== 'chart' || !chart.links) return '';
+
+    const { width } = getCanvasSize(canvas);
+    const slotsKey = ['top', 'left', 'right', 'bottom'].map((slot) => {
+      const slotNodes = Array.isArray(chart.links?.[slot]) ? chart.links[slot] : [];
+      const nodeKey = slotNodes.map((nodeId) => {
+        const node = getNodeById(nodeId);
+        if (!node) return String(nodeId || '');
+        return `${node.uid}:${node.role}:${Math.round(Number(node.w || 0))}x${Math.round(Number(node.h || 0))}:${node.compact ? 1 : 0}`;
+      }).join(',');
+      return `${slot}=${nodeKey}`;
+    }).join('|');
+
+    return `${pageLang}|${Math.round(Number(chart.x || 0))}:${Math.round(Number(chart.y || 0))}:${Math.round(Number(chart.w || 0))}:${Math.round(Number(chart.h || 0))}|cw:${Math.round(width)}|data:${getChartDatasetMemoKey(chart)}|${slotsKey}`;
+  }
+
   function realignChartSlots(chart, canvas) {
-    if (!chart || chart.role !== 'chart' || !chart.links) return;
+    if (!chart || chart.role !== 'chart' || !chart.links) return false;
+
     ['top', 'left', 'right', 'bottom'].forEach((slot) => {
       chart.links[slot] = chart.links[slot].filter((nodeId) => !!getNodeById(nodeId));
       if (slot === 'left') {
         sortChartInputLinksByLegendGroup(chart);
       }
-      chart.links[slot].forEach((nodeId, idx) => {
+      chart.links[slot].forEach((nodeId) => {
         const node = getNodeById(nodeId);
         if (!node) return;
         node.attachedTo = chart.uid;
         setNodeCompact(node, true);
+      });
+    });
+
+    const layoutCacheKey = getChartSlotLayoutCacheKey(chart, canvas);
+    if (layoutCacheKey && chart.__slotLayoutCacheKey === layoutCacheKey) {
+      return false;
+    }
+
+    boardPerfCounters.slotRealigns += 1;
+
+    ['top', 'left', 'right', 'bottom'].forEach((slot) => {
+      chart.links[slot].forEach((nodeId, idx) => {
+        const node = getNodeById(nodeId);
+        if (!node) return;
         const target = getSlotTargetPosition(chart, slot, node, idx, canvas);
         node.x = target.x;
         node.y = target.y;
       });
     });
+
+    if (layoutCacheKey) {
+      chart.__slotLayoutCacheKey = layoutCacheKey;
+    } else {
+      delete chart.__slotLayoutCacheKey;
+    }
+
+    return true;
   }
 
   function findSnapCandidate(node, canvas) {
@@ -7605,10 +8234,13 @@
     return best.dist <= NODE_LAYOUT.snapDistance ? best : null;
   }
 
-  function snapNodeToChart(node, chart, slot, canvas) {
+  function snapNodeToChart(node, chart, slot, canvas, options = {}) {
     if (!node || !chart || !slot || chart.role !== 'chart' || !chart.links) return;
 
+    markBoardHistoryDirty();
     const previousChartId = node.attachedTo || '';
+    const skipSlotRealign = !!options.skipSlotRealign;
+    const skipLinkedRefresh = !!options.skipLinkedRefresh;
 
     detachNode(node.uid);
     node.attachedTo = chart.uid;
@@ -7625,11 +8257,15 @@
     boardState.selectedChartId = chart.uid;
 
     updateNodeMetricSnapshot(node, getChartRange(chart));
-    realignChartSlots(chart, canvas);
-    refreshLinkedDataNodes(chart);
+    if (!skipSlotRealign) {
+      realignChartSlots(chart, canvas);
+    }
+    if (!skipLinkedRefresh) {
+      refreshLinkedDataNodes(chart);
 
-    if (previousChartId && previousChartId !== chart.uid) {
-      refreshLinkedDataNodes(previousChartId);
+      if (previousChartId && previousChartId !== chart.uid) {
+        refreshLinkedDataNodes(previousChartId);
+      }
     }
   }
 
@@ -7665,14 +8301,14 @@
     };
   }
 
-  function attachNodeToSelectedChart(node, canvas) {
+  function attachNodeToSelectedChart(node, canvas, options = {}) {
     const slot = getSlotFromRole(node.role);
     if (!slot || !boardState.selectedChartId) return;
 
     const chart = getNodeById(boardState.selectedChartId);
     if (!chart || chart.role !== 'chart') return;
 
-    snapNodeToChart(node, chart, slot, canvas);
+    snapNodeToChart(node, chart, slot, canvas, options);
   }
 
   function createDuplicateNodeFromSource(source, offsetX = 26, offsetY = 22) {
@@ -7735,6 +8371,7 @@
 
     if (!entries.length) return [];
 
+    markBoardHistoryDirty();
     const cloneIds = entries.map((entry) => entry.clone.uid);
 
     entries.forEach(({ source, clone }) => {
@@ -7789,6 +8426,11 @@
     const template = deck?.cards?.find((card) => card.id === cardId);
     if (!template || !els?.canvas) return null;
     const deferRender = !!options.deferRender;
+    const skipSelection = !!options.skipSelection;
+    const attachOptions = {
+      skipLinkedRefresh: !!options.skipLinkedRefresh,
+      skipSlotRealign: !!options.skipSlotRealign
+    };
 
     const node = {
       uid: `wb-${++boardState.sequence}`,
@@ -7825,11 +8467,21 @@
       node.x = pos.x;
       node.y = pos.y;
       boardState.nodes.push(node);
-      attachNodeToSelectedChart(node, els.canvas);
+      attachNodeToSelectedChart(node, els.canvas, attachOptions);
     }
 
-    boardState.activeNodeId = node.uid;
-    setBoardSelection([node.uid], { activeId: node.uid });
+    if (!skipSelection) {
+      boardState.activeNodeId = node.uid;
+      setBoardSelection([node.uid], { activeId: node.uid });
+    }
+
+    markBoardHistoryDirty();
+
+    if (isBoardMobileUI()) {
+      boardMobileState.view = 'board';
+      boardMobileState.actionsMenuOpen = false;
+      boardMobileState.canvasSettingsOpen = false;
+    }
 
     if (!deferRender) {
       updateCanvasSize(els);
@@ -7864,6 +8516,7 @@
 
     boardState.nodes = boardState.nodes.filter((entry) => entry.uid !== nodeId);
     setBoardSelection(getSelectedBoardNodeIds().filter((id) => id !== nodeId));
+    markBoardHistoryDirty();
 
     if (boardState.detailNodeId && !getNodeById(boardState.detailNodeId)) {
       boardState.detailNodeId = '';
@@ -7926,6 +8579,7 @@
     nodes.forEach((node) => {
       node.locked = shouldLock;
     });
+    markBoardHistoryDirty();
 
     if (shouldLock) {
       boardState.detailNodeId = '';
@@ -7935,6 +8589,7 @@
     const activeId = ids[ids.length - 1] || boardState.activeNodeId;
     setBoardSelection(ids, { activeId });
     boardState.activeNodeId = activeId;
+    markBoardHistoryDirty();
 
     if (!options.deferRender) {
       renderBoardCanvas(els);
@@ -8096,12 +8751,36 @@
     return compact || raw;
   }
 
+  function getChartLegendMemoKey(chartNode) {
+    if (!chartNode || chartNode.role !== 'chart') return '';
+    return `${pageLang}|${chartNode.uid}|${getChartDatasetMemoKey(chartNode)}`;
+  }
+
+  function pushChartLegendMemo(cacheKey, legendMap) {
+    if (!cacheKey || !legendMap) return;
+    if (chartLegendMemo.size >= CHART_LEGEND_MEMO_LIMIT) {
+      const oldestKey = chartLegendMemo.keys().next().value;
+      if (oldestKey) chartLegendMemo.delete(oldestKey);
+    }
+    chartLegendMemo.set(cacheKey, legendMap);
+  }
+
   function buildInputLegendMapForChart(chartNode) {
     const legendMap = new Map();
     if (!chartNode || chartNode.role !== 'chart') return legendMap;
 
+    const cacheKey = getChartLegendMemoKey(chartNode);
+    if (cacheKey && chartLegendMemo.has(cacheKey)) {
+      return chartLegendMemo.get(cacheKey) || legendMap;
+    }
+
     const dataset = buildChartInputDataset(chartNode);
-    if (!dataset || !Array.isArray(dataset.channels) || !dataset.channels.length) return legendMap;
+    if (!dataset || !Array.isArray(dataset.channels) || !dataset.channels.length) {
+      if (cacheKey) pushChartLegendMemo(cacheKey, legendMap);
+      return legendMap;
+    }
+
+    boardPerfCounters.legendMapBuilds += 1;
 
     const tokenCounts = new Map();
     const channelMeta = dataset.channels.map((channel) => {
@@ -8160,6 +8839,7 @@
       });
     });
 
+    if (cacheKey) pushChartLegendMemo(cacheKey, legendMap);
     return legendMap;
   }
 
@@ -8370,11 +9050,18 @@
       : '<svg class="inspector-toggle-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.4 12.2 4.6-4.4 4.6 4.4"></path></svg>';
 
     const toggleButton = `<button type="button" class="inspector-toggle" data-inspector-collapse aria-pressed="${boardState.inspectorCollapsed ? 'true' : 'false'}" aria-label="${collapseLabel}" title="${collapseLabel}">${toggleIcon}</button>`;
+    const mobileSheetHead = `
+      <div class="mobile-inspector-sheet-head">
+        <span class="mobile-inspector-sheet-handle" aria-hidden="true"></span>
+        <button type="button" class="mobile-inspector-close" data-mobile-inspector-close aria-label="${boardText.mobileCloseInspector}" title="${boardText.mobileCloseInspector}">x</button>
+      </div>
+    `;
 
     if (!boardState.nodes.length) {
       els.inspector.hidden = false;
       els.inspector.innerHTML = `
         <section class="widget-inspector-panel is-empty${boardState.inspectorCollapsed ? ' is-collapsed' : ''}" aria-live="polite">
+          ${mobileSheetHead}
           <div class="inspector-toggle-bar">
             <h3>${boardText.inspectorTitle}</h3>
             ${toggleButton}
@@ -8385,6 +9072,7 @@
           </div>
         </section>
       `;
+      syncBoardMobileUI(els);
       return;
     }
 
@@ -8396,6 +9084,7 @@
 
     if (!activeNode) {
       els.inspector.hidden = true;
+      syncBoardMobileUI(els);
       return;
     }
 
@@ -8458,6 +9147,7 @@
     els.inspector.hidden = false;
     els.inspector.innerHTML = `
       <section class="widget-inspector-panel${boardState.inspectorCollapsed ? ' is-collapsed' : ''}" aria-live="polite">
+        ${mobileSheetHead}
         <div class="inspector-toggle-bar">
           <h3>${boardText.inspectorTitle}</h3>
           ${toggleButton}
@@ -8482,6 +9172,7 @@
         </div>
       </section>
     `;
+    syncBoardMobileUI(els);
   }
 
   function resetBoardRenderCache() {
@@ -8576,6 +9267,8 @@
   function renderBoardCanvas(els, options = {}) {
     if (!els.canvas || !els.canvasMeta) return;
 
+    boardPerfCounters.renderBoardCanvas += 1;
+
     boardState.nodes.forEach((node) => {
       ensureNodeSize(node);
       fitNodeToCanvas(node, els.canvas);
@@ -8617,8 +9310,12 @@
 
     if (!count) {
       boardState.selectedNodeIds = [];
+      if (els.canvasShell) {
+        els.canvasShell.classList.remove('is-mobile-chart-focus');
+      }
       const emptyMarkup = `
         <div class="widget-empty">
+          ${getBoardEmptyActionsMarkup()}
           ${getBoardQuickHelpMarkup()}
         </div>
       `;
@@ -8628,6 +9325,7 @@
       setBoardRenderCacheEmpty(emptyMarkup);
       renderBoardInspector(els, { traceRenderContext });
       syncBoardActionButtons(els);
+      syncBoardMobileUI(els);
       if (!options.skipHistory) {
         pushBoardHistoryState();
         scheduleWidgetBoardPersist();
@@ -8637,6 +9335,12 @@
 
     const selectedNodeSet = new Set(getSelectedBoardNodeIds());
     const hasMultiSelection = selectedNodeSet.size > 1;
+    const mobileFocusChartId = isBoardMobileUI() && !hasMultiSelection
+      ? String(boardState.selectedChartId || '')
+      : '';
+    if (els.canvasShell) {
+      els.canvasShell.classList.toggle('is-mobile-chart-focus', !!mobileFocusChartId);
+    }
 
     const nodeMarkupEntries = boardState.nodes.map((node) => {
       const isChart = node.role === 'chart';
@@ -8653,12 +9357,14 @@
         ? '<span class="node-lock-badge" aria-hidden="true"><svg class="node-lock-icon" viewBox="0 0 20 20"><path d="M6.8 9.2V7.7a3.2 3.2 0 1 1 6.4 0v1.5"></path><rect x="5.3" y="9.2" width="9.4" height="6.2" rx="1.2"></rect><path d="M10 11.3v2.1"></path></svg></span>'
         : '';
       const snappedClass = node.justSnappedAt && Date.now() - node.justSnappedAt < 820 ? 'is-just-snapped' : '';
+      const mobileFocusClass = mobileFocusChartId && node.role === 'chart' && node.uid === mobileFocusChartId ? 'is-mobile-focus-chart' : '';
+      const mobileContextClass = mobileFocusChartId && node.uid !== mobileFocusChartId && node.attachedTo !== mobileFocusChartId ? 'is-mobile-context-muted' : '';
       const inlineStyle = `left:${Math.round(node.x)}px;top:${Math.round(node.y)}px;width:${Math.round(node.w)}px;height:${Math.round(node.h)}px;--node-compact-title-lines:${getCompactTitleLineClamp(node)};`;
       const iconRemove = '<svg class="node-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M6.7 7.2h6.6M8.1 7.2V6.3c0-.5.4-.9.9-.9h2c.5 0 .9.4.9.9v.9M7.3 8.5l.4 5.6c0 .6.5 1 1 1h2.6c.6 0 1-.4 1-1l.4-5.6"></path></svg>';
 
       if (isChart) {
         const markup = `
-          <article class="board-node board-node-chart ${selectedClass} ${activeClass} ${multiSelectedClass} ${lockedClass}" data-node-id="${node.uid}" data-node-chart="${node.uid}" tabindex="0" aria-label="${escapeHtml(getNodeAriaLabel(node))}" style="${inlineStyle}">
+          <article class="board-node board-node-chart ${selectedClass} ${activeClass} ${multiSelectedClass} ${lockedClass} ${mobileFocusClass} ${mobileContextClass}" data-node-id="${node.uid}" data-node-chart="${node.uid}" tabindex="0" aria-label="${escapeHtml(getNodeAriaLabel(node))}" style="${inlineStyle}">
             ${lockBadge}
             <div class="node-head">
               <div class="node-head-main">
@@ -8714,7 +9420,7 @@
         : '';
 
       const markup = `
-        <article class="board-node ${attachedClass} ${compactClass} ${compactModeClass} ${optionsClass} ${activeClass} ${multiSelectedClass} ${lockedClass} ${snappedClass}" data-node-id="${node.uid}" data-node-role="${node.role}" tabindex="0" aria-label="${escapeHtml(getNodeAriaLabel(node))}" style="${inlineStyle}">
+        <article class="board-node ${attachedClass} ${compactClass} ${compactModeClass} ${optionsClass} ${activeClass} ${multiSelectedClass} ${lockedClass} ${snappedClass} ${mobileFocusClass} ${mobileContextClass}" data-node-id="${node.uid}" data-node-role="${node.role}" tabindex="0" aria-label="${escapeHtml(getNodeAriaLabel(node))}" style="${inlineStyle}">
           ${lockBadge}
           ${controlTopic}
           ${styleTopic}
@@ -8746,13 +9452,24 @@
 
     renderBoardInspector(els, { traceRenderContext });
     syncBoardActionButtons(els);
+    syncBoardMobileUI(els);
     if (!options.skipHistory) {
       pushBoardHistoryState();
       scheduleWidgetBoardPersist();
     }
   }
 
-  function resetWidgetBoard(els) {
+  function resetWidgetBoard(els, options = {}) {
+    const deferRender = !!options.deferRender;
+    const renderOptions = options.renderOptions && typeof options.renderOptions === 'object'
+      ? options.renderOptions
+      : {};
+
+    boardMobileState.view = 'decks';
+    boardMobileState.actionsMenuOpen = false;
+    boardMobileState.canvasSettingsOpen = false;
+    boardMobileState.inspectorSheetOpen = false;
+
     boardState.nodes = [];
     boardState.selectedChartId = '';
     boardState.sequence = 0;
@@ -8771,8 +9488,12 @@
     clearBoardResize();
     clearWidgetBoardStoredState();
     resetBoardRenderCache();
-    updateCanvasSize(els);
-    renderBoardCanvas(els);
+    markBoardHistoryDirty();
+    if (!deferRender) {
+      renderBoardCanvas(els, renderOptions);
+    } else {
+      syncBoardMobileUI(els);
+    }
   }
 
   function beginNodeDrag(event, els) {
@@ -8800,6 +9521,14 @@
     }
 
     boardState.activeNodeId = node.uid;
+
+    if (event.pointerType === 'touch' && isBoardMobileUI()) {
+      if (boardMobileState.touchMode !== 'move') {
+        clearBoardHold();
+        return;
+      }
+    }
+
     if (node.locked) return;
 
     const miniContentEl = event.target.closest('.node-mini-content');
@@ -8830,6 +9559,11 @@
     const offsetY = event.clientY - canvasRect.top - node.y;
 
     if (event.pointerType === 'touch') {
+      if (isBoardMobileUI()) {
+        startNodeDrag(node, nodeEl, event, offsetX, offsetY, els);
+        event.preventDefault();
+        return;
+      }
       clearBoardHold();
       boardHold.active = true;
       boardHold.nodeId = nodeId;
@@ -8947,7 +9681,8 @@
       boardDrag.grabTimer = 0;
     }
 
-    if (boardDrag.moved) boardDrag.skipClick = true;
+    const dragDidMove = boardDrag.moved;
+    if (dragDidMove) boardDrag.skipClick = true;
 
     boardDrag.active = false;
     boardDrag.nodeId = '';
@@ -8956,6 +9691,10 @@
     boardDrag.offsetX = 0;
     boardDrag.offsetY = 0;
     boardDrag.moved = false;
+
+    if (dragDidMove) {
+      markBoardHistoryDirty();
+    }
 
     if (draggedNode && els?.canvas) {
       if (draggedNode.role === 'chart') {
@@ -9002,6 +9741,7 @@
       ensureNodeSettings(node);
       node.settings.metric = String(metricSelect.value || getDefaultMetricForCard(node.cardId)).toLowerCase();
       if (node.settings.metric !== 'keyword-custom') node.settings.keyword = '';
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9016,6 +9756,7 @@
       if (!node) return true;
       ensureNodeSettings(node);
       node.settings.transform = normalizeTransformId(transformSelect.value);
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9030,6 +9771,7 @@
       if (!node) return true;
       ensureNodeSettings(node);
       node.settings.aggregate = normalizeAggregateId(aggregateSelect.value);
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9044,6 +9786,7 @@
       if (!node) return true;
       ensureNodeSettings(node);
       node.settings.keyword = sanitizeKeywordInput(keywordInput.value || '');
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9058,6 +9801,7 @@
       if (!node) return true;
       ensureNodeSettings(node);
       node.settings.rangeMonths = clampRangeMonths(rangeSelect.value);
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node, node.settings.rangeMonths);
       if (node.attachedTo) {
         refreshLinkedDataNodes(node.attachedTo, node.settings.rangeMonths);
@@ -9075,6 +9819,7 @@
       if (!node) return true;
       ensureNodeSettings(node);
       node.settings.sourceBlend = rebalanceSourceBlend(node.settings.sourceBlend, sourceKey, sourceInput.value);
+      markBoardHistoryDirty();
 
       const chart = node.attachedTo ? getNodeById(node.attachedTo) : null;
       const range = chart ? getChartRange(chart) : clampRangeMonths(heroState.range || 6);
@@ -9096,6 +9841,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleDepthSettings(node.settings.styleDepth);
       node.settings.styleDepth = normalizeStyleDepthSettings({ ...current, depth: styleDepthInput.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9111,6 +9857,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleDepthSettings(node.settings.styleDepth);
       node.settings.styleDepth = normalizeStyleDepthSettings({ ...current, glow: styleGlowInput.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9126,6 +9873,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleColorSettings(node.settings.styleColor);
       node.settings.styleColor = normalizeStyleColorSettings({ ...current, palette: stylePaletteSelect.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9141,6 +9889,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleColorSettings(node.settings.styleColor);
       node.settings.styleColor = normalizeStyleColorSettings({ ...current, contrast: styleContrastInput.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9156,6 +9905,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleThreeDSettings(node.settings.style3d);
       node.settings.style3d = normalizeStyleThreeDSettings({ ...current, relief: style3dReliefInput.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9171,6 +9921,7 @@
       ensureNodeSettings(node);
       const current = normalizeStyleThreeDSettings(node.settings.style3d);
       node.settings.style3d = normalizeStyleThreeDSettings({ ...current, softness: style3dSoftnessInput.value });
+      markBoardHistoryDirty();
       updateNodeMetricSnapshot(node);
       refreshAttachedChart(node);
       boardState.activeNodeId = node.uid;
@@ -9182,9 +9933,16 @@
   }
 
   function handleInspectorClick(event, els) {
+    const closeInspectorButton = event.target.closest('[data-mobile-inspector-close]');
+    if (closeInspectorButton) {
+      closeBoardInspectorSheet(els, { view: 'board' });
+      return true;
+    }
+
     const collapseButton = event.target.closest('[data-inspector-collapse]');
     if (collapseButton) {
       boardState.inspectorCollapsed = !boardState.inspectorCollapsed;
+      markBoardHistoryDirty();
       renderBoardInspector(els);
       scheduleWidgetBoardPersist();
       return true;
@@ -9291,6 +10049,9 @@
       setCanvasMeta(els, boardText.shareUrlLoaded);
     }
 
+    boardMobileState.view = boardState.nodes.length ? 'board' : 'decks';
+    syncBoardMobileUI(els);
+
     if (els.templatesBtn) {
       els.templatesBtn.textContent = boardText.templateButton;
       els.templatesBtn.setAttribute('aria-label', boardText.templateButton);
@@ -9317,6 +10078,7 @@
 
     syncBoardActionButtons(els);
     syncWidgetDecksWithRealData(els);
+    syncBoardMobileUI(els);
     initBoardHistoryState();
     boardPersistenceEnabled = true;
     scheduleWidgetBoardPersist();
@@ -9336,25 +10098,113 @@
 
     if (els.templatesBtn) {
       els.templatesBtn.addEventListener('click', () => {
+        setBoardActionsMenuOpen(false, els);
         renderTemplateCatalog(els);
       });
     }
 
     if (els.exportPngBtn) {
       els.exportPngBtn.addEventListener('click', async () => {
+        setBoardActionsMenuOpen(false, els);
         await runBoardAction(els.exportPngBtn, () => exportWidgetBoardPng(els));
       });
     }
 
     if (els.exportCsvBtn) {
       els.exportCsvBtn.addEventListener('click', async () => {
+        setBoardActionsMenuOpen(false, els);
         await runBoardAction(els.exportCsvBtn, () => Promise.resolve(exportWidgetBoardCsv(els)));
       });
     }
 
     if (els.shareUrlBtn) {
       els.shareUrlBtn.addEventListener('click', async () => {
+        setBoardActionsMenuOpen(false, els);
         await runBoardAction(els.shareUrlBtn, () => copyWidgetBoardShareUrl(els));
+      });
+    }
+
+    if (els.actionsToggleBtn) {
+      els.actionsToggleBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setBoardActionsMenuOpen(!boardMobileState.actionsMenuOpen, els);
+      });
+    }
+
+    if (els.mobileNav) {
+      els.mobileNav.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-mobile-view]');
+        if (!button) return;
+        setBoardMobileView(button.getAttribute('data-mobile-view') || 'board', els);
+      });
+    }
+
+    if (els.touchMode) {
+      els.touchMode.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-touch-mode]');
+        if (!button) return;
+        setBoardMobileTouchMode(button.getAttribute('data-touch-mode') || 'select', els);
+      });
+    }
+
+    if (els.canvasSettingsToggleBtn) {
+      els.canvasSettingsToggleBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setCanvasSettingsOpen(!boardMobileState.canvasSettingsOpen, els);
+      });
+    }
+
+    if (els.inspectorBackdrop) {
+      els.inspectorBackdrop.addEventListener('click', () => {
+        closeBoardInspectorSheet(els, { view: 'board' });
+      });
+    }
+
+    if (els.mobileSelectionBar) {
+      els.mobileSelectionBar.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-mobile-selection-action]');
+        if (!button || button.disabled) return;
+
+        const action = button.getAttribute('data-mobile-selection-action') || '';
+        const selection = getSelectedBoardNodeIds();
+        const activeId = selection[selection.length - 1] || boardState.activeNodeId;
+        const activeNode = activeId ? getNodeById(activeId) : getActiveBoardNode();
+        if (!activeNode) return;
+
+        if (action === 'inspect') {
+          focusInspectorFromNode(activeNode.uid, els);
+          return;
+        }
+
+        if (action === 'duplicate') {
+          if (selection.length > 1) {
+            duplicateNodesInBoard(selection, els);
+          } else {
+            duplicateNodeInBoard(activeNode.uid, els);
+          }
+          return;
+        }
+
+        if (action === 'detach') {
+          if (activeNode.role === 'chart' || !activeNode.attachedTo) return;
+          const previousChartId = activeNode.attachedTo;
+          detachNode(activeNode.uid);
+          fitNodeToCanvas(activeNode, els.canvas);
+          if (previousChartId) refreshLinkedDataNodes(previousChartId);
+          updateCanvasSize(els);
+          renderBoardCanvas(els);
+          return;
+        }
+
+        if (action === 'remove') {
+          if (selection.length > 1) {
+            removeNodesFromBoard(selection, els);
+          } else {
+            removeNodeFromBoard(activeNode.uid, els);
+          }
+        }
       });
     }
 
@@ -9365,7 +10215,7 @@
       });
     });
 
-    els.modal.addEventListener('click', (event) => {
+    els.modal.addEventListener('click', async (event) => {
       const closeTrigger = event.target.closest('[data-close-modal]');
       if (closeTrigger) {
         closeModal(els.modal);
@@ -9389,7 +10239,8 @@
         const mode = applyTemplateButton.getAttribute('data-apply-template-mode') === 'replace' ? 'replace' : 'append';
         const template = getBoardTemplateById(templateId);
         if (!template) return;
-        if (applyBoardTemplate(templateId, els, { mode })) {
+        const applied = await importBoardTemplate(templateId, els, { mode, triggerButton: applyTemplateButton });
+        if (applied) {
           setCanvasMeta(els, boardText.templateApplied(template.name, mode));
         }
         return;
@@ -9442,6 +10293,7 @@
           const nextStep = normalizeCanvasStep(btn.getAttribute('data-gap-step'));
           if (nextStep === boardState.canvasStep) return;
           boardState.canvasStep = nextStep;
+          markBoardHistoryDirty();
           syncInspectorGapUI(els);
           scheduleWidgetBoardPersist();
         });
@@ -9466,9 +10318,16 @@
     }
 
     document.addEventListener('pointerdown', (event) => {
-      if (!boardState.helpOpen) return;
-      if (els.helpToggleBtn?.contains(event.target) || els.helpPopover?.contains(event.target)) return;
-      setBoardHelpOpen(false, els);
+      const target = event.target;
+      if (boardState.helpOpen && !els.helpToggleBtn?.contains(target) && !els.helpPopover?.contains(target)) {
+        setBoardHelpOpen(false, els);
+      }
+      if (boardMobileState.actionsMenuOpen && !els.actionsBar?.contains(target)) {
+        setBoardActionsMenuOpen(false, els);
+      }
+      if (boardMobileState.canvasSettingsOpen && !els.canvasSettingsPanel?.contains(target) && !els.canvasSettingsToggleBtn?.contains(target)) {
+        setCanvasSettingsOpen(false, els);
+      }
     }, true);
 
     els.canvas.addEventListener('pointerdown', (event) => {
@@ -9519,6 +10378,19 @@
       }
 
       const isAdditiveSelection = !!(event.shiftKey || event.ctrlKey || event.metaKey);
+
+      const emptyActionButton = event.target.closest('[data-board-empty-action]');
+      if (emptyActionButton) {
+        const action = emptyActionButton.getAttribute('data-board-empty-action') || '';
+        if (action === 'templates') {
+          renderTemplateCatalog(els);
+          return;
+        }
+        if (action === 'decks') {
+          setBoardMobileView('decks', els);
+          return;
+        }
+      }
 
       const removeButton = event.target.closest('[data-node-remove]');
       if (removeButton) {
@@ -9629,6 +10501,7 @@
     if (els.clearBtn) {
 
       els.clearBtn.addEventListener('click', () => {
+        setBoardActionsMenuOpen(false, els);
         resetWidgetBoard(els);
       });
     }
@@ -9638,6 +10511,21 @@
       if (event.key !== 'Escape') return;
 
       closeModal(els.modal);
+
+      if (boardMobileState.actionsMenuOpen) {
+        setBoardActionsMenuOpen(false, els);
+        return;
+      }
+
+      if (boardMobileState.canvasSettingsOpen) {
+        setCanvasSettingsOpen(false, els);
+        return;
+      }
+
+      if (boardMobileState.inspectorSheetOpen) {
+        closeBoardInspectorSheet(els, { view: 'board' });
+        return;
+      }
 
       if (boardState.helpOpen) {
         setBoardHelpOpen(false, els);
@@ -9670,6 +10558,7 @@
       resizeRaf = window.requestAnimationFrame(() => {
         resizeRaf = 0;
         syncDeckRailAlignment(els.deckRail);
+        syncBoardMobileUI(els);
         renderBoardCanvas(els, { skipHistory: true });
       });
     });
@@ -9700,16 +10589,54 @@
       setNodeCompact,
       buildChartInputDataset,
       getChartDatasetMemoKey,
+      applyBoardTemplate,
+      refreshLinkedDataNodes,
       __getMemoStats: () => ({ ...chartDatasetMemoStats }),
+      __getMetricContextMemoStats: () => ({ ...metricContextMemoStats }),
+      __getMetricContextMemoSize: () => metricContextMemo.size,
       __getMemoSize: () => chartDatasetMemo.size,
       __resetMemoForTest: () => {
         chartDatasetMemo.clear();
+        chartLegendMemo.clear();
+        chartPreviewMarkupMemo.clear();
         chartDatasetMemoStats.hits = 0;
         chartDatasetMemoStats.misses = 0;
+      },
+      __resetMetricContextMemoForTest: () => {
+        metricContextMemo.clear();
+        metricContextMemoStats.hits = 0;
+        metricContextMemoStats.misses = 0;
+      },
+      __getBoardPerfCounters: () => ({ ...boardPerfCounters }),
+      __resetBoardPerfCounters: () => {
+        boardPerfCounters.renderBoardCanvas = 0;
+        boardPerfCounters.refreshLinkedDataNodes = 0;
+        boardPerfCounters.historySerialize = 0;
+        boardPerfCounters.autoTitleBuilds = 0;
+        boardPerfCounters.legendMapBuilds = 0;
+        boardPerfCounters.traceContextBuilds = 0;
+        boardPerfCounters.chartPreviewBuilds = 0;
+        boardPerfCounters.slotRealigns = 0;
       },
       __setBoardNodesForTest: (nodes) => {
         boardState.nodes = Array.isArray(nodes) ? nodes : [];
       },
+      __setBoardSelectionForTest: (nodeIds, options = {}) => {
+        setBoardSelection(nodeIds, options);
+      },
+      __getBoardStateForTest: () => ({
+        nodeCount: boardState.nodes.length,
+        selectedChartId: boardState.selectedChartId,
+        activeNodeId: boardState.activeNodeId,
+        selectedNodeIds: getSelectedBoardNodeIds()
+      }),
+      __initBoardHistoryForTest: () => {
+        initBoardHistoryState();
+      },
+      __getBoardHistoryForTest: () => ({
+        index: boardHistory.index,
+        size: boardHistory.stack.length
+      }),
       __renderBoardCanvasForTest: (els, options = {}) => {
         renderBoardCanvas(els, options);
       },
