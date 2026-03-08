@@ -744,6 +744,12 @@ body.products-page{
 .product-card img{ width:100%; border-radius:12px; display:block; aspect-ratio: 16 / 10; object-fit:contain; }
 .product-card-head{ display:grid; gap:6px; }
 .product-card-topline{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.compare-toggle{ display:inline-flex; align-items:center; justify-content:center; min-height:30px; padding:0 12px; border-radius:999px; border:1px solid color-mix(in oklab, var(--line) 82%, transparent); background:color-mix(in oklab, var(--surface-solid) 97%, transparent); color:var(--ink-soft); font:inherit; font-size:.78rem; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:border-color .18s ease, background-color .18s ease, color .18s ease, transform .12s ease; }
+.compare-toggle:hover{ transform:translateY(-1px); border-color:color-mix(in oklab, var(--accent) 30%, var(--line)); background:color-mix(in oklab, var(--accent-soft) 58%, var(--surface-solid)); color:color-mix(in oklab, var(--accent) 70%, var(--ink)); }
+.compare-toggle.is-active{ border-color:color-mix(in oklab, var(--accent) 40%, var(--line)); background:color-mix(in oklab, var(--accent-soft) 76%, var(--surface-solid)); color:color-mix(in oklab, var(--accent) 78%, var(--ink)); }
+.compare-toggle:disabled,
+.compare-toggle.is-disabled{ opacity:.56; cursor:not-allowed; transform:none; }
+.compare-toggle:focus-visible{ outline:2px solid color-mix(in oklab, var(--accent) 45%, var(--ink)); outline-offset:2px; }
 .product-card h3{ font-size:1.08rem; margin:0; color:var(--ink); }
 .product-summary{ margin:0; color:var(--muted); font-size:.95rem; line-height:1.45; }
 .product-decision{ display:grid; gap:8px; margin:0; }
@@ -780,10 +786,19 @@ body.products-page{
 /* 8) COMPARATOR
    --------------------------------------------------------------------------*/
 .compare{ background: var(--surface-solid); }
-.table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.compare-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; }
+.compare-hint{ margin:0; color:var(--muted); font-size:.95rem; line-height:1.45; }
+.compare-clear{ display:inline-flex; align-items:center; justify-content:center; min-height:34px; padding:0 14px; border-radius:999px; border:1px solid color-mix(in oklab, var(--line) 82%, transparent); background:color-mix(in oklab, var(--surface-solid) 98%, transparent); color:var(--ink); font:inherit; font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:border-color .18s ease, background-color .18s ease, transform .12s ease; }
+.compare-clear:hover{ transform:translateY(-1px); border-color:color-mix(in oklab, var(--accent) 30%, var(--line)); background:color-mix(in oklab, var(--accent-soft) 58%, var(--surface-solid)); }
+.compare-selection{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.compare-chip{ display:inline-flex; align-items:center; min-height:32px; padding:0 12px; border-radius:999px; border:1px solid color-mix(in oklab, var(--accent) 28%, var(--line)); background:color-mix(in oklab, var(--accent-soft) 70%, var(--surface-solid)); color:color-mix(in oklab, var(--accent) 78%, var(--ink)); font:inherit; font-size:.82rem; font-weight:700; cursor:pointer; }
+.compare-chip:focus-visible,
+.compare-clear:focus-visible{ outline:2px solid color-mix(in oklab, var(--accent) 45%, var(--ink)); outline-offset:2px; }
+.table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:14px; }
 .compare table{ width:100%; border-collapse:collapse; }
-.compare th, .compare td{ text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); }
+.compare th, .compare td{ text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
 .compare thead th{ font-size:.95rem; color:var(--ink-strong); }
+.compare-empty{ text-align:center !important; color:var(--muted); font-style:italic; }
 
 /* 9) FOOTER
    --------------------------------------------------------------------------*/
@@ -873,6 +888,11 @@ html[data-js="true"] .reveal.is-visible{ opacity:1; transform: translateY(0); }
   .filter-bar.is-mobile-filters-collapsed .filters-collapsible{ display:none !important; }
   .products-grid{ grid-template-columns:1fr; }
   .card-cta{ flex-direction:column; }
+  .compare-toolbar{ display:grid; grid-template-columns:1fr; justify-items:start; }
+  .compare-clear{ min-height:32px; }
+  .compare-selection{ flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; padding-bottom:2px; }
+  .compare-selection::-webkit-scrollbar{ display:none; }
+  .compare-chip{ flex:0 0 auto; }
   .product-detail-panel{ width:min(100%, calc(100% - 16px)); margin:12px auto; padding:18px; min-height:calc(100dvh - 24px); align-content:start; }
   .product-detail-panel .product-decision{ grid-template-columns:1fr; }
   .hero-family-list{ gap:6px; }
