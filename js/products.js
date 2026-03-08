@@ -152,6 +152,17 @@
     ].filter((entry) => entry.label && entry.value);
   }
 
+  function getCompareRow(product) {
+    const status = product.status || {};
+    return [
+      product.title || '',
+      (product.methods || []).join(' + '),
+      product.outputs || product.description || '',
+      product.deployment || '',
+      status.label || product.readiness || ''
+    ];
+  }
+
   function renderAction(action, options = {}) {
     const attrs = [`class="${buttonClass(action.variant)}"`, `href="${escapeHtml(action.href || '#')}"`];
 
@@ -189,12 +200,17 @@
 
   function renderProductCard(product) {
     const status = product.status || {};
+    const compare = content.compare || {};
+    const compareLabel = compare.toggleAdd || (locale === 'en' ? 'Compare' : 'Comparar');
+    const compareAria = [compareLabel, product.title || ''].filter(Boolean).join(' ');
+
     return `
       <article class="product-card reveal${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}>
         <img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" />
         <div class="product-card-head">
           <div class="product-card-topline">
             ${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}
+            ${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}
           </div>
           <h3>${escapeHtml(product.title || '')}</h3>
           <p class="product-summary">${escapeHtml(product.description || '')}</p>
@@ -423,11 +439,18 @@
     const compare = content.compare;
     const title = document.getElementById('productsCompareTitle');
     const lead = document.getElementById('productsCompareLead');
+    const hint = document.getElementById('productsCompareHint');
+    const clear = document.getElementById('clearCompare');
     const head = document.getElementById('productsCompareHead');
     const body = document.getElementById('productsCompareBody');
 
     if (title) title.textContent = compare.title || '';
-    if (lead) lead.textContent = compare.lead || '';
+    if (lead) lead.textContent = compare.lead || compare.autoLead || '';
+    if (hint) hint.textContent = compare.instructions || '';
+    if (clear) {
+      clear.textContent = compare.clearSelection || '';
+      clear.hidden = true;
+    }
     if (head) {
       head.innerHTML = (compare.columns || []).map((column) => `<th>${escapeHtml(column)}</th>`).join('');
     }
@@ -585,6 +608,7 @@
     const query = (selector, root = document) => (root ? root.querySelector(selector) : null);
     const queryAll = (selector, root = document) => (root ? Array.from(root.querySelectorAll(selector)) : []);
     const cards = queryAll('.product-card', grid);
+    const productsById = new Map((content.products || []).map((product) => [String(product.id || ''), product]));
     const familySelect = document.getElementById('familySelect');
     const multiSelects = queryAll('.multi-select');
     const searchInput = document.getElementById('filterSearch');
@@ -594,6 +618,15 @@
     const filterBar = document.querySelector('.filter-bar');
     const controlsPanel = document.getElementById('filtersControls');
     const toggleButton = document.getElementById('filtersToggle');
+    const compareLead = document.getElementById('productsCompareLead');
+    const compareHint = document.getElementById('productsCompareHint');
+    const compareBody = document.getElementById('productsCompareBody');
+    const compareSelection = document.getElementById('productsCompareSelection');
+    const clearCompare = document.getElementById('clearCompare');
+    const compareToggleButtons = queryAll('[data-compare-toggle]', grid);
+    const compare = content.compare || {};
+    const compareLimit = Math.max(1, Number(compare.limit) || 3);
+    const compareState = { selected: [] };
     const mobileQuery = window.matchMedia ? window.matchMedia('(max-width: 640px)') : null;
     const params = new URLSearchParams(window.location.search);
     const state = {
@@ -755,6 +788,92 @@
       if (searchInput) searchInput.value = cleanSearch(state.search);
     }
 
+    function getVisibleProducts() {
+      return cards
+        .filter((card) => !card.hidden)
+        .map((card) => productsById.get(String(card.dataset.productId || '')))
+        .filter(Boolean);
+    }
+
+    function getSelectedProducts() {
+      return compareState.selected
+        .map((productId) => productsById.get(String(productId || '')))
+        .filter(Boolean);
+    }
+
+    function syncCompareButtons() {
+      const addLabel = compare.toggleAdd || (locale === 'en' ? 'Compare' : 'Comparar');
+      const removeLabel = compare.toggleRemove || (locale === 'en' ? 'Remove' : 'Quitar');
+
+      compareToggleButtons.forEach((button) => {
+        const productId = String(button.getAttribute('data-compare-toggle') || '');
+        const product = productsById.get(productId);
+        const isSelected = compareState.selected.includes(productId);
+        const atLimit = compareState.selected.length >= compareLimit && !isSelected;
+        const label = isSelected ? removeLabel : addLabel;
+
+        button.textContent = label;
+        button.disabled = atLimit;
+        button.classList.toggle('is-active', isSelected);
+        button.classList.toggle('is-disabled', atLimit);
+        button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        button.setAttribute('aria-label', [label, product && product.title ? product.title : ''].filter(Boolean).join(' '));
+      });
+    }
+
+    function renderCompareSelection(selectedProducts) {
+      if (!compareSelection) return;
+
+      compareSelection.replaceChildren();
+      selectedProducts.forEach((product) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'compare-chip';
+        chip.setAttribute('data-compare-remove', product.id || '');
+        chip.setAttribute('aria-label', [compare.toggleRemove || '', product.title || ''].filter(Boolean).join(' '));
+        chip.textContent = `${product.title || ''} �`;
+        chip.addEventListener('click', () => {
+          compareState.selected = compareState.selected.filter((entry) => entry !== product.id);
+          updateCompare();
+        });
+        compareSelection.appendChild(chip);
+      });
+    }
+
+    function updateCompare() {
+      const selectedProducts = getSelectedProducts();
+      const activeProducts = selectedProducts.length ? selectedProducts.slice(0, compareLimit) : getVisibleProducts().slice(0, compareLimit);
+      const mode = selectedProducts.length ? 'selected' : activeProducts.length ? 'auto' : 'empty';
+
+      if (compareLead) {
+        if (mode === 'selected') compareLead.textContent = compare.selectedLead || compare.lead || '';
+        else if (mode === 'auto') compareLead.textContent = compare.autoLead || compare.lead || '';
+        else compareLead.textContent = compare.emptyLead || compare.lead || '';
+      }
+
+      if (compareHint) {
+        compareHint.textContent = selectedProducts.length
+          ? `${selectedProducts.length}/${compareLimit} ${compare.selectionLabel || i18n.selected}`
+          : (compare.instructions || '');
+      }
+
+      if (compareBody) {
+        if (!activeProducts.length) {
+          const colSpan = Math.max((compare.columns || []).length, 1);
+          compareBody.innerHTML = `<tr><td class="compare-empty" colspan="${colSpan}">${escapeHtml(compare.emptyState || '')}</td></tr>`;
+        } else {
+          compareBody.innerHTML = activeProducts.map((product) => {
+            const row = getCompareRow(product);
+            return `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`;
+          }).join('');
+        }
+      }
+
+      if (clearCompare) clearCompare.hidden = selectedProducts.length === 0;
+      renderCompareSelection(selectedProducts);
+      syncCompareButtons();
+    }
+
     function apply() {
       const search = normalize(state.search);
       let visible = 0;
@@ -778,6 +897,7 @@
       if (resultCount) resultCount.textContent = i18n.results(visible);
       syncUIFromState();
       renderChips();
+      updateCompare();
       syncURL();
     }
 
@@ -808,6 +928,19 @@
       });
     });
 
+    compareToggleButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const productId = String(button.getAttribute('data-compare-toggle') || '');
+        if (!productId || !productsById.has(productId)) return;
+        if (compareState.selected.includes(productId)) {
+          compareState.selected = compareState.selected.filter((entry) => entry !== productId);
+        } else if (compareState.selected.length < compareLimit) {
+          compareState.selected = [...compareState.selected, productId];
+        }
+        updateCompare();
+      });
+    });
+
     document.addEventListener('click', (event) => {
       if (!(event.target instanceof Element)) return;
       if (!event.target.closest('.multi-select')) closeAllMultiMenus();
@@ -835,6 +968,11 @@
       state.search = '';
       closeAllMultiMenus();
       apply();
+    });
+
+    clearCompare && clearCompare.addEventListener('click', () => {
+      compareState.selected = [];
+      updateCompare();
     });
 
     toggleButton && toggleButton.addEventListener('click', () => {

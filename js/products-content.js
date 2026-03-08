@@ -589,7 +589,17 @@ window.BCC_PRODUCTS_CONTENT = {
           "Web / Desktop",
           "Piloto aplicado"
         ]
-      ]
+      ],
+      "instructions": "Selecciona hasta 3 productos o deja que el comparador use los visibles.",
+      "selectedLead": "Comparando tu seleccion actual.",
+      "autoLead": "Sin seleccion fija: mostramos los productos visibles que mejor representan el filtro actual.",
+      "emptyLead": "Ajusta los filtros o selecciona productos para llenar el comparador.",
+      "emptyState": "No hay productos disponibles para comparar con los filtros actuales.",
+      "toggleAdd": "Comparar",
+      "toggleRemove": "Quitar",
+      "clearSelection": "Limpiar seleccion",
+      "selectionLabel": "seleccionados",
+      "limit": 3
     },
     "cardLabels": {
       "bestFor": "Ideal para",
@@ -1192,7 +1202,17 @@ window.BCC_PRODUCTS_CONTENT = {
           "Web / Desktop",
           "Applied pilot"
         ]
-      ]
+      ],
+      "instructions": "Select up to 3 products or let the comparator use the visible ones.",
+      "selectedLead": "Comparing your current selection.",
+      "autoLead": "No fixed selection yet: showing the visible products that best represent the current filter.",
+      "emptyLead": "Adjust filters or select products to populate the comparator.",
+      "emptyState": "No products are available to compare with the current filters.",
+      "toggleAdd": "Compare",
+      "toggleRemove": "Remove",
+      "clearSelection": "Clear selection",
+      "selectionLabel": "selected",
+      "limit": 3
     },
     "cardLabels": {
       "bestFor": "Best for",

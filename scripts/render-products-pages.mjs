@@ -220,7 +220,10 @@ function renderProductDecision(localeContent, product) {
 
 function renderProductCard(localeContent, product) {
   const status = product.status || {};
-  return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(localeContent, product)}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
+  const compare = localeContent.compare || {};
+  const compareLabel = compare.toggleAdd || 'Compare';
+  const compareAria = [compareLabel, product.title || ''].filter(Boolean).join(' ');
+  return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(localeContent, product)}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
 }
 
 function renderProducts(localeContent) {
@@ -243,7 +246,12 @@ function renderCompare(compare) {
   <section class="compare section" id="comparador">
     <div class="container">
       <h2 id="productsCompareTitle">${escapeHtml(compare.title || '')}</h2>
-      <div class="lead" id="productsCompareLead">${escapeHtml(compare.lead || '')}</div>
+      <div class="lead" id="productsCompareLead">${escapeHtml(compare.lead || compare.autoLead || '')}</div>
+      <div class="compare-toolbar">
+        <p class="compare-hint" id="productsCompareHint">${escapeHtml(compare.instructions || '')}</p>
+        <button type="button" id="clearCompare" class="compare-clear" hidden>${escapeHtml(compare.clearSelection || '')}</button>
+      </div>
+      <div class="compare-selection" id="productsCompareSelection" aria-live="polite"></div>
       <div class="table-wrap">
         <table>
           <thead>
