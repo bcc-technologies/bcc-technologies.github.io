@@ -831,7 +831,7 @@
         chip.className = 'compare-chip';
         chip.setAttribute('data-compare-remove', product.id || '');
         chip.setAttribute('aria-label', [compare.toggleRemove || '', product.title || ''].filter(Boolean).join(' '));
-        chip.textContent = `${product.title || ''} �`;
+        chip.textContent = `${product.title || ''} x`;
         chip.addEventListener('click', () => {
           compareState.selected = compareState.selected.filter((entry) => entry !== product.id);
           updateCompare();

@@ -347,6 +347,26 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
         assert.equal(filterState.toggleExpanded, 'true');
         assert.equal(filterState.controlsHidden, false);
       }
+
+      const compareState = await evaluate(cdp, `(() => {
+        const first = document.querySelector('[data-compare-toggle="bundle-culture"]');
+        const second = document.querySelector('[data-compare-toggle="bundle-toolkit"]');
+        first?.click();
+        second?.click();
+        return {
+          lead: document.getElementById('productsCompareLead')?.textContent?.trim(),
+          hint: document.getElementById('productsCompareHint')?.textContent?.trim(),
+          clearHidden: document.getElementById('clearCompare')?.hidden,
+          rows: Array.from(document.querySelectorAll('#productsCompareBody tr')).map((row) => row.textContent.trim()),
+          selected: Array.from(document.querySelectorAll('#productsCompareSelection .compare-chip')).map((chip) => chip.textContent.trim())
+        };
+      })()`);
+
+      assert.equal(compareState.clearHidden, false);
+      assert.equal(compareState.hint, `2/3 ${locale === 'en' ? 'selected' : 'seleccionados'}`);
+      assert.ok(compareState.rows.some((row) => row.includes('EIS + MAP-Bio')));
+      assert.ok(compareState.rows.some((row) => row.includes('EIS + EIS-Toolkit')));
+      assert.equal(compareState.selected.length, 2);
     }
 
     await openAndCheck({

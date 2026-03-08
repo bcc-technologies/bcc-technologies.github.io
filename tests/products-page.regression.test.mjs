@@ -159,6 +159,26 @@ class TestElement {
     this.eventListeners.set(type, list);
   }
 
+  dispatchEvent(event) {
+    const payload = event && typeof event === 'object' ? event : { type: String(event) };
+    const type = payload.type;
+    const handlers = this.eventListeners.get(type) || [];
+    handlers.forEach((handler) => {
+      handler({
+        ...payload,
+        target: this,
+        currentTarget: this,
+        preventDefault: payload.preventDefault || (() => {}),
+        stopPropagation: payload.stopPropagation || (() => {})
+      });
+    });
+    return true;
+  }
+
+  click() {
+    this.dispatchEvent({ type: 'click' });
+  }
+
   focus() {
     this.ownerDocument.activeElement = this;
   }
@@ -173,10 +193,11 @@ class TestElement {
   }
 
   get textContent() {
+    const own = this._textContent || '';
     if (this.children.length) {
-      return this.children.map((child) => child.textContent).join('');
+      return own + this.children.map((child) => child.textContent).join('');
     }
-    return this._textContent;
+    return own;
   }
 
   set textContent(value) {
@@ -187,6 +208,10 @@ class TestElement {
 
   get innerHTML() {
     return this._innerHTML;
+  }
+
+  get childElementCount() {
+    return this.children.length;
   }
 
   set innerHTML(value) {
@@ -284,10 +309,26 @@ class TestElement {
       card.dataset.method = decode(match[3]);
       card.dataset.use = decode(match[4]);
 
+      const productIdMatch = match[5].match(/\sdata-product-id="([^"]*)"/);
+      if (productIdMatch) card.setAttribute('data-product-id', decode(productIdMatch[1]));
+
       const idMatch = match[5].match(/\sid="([^"]*)"/);
       if (idMatch) card.id = decode(idMatch[1]);
 
-      card.textContent = decode(stripTags(match[6]).replace(/\s+/g, ' ').trim());
+      card._textContent = decode(stripTags(match[6]).replace(/\s+/g, ' ').trim());
+
+      const comparePattern = /<button type="button" class="compare-toggle" data-compare-toggle="([^"]*)"([^>]*)>([\s\S]*?)<\/button>/g;
+      for (const buttonMatch of match[6].matchAll(comparePattern)) {
+        const button = this.ownerDocument.createElement('button');
+        button.className = 'compare-toggle';
+        button.setAttribute('type', 'button');
+        button.setAttribute('data-compare-toggle', decode(buttonMatch[1]));
+        const pressedMatch = buttonMatch[2].match(/aria-pressed="([^"]*)"/);
+        if (pressedMatch) button.setAttribute('aria-pressed', decode(pressedMatch[1]));
+        button.textContent = decode(stripTags(buttonMatch[3]).trim());
+        card.appendChild(button);
+      }
+
       this.appendChild(card);
     }
   }
@@ -298,9 +339,17 @@ class TestElement {
     if (selector === 'header') return this.tagName === 'header';
     if (selector === 'input') return this.tagName === 'input';
     if (selector === '[role="tab"]') return this.getAttribute('role') === 'tab';
-    if (selector === '[data-scroll-to]') return this.attributes.has('data-scroll-to');
     if (selector === 'input[type="checkbox"]') return this.tagName === 'input' && this.type === 'checkbox';
     if (selector === 'input[type="checkbox"]:checked') return this.tagName === 'input' && this.type === 'checkbox' && this.checked;
+
+    const dataSelector = selector.match(/^\[data-([a-z-]+)(?:=\"([^\"]*)\")?\]$/);
+    if (dataSelector) {
+      const attrName = 'data-' + dataSelector[1];
+      if (!this.attributes.has(attrName)) return false;
+      if (typeof dataSelector[2] === 'string') return this.getAttribute(attrName) === dataSelector[2];
+      return true;
+    }
+
     return this.tagName === selector.toLowerCase();
   }
 
@@ -489,6 +538,13 @@ function buildProductsDocument(lang) {
   productsCompareTitle.id = 'productsCompareTitle';
   const productsCompareLead = document.createElement('div');
   productsCompareLead.id = 'productsCompareLead';
+  const productsCompareHint = document.createElement('p');
+  productsCompareHint.id = 'productsCompareHint';
+  const clearCompare = document.createElement('button');
+  clearCompare.id = 'clearCompare';
+  clearCompare.hidden = true;
+  const productsCompareSelection = document.createElement('div');
+  productsCompareSelection.id = 'productsCompareSelection';
   const productsCompareHead = document.createElement('tr');
   productsCompareHead.id = 'productsCompareHead';
   const productsCompareBody = document.createElement('tbody');
@@ -513,6 +569,9 @@ function buildProductsDocument(lang) {
     productsGrid,
     productsCompareTitle,
     productsCompareLead,
+    productsCompareHint,
+    clearCompare,
+    productsCompareSelection,
     productsCompareHead,
     productsCompareBody
   );
@@ -583,7 +642,9 @@ test('products page renders shared Spanish content and initial count', () => {
   assert.equal(document.getElementById('productsGrid').querySelectorAll('.product-card').length, 8);
   assert.equal(document.getElementById('resultCount').textContent, '8 productos');
   assert.match(document.getElementById('productsCompareHead').innerHTML, /<th>Producto<\/th>/);
+  assert.equal(document.getElementById('productsCompareHint').textContent, 'Selecciona hasta 3 productos o deja que el comparador use los visibles.');
   assert.match(document.getElementById('productsGrid').innerHTML, /data-product-detail="map-nano"/);
+  assert.match(document.getElementById('productsGrid').innerHTML, /data-compare-toggle="map-nano"/);
   assert.doesNotMatch(document.getElementById('productsGrid').innerHTML, /href="#"/);
 });
 
@@ -615,6 +676,31 @@ test('legacy method alias maps to Data and narrows results', () => {
   assert.equal(document.getElementById('resultCount').textContent, '1 product');
 });
 
+
+test('compare table follows visible products when filters narrow the catalog', () => {
+  const { document } = loadProductsPage({ lang: 'en', search: '?family=bundles' });
+
+  const compareBody = document.getElementById('productsCompareBody').innerHTML;
+  assert.match(compareBody, /EIS \+ MAP-Bio/);
+  assert.match(compareBody, /EIS \+ EIS-Toolkit/);
+  assert.doesNotMatch(compareBody, /AquaSpecter/);
+});
+
+test('compare selection pins chosen products and exposes clear state', () => {
+  const { document } = loadProductsPage({ lang: 'en' });
+
+  document.querySelector('[data-compare-toggle="map-nano"]').click();
+  document.querySelector('[data-compare-toggle="bundle-toolkit"]').click();
+
+  const compareBody = document.getElementById('productsCompareBody').innerHTML;
+  assert.match(compareBody, /MAP-Nano/);
+  assert.match(compareBody, /EIS \+ EIS-Toolkit/);
+  assert.equal(document.getElementById('productsCompareLead').textContent, 'Comparing your current selection.');
+  assert.equal(document.getElementById('productsCompareHint').textContent, '2/3 selected');
+  assert.equal(document.getElementById('clearCompare').hidden, false);
+  assert.match(document.getElementById('productsCompareSelection').textContent, /MAP-Nano x/);
+  assert.match(document.getElementById('productsCompareSelection').textContent, /EIS \+ EIS-Toolkit x/);
+});
 
 test('products page generator stays in sync with committed HTML', () => {
   const result = spawnSync(process.execPath, ['scripts/render-products-pages.mjs', '--check'], {
