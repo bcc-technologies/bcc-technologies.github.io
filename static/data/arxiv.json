@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-20T06:51:30.517Z",
+  "updatedAt": "2026-03-21T06:38:54.005Z",
   "groups": [
     {
       "id": "physics",
@@ -11313,7 +11313,7 @@
       "authors": [
         "Yuhan Ye",
         "Saurabh Amin",
-        "Asuman Ozdauglar"
+        "Asuman Ozdaglar"
       ],
       "categories": [
         "math.OC",
@@ -26106,7 +26106,7 @@
       "authors": [
         "Louis-Pierre Chaintron",
         "Lénaïc Chizat",
-        "Javier Maas"
+        "Javier Maass"
       ],
       "categories": [
         "stat.ML",
