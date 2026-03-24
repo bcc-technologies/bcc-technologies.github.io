@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-03-22T06:46:52.946Z",
+  "updatedAt": "2026-03-24T07:00:38.266Z",
   "item": {
-    "date": "2026-03-22",
-    "explanation": "What would it look like to leave planet Earth? Such an event was recorded visually in great detail by the MESSENGER spacecraft as it swung back past the Earth in 2005 on its way in toward the planet Mercury. Earth can be seen rotating in this time-lapse video, as it recedes into the distance. The sunlit half of Earth is so bright that background stars are not visible. The robotic MESSENGER spacecraft orbit around Mercury from 2011 to 2015 has conducted the first complete map of the surface. On occasion, MESSENGER peered back at its home world. MESSENGER is one of the few things created on the Earth that will never return.  At the end of its mission, MESSENGER was purposefully crashed into Mercury's surface.   Almost Hyperspace: Random APOD Generator",
+    "date": "2026-03-24",
+    "explanation": "Is gravity the same over the surface of the Earth?  No -- in some places you will feel slightly heavier than others.  The featured Earth map video shows in colors and exaggerated highs and lows where the gravitational field of Earth is relatively strong and weak.  A low spot, where you would feel slightly lighter, can be seen just off the coast of India, in blue, while a relative high occurs in the mountains of Chile in South America.  The cause of these irregularities does not always follow present surface features. Scientists hypothesize that other important factors lie in deep underground structures in Earth's mantle and may be related to the Earth's appearance in the distant past.  The featured map was composed from data taken by NASA's twin GRACE satellites that orbited the Earth from 2002 to 2017.  GRACE mapped Earth's gravity by carefully tracking tiny changes in the distance between the two satellites.",
     "media_type": "video",
     "service_version": "v1",
-    "title": "Leaving Earth",
-    "url": "https://apod.nasa.gov/apod/image/2603/DepartingEarth_Messenger.mp4"
+    "title": "A Gravity Map of Earth",
+    "url": "https://apod.nasa.gov/apod/image/2603/GravityEarth_GRACE_silent.mp4"
   }
 }
