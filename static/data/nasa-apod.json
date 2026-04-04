@@ -1,13 +1,12 @@
 {
-  "updatedAt": "2026-04-02T07:08:21.870Z",
+  "updatedAt": "2026-04-04T06:57:27.506Z",
   "item": {
-    "copyright": "NASA/Bill Ingalls; \nText: Ogetay Kayali \n(MTU)",
-    "date": "2026-04-02",
-    "explanation": "We are one small step closer to returning to the Moon. A new chapter in human exploration began yesterday when NASA's Artemis II launched aboard the Space Launch System (SLS) from Kennedy Space Center. Carrying four astronauts, the Orion spacecraft's planned lunar flyby will be the first in over half a century. This historic test flight, echoing the legacy of Apollo while pushing beyond it, will carry its crew farther from Earth than any humans since 1972, looping around the Moon before returning home. During the approximately ten-day journey, Orion's systems--from life support to navigation--will be tested in deep space, while astronauts observe the lunar surface, including shadowed regions of the far side rarely seen with such perspective. After looping around the Moon, the astronauts will return to Earth, ending their journey with a Pacific Ocean splashdown.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2604/nasa_billingalls.jpg",
+    "date": "2026-04-04",
+    "explanation": "From pole to pole our fair planet is captured in this snapshot from space, an evocative image from a window of the Orion spacecraft Integrity. From the spacecraft's perspective the Sun is moving behind Earth's bright limb along the lower right. Africa and the Iberian peninsula are in view on the pale blue planet's surface, while aurorae crown Earth's south and north poles at top right and bottom left. Commander Reid Wiseman took the historic picture on Artemis II mission flight day 2 (April 2), after the completion of the planned translunar injection burn. That burn boosted the spacecraft out of Earth orbit, sending Integrity and crew on a trajectory that will take them around the Moon and back again. That's a journey humans last made over 50 years ago.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2604/art002e000192.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Liftoff! Returning to the Moon",
-    "url": "https://apod.nasa.gov/apod/image/2604/nasa_billingalls.jpg"
+    "title": "Hello World",
+    "url": "https://apod.nasa.gov/apod/image/2604/art002e000192_1050.jpg"
   }
 }
