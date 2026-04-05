@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-04T06:57:32.548Z",
+  "updatedAt": "2026-04-05T07:01:52.290Z",
   "groups": [
     {
       "id": "physics",
@@ -10079,6 +10079,25 @@
       "group": "cs"
     },
     {
+      "id": "http://arxiv.org/abs/2604.01998v1",
+      "link": "http://arxiv.org/abs/2604.01998v1",
+      "title": "Systems with discrete singular $φ$-Laplacian and maximal monotone boundary conditions",
+      "summary": "We are concerned with solvability of nonlinear systems involving a discrete singular $φ$-Laplacian operator of type \\begin{equation*} u \\mapsto Δ\\left[φ(Δu(n-1))\\right] \\qquad (n\\in \\{1, \\dots, T\\}), \\end{equation*} associated with a general two point boundary condition having the form \\begin{equation*} \\left(φ(Δu(0)),-φ(Δu(T))\\right)\\inγ(u(0),u(T+1)), \\end{equation*} where $γ:\\mathbb{R}^N\\times\\mathbb{R}^N\\to2^{\\mathbb{R}^N\\times\\mathbb{R}^N}$ is a maximal monotone operator with $0_{\\mathbb{R}^N \\times \\mathbb{R}^N}\\in γ(0_{\\mathbb{R}^N \\times \\mathbb{R}^N})$. The mapping $φ$ is a potential homeomorphism from an open ball of radius $a$ centered at the origin $B_a \\subset \\mathbb{R}^N$ onto $\\mathbb{R}^N$ and $Δ$ stands for the usual forward difference operator. When the perturbing nonlinearity in the system has not a potential structure we obtain existence of solutions by a priori estimates. Also, when the nonlinearity is of gradient type and $γ$ is a subdifferential, we provide a variational approach of the system in the frame of critical point theory for convex, lower semicontinuous perturbations of $C^1$-functionals. Then we derive the existence of solutions either as minimizers or saddle points of the corresponding energy functional.",
+      "published": "2026-04-02T13:07:29Z",
+      "updated": "2026-04-02T13:07:29Z",
+      "authors": [
+        "Andreea Gruie",
+        "Petru Jebelean",
+        "Calin Serban"
+      ],
+      "categories": [
+        "math.CA"
+      ],
+      "primaryCategory": "math.CA",
+      "sourceGroup": "math",
+      "group": "math"
+    },
+    {
       "id": "http://arxiv.org/abs/2604.01999v1",
       "link": "http://arxiv.org/abs/2604.01999v1",
       "title": "Tree-independence number and forbidden induced subgraphs: excluding a $6$-vertex path and a $(2,t)$-biclique",
@@ -10096,25 +10115,6 @@
         "math.CO"
       ],
       "primaryCategory": "math.CO",
-      "sourceGroup": "math",
-      "group": "math"
-    },
-    {
-      "id": "http://arxiv.org/abs/2604.01998v1",
-      "link": "http://arxiv.org/abs/2604.01998v1",
-      "title": "Systems with discrete singular $φ$-Laplacian and maximal monotone boundary conditions",
-      "summary": "We are concerned with solvability of nonlinear systems involving a discrete singular $φ$-Laplacian operator of type \\begin{equation*} u \\mapsto Δ\\left[φ(Δu(n-1))\\right] \\qquad (n\\in \\{1, \\dots, T\\}), \\end{equation*} associated with a general two point boundary condition having the form \\begin{equation*} \\left(φ(Δu(0)),-φ(Δu(T))\\right)\\inγ(u(0),u(T+1)), \\end{equation*} where $γ:\\mathbb{R}^N\\times\\mathbb{R}^N\\to2^{\\mathbb{R}^N\\times\\mathbb{R}^N}$ is a maximal monotone operator with $0_{\\mathbb{R}^N \\times \\mathbb{R}^N}\\in γ(0_{\\mathbb{R}^N \\times \\mathbb{R}^N})$. The mapping $φ$ is a potential homeomorphism from an open ball of radius $a$ centered at the origin $B_a \\subset \\mathbb{R}^N$ onto $\\mathbb{R}^N$ and $Δ$ stands for the usual forward difference operator. When the perturbing nonlinearity in the system has not a potential structure we obtain existence of solutions by a priori estimates. Also, when the nonlinearity is of gradient type and $γ$ is a subdifferential, we provide a variational approach of the system in the frame of critical point theory for convex, lower semicontinuous perturbations of $C^1$-functionals. Then we derive the existence of solutions either as minimizers or saddle points of the corresponding energy functional.",
-      "published": "2026-04-02T13:07:29Z",
-      "updated": "2026-04-02T13:07:29Z",
-      "authors": [
-        "Andreea Gruie",
-        "Petru Jebelean",
-        "Calin Serban"
-      ],
-      "categories": [
-        "math.CA"
-      ],
-      "primaryCategory": "math.CA",
       "sourceGroup": "math",
       "group": "math"
     },
