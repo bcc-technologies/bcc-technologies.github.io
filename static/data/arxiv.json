@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-24T07:58:37.991Z",
+  "updatedAt": "2026-04-25T07:10:47.915Z",
   "groups": [
     {
       "id": "physics",
@@ -9966,7 +9966,7 @@
     {
       "id": "http://arxiv.org/abs/2604.21429v1",
       "link": "http://arxiv.org/abs/2604.21429v1",
-      "title": "Consecutive non-square nom-primitive pairs in as finite field",
+      "title": "Consecutive non-square non-primitive pairs in a finite field",
       "summary": "Let $q$ be an odd prime power and write \\[ θ_q := \\frac{φ(q-1)}{q-1}. \\] If $θ_q < \\tfrac{1}{3}$, or if $θ_q = \\tfrac{1}{3}$ and $q \\notin \\{7,13,19,25,37\\}$, then the finite field $\\F$ contains a pair of consecutive elements that are both non-square and non-primitive. This extends a result of Jarso and Trudgian for prime fields $\\Fp$, where the same conclusion was obtained under the stronger condition $θ_p \\le \\tfrac{1}{4}$. More generally, let $\\ell$ be the least odd prime divisor of $q-1$. If $θ_q \\le \\tfrac{1}{3}$, then $\\F$ contains a pair of consecutive elements that are non-squares and $\\ell$th powers, with the sole exceptions $q \\in \\{7,13,19,25,37,43\\}$.",
       "published": "2026-04-23T08:45:48Z",
       "updated": "2026-04-23T08:45:48Z",
@@ -15495,7 +15495,7 @@
       "id": "http://arxiv.org/abs/2604.21744v1",
       "link": "http://arxiv.org/abs/2604.21744v1",
       "title": "Agentic AI-assisted coding offers a unique opportunity to instill epistemic grounding during software development",
-      "summary": "The capabilities of AI-assisted coding are progressing at breakneck speed. Chat-based vibe coding has evolved into fully fledged AI-assisted, agentic software development using agent scaffolds where the human developer creates a plan that agentic AIs implement. One current trend is utilizing documents beyond this plan document, such as project and method-scoped documents. Here we propose GROUNDING.md, a community-governed, field-scoped epistemic grounding document, using mass spectrometry-based proteomics as an example. This explicit field-scoped grounding document encodes Hard Constraints (non-negotiable validity invariants empirically required for scientific correctness) and Convention Parameters (community-agreed defaults) that override all other contexts to enforce validity, regardless of what the user prompts. In practice, this will empower a non-domain expert to generate code, tools, and software that have best practices baked in at the ground level, providing confidence to the software developer but also to those reviewing or using the final product. Undoubtedly it is easier to have agentic AIs adhere to guidelines than humans, and this opportunity allows for organizations to develop epistemic grounding documents in such a way as to keep domain experts in the loop in a future of democratized generation of bespoke software solutions.",
+      "summary": "The capabilities of AI-assisted coding are progressing at breakneck speed. Chat-based vibe coding has evolved into fully fledged AI-assisted, agentic software development using agent scaffolds where the human developer creates a plan that agentic AIs implement. One current trend is utilizing documents beyond this plan document, such as project and method-scoped documents. Here we propose GROUNDING$.$md, a community-governed, field-scoped epistemic grounding document, using mass spectrometry-based proteomics as an example. This explicit field-scoped grounding document encodes Hard Constraints (non-negotiable validity invariants empirically required for scientific correctness) and Convention Parameters (community-agreed defaults) that override all other contexts to enforce validity, regardless of what the user prompts. In practice, this will empower a non-domain expert to generate code, tools, and software that have best practices baked in at the ground level, providing confidence to the software developer but also to those reviewing or using the final product. Undoubtedly it is easier to have agentic AIs adhere to guidelines than humans, and this opportunity allows for organizations to develop epistemic grounding documents in such a way as to keep domain experts in the loop in a future of democratized generation of bespoke software solutions.",
       "published": "2026-04-23T14:50:35Z",
       "updated": "2026-04-23T14:50:35Z",
       "authors": [
@@ -25169,7 +25169,7 @@
       "updated": "2026-04-23T15:05:59Z",
       "authors": [
         "Dingke Tang",
-        "Xuming he",
+        "Xuming He",
         "Shu Yang"
       ],
       "categories": [
@@ -26359,7 +26359,7 @@
       "updated": "2026-04-22T12:25:09Z",
       "authors": [
         "Yaiza Bermudez",
-        "Samir Perlaza",
+        "Samir M. Perlaza",
         "Iñaki Esnaola"
       ],
       "categories": [
