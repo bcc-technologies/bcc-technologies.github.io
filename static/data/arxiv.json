@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-01T08:08:04.604Z",
+  "updatedAt": "2026-05-02T07:28:11.225Z",
   "groups": [
     {
       "id": "physics",
@@ -10698,8 +10698,7 @@
       "published": "2026-04-30T07:51:49Z",
       "updated": "2026-04-30T07:51:49Z",
       "authors": [
-        "Cindy",
-        "Zhang"
+        "Cindy Zhang"
       ],
       "categories": [
         "math.GT"
