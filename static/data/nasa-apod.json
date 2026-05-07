@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-05-04T08:25:45.057Z",
+  "updatedAt": "2026-05-07T08:29:16.568Z",
   "item": {
-    "date": "2026-05-04",
-    "explanation": "Why are there huge, unusual masses inside the Earth? No one is sure.  By noting how earthquakes rumble through our planet's interior, humanity has discovered two deep structures that appear to have unusual temperatures and/or chemical compositions. One hypothesis holds that the superplumes are sunken debris left over from the Earth-shattering collision that created Earth's Moon about 4.5 billion years ago.  A competing hypothesis is that they are graveyards for old tectonic plates that slowly slid under each other over the past few billion years. No matter their origin, the superplumes are thought to affect Earth’s surface volcanism, possibly creating, for example, island chains such as Hawaii.  Also known as large low-shear-velocity provinces (LLSVPs), Earth's superplumes are visualized in the featured animation.",
+    "date": "2026-05-07",
+    "explanation": "A long time ago, in a distant galaxy, a massive star was destroyed in a supernova explosion. The light of this event travelled for tens of millions of years and reached Earth last week as Supernova 2026kid. The featured video shows a time-lapse over three nights of the host galaxy NGC 5907, an edge-on spiral also known as the Splinter or Knife Edge Galaxy, as the supernova appears and becomes brighter. (The occasional streaks are satellites in Earth orbit.) At its brightest, a supernova can outshine the sum of all other stars in its galaxy. Supernova 2026kid appears relatively dim, probably because we are seeing it through the edge-on disk of the galaxy. Such explosions typically happen about once per century in galaxies similar to the Milky Way, and their light can take months to fade away. The brightest supernova in recorded history was SN 1006; it is reported to have been brighter than Venus, and even visible in the sky during daytime.",
     "media_type": "video",
     "service_version": "v1",
-    "title": "Superplumes Inside Earth",
-    "url": "https://apod.nasa.gov/apod/image/2605/SuperPlumeEarth_Cottaar.mp4"
+    "title": "Supernova in a Sideways Spiral",
+    "url": "https://apod.nasa.gov/apod/image/2605/supernova.mp4"
   }
 }
