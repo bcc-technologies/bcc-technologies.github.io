@@ -1,11 +1,12 @@
 {
-  "updatedAt": "2026-05-07T08:29:16.568Z",
+  "updatedAt": "2026-05-09T07:52:13.502Z",
   "item": {
-    "date": "2026-05-07",
-    "explanation": "A long time ago, in a distant galaxy, a massive star was destroyed in a supernova explosion. The light of this event travelled for tens of millions of years and reached Earth last week as Supernova 2026kid. The featured video shows a time-lapse over three nights of the host galaxy NGC 5907, an edge-on spiral also known as the Splinter or Knife Edge Galaxy, as the supernova appears and becomes brighter. (The occasional streaks are satellites in Earth orbit.) At its brightest, a supernova can outshine the sum of all other stars in its galaxy. Supernova 2026kid appears relatively dim, probably because we are seeing it through the edge-on disk of the galaxy. Such explosions typically happen about once per century in galaxies similar to the Milky Way, and their light can take months to fade away. The brightest supernova in recorded history was SN 1006; it is reported to have been brighter than Venus, and even visible in the sky during daytime.",
-    "media_type": "video",
+    "date": "2026-05-09",
+    "explanation": "Many bright nebulae and star clusters in planet Earth's sky are associated with the name of astronomer Charles Messier from his famous 18th century catalog. His name is also given to these two large and remarkable craters on the Moon. Standouts in the dark, smooth lunar Sea of Fertility or Mare Fecunditatis, Messier (left) and Messier A have dimensions of 15 by 8 and 16 by 11 kilometers respectively. Their elongated shapes are explained by the extremely shallow-angle trajectory followed by an impactor, moving left to right, that gouged out the craters. The shallow impact also resulted in two bright rays of material extending along the surface to the right, beyond the picture. Intended to be viewed with red/blue glasses (red for the left eye), this striking stereo picture of the crater pair was recently created from high resolution scans of two images (AS11-42-6304, AS11-42-6305) taken during the Apollo 11 mission to the Moon.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2605/MessierCrater3d_vantuyne.jpg",
+    "media_type": "image",
     "service_version": "v1",
-    "title": "Supernova in a Sideways Spiral",
-    "url": "https://apod.nasa.gov/apod/image/2605/supernova.mp4"
+    "title": "Messier Craters in Stereo",
+    "url": "https://apod.nasa.gov/apod/image/2605/MessierCrater3d_vantuyne1024c.jpg"
   }
 }
