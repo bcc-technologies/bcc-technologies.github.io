@@ -1,12 +1,13 @@
 {
-  "updatedAt": "2026-05-09T07:52:13.502Z",
+  "updatedAt": "2026-05-13T08:40:13.057Z",
   "item": {
-    "date": "2026-05-09",
-    "explanation": "Many bright nebulae and star clusters in planet Earth's sky are associated with the name of astronomer Charles Messier from his famous 18th century catalog. His name is also given to these two large and remarkable craters on the Moon. Standouts in the dark, smooth lunar Sea of Fertility or Mare Fecunditatis, Messier (left) and Messier A have dimensions of 15 by 8 and 16 by 11 kilometers respectively. Their elongated shapes are explained by the extremely shallow-angle trajectory followed by an impactor, moving left to right, that gouged out the craters. The shallow impact also resulted in two bright rays of material extending along the surface to the right, beyond the picture. Intended to be viewed with red/blue glasses (red for the left eye), this striking stereo picture of the crater pair was recently created from high resolution scans of two images (AS11-42-6304, AS11-42-6305) taken during the Apollo 11 mission to the Moon.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2605/MessierCrater3d_vantuyne.jpg",
+    "copyright": "Neven Krcmarek",
+    "date": "2026-05-13",
+    "explanation": "The New General Catalog of star clusters and nebulae really isn't so new. In fact, it was published in 1888 - an effort by J. L. E. Dreyer to consolidate the work of astronomers William, Caroline, and John Herschel along with others into a useful single, complete catalog of astronomical discoveries and measurements. Dreyer's work was largely successful and is still important today, as this famous catalog continues to lend its \"NGC\" to bright clusters, galaxies, and nebulae. Take for example the star cluster known as NGC 188 (item number 188 in the NGC compilation). It lies about 6,000 light-years distant in the northern constellation Cepheus and represents a galactic or open star cluster. With an age of about 7 billion years, NGC 188 is old for an open cluster. Its old, evolved red giant stars have yellowish hues in this colorful, deep sky view. NGC 188 also enjoys the designation Caldwell 1 in a modern compilation of deep sky objects. Located well above the plane of the Milky Way and seen in the direction of planet Earth's north celestial pole, the ancient stellar group is known to some as the Polarissima Cluster.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2605/Polarissima.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Messier Craters in Stereo",
-    "url": "https://apod.nasa.gov/apod/image/2605/MessierCrater3d_vantuyne1024c.jpg"
+    "title": "NGC 188: Old Cluster in the New General Catalog",
+    "url": "https://apod.nasa.gov/apod/image/2605/Polarissima1024.jpg"
   }
 }
