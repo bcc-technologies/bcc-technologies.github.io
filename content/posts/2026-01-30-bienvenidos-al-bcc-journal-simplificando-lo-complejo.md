@@ -1,5 +1,3 @@
-# Bienvenidos al BCC Journal: claridad en lo complejo
-
 Este Journal nace de una premisa sencilla: en ciencia e ingeniería, **no basta con obtener datos**. Es necesario obtener **resultados confiables**, con contexto, reproducibles y susceptibles de verificación.
 
 En BCC desarrollamos software e instrumentación para análisis de imágenes científicas. Nuestro enfoque se apoya en una idea central:

@@ -1,5 +1,3 @@
-# Welcome to the BCC Journal: clarity in complexity
-
 This Journal is based on a simple premise: in science and engineering, **it is not enough to obtain data**. It is necessary to obtain **reliable results** that are contextual, reproducible, and verifiable.
 
 At BCC, we develop software and instrumentation for scientific image analysis. Our approach is based on a central idea:
