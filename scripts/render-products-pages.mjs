@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
@@ -71,11 +71,6 @@ function renderAction(action, { enableHashScroll = false } = {}) {
   return `<a ${attrs.join(' ')}>${escapeHtml(action.label || '')}</a>`;
 }
 
-function renderHeroOutcomes(pane) {
-  const outcomes = pane.outcomes || [];
-  if (!outcomes.length) return '';
-  return `<div class="hero-family-list">${outcomes.map((item) => `<span class="hero-family-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
-}
 
 function renderHero(hero) {
   const copy = hero.copy || {};
@@ -94,46 +89,43 @@ function renderHero(hero) {
 
     <div class="container">
       <div class="hero-shell hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow" id="productsHeroEyebrow">${escapeHtml(copy.eyebrow || '')}</p>
-          <h1 id="productsHeroTitle">${escapeHtml(copy.title || '')}</h1>
-          <div class="hero-signals" id="productsHeroSignals" aria-label="${escapeHtml(copy.signalsAriaLabel || '')}">
-            ${(copy.signals || []).map((signal) => `
-            <div class="hero-signal">
-              <span class="hero-signal-value">${escapeHtml(signal.value || '')}</span>
-              <span class="hero-signal-label">${escapeHtml(signal.label || '')}</span>
-            </div>`).join('')}
-          </div>
-          <div class="hero-cta" id="productsHeroActions">${(copy.actions || []).map((action) => renderAction(action, { enableHashScroll: true })).join('')}</div>
-        </div>
-
         <div class="hero-visual">
           <div class="hero-visual-head">
-            <span class="hero-pane-badge" id="productsHeroBadge">${escapeHtml(visual.badge || '')}</span>
-            <nav class="hero-tabs" id="productsHeroTabs" role="tablist" aria-label="${escapeHtml(visual.tablistLabel || '')}">
-              ${panes.map((pane, index) => `<button role="tab" aria-selected="${index === 0 ? 'true' : 'false'}" aria-controls="pane-${escapeHtml(pane.id || '')}" id="tab-${escapeHtml(pane.id || '')}" data-pane="#pane-${escapeHtml(pane.id || '')}">${escapeHtml(pane.tabLabel || '')}</button>`).join('')}
-            </nav>
+            <div class="hero-context">
+              <p class="eyebrow" id="productsHeroEyebrow">${escapeHtml(copy.eyebrow || '')}</p>
+              <div class="hero-intro">
+                <h1 id="productsHeroTitle">${escapeHtml(copy.title || '')}</h1>
+                <p id="productsHeroLead" class="hero-lead"${copy.lead ? '' : ' hidden'}>${escapeHtml(copy.lead || '')}</p>
+              </div>
+              <nav class="hero-tabs" id="productsHeroTabs" role="tablist" aria-label="${escapeHtml(visual.tablistLabel || '')}">
+                ${panes.map((pane, index) => `<button role="tab" aria-selected="${index === 0 ? 'true' : 'false'}" aria-controls="pane-${escapeHtml(pane.id || '')}" id="tab-${escapeHtml(pane.id || '')}" data-pane="#pane-${escapeHtml(pane.id || '')}">${escapeHtml(pane.tabLabel || '')}</button>`).join('')}
+              </nav>
+            </div>
           </div>
           <div id="productsHeroPanes">
             ${panes.map((pane, index) => `
             <div class="hero-pane${index === 0 ? ' active' : ''}" id="pane-${escapeHtml(pane.id || '')}" role="tabpanel" aria-labelledby="tab-${escapeHtml(pane.id || '')}"${index === 0 ? ' aria-hidden="false"' : ' hidden aria-hidden="true"'}>
               <div class="hero-showcase">
                 ${(pane.showcase || []).map((item) => {
-                  const attrs = [
-                    'class="showcase-item"',
-                    `data-media="${escapeHtml(item.media || 'ui')}"`,
+                  const metaAttrs = [
+                    'class="showcase-meta"',
                     `href="${escapeHtml(item.href || '#')}"`
                   ];
-                  if (item.scrollTarget) attrs.push(`data-scroll-to="${escapeHtml(item.scrollTarget)}"`);
-                  return `<a ${attrs.join(' ')}><img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy" /><strong>${escapeHtml(item.title || '')}</strong><div class="showcase-meta">${escapeHtml(item.meta || '')}</div></a>`;
+                  if (item.scrollTarget) metaAttrs.push(`data-scroll-to="${escapeHtml(item.scrollTarget)}"`);
+                  const imageMarkup = `<img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy" />`;
+                  const topicsMarkup = (item.topics || []).length
+                    ? `<ul class="showcase-topics">${(item.topics || []).map((topic) => `<li class="showcase-topic">${escapeHtml(topic)}</li>`).join('')}</ul>`
+                    : '';
+                  const mediaMarkup = item.media === 'hero'
+                    ? `<div class="showcase-stage" data-layout="${escapeHtml(item.topicsLayout || 'default')}">${imageMarkup}${topicsMarkup}</div>`
+                    : imageMarkup;
+                  return `<article class="showcase-item" data-media="${escapeHtml(item.media || 'ui')}">${mediaMarkup}<strong>${escapeHtml(item.title || '')}</strong><a ${metaAttrs.join(' ')}>${escapeHtml(item.meta || '')}</a></article>`;
                 }).join('')}
               </div>
               <div class="hero-family-cta" data-family="${escapeHtml(pane.id || 'software')}">
                 <div class="hero-family-info">
-                  <p class="hero-family-kicker"><span class="${familyIconClass(pane.id)}" aria-hidden="true"></span>${escapeHtml(pane.kicker || '')}</p>
                   <h3 class="hero-family-title">${escapeHtml(pane.title || '')}</h3>
                   <p class="hero-family-text">${escapeHtml(pane.text || '')}</p>
-                  ${renderHeroOutcomes(pane)}
                 </div>
                 <div class="hero-family-actions">${(pane.actions || []).map((action) => renderAction(action)).join('')}</div>
               </div>
@@ -159,9 +151,10 @@ function renderFilters(filters, locale) {
             <label for="filterSearch" class="visually-hidden" id="filterSearchLabel">${escapeHtml(filters.searchLabel || '')}</label>
             <input id="filterSearch" type="search" inputmode="search" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="${escapeHtml(filters.searchLabel || '')}" placeholder="${escapeHtml(filters.searchPlaceholder || '')}" />
           </div>
+          <button type="button" id="filtersToggle" class="filters-toggle" aria-expanded="false" aria-controls="filtersControls"><span class="filters-toggle-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 7h16M7 12h10M10 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="filters-toggle-label">${toggleLabel}</span><span class="filters-toggle-count" aria-hidden="true" hidden></span></button>
         </div>
 
-        <div class="filters-collapsible" id="filtersControls">
+        <div class="filters-collapsible" id="filtersControls" hidden>
           <div class="filters-row row-controls">
             <div class="group group-single">
               <span class="label" id="familyLabel">${escapeHtml(filters.familyLabel || '')}</span>
@@ -197,9 +190,8 @@ function renderFilters(filters, locale) {
           </div>
         </div>
 
-        <div class="filters-meta">
+        <div class="filters-meta" id="filtersMeta" hidden>
           <div class="filters-meta-left">
-            <button type="button" id="filtersToggle" class="filters-toggle" hidden aria-expanded="false" aria-controls="filtersControls">${toggleLabel}</button>
             <button type="button" id="clearFilters" class="icon-clear" hidden aria-label="${escapeHtml(filters.clearFilters || '')}" title="${escapeHtml(filters.clearFilters || '')}">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M6 6l12 12M18 6L6 18"/>
@@ -214,8 +206,13 @@ function renderFilters(filters, locale) {
   </div>`;
 }
 
-function renderProductDecision(localeContent, product) {
-  return `<dl class="product-decision">${getDecisionEntries(localeContent, product).map((entry) => `<div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.value)}</dd></div>`).join('')}</dl>`;
+function renderProductDecision(localeContent, product, options = {}) {
+  const entries = getDecisionEntries(localeContent, product);
+  const visibleEntries = options.compact
+    ? entries.filter((entry) => entry.key === 'bestFor' || entry.key === 'outputs')
+    : entries;
+  if (!visibleEntries.length) return '';
+  return `<dl class="product-decision${options.compact ? ' product-decision--compact' : ''}">${visibleEntries.map((entry) => `<div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.value)}</dd></div>`).join('')}</dl>`;
 }
 
 function renderProductCard(localeContent, product) {
@@ -223,7 +220,7 @@ function renderProductCard(localeContent, product) {
   const compare = localeContent.compare || {};
   const compareLabel = compare.toggleAdd || 'Compare';
   const compareAria = [compareLabel, product.title || ''].filter(Boolean).join(' ');
-  return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(localeContent, product)}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
+  return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" data-state="idle" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(localeContent, product, { compact: true })}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
 }
 
 function renderProducts(localeContent) {
@@ -240,18 +237,26 @@ function renderProducts(localeContent) {
     </div>
   </section>`;
 }
-
 function renderCompare(compare) {
   return `
   <section class="compare section" id="comparador">
     <div class="container">
       <h2 id="productsCompareTitle">${escapeHtml(compare.title || '')}</h2>
-      <div class="lead" id="productsCompareLead">${escapeHtml(compare.lead || compare.autoLead || '')}</div>
-      <div class="compare-toolbar">
-        <p class="compare-hint" id="productsCompareHint">${escapeHtml(compare.instructions || '')}</p>
-        <button type="button" id="clearCompare" class="compare-clear" hidden>${escapeHtml(compare.clearSelection || '')}</button>
+      <div class="compare-shell">
+        <div class="compare-overview">
+          <p class="compare-eyebrow" id="productsCompareEyebrow">${escapeHtml(compare.autoEyebrow || '')}</p>
+          <h3 class="compare-mode-title" id="productsCompareModeTitle">${escapeHtml(compare.autoTitle || '')}</h3>
+          <div class="lead" id="productsCompareLead">${escapeHtml(compare.lead || compare.autoLead || '')}</div>
+        </div>
+        <div class="compare-toolbar">
+          <p class="compare-hint" id="productsCompareHint">${escapeHtml(compare.instructions || '')}</p>
+          <div class="compare-actions">
+            <span class="compare-count" id="productsCompareCount">${escapeHtml(compare.autoCount || '')}</span>
+            <button type="button" id="clearCompare" class="compare-clear" hidden>${escapeHtml(compare.clearSelection || '')}</button>
+          </div>
+        </div>
+        <div class="compare-selection" id="productsCompareSelection" aria-live="polite"></div>
       </div>
-      <div class="compare-selection" id="productsCompareSelection" aria-live="polite"></div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -320,3 +325,4 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+

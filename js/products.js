@@ -11,7 +11,7 @@
         all: 'All',
         selected: 'selected',
         filters: 'Filters',
-        showFilters: 'Filters',
+        showFilters: 'Show filters',
         hideFilters: 'Hide filters',
         removeFilter: 'Remove filter',
         results: (count) => `${count} product${count === 1 ? '' : 's'}`
@@ -24,7 +24,7 @@
         all: 'Todos',
         selected: 'seleccionados',
         filters: 'Filtros',
-        showFilters: 'Filtros',
+        showFilters: 'Mostrar filtros',
         hideFilters: 'Ocultar filtros',
         removeFilter: 'Quitar filtro',
         results: (count) => `${count} producto${count === 1 ? '' : 's'}`
@@ -179,48 +179,6 @@
     return `<a ${attrs.join(' ')}>${escapeHtml(action.label || '')}</a>`;
   }
 
-  function renderHeroOutcomes(pane) {
-    const outcomes = pane.outcomes || [];
-    if (!outcomes.length) return '';
-    return `<div class="hero-family-list">${outcomes.map((item) => `<span class="hero-family-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
-  }
-
-  function renderProductDecision(product) {
-    return `
-      <dl class="product-decision">
-        ${getDecisionEntries(product).map((entry) => `
-          <div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}">
-            <dt>${escapeHtml(entry.label)}</dt>
-            <dd>${escapeHtml(entry.value)}</dd>
-          </div>
-        `).join('')}
-      </dl>
-    `;
-  }
-
-  function renderProductCard(product) {
-    const status = product.status || {};
-    const compare = content.compare || {};
-    const compareLabel = compare.toggleAdd || (locale === 'en' ? 'Compare' : 'Comparar');
-    const compareAria = [compareLabel, product.title || ''].filter(Boolean).join(' ');
-
-    return `
-      <article class="product-card reveal${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}>
-        <img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" />
-        <div class="product-card-head">
-          <div class="product-card-topline">
-            ${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}
-            ${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}
-          </div>
-          <h3>${escapeHtml(product.title || '')}</h3>
-          <p class="product-summary">${escapeHtml(product.description || '')}</p>
-        </div>
-        ${renderProductDecision(product)}
-        <div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
-        <div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div>
-      </article>
-    `;
-  }
 
   function renderHero() {
     if (!content || !content.hero) return;
@@ -231,6 +189,7 @@
 
     const eyebrow = document.getElementById('productsHeroEyebrow');
     const title = document.getElementById('productsHeroTitle');
+    const lead = document.getElementById('productsHeroLead');
     const signals = document.getElementById('productsHeroSignals');
     const actions = document.getElementById('productsHeroActions');
     const badge = document.getElementById('productsHeroBadge');
@@ -239,6 +198,10 @@
 
     if (eyebrow) eyebrow.textContent = copy.eyebrow || '';
     if (title) title.textContent = copy.title || '';
+    if (lead) {
+      lead.textContent = copy.lead || '';
+      lead.hidden = !copy.lead;
+    }
     if (signals) {
       signals.setAttribute('aria-label', copy.signalsAriaLabel || '');
       signals.innerHTML = (copy.signals || []).map((signal) => `
@@ -263,23 +226,29 @@
         <div class="hero-pane${index === 0 ? ' active' : ''}" id="pane-${escapeHtml(pane.id || '')}" role="tabpanel" aria-labelledby="tab-${escapeHtml(pane.id || '')}" ${index === 0 ? 'aria-hidden="false"' : 'hidden aria-hidden="true"'}>
           <div class="hero-showcase">
             ${(pane.showcase || []).map((item) => {
-              const attrs = [`class="showcase-item"`, `data-media="${escapeHtml(item.media || 'ui')}"`, `href="${escapeHtml(item.href || '#')}"`];
-              if (item.scrollTarget) attrs.push(`data-scroll-to="${escapeHtml(item.scrollTarget)}"`);
+              const metaAttrs = [`class="showcase-meta"`, `href="${escapeHtml(item.href || '#')}"`];
+              if (item.scrollTarget) metaAttrs.push(`data-scroll-to="${escapeHtml(item.scrollTarget)}"`);
+              const imageMarkup = `<img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy" />`;
+              const topicsMarkup = (item.topics || []).length
+                ? `<ul class="showcase-topics">${(item.topics || []).map((topic) => `<li class="showcase-topic">${escapeHtml(topic)}</li>`).join('')}</ul>`
+                : '';
+              const mediaMarkup = item.media === 'hero'
+                ? `<div class="showcase-stage" data-layout="${escapeHtml(item.topicsLayout || 'default')}">${imageMarkup}${topicsMarkup}</div>`
+                : imageMarkup;
               return `
-                <a ${attrs.join(' ')}>
-                  <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy" />
+                <article class="showcase-item" data-media="${escapeHtml(item.media || 'ui')}">
+                  ${mediaMarkup}
                   <strong>${escapeHtml(item.title || '')}</strong>
-                  <div class="showcase-meta">${escapeHtml(item.meta || '')}</div>
-                </a>
+                  <a ${metaAttrs.join(' ')}>${escapeHtml(item.meta || '')}</a>
+                </article>
               `;
             }).join('')}
           </div>
           <div class="hero-family-cta" data-family="${escapeHtml(pane.id || 'software')}">
             <div class="hero-family-info">
-              <p class="hero-family-kicker"><span class="${familyIconClass(pane.id)}" aria-hidden="true"></span>${escapeHtml(pane.kicker || '')}</p>
               <h3 class="hero-family-title">${escapeHtml(pane.title || '')}</h3>
               <p class="hero-family-text">${escapeHtml(pane.text || '')}</p>
-              ${renderHeroOutcomes(pane)}
+
             </div>
             <div class="hero-family-actions">
               ${(pane.actions || []).map((action) => renderAction(action)).join('')}
@@ -345,6 +314,24 @@
     populateMultiSelect(document.getElementById('useSelect'), filters.useOptions || [], i18n.all, filters.selectedLabel || i18n.selected);
   }
 
+  function renderProductDecision(product, options = {}) {
+    const entries = getDecisionEntries(product);
+    const visibleEntries = options.compact
+      ? entries.filter((entry) => entry.key === 'bestFor' || entry.key === 'outputs')
+      : entries;
+    if (!visibleEntries.length) return '';
+
+    return `<dl class="product-decision${options.compact ? ' product-decision--compact' : ''}">${visibleEntries.map((entry) => `<div class="product-decision-row product-decision-row--${escapeHtml(entry.key)}"><dt>${escapeHtml(entry.label)}</dt><dd>${escapeHtml(entry.value)}</dd></div>`).join('')}</dl>`;
+  }
+
+  function renderProductCard(product) {
+    const status = product.status || {};
+    const compare = content.compare || {};
+    const compareLabel = compare.toggleAdd || 'Compare';
+    const compareAria = [compareLabel, product.title || ''].filter(Boolean).join(' ');
+
+    return `<article class="product-card reveal is-visible${product.featured ? ' product-card-open' : ''}" data-family="${escapeHtml(product.family || '')}" data-method="${escapeHtml((product.methods || []).join(','))}" data-use="${escapeHtml((product.uses || []).join(','))}" data-product-id="${escapeHtml(product.id || '')}"${product.anchorId ? ` id="${escapeHtml(product.anchorId)}"` : ''}><img src="${escapeHtml(product.image || '')}" alt="${escapeHtml(product.alt || product.title || '')}" loading="lazy" /><div class="product-card-head"><div class="product-card-topline">${status.label ? `<span class="${statusToneClass(status.tone)}">${escapeHtml(status.label)}</span>` : ''}${product.id ? `<button type="button" class="compare-toggle" data-compare-toggle="${escapeHtml(product.id)}" aria-pressed="false" data-state="idle" aria-label="${escapeHtml(compareAria)}">${escapeHtml(compareLabel)}</button>` : ''}</div><h3>${escapeHtml(product.title || '')}</h3><p class="product-summary">${escapeHtml(product.description || '')}</p></div>${renderProductDecision(product, { compact: true })}<div class="product-tags">${(product.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="card-cta">${(product.actions || []).map((action) => renderAction(action)).join('')}</div></article>`;
+  }
   function renderProducts() {
     if (!content) return;
 
@@ -438,15 +425,21 @@
 
     const compare = content.compare;
     const title = document.getElementById('productsCompareTitle');
+    const eyebrow = document.getElementById('productsCompareEyebrow');
+    const modeTitle = document.getElementById('productsCompareModeTitle');
     const lead = document.getElementById('productsCompareLead');
     const hint = document.getElementById('productsCompareHint');
+    const count = document.getElementById('productsCompareCount');
     const clear = document.getElementById('clearCompare');
     const head = document.getElementById('productsCompareHead');
     const body = document.getElementById('productsCompareBody');
 
     if (title) title.textContent = compare.title || '';
+    if (eyebrow) eyebrow.textContent = compare.autoEyebrow || '';
+    if (modeTitle) modeTitle.textContent = compare.autoTitle || '';
     if (lead) lead.textContent = compare.lead || compare.autoLead || '';
     if (hint) hint.textContent = compare.instructions || '';
+    if (count) count.textContent = compare.autoCount || '';
     if (clear) {
       clear.textContent = compare.clearSelection || '';
       clear.hidden = true;
@@ -618,6 +611,8 @@
     const filterBar = document.querySelector('.filter-bar');
     const controlsPanel = document.getElementById('filtersControls');
     const toggleButton = document.getElementById('filtersToggle');
+    const toggleLabelEl = toggleButton ? query('.filters-toggle-label', toggleButton) : null;
+    const toggleCountEl = toggleButton ? query('.filters-toggle-count', toggleButton) : null;
     const compareLead = document.getElementById('productsCompareLead');
     const compareHint = document.getElementById('productsCompareHint');
     const compareBody = document.getElementById('productsCompareBody');
@@ -627,7 +622,7 @@
     const compare = content.compare || {};
     const compareLimit = Math.max(1, Number(compare.limit) || 3);
     const compareState = { selected: [] };
-    const mobileQuery = window.matchMedia ? window.matchMedia('(max-width: 640px)') : null;
+    const metaPanel = document.getElementById('filtersMeta');
     const params = new URLSearchParams(window.location.search);
     const state = {
       family: canonicalizeValue('family', params.get('family') || 'all') || 'all',
@@ -659,35 +654,38 @@
     state.method = state.method.filter((value) => optionLabels.method.has(value));
     state.use = state.use.filter((value) => optionLabels.use.has(value));
 
-    let mobilePanelOpen = false;
+    let filtersExpanded = false;
 
     function activeFilterCount() {
       return (state.family !== 'all' ? 1 : 0) + state.method.length + state.use.length + (state.search ? 1 : 0);
     }
 
-    function isMobileFilters() {
-      return Boolean(mobileQuery && mobileQuery.matches);
-    }
-
-    function syncMobilePanel() {
+    function syncFiltersPanel() {
       if (!toggleButton || !controlsPanel) return;
 
-      if (!isMobileFilters()) {
-        toggleButton.hidden = true;
-        toggleButton.setAttribute('aria-expanded', 'false');
-        controlsPanel.hidden = false;
-        filterBar?.classList.remove('is-mobile-filters-collapsed');
-        return;
-      }
-
       toggleButton.hidden = false;
-      controlsPanel.hidden = !mobilePanelOpen;
-      toggleButton.setAttribute('aria-expanded', mobilePanelOpen ? 'true' : 'false');
-      filterBar?.classList.toggle('is-mobile-filters-collapsed', !mobilePanelOpen);
+      controlsPanel.hidden = !filtersExpanded;
+      if (metaPanel) metaPanel.hidden = !filtersExpanded;
+      toggleButton.setAttribute('aria-expanded', filtersExpanded ? 'true' : 'false');
+      filterBar?.classList.toggle('is-filters-collapsed', !filtersExpanded);
 
       const activeCount = activeFilterCount();
-      const baseLabel = mobilePanelOpen ? i18n.hideFilters : i18n.showFilters;
-      toggleButton.textContent = activeCount ? `${baseLabel} (${activeCount})` : baseLabel;
+      const baseLabel = filtersExpanded ? i18n.hideFilters : i18n.showFilters;
+      const compactLabel = i18n.filters;
+      if (toggleLabelEl) {
+        toggleLabelEl.textContent = compactLabel;
+      } else {
+        toggleButton.textContent = compactLabel;
+      }
+      if (toggleCountEl) {
+        toggleCountEl.hidden = activeCount < 1;
+        toggleCountEl.textContent = activeCount ? String(activeCount) : '';
+      } else {
+        toggleButton.dataset.count = activeCount ? String(activeCount) : '';
+        toggleButton.classList.toggle('has-count', activeCount > 0);
+      }
+      toggleButton.setAttribute('aria-label', activeCount ? `${baseLabel} (${activeCount})` : baseLabel);
+      toggleButton.title = activeCount ? `${baseLabel} (${activeCount})` : baseLabel;
     }
 
     function labelFor(group, value) {
@@ -779,7 +777,7 @@
       if (state.search) addChip(`${GROUP_LABELS.search}: ${state.search}`, 'search', '');
 
       if (clearButton) clearButton.hidden = chipsWrap.childElementCount === 0;
-      syncMobilePanel();
+      syncFiltersPanel();
     }
 
     function syncUIFromState() {
@@ -803,19 +801,22 @@
 
     function syncCompareButtons() {
       const addLabel = compare.toggleAdd || (locale === 'en' ? 'Compare' : 'Comparar');
-      const removeLabel = compare.toggleRemove || (locale === 'en' ? 'Remove' : 'Quitar');
+      const activeLabel = compare.toggleActive || (locale === 'en' ? 'Selected' : 'Seleccionado');
+      const limitLabel = compare.toggleLimit || `Max ${compareLimit}`;
 
       compareToggleButtons.forEach((button) => {
         const productId = String(button.getAttribute('data-compare-toggle') || '');
         const product = productsById.get(productId);
         const isSelected = compareState.selected.includes(productId);
         const atLimit = compareState.selected.length >= compareLimit && !isSelected;
-        const label = isSelected ? removeLabel : addLabel;
+        const stateName = isSelected ? 'active' : atLimit ? 'locked' : 'idle';
+        const label = isSelected ? activeLabel : atLimit ? limitLabel : addLabel;
 
         button.textContent = label;
         button.disabled = atLimit;
         button.classList.toggle('is-active', isSelected);
         button.classList.toggle('is-disabled', atLimit);
+        button.dataset.state = stateName;
         button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         button.setAttribute('aria-label', [label, product && product.title ? product.title : ''].filter(Boolean).join(' '));
       });
@@ -831,7 +832,18 @@
         chip.className = 'compare-chip';
         chip.setAttribute('data-compare-remove', product.id || '');
         chip.setAttribute('aria-label', [compare.toggleRemove || '', product.title || ''].filter(Boolean).join(' '));
-        chip.textContent = `${product.title || ''} x`;
+        chip.title = [compare.toggleRemove || '', product.title || ''].filter(Boolean).join(' ');
+
+        const label = document.createElement('span');
+        label.className = 'compare-chip-label';
+        label.textContent = product.title || '';
+
+        const remove = document.createElement('span');
+        remove.className = 'compare-chip-remove';
+        remove.setAttribute('aria-hidden', 'true');
+        remove.textContent = 'x';
+
+        chip.append(label, remove);
         chip.addEventListener('click', () => {
           compareState.selected = compareState.selected.filter((entry) => entry !== product.id);
           updateCompare();
@@ -844,6 +856,9 @@
       const selectedProducts = getSelectedProducts();
       const activeProducts = selectedProducts.length ? selectedProducts.slice(0, compareLimit) : getVisibleProducts().slice(0, compareLimit);
       const mode = selectedProducts.length ? 'selected' : activeProducts.length ? 'auto' : 'empty';
+      const compareEyebrow = document.getElementById('productsCompareEyebrow');
+      const compareModeTitle = document.getElementById('productsCompareModeTitle');
+      const compareCount = document.getElementById('productsCompareCount');
 
       if (compareLead) {
         if (mode === 'selected') compareLead.textContent = compare.selectedLead || compare.lead || '';
@@ -851,10 +866,28 @@
         else compareLead.textContent = compare.emptyLead || compare.lead || '';
       }
 
+      if (compareEyebrow) {
+        if (mode === 'selected') compareEyebrow.textContent = compare.selectedEyebrow || '';
+        else if (mode === 'auto') compareEyebrow.textContent = compare.autoEyebrow || '';
+        else compareEyebrow.textContent = compare.emptyEyebrow || '';
+      }
+
+      if (compareModeTitle) {
+        if (mode === 'selected') compareModeTitle.textContent = compare.selectedTitle || '';
+        else if (mode === 'auto') compareModeTitle.textContent = compare.autoTitle || '';
+        else compareModeTitle.textContent = compare.emptyTitle || '';
+      }
+
       if (compareHint) {
         compareHint.textContent = selectedProducts.length
           ? `${selectedProducts.length}/${compareLimit} ${compare.selectionLabel || i18n.selected}`
           : (compare.instructions || '');
+      }
+
+      if (compareCount) {
+        compareCount.textContent = selectedProducts.length
+          ? `${selectedProducts.length}/${compareLimit}`
+          : (compare.autoCount || '');
       }
 
       if (compareBody) {
@@ -976,19 +1009,12 @@
     });
 
     toggleButton && toggleButton.addEventListener('click', () => {
-      mobilePanelOpen = !mobilePanelOpen;
-      syncMobilePanel();
+      filtersExpanded = !filtersExpanded;
+      syncFiltersPanel();
     });
 
-    if (mobileQuery && typeof mobileQuery.addEventListener === 'function') {
-      mobileQuery.addEventListener('change', () => {
-        if (!mobileQuery.matches) mobilePanelOpen = false;
-        syncMobilePanel();
-      });
-    }
-
     syncUIFromState();
-    syncMobilePanel();
+    syncFiltersPanel();
     apply();
   }
 

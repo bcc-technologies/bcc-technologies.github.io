@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+  <style>
+    .beam{animation:beamA 3.2s ease-in-out infinite}
+    .dot{animation:dotA 4.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+    .bar{animation:barA 5s ease-in-out infinite;transform-origin:center bottom;transform-box:fill-box}
+    @keyframes beamA{0%,100%{opacity:.46}50%{opacity:1}}
+    @keyframes dotA{0%,100%{transform:translate(0,0)}50%{transform:translate(2px,-3px)}}
+    @keyframes barA{0%,100%{transform:scaleY(.76)}50%{transform:scaleY(1)}}
+    @media (prefers-reduced-motion: reduce){.beam,.dot,.bar{animation:none!important}}
+  </style>
+  <defs>
+    <linearGradient id="dls-beam" x1="198" y1="224" x2="344" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f59e0b" stop-opacity="0"/>
+      <stop offset=".34" stop-color="#f59e0b" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#2563eb" stop-opacity=".88"/>
+    </linearGradient>
+  </defs>
+  <rect x="88" y="146" width="96" height="38" rx="18" fill="#0f172a"/>
+  <rect x="104" y="224" width="30" height="112" rx="14" fill="#e2e8f0"/>
+  <rect x="156" y="206" width="42" height="148" rx="20" fill="#dbeafe"/>
+  <rect x="164" y="224" width="26" height="94" rx="13" fill="#fff"/>
+  <path d="M134 224H156" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round"/>
+  <path d="M198 224H344" stroke="url(#dls-beam)" stroke-width="14" stroke-linecap="round" class="beam"/>
+  <circle cx="372" cy="224" r="36" fill="#dbeafe" fill-opacity=".5"/>
+  <rect x="356" y="176" width="30" height="96" rx="14" fill="#fff" stroke="#93c5fd" stroke-width="4"/>
+  <circle cx="372" cy="208" r="7" fill="#2563eb" class="dot"/>
+  <circle cx="384" cy="224" r="6" fill="#60a5fa" class="dot" style="animation-delay:-1s"/>
+  <circle cx="370" cy="238" r="5" fill="#93c5fd" class="dot" style="animation-delay:-1.8s"/>
+  <rect x="420" y="128" width="138" height="184" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <path d="M444 278H534" stroke="#e1e8f0" stroke-width="8" stroke-linecap="round"/>
+  <path d="M458 280V164" stroke="#e1e8f0" stroke-width="8" stroke-linecap="round"/>
+  <path d="M458 180C474 188 490 201 506 220C516 233 526 244 534 248" stroke="#2563eb" stroke-width="7" stroke-linecap="round" class="beam"/>
+  <g>
+    <rect x="444" y="336" width="16" height="20" rx="6" fill="#bfdbfe" class="bar"/>
+    <rect x="470" y="320" width="16" height="36" rx="6" fill="#93c5fd" class="bar" style="animation-delay:-.8s"/>
+    <rect x="496" y="298" width="16" height="58" rx="6" fill="#60a5fa" class="bar" style="animation-delay:-1.6s"/>
+    <rect x="522" y="314" width="16" height="42" rx="6" fill="#2563eb" class="bar" style="animation-delay:-.4s"/>
+  </g>
+</svg>

@@ -70,7 +70,7 @@ html.is-at-top .header-container{
   box-shadow: var(--shadow);
 }
 
-/* Brand micro-logo swap (BCC ↔ ∴) */
+/* Brand micro-logo swap (BCC â†” âˆ´) */
 .logo-link{
   position: relative;
   display: inline-flex;
@@ -92,7 +92,7 @@ html.is-at-top .header-container{
 html.is-at-top .logo-text{ opacity: 1; transform: translateY(0); }
 html.is-at-top .logo-symbol{ opacity: 0; transform: translateY(2px); }
 
-/* scrolleado/compacto: ∴ */
+/* scrolleado/compacto: âˆ´ */
 html:not(.is-at-top) .logo-text{ opacity: 0; transform: translateY(-2px); }
 html:not(.is-at-top) .logo-symbol{ opacity: 1; transform: translateY(0); }
 
@@ -262,7 +262,7 @@ header .nav-actions .pref-btn{
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
-/* Permite que el toggle esté a la derecha aunque venga antes en el DOM */
+/* Permite que el toggle estÃ© a la derecha aunque venga antes en el DOM */
 .header-container > nav{ order: 1; }
 .header-container > .menu-toggle{ order: 2; margin-left: auto; }
 
@@ -394,3 +394,347 @@ footer{
 }
 
 
+
+/* ---- BCC Console ---- */
+.nav-actions .bcc-console-launch{
+  width: 34px;
+  padding: 0;
+  flex: 0 0 auto;
+  border-color: color-mix(in oklab, var(--accent) 18%, var(--border));
+  background: color-mix(in oklab, var(--surface-solid) 90%, var(--accent) 10%);
+  box-shadow: var(--shadow-soft);
+}
+
+.nav-actions .bcc-console-launch:hover{
+  border-color: color-mix(in oklab, var(--accent) 36%, var(--border-strong));
+  background: color-mix(in oklab, var(--surface-solid) 82%, var(--accent) 18%);
+}
+
+.nav-actions .bcc-console-launch[aria-expanded="true"]{
+  color: var(--accent);
+  border-color: color-mix(in oklab, var(--accent) 48%, var(--border-strong));
+  background: color-mix(in oklab, var(--surface-solid) 78%, var(--accent) 22%);
+}
+
+.nav-actions .bcc-console-launch svg{
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+}
+
+.bcc-console-shell{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: min(430px, calc(100vw - 24px));
+  z-index: 1200;
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.bcc-console-shell.is-open{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.bcc-console{
+  display: flex;
+  flex-direction: column;
+  min-height: 380px;
+  max-height: min(72vh, 620px);
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid color-mix(in oklab, var(--accent) 12%, var(--border-strong));
+  background: color-mix(in oklab, var(--surface-solid) 86%, transparent);
+  backdrop-filter: blur(calc(var(--blur) + 6px));
+  -webkit-backdrop-filter: blur(calc(var(--blur) + 6px));
+  box-shadow: 0 22px 60px rgba(15,17,21,0.18);
+}
+
+.bcc-console-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bcc-console-brand{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.bcc-console-brand-mark{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--border));
+  background: color-mix(in oklab, var(--surface-solid) 88%, var(--accent) 12%);
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.bcc-console-brand-mark svg{
+  width: 16px;
+  height: 16px;
+}
+
+.bcc-console-brand-copy{
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bcc-console-brand-copy strong{
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+
+.bcc-console-brand-copy span{
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bcc-console-head-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.bcc-console-ghost{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.bcc-console-ghost:hover{
+  color: var(--ink);
+  border-color: var(--border-strong);
+  background: var(--hover);
+}
+
+.bcc-console-ghost:active{
+  transform: translateY(1px);
+}
+
+.bcc-console-ghost svg{
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+}
+
+.bcc-console-body{
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.bcc-console-output{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 16px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+.bcc-console-line{
+  display: grid;
+  gap: 3px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.bcc-console-line--user{
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.bcc-console-line-prefix{
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.bcc-console-line--system .bcc-console-line-text{
+  color: var(--ink-strong);
+}
+
+.bcc-console-line--muted .bcc-console-line-text{
+  color: var(--ink-muted);
+}
+
+.bcc-console-line--error .bcc-console-line-text{
+  color: var(--danger);
+}
+
+.bcc-console-quickbar{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+
+.bcc-console-quickbar[hidden],
+.bcc-console-autocomplete[hidden]{
+  display: none;
+}
+
+.bcc-console-quick{
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 29px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface-solid) 92%, var(--accent) 8%);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.bcc-console-quick:hover{
+  color: var(--ink);
+  border-color: color-mix(in oklab, var(--accent) 24%, var(--border-strong));
+  background: color-mix(in oklab, var(--surface-solid) 84%, var(--accent) 16%);
+}
+
+.bcc-console-quick:active{
+  transform: translateY(1px);
+}
+
+.bcc-console-autocomplete{
+  display: grid;
+  gap: 6px;
+  padding: 0 16px 12px;
+}
+
+.bcc-console-suggestion{
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface-solid) 94%, var(--accent) 6%);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.bcc-console-suggestion:hover,
+.bcc-console-suggestion.is-active{
+  border-color: color-mix(in oklab, var(--accent) 26%, var(--border-strong));
+  background: color-mix(in oklab, var(--surface-solid) 86%, var(--accent) 14%);
+}
+
+.bcc-console-suggestion:active{
+  transform: translateY(1px);
+}
+
+.bcc-console-suggestion-label{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bcc-console-suggestion-meta{
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--ink-muted);
+}
+
+.bcc-console-input-row{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface-solid) 90%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+.bcc-console-prompt{
+  color: var(--accent);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.bcc-console-input-row input{
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  padding: 0;
+}
+
+.bcc-console-input-row input:focus{
+  outline: none;
+}
+
+.bcc-console-hint{
+  margin: 0;
+  padding: 0 16px 14px;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+@media (max-width: 860px){
+  .bcc-console-shell{
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+
+  .bcc-console{
+    min-height: 340px;
+    max-height: min(78vh, 620px);
+  }
+
+  .bcc-console-brand-copy span{
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .bcc-console-shell,
+  .bcc-console-ghost,
+  .nav-actions .bcc-console-launch{
+    transition: none;
+  }
+}

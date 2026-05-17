@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -263,6 +263,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
         const familyText = document.getElementById('familyLabel')?.textContent?.trim();
         const toggle = document.getElementById('filtersToggle');
         const controls = document.getElementById('filtersControls');
+        const meta = document.getElementById('filtersMeta');
         return {
           title,
           cardCount,
@@ -273,8 +274,11 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
           firstCardOpacity,
           familyText,
           toggleHidden: toggle ? toggle.hidden : null,
+          toggleDisplay: toggle ? getComputedStyle(toggle).display : null,
+          toggleWidth: toggle ? toggle.getBoundingClientRect().width : 0,
           toggleExpanded: toggle ? toggle.getAttribute('aria-expanded') : null,
-          controlsHidden: controls ? controls.hidden : null
+          controlsHidden: controls ? controls.hidden : null,
+          metaHidden: meta ? meta.hidden : null
         };
       })()`);
 
@@ -285,14 +289,14 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       assert.ok(metrics.overflow <= 1, `Unexpected horizontal overflow for ${pathname} ${width}x${height}: ${metrics.overflow}`);
       assert.equal(metrics.firstCardOpacity, '1');
       assert.equal(metrics.familyText, familyLabel);
-
+      assert.equal(metrics.toggleHidden, false);
+      assert.notEqual(metrics.toggleDisplay, 'none');
+      assert.ok(metrics.toggleWidth > 32, `Filter toggle should be visible for ${pathname}`);
+      assert.equal(metrics.toggleExpanded, 'false');
+      assert.equal(metrics.controlsHidden, true);
+      assert.equal(metrics.metaHidden, true);
       if (width <= 480) {
-        assert.equal(metrics.toggleHidden, false);
-        assert.equal(metrics.toggleExpanded, 'false');
-        assert.equal(metrics.controlsHidden, true);
         assert.ok(metrics.filterBarHeight <= height * 0.22, `Sticky filter bar too tall on mobile for ${pathname}: ${metrics.filterBarHeight}px of ${height}px`);
-      } else {
-        assert.equal(metrics.controlsHidden, false);
       }
 
       const tabState = await evaluate(cdp, `(() => {
@@ -319,6 +323,7 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       const filterState = await evaluate(cdp, `(() => {
         const toggle = document.getElementById('filtersToggle');
         const controls = document.getElementById('filtersControls');
+        const meta = document.getElementById('filtersMeta');
         if (toggle && controls && controls.hidden) toggle.click();
         const select = document.getElementById('familySelect');
         select.value = 'bundles';
@@ -334,7 +339,8 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
           chips,
           url: location.search,
           toggleExpanded: toggle ? toggle.getAttribute('aria-expanded') : null,
-          controlsHidden: controls ? controls.hidden : null
+          controlsHidden: controls ? controls.hidden : null,
+          metaHidden: meta ? meta.hidden : null
         };
       })()`);
 
@@ -343,10 +349,52 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       assert.match(filterState.countText, /^2 /);
       assert.ok(filterState.chips.some((chip) => chip.includes('Bundles')));
       assert.equal(filterState.url, '?family=bundles');
-      if (width <= 480) {
-        assert.equal(filterState.toggleExpanded, 'true');
-        assert.equal(filterState.controlsHidden, false);
-      }
+      assert.equal(filterState.toggleExpanded, 'true');
+      assert.equal(filterState.controlsHidden, false);
+      assert.equal(filterState.metaHidden, false);
+
+      const consoleState = await evaluate(cdp, `(() => {
+        const launch = document.getElementById('bccConsoleLaunch');
+        const shell = document.getElementById('bccConsoleShell');
+        const form = document.getElementById('bccConsoleForm');
+        const input = document.getElementById('bccConsoleInput');
+        const loginLink = launch ? launch.previousElementSibling : null;
+        launch?.click();
+        if (input && form) {
+          input.value = 'cd products';
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          input.value = 'ls products';
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          input.value = 'info aqua-specter';
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          input.focus();
+          input.value = 'info aq';
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const lines = shell ? Array.from(shell.querySelectorAll('.bcc-console-line-text')).map((node) => node.textContent.trim()) : [];
+        const quickCommands = shell ? Array.from(shell.querySelectorAll('#bccConsoleQuickbar [data-console-quick]')).map((node) => node.getAttribute('data-console-quick')) : [];
+        const suggestions = shell ? Array.from(shell.querySelectorAll('#bccConsoleAutocomplete .bcc-console-suggestion-label')).map((node) => node.textContent.trim()) : [];
+        const autocompleteOpen = shell ? !shell.querySelector('#bccConsoleAutocomplete')?.hidden : false;
+        return {
+          exists: Boolean(launch),
+          expanded: launch ? launch.getAttribute('aria-expanded') : null,
+          open: shell ? !shell.hidden && shell.classList.contains('is-open') : false,
+          afterLogin: loginLink ? /login\.html/i.test(loginLink.getAttribute('href') || '') : false,
+          lines,
+          quickCommands,
+          suggestions,
+          autocompleteOpen
+        };
+      })()`);
+
+      assert.equal(consoleState.exists, true);
+      assert.equal(consoleState.afterLogin, true);
+      assert.equal(consoleState.expanded, 'true');
+      assert.equal(consoleState.open, true);
+      assert.ok(consoleState.lines.some((line) => line.includes('/products')));
+      assert.ok(consoleState.lines.some((line) => /aqua-specter/i.test(line)));
+      assert.ok(consoleState.lines.some((line) => /products: 8|productos: 8/i.test(line)));
+      assert.ok(consoleState.lines.some((line) => /pocket eis|bolsillo/i.test(line)));
 
       const compareState = await evaluate(cdp, `(() => {
         const first = document.querySelector('[data-compare-toggle="bundle-culture"]');
@@ -354,8 +402,11 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
         first?.click();
         second?.click();
         return {
+          eyebrow: document.getElementById('productsCompareEyebrow')?.textContent?.trim(),
+          modeTitle: document.getElementById('productsCompareModeTitle')?.textContent?.trim(),
           lead: document.getElementById('productsCompareLead')?.textContent?.trim(),
           hint: document.getElementById('productsCompareHint')?.textContent?.trim(),
+          count: document.getElementById('productsCompareCount')?.textContent?.trim(),
           clearHidden: document.getElementById('clearCompare')?.hidden,
           rows: Array.from(document.querySelectorAll('#productsCompareBody tr')).map((row) => row.textContent.trim()),
           selected: Array.from(document.querySelectorAll('#productsCompareSelection .compare-chip')).map((chip) => chip.textContent.trim())
@@ -363,7 +414,10 @@ test('products browser smoke test covers ES/EN desktop/mobile', async (t) => {
       })()`);
 
       assert.equal(compareState.clearHidden, false);
+      assert.equal(compareState.eyebrow, locale === 'en' ? 'Manual selection' : 'Seleccion manual');
+      assert.equal(compareState.modeTitle, locale === 'en' ? 'Comparing your current shortlist' : 'Comparando tu shortlist actual');
       assert.equal(compareState.hint, `2/3 ${locale === 'en' ? 'selected' : 'seleccionados'}`);
+      assert.equal(compareState.count, '2/3');
       assert.ok(compareState.rows.some((row) => row.includes('EIS + MAP-Bio')));
       assert.ok(compareState.rows.some((row) => row.includes('EIS + EIS-Toolkit')));
       assert.equal(compareState.selected.length, 2);

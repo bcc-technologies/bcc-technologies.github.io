@@ -2,54 +2,31 @@ window.BCC_PRODUCTS_CONTENT = {
   "es": {
     "hero": {
       "copy": {
-        "eyebrow": "Tecnologia BCC",
+        "eyebrow": "Portafolio BCC",
         "title": "Empieza por lo que necesitas lograr",
+        "lead": "Software, instrumentacion y bundles organizados por el resultado que buscas.",
         "signalsAriaLabel": "Indicadores rapidos del portafolio",
-        "signals": [
-          {
-            "value": "3",
-            "label": "rutas de adopcion"
-          },
-          {
-            "value": "8",
-            "label": "ofertas activas"
-          },
-          {
-            "value": "Lab / Web / Equipo",
-            "label": "formatos de despliegue"
-          }
-        ],
-        "actions": [
-          {
-            "label": "Ver tecnologia",
-            "href": "#catalogo",
-            "variant": "dark"
-          },
-          {
-            "label": "Comparar",
-            "href": "#comparador",
-            "variant": "plain"
-          }
-        ]
+        "signals": [],
+        "actions": []
       },
       "visual": {
-        "badge": "Elige tu ruta",
+        "badge": "",
         "tablistLabel": "Rutas principales de decision tecnologica",
         "panes": [
           {
             "id": "software",
             "tabLabel": "Quiero automatizar",
             "kicker": "Quiero automatizar",
-            "title": "Software para convertir analisis en operacion",
-            "text": "Ideal si ya tienes imagenes, datos o reportes manuales y quieres volverlos repetibles y auditables.",
+            "title": "Software para volver operativo tu analisis",
+            "text": "Si ya tienes imagenes, datos o reportes manuales, esta ruta los vuelve repetibles y auditables.",
             "actions": [
               {
-                "label": "Diagnosticar mi flujo",
+                "label": "Revisar mi flujo",
                 "href": "/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "Ver software abierto",
+                "label": "Abrir software abierto",
                 "href": "/science.html",
                 "variant": "ghost"
               }
@@ -57,41 +34,53 @@ window.BCC_PRODUCTS_CONTENT = {
             "showcase": [
               {
                 "href": "/product_maps_nano.html",
-                "media": "ui",
-                "image": "/static/defect.png",
+                "media": "hero",
+                "image": "/static/products-hero/software-map-nano.svg",
                 "alt": "MAP-Nano",
-                "title": "MAP-Nano",
-                "meta": "Rugosidad, porosidad y morfología"
+                "title": "con",
+                "meta": "MAP-Nano",
+                "topics": [
+                  "Rugosidad",
+                  "Porosidad",
+                  "Morfologia"
+                ],
+                "topicsLayout": "nano"
               },
               {
                 "href": "/product_maps.html#map-bio",
-                "media": "ui",
-                "image": "/static/gyrosigma.png",
+                "media": "hero",
+                "image": "/static/products-hero/software-map-bio.svg",
                 "alt": "MAP-Bio",
-                "title": "MAP-Bio",
-                "meta": "Conteo y análisis morfológico"
+                "title": "con",
+                "meta": "MAP-Bio",
+                "topics": [
+                  "Conteo",
+                  "Analisis",
+                  "Morfologia"
+                ],
+                "topicsLayout": "bio"
               }
             ],
             "outcomes": [
               "Analisis reproducible",
-              "Reportes y dashboards",
-              "Integraciones con laboratorio"
+              "Salidas listas para reporte",
+              "Integracion con laboratorio"
             ]
           },
           {
             "id": "instrumentacion",
             "tabLabel": "Quiero medir",
             "kicker": "Quiero medir",
-            "title": "Instrumentacion cuando necesitas senal propia",
-            "text": "Pensado para equipos que necesitan medir en campo, validar hipotesis o acercar instrumentos a la operacion.",
+            "title": "Instrumentacion para medir con criterio propio",
+            "text": "Para equipos que necesitan medir en campo, validar hipotesis o acercar el instrumento a la operacion.",
             "actions": [
               {
-                "label": "Patrocinar desarrollo",
+                "label": "Explorar piloto",
                 "href": "/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "Solicitar prueba adelantada",
+                "label": "Solicitar acceso temprano",
                 "href": "/signup.html",
                 "variant": "ghost"
               }
@@ -100,42 +89,54 @@ window.BCC_PRODUCTS_CONTENT = {
               {
                 "href": "#catalogo",
                 "scrollTarget": "eis",
-                "media": "chart",
-                "image": "/static/generated_eis.png",
+                "media": "hero",
+                "image": "/static/products-hero/instrument-eis.svg",
                 "alt": "EIS",
-                "title": "EIS",
-                "meta": "Opciones para líquidos, metales, recubrimientos y baterías"
+                "title": "con",
+                "meta": "EIS",
+                "topics": [
+                  "Liquidos",
+                  "Metales",
+                  "Baterias"
+                ],
+                "topicsLayout": "eis"
               },
               {
                 "href": "#catalogo",
                 "scrollTarget": "dls",
-                "media": "illustration",
-                "image": "/static/DLS.svg",
+                "media": "hero",
+                "image": "/static/products-hero/instrument-dls.svg",
                 "alt": "DLS-Pro",
-                "title": "DLS-Pro",
-                "meta": "Caracterización de partículas suspendidas en líquido"
+                "title": "con",
+                "meta": "DLS-Pro",
+                "topics": [
+                  "Particulas",
+                  "Tamano",
+                  "Suspension"
+                ],
+                "topicsLayout": "dls"
               }
             ],
             "outcomes": [
               "Medicion asistida",
-              "Integracion experimental",
-              "Prototipos y pilotos"
+              "Pilotos guiados",
+              "Integracion experimental"
             ]
           },
           {
             "id": "bundles",
             "tabLabel": "Quiero desplegar",
             "kicker": "Quiero desplegar",
-            "title": "Bundles listos para una implementacion mas rapida",
-            "text": "Combinamos hardware, software y acompanamiento cuando la prioridad es acortar el tiempo a resultado.",
+            "title": "Bundles para llegar antes a resultado",
+            "text": "Combinamos hardware, software y acompanamiento cuando la prioridad es implementar con menos friccion.",
             "actions": [
               {
-                "label": "Disenar mi bundle",
+                "label": "Disenar un bundle",
                 "href": "/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "Solicitar demo integrada",
+                "label": "Solicitar demo",
                 "href": "/contactUs.html",
                 "variant": "ghost"
               }
@@ -144,20 +145,32 @@ window.BCC_PRODUCTS_CONTENT = {
               {
                 "href": "#catalogo",
                 "scrollTarget": "bundles",
-                "media": "photo",
-                "image": "/static/cultivo_celular.png",
+                "media": "hero",
+                "image": "/static/products-hero/bundle-culture.svg",
                 "alt": "EIS + MAP-Bio",
-                "title": "EIS + MAP-Bio",
-                "meta": "Análisis y monitoreo de cultivos"
+                "title": "con",
+                "meta": "EIS + MAP-Bio",
+                "topics": [
+                  "Cultivos",
+                  "Monitoreo",
+                  "Impedancia"
+                ],
+                "topicsLayout": "culture"
               },
               {
                 "href": "#catalogo",
                 "scrollTarget": "bundles",
-                "media": "chart",
-                "image": "/static/diagrama_de_bode.gif",
+                "media": "hero",
+                "image": "/static/products-hero/bundle-workflow.svg",
                 "alt": "EIS + EIS-Toolkit",
-                "title": "EIS + EIS-Toolkit",
-                "meta": "Medición + fitting reproducible"
+                "title": "con",
+                "meta": "EIS + EIS-Toolkit",
+                "topics": [
+                  "Medicion",
+                  "Fitting",
+                  "Reportes"
+                ],
+                "topicsLayout": "workflow"
               }
             ],
             "outcomes": [
@@ -245,7 +258,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_as.jpg",
         "alt": "AquaSpecter",
         "title": "AquaSpecter",
-        "description": "EIS de bolsillo para análisis simples y frecuentes",
+        "description": "EIS de bolsillo para medicion frecuente y lectura clara",
         "tags": [
           "EIS",
           "Instrumento"
@@ -267,7 +280,7 @@ window.BCC_PRODUCTS_CONTENT = {
           "label": "Piloto asistido",
           "tone": "pilot"
         },
-        "bestFor": "Validaciones rapidas y screening.",
+        "bestFor": "Validacion rapida y screening.",
         "outputs": "Curvas Bode y Nyquist listas para reporte.",
         "deployment": "Equipo compacto con acompanamiento inicial.",
         "readiness": "Piloto segun muestra."
@@ -285,7 +298,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_ast.jpg",
         "alt": "AquaSpecter de tubería",
         "title": "AquaSpecter de tubería",
-        "description": "EIS incorporado para análisis constante de muestras líquidas",
+        "description": "EIS integrado para lectura continua en muestras liquidas",
         "tags": [
           "EIS",
           "Instrumento"
@@ -308,7 +321,7 @@ window.BCC_PRODUCTS_CONTENT = {
           "tone": "custom"
         },
         "bestFor": "Monitoreo recurrente e integracion en proceso.",
-        "outputs": "Lectura continua y tendencias.",
+        "outputs": "Lectura continua y tendencias accionables.",
         "deployment": "Integracion especifica para entorno y muestra.",
         "readiness": "Proyecto de integracion."
       },
@@ -325,7 +338,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_dls_mini.jpg",
         "alt": "DLS-Mini",
         "title": "DLS-Mini",
-        "description": "Compacto, para muestras pequeñas y PSD básico",
+        "description": "DLS compacto para muestras pequenas y PSD esencial",
         "tags": [
           "DLS",
           "Instrumento"
@@ -367,7 +380,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/captura_smartboard_radar.png",
         "alt": "Smartboard científico abierto",
         "title": "Smartboard científico",
-        "description": "Herramienta abierta para conectar widgets y explorar datos científicos desde la página de Ciencia.",
+        "description": "Herramienta abierta para conectar widgets y explorar datos cientificos con rapidez.",
         "tags": [
           "Herramienta abierta",
           "Inteligencia de datos",
@@ -408,7 +421,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/mapnano.png",
         "alt": "MAP-Nano",
         "title": "MAP-Nano",
-        "description": "Rugosidad, porosidad y morfología para Web/Desktop",
+        "description": "Rugosidad, porosidad y morfologia con salida web o desktop",
         "tags": [
           "Imaging",
           "Software"
@@ -447,7 +460,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/gyrosigma.png",
         "alt": "MAP-Bio",
         "title": "MAP-Bio",
-        "description": "Conteo, clasificación y morfología para Web/Desktop",
+        "description": "Conteo, clasificacion y morfologia con salida web o desktop",
         "tags": [
           "Imaging",
           "Software"
@@ -489,7 +502,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/cultivo_celular_dibujo.png",
         "alt": "EIS + MAP-Bio",
         "title": "EIS + MAP-Bio",
-        "description": "Monitoreo de impedancia, conteo y caracterización de cultivos celulares",
+        "description": "Impedancia, conteo y caracterizacion de cultivos en un solo flujo",
         "tags": [
           "Bundle",
           "EIS + Imaging"
@@ -529,7 +542,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/diagrama_de_bode.gif",
         "alt": "EIS + EIS-Toolkit",
         "title": "EIS + EIS-Toolkit",
-        "description": "Medición y fitting reproducible",
+        "description": "Medicion y fitting con criterio reproducible",
         "tags": [
           "Bundle",
           "EIS"
@@ -599,7 +612,16 @@ window.BCC_PRODUCTS_CONTENT = {
       "toggleRemove": "Quitar",
       "clearSelection": "Limpiar seleccion",
       "selectionLabel": "seleccionados",
-      "limit": 3
+      "limit": 3,
+      "toggleActive": "Seleccionado",
+      "toggleLimit": "Max 3",
+      "autoEyebrow": "Lectura automatica",
+      "autoTitle": "Comparador guiado por lo visible",
+      "selectedEyebrow": "Seleccion manual",
+      "selectedTitle": "Comparando tu shortlist actual",
+      "emptyEyebrow": "Sin coincidencias",
+      "emptyTitle": "Ajusta filtros o elige productos",
+      "autoCount": "Auto"
     },
     "cardLabels": {
       "bestFor": "Ideal para",
@@ -615,54 +637,31 @@ window.BCC_PRODUCTS_CONTENT = {
   "en": {
     "hero": {
       "copy": {
-        "eyebrow": "BCC Technology",
+        "eyebrow": "BCC Portfolio",
         "title": "Start from what you need to achieve",
+        "lead": "Software, instrumentation, and bundles organized around the outcome you need.",
         "signalsAriaLabel": "Quick portfolio indicators",
-        "signals": [
-          {
-            "value": "3",
-            "label": "adoption paths"
-          },
-          {
-            "value": "8",
-            "label": "active offers"
-          },
-          {
-            "value": "Lab / Web / Device",
-            "label": "deployment formats"
-          }
-        ],
-        "actions": [
-          {
-            "label": "View technology",
-            "href": "#catalogo",
-            "variant": "dark"
-          },
-          {
-            "label": "Compare",
-            "href": "#comparador",
-            "variant": "plain"
-          }
-        ]
+        "signals": [],
+        "actions": []
       },
       "visual": {
-        "badge": "Choose your path",
+        "badge": "",
         "tablistLabel": "Primary technology decision paths",
         "panes": [
           {
             "id": "software",
             "tabLabel": "I want to automate",
             "kicker": "I want to automate",
-            "title": "Software that turns analysis into operations",
-            "text": "Best when you already have images, datasets, or manual reports and need them to become repeatable and auditable.",
+            "title": "Software that makes analysis operational",
+            "text": "If you already have images, datasets, or manual reports, this path turns them into repeatable and auditable workflows.",
             "actions": [
               {
-                "label": "Audit my workflow",
+                "label": "Review my workflow",
                 "href": "/en/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "See open software",
+                "label": "Open free tools",
                 "href": "/en/science.html",
                 "variant": "ghost"
               }
@@ -670,41 +669,53 @@ window.BCC_PRODUCTS_CONTENT = {
             "showcase": [
               {
                 "href": "/en/product_maps_nano.html",
-                "media": "ui",
-                "image": "/static/defect.png",
+                "media": "hero",
+                "image": "/static/products-hero/software-map-nano.svg",
                 "alt": "MAP-Nano",
-                "title": "MAP-Nano",
-                "meta": "Roughness, porosity and morphology"
+                "title": "with",
+                "meta": "MAP-Nano",
+                "topics": [
+                  "Roughness",
+                  "Porosity",
+                  "Morphology"
+                ],
+                "topicsLayout": "nano"
               },
               {
                 "href": "/en/product_maps.html#map-bio",
-                "media": "ui",
-                "image": "/static/gyrosigma.png",
+                "media": "hero",
+                "image": "/static/products-hero/software-map-bio.svg",
                 "alt": "MAP-Bio",
-                "title": "MAP-Bio",
-                "meta": "Counting and morphological analysis"
+                "title": "with",
+                "meta": "MAP-Bio",
+                "topics": [
+                  "Counting",
+                  "Analysis",
+                  "Morphology"
+                ],
+                "topicsLayout": "bio"
               }
             ],
             "outcomes": [
-              "Reproducible analysis",
-              "Reports and dashboards",
-              "Lab integrations"
+              "Repeatable analysis",
+              "Report-ready outputs",
+              "Lab integration"
             ]
           },
           {
             "id": "instrumentacion",
             "tabLabel": "I want to measure",
             "kicker": "I want to measure",
-            "title": "Instrumentation when you need your own signal",
-            "text": "Built for teams that need field measurements, validation, or instruments closer to the operation.",
+            "title": "Instrumentation for teams that need their own signal",
+            "text": "For teams that need field measurements, validation, or instruments closer to the operation.",
             "actions": [
               {
-                "label": "Sponsor development",
+                "label": "Explore pilot",
                 "href": "/en/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "Request early trial",
+                "label": "Request early access",
                 "href": "/en/signup.html",
                 "variant": "ghost"
               }
@@ -713,42 +724,54 @@ window.BCC_PRODUCTS_CONTENT = {
               {
                 "href": "#catalogo",
                 "scrollTarget": "eis",
-                "media": "chart",
-                "image": "/static/generated_eis.png",
+                "media": "hero",
+                "image": "/static/products-hero/instrument-eis.svg",
                 "alt": "EIS",
-                "title": "EIS",
-                "meta": "Options for liquids, metals, coatings and batteries"
+                "title": "with",
+                "meta": "EIS",
+                "topics": [
+                  "Liquids",
+                  "Metals",
+                  "Batteries"
+                ],
+                "topicsLayout": "eis"
               },
               {
                 "href": "#catalogo",
                 "scrollTarget": "dls",
-                "media": "illustration",
-                "image": "/static/DLS.svg",
+                "media": "hero",
+                "image": "/static/products-hero/instrument-dls.svg",
                 "alt": "DLS-Pro",
-                "title": "DLS-Pro",
-                "meta": "Characterization of particles suspended in liquids"
+                "title": "with",
+                "meta": "DLS-Pro",
+                "topics": [
+                  "Particles",
+                  "Sizing",
+                  "Suspension"
+                ],
+                "topicsLayout": "dls"
               }
             ],
             "outcomes": [
               "Assisted measurement",
-              "Experimental integration",
-              "Prototypes and pilots"
+              "Guided pilots",
+              "Experimental integration"
             ]
           },
           {
             "id": "bundles",
             "tabLabel": "I want to deploy",
             "kicker": "I want to deploy",
-            "title": "Bundles designed for faster implementation",
-            "text": "We combine hardware, software, and guidance when the priority is shortening time to result.",
+            "title": "Bundles that shorten time to result",
+            "text": "We combine hardware, software, and guidance when the priority is implementation with less friction.",
             "actions": [
               {
-                "label": "Design my bundle",
+                "label": "Design a bundle",
                 "href": "/en/contactUs.html",
                 "variant": "dark"
               },
               {
-                "label": "Request integrated demo",
+                "label": "Request demo",
                 "href": "/en/contactUs.html",
                 "variant": "ghost"
               }
@@ -757,20 +780,32 @@ window.BCC_PRODUCTS_CONTENT = {
               {
                 "href": "#catalogo",
                 "scrollTarget": "bundles",
-                "media": "photo",
-                "image": "/static/cultivo_celular.png",
+                "media": "hero",
+                "image": "/static/products-hero/bundle-culture.svg",
                 "alt": "EIS + MAP-Bio",
-                "title": "EIS + MAP-Bio",
-                "meta": "Analysis and monitoring of cultures"
+                "title": "with",
+                "meta": "EIS + MAP-Bio",
+                "topics": [
+                  "Cultures",
+                  "Monitoring",
+                  "Impedance"
+                ],
+                "topicsLayout": "culture"
               },
               {
                 "href": "#catalogo",
                 "scrollTarget": "bundles",
-                "media": "chart",
-                "image": "/static/diagrama_de_bode.gif",
+                "media": "hero",
+                "image": "/static/products-hero/bundle-workflow.svg",
                 "alt": "EIS + EIS-Toolkit",
-                "title": "EIS + EIS-Toolkit",
-                "meta": "Measurement + reproducible fitting"
+                "title": "with",
+                "meta": "EIS + EIS-Toolkit",
+                "topics": [
+                  "Measurement",
+                  "Fitting",
+                  "Reports"
+                ],
+                "topicsLayout": "workflow"
               }
             ],
             "outcomes": [
@@ -858,7 +893,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_as.jpg",
         "alt": "AquaSpecter",
         "title": "AquaSpecter",
-        "description": "Pocket EIS for simple, frequent analysis",
+        "description": "Pocket EIS for frequent measurements and clear readout",
         "tags": [
           "EIS",
           "Instrument"
@@ -898,7 +933,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_ast.jpg",
         "alt": "Inline AquaSpecter",
         "title": "Inline AquaSpecter",
-        "description": "Embedded EIS for continuous liquid-sample analysis",
+        "description": "Embedded EIS for continuous liquid-sample readout",
         "tags": [
           "EIS",
           "Instrument"
@@ -921,7 +956,7 @@ window.BCC_PRODUCTS_CONTENT = {
           "tone": "custom"
         },
         "bestFor": "Recurring monitoring and process integration.",
-        "outputs": "Continuous readout and trends.",
+        "outputs": "Continuous readout and actionable trends.",
         "deployment": "Case-specific integration for process and sample.",
         "readiness": "Integration project."
       },
@@ -938,7 +973,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/render_dls_mini.jpg",
         "alt": "DLS-Mini",
         "title": "DLS-Mini",
-        "description": "Compact for small samples and basic PSD",
+        "description": "Compact DLS for small samples and essential PSD",
         "tags": [
           "DLS",
           "Instrument"
@@ -980,7 +1015,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/captura_smartboard_radar.png",
         "alt": "Open science smartboard",
         "title": "Science Smartboard",
-        "description": "Open tool to connect widgets and explore scientific data from the Science page.",
+        "description": "Open tool to connect widgets and explore scientific data quickly.",
         "tags": [
           "Open Tool",
           "Data Intelligence",
@@ -1021,7 +1056,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/mapnano.png",
         "alt": "MAP-Nano",
         "title": "MAP-Nano",
-        "description": "Roughness, porosity and morphology for Web/Desktop",
+        "description": "Roughness, porosity, and morphology with web or desktop delivery",
         "tags": [
           "Imaging",
           "Software"
@@ -1060,7 +1095,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/gyrosigma.png",
         "alt": "MAP-Bio",
         "title": "MAP-Bio",
-        "description": "Counting, classification and morphology for Web/Desktop",
+        "description": "Counting, classification, and morphology with web or desktop delivery",
         "tags": [
           "Imaging",
           "Software"
@@ -1102,7 +1137,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/cultivo_celular_dibujo.png",
         "alt": "EIS + MAP-Bio",
         "title": "EIS + MAP-Bio",
-        "description": "Impedance monitoring, counting and characterization of cell cultures",
+        "description": "Impedance, counting, and culture characterization in one flow",
         "tags": [
           "Bundle",
           "EIS + Imaging"
@@ -1142,7 +1177,7 @@ window.BCC_PRODUCTS_CONTENT = {
         "image": "/static/diagrama_de_bode.gif",
         "alt": "EIS + EIS-Toolkit",
         "title": "EIS + EIS-Toolkit",
-        "description": "Measurement and reproducible fitting",
+        "description": "Measurement and fitting with reproducible criteria",
         "tags": [
           "Bundle",
           "EIS"
@@ -1212,7 +1247,16 @@ window.BCC_PRODUCTS_CONTENT = {
       "toggleRemove": "Remove",
       "clearSelection": "Clear selection",
       "selectionLabel": "selected",
-      "limit": 3
+      "limit": 3,
+      "toggleActive": "Selected",
+      "toggleLimit": "Max 3",
+      "autoEyebrow": "Auto mode",
+      "autoTitle": "Comparator driven by visible products",
+      "selectedEyebrow": "Manual selection",
+      "selectedTitle": "Comparing your current shortlist",
+      "emptyEyebrow": "No matches",
+      "emptyTitle": "Adjust filters or choose products",
+      "autoCount": "Auto"
     },
     "cardLabels": {
       "bestFor": "Best for",

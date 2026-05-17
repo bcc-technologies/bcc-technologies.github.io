@@ -502,6 +502,18 @@ function buildProductsDocument(lang) {
     productsHeroPanes
   );
 
+  const filterBar = document.createElement('div');
+  filterBar.className = 'filter-bar';
+  const filtersToggle = document.createElement('button');
+  filtersToggle.id = 'filtersToggle';
+  filtersToggle.setAttribute('aria-expanded', 'false');
+  const filtersControls = document.createElement('div');
+  filtersControls.id = 'filtersControls';
+  filtersControls.hidden = true;
+  const filtersMeta = document.createElement('div');
+  filtersMeta.id = 'filtersMeta';
+  filtersMeta.hidden = true;
+
   const filterSearch = document.createElement('input');
   filterSearch.id = 'filterSearch';
   const filterSearchLabel = document.createElement('label');
@@ -529,6 +541,10 @@ function buildProductsDocument(lang) {
   const resultCount = document.createElement('span');
   resultCount.id = 'resultCount';
 
+  filtersControls.append(familyLabel, familySelectLabel, familySelect, methodLabel, methodSelect, useLabel, useSelect);
+  filtersMeta.append(clearFilters, activeChips, resultCount);
+  filterBar.append(filterSearchLabel, filterSearch, filtersToggle, filtersControls, filtersMeta);
+
   const productsCatalogTitle = document.createElement('h2');
   productsCatalogTitle.id = 'productsCatalogTitle';
   const productsGrid = document.createElement('div');
@@ -536,10 +552,16 @@ function buildProductsDocument(lang) {
 
   const productsCompareTitle = document.createElement('h2');
   productsCompareTitle.id = 'productsCompareTitle';
+  const productsCompareEyebrow = document.createElement('p');
+  productsCompareEyebrow.id = 'productsCompareEyebrow';
+  const productsCompareModeTitle = document.createElement('h3');
+  productsCompareModeTitle.id = 'productsCompareModeTitle';
   const productsCompareLead = document.createElement('div');
   productsCompareLead.id = 'productsCompareLead';
   const productsCompareHint = document.createElement('p');
   productsCompareHint.id = 'productsCompareHint';
+  const productsCompareCount = document.createElement('span');
+  productsCompareCount.id = 'productsCompareCount';
   const clearCompare = document.createElement('button');
   clearCompare.id = 'clearCompare';
   clearCompare.hidden = true;
@@ -553,23 +575,15 @@ function buildProductsDocument(lang) {
   document.body.append(
     header,
     hero,
-    filterSearchLabel,
-    filterSearch,
-    familyLabel,
-    familySelectLabel,
-    familySelect,
-    methodLabel,
-    methodSelect,
-    useLabel,
-    useSelect,
-    clearFilters,
-    activeChips,
-    resultCount,
+    filterBar,
     productsCatalogTitle,
     productsGrid,
     productsCompareTitle,
+    productsCompareEyebrow,
+    productsCompareModeTitle,
     productsCompareLead,
     productsCompareHint,
+    productsCompareCount,
     clearCompare,
     productsCompareSelection,
     productsCompareHead,
@@ -641,8 +655,14 @@ test('products page renders shared Spanish content and initial count', () => {
   assert.equal(document.getElementById('productsCatalogTitle').textContent, 'Tecnologia disponible');
   assert.equal(document.getElementById('productsGrid').querySelectorAll('.product-card').length, 8);
   assert.equal(document.getElementById('resultCount').textContent, '8 productos');
+  assert.equal(document.getElementById('filtersControls').hidden, true);
+  assert.equal(document.getElementById('filtersMeta').hidden, true);
+  assert.equal(document.getElementById('filtersToggle').getAttribute('aria-expanded'), 'false');
   assert.match(document.getElementById('productsCompareHead').innerHTML, /<th>Producto<\/th>/);
+  assert.equal(document.getElementById('productsCompareEyebrow').textContent, 'Lectura automatica');
+  assert.equal(document.getElementById('productsCompareModeTitle').textContent, 'Comparador guiado por lo visible');
   assert.equal(document.getElementById('productsCompareHint').textContent, 'Selecciona hasta 3 productos o deja que el comparador use los visibles.');
+  assert.equal(document.getElementById('productsCompareCount').textContent, 'Auto');
   assert.match(document.getElementById('productsGrid').innerHTML, /data-product-detail="map-nano"/);
   assert.match(document.getElementById('productsGrid').innerHTML, /data-compare-toggle="map-nano"/);
   assert.doesNotMatch(document.getElementById('productsGrid').innerHTML, /href="#"/);
@@ -695,11 +715,29 @@ test('compare selection pins chosen products and exposes clear state', () => {
   const compareBody = document.getElementById('productsCompareBody').innerHTML;
   assert.match(compareBody, /MAP-Nano/);
   assert.match(compareBody, /EIS \+ EIS-Toolkit/);
+  assert.equal(document.getElementById('productsCompareEyebrow').textContent, 'Manual selection');
+  assert.equal(document.getElementById('productsCompareModeTitle').textContent, 'Comparing your current shortlist');
   assert.equal(document.getElementById('productsCompareLead').textContent, 'Comparing your current selection.');
   assert.equal(document.getElementById('productsCompareHint').textContent, '2/3 selected');
+  assert.equal(document.getElementById('productsCompareCount').textContent, '2/3');
   assert.equal(document.getElementById('clearCompare').hidden, false);
-  assert.match(document.getElementById('productsCompareSelection').textContent, /MAP-Nano x/);
-  assert.match(document.getElementById('productsCompareSelection').textContent, /EIS \+ EIS-Toolkit x/);
+  assert.equal(document.querySelector('[data-compare-toggle="map-nano"]').dataset.state, 'active');
+  assert.match(document.getElementById('productsCompareSelection').textContent, /MAP-Nano/);
+  assert.match(document.getElementById('productsCompareSelection').textContent, /EIS \+ EIS-Toolkit/);
+});
+
+test('compare toggles lock remaining products at the configured limit', () => {
+  const { document } = loadProductsPage({ lang: 'en' });
+
+  document.querySelector('[data-compare-toggle="map-nano"]').click();
+  document.querySelector('[data-compare-toggle="bundle-toolkit"]').click();
+  document.querySelector('[data-compare-toggle="science-smartboard"]').click();
+
+  const lockedButton = document.querySelector('[data-compare-toggle="dls-mini"]');
+  assert.equal(document.getElementById('productsCompareCount').textContent, '3/3');
+  assert.equal(lockedButton.dataset.state, 'locked');
+  assert.equal(lockedButton.disabled, true);
+  assert.equal(lockedButton.textContent, 'Max 3');
 });
 
 test('products page generator stays in sync with committed HTML', () => {

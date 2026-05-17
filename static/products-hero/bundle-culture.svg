@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+  <style>
+    .packet{animation:packetA 4.4s linear infinite}
+    .cell{animation:cellA 4.8s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+    .trend{animation:trendA 4.4s ease-in-out infinite}
+    @keyframes packetA{0%{transform:translateX(0);opacity:.15}20%{opacity:1}100%{transform:translateX(58px);opacity:.15}}
+    @keyframes cellA{0%,100%{transform:translate(0,0)}50%{transform:translate(0,-4px)}}
+    @keyframes trendA{0%,100%{opacity:.56}50%{opacity:1}}
+    @media (prefers-reduced-motion: reduce){.packet,.cell,.trend{animation:none!important}}
+  </style>
+  <path d="M166 236H274" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <path d="M372 236H484" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <circle cx="182" cy="236" r="6" fill="#2563eb" class="packet"/>
+  <circle cx="388" cy="236" r="6" fill="#2563eb" class="packet" style="animation-delay:-2.2s"/>
+  <rect x="64" y="142" width="108" height="188" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <path d="M88 176H148" stroke="#cfd8e3" stroke-width="8" stroke-linecap="round"/>
+  <path d="M80 198H156L148 286C146 304 134 318 118 318C102 318 90 304 88 286L80 198Z" fill="#eff6ff" stroke="#93c5fd" stroke-width="4"/>
+  <circle cx="104" cy="226" r="7" fill="#2563eb" fill-opacity=".26" class="cell"/>
+  <circle cx="122" cy="238" r="6" fill="#2563eb" fill-opacity=".24" class="cell" style="animation-delay:-.8s"/>
+  <circle cx="138" cy="220" r="5" fill="#60a5fa" fill-opacity=".32" class="cell" style="animation-delay:-1.4s"/>
+  <rect x="274" y="126" width="110" height="220" rx="28" fill="#0f172a"/>
+  <rect x="294" y="148" width="70" height="54" rx="14" fill="#eff6ff"/>
+  <path d="M306 190C318 178 332 174 346 177C359 180 369 188 376 200" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="328" cy="282" r="22" fill="#111827"/>
+  <circle cx="328" cy="282" r="7" fill="#94a3b8"/>
+  <path d="M328 320V350" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+  <rect x="484" y="136" width="112" height="200" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <rect x="508" y="164" width="64" height="80" rx="18" fill="#eef5ff"/>
+  <circle cx="526" cy="196" r="14" fill="#dbeafe" class="cell"/>
+  <circle cx="552" cy="188" r="10" fill="#bfdbfe" class="cell" style="animation-delay:-.9s"/>
+  <circle cx="566" cy="212" r="11" fill="#93c5fd" class="cell" style="animation-delay:-1.6s"/>
+  <path d="M504 286C520 270 536 264 552 268C567 271 579 281 588 294" stroke="#2563eb" stroke-width="6" stroke-linecap="round" class="trend"/>
+  <circle cx="554" cy="270" r="7" fill="#2563eb" class="trend"/>
+</svg>

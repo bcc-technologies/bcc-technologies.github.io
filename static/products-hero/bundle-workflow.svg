@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+  <style>
+    .packet{animation:packetA 4.2s linear infinite}
+    .curve{animation:curveA 4.8s ease-in-out infinite}
+    .fill{animation:fillA 4.8s ease-in-out infinite;transform-origin:left center;transform-box:fill-box}
+    .check{animation:checkA 3s ease-in-out infinite}
+    @keyframes packetA{0%{transform:translateX(0);opacity:.15}20%{opacity:1}100%{transform:translateX(58px);opacity:.15}}
+    @keyframes curveA{0%,100%{opacity:.56}50%{opacity:1}}
+    @keyframes fillA{0%,100%{transform:scaleX(.62)}50%{transform:scaleX(1)}}
+    @keyframes checkA{0%,100%{opacity:.38}50%{opacity:1}}
+    @media (prefers-reduced-motion: reduce){.packet,.curve,.fill,.check{animation:none!important}}
+  </style>
+  <path d="M170 236H276" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <path d="M380 236H490" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <circle cx="186" cy="236" r="6" fill="#2563eb" class="packet"/>
+  <circle cx="396" cy="236" r="6" fill="#2563eb" class="packet" style="animation-delay:-2s"/>
+  <rect x="70" y="148" width="108" height="176" rx="28" fill="#0f172a"/>
+  <rect x="92" y="170" width="64" height="50" rx="14" fill="#eff6ff"/>
+  <path d="M100 258H148" stroke="#cfd8e3" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="124" cy="290" r="18" fill="#111827"/>
+  <circle cx="124" cy="290" r="6" fill="#94a3b8"/>
+  <rect x="276" y="122" width="112" height="228" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <rect x="300" y="160" width="64" height="86" rx="16" fill="#eef5ff"/>
+  <path d="M308 228C318 206 330 194 342 194C354 194 365 206 374 228" stroke="#2563eb" stroke-width="6" stroke-linecap="round" class="curve"/>
+  <path d="M308 228C320 218 331 214 343 214C355 214 366 218 374 228" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" class="curve"/>
+  <rect x="308" y="276" width="56" height="10" rx="5" fill="#dbe4ee"/>
+  <rect x="308" y="276" width="56" height="10" rx="5" fill="#2563eb" class="fill"/>
+  <rect x="492" y="138" width="116" height="196" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <rect x="516" y="170" width="68" height="34" rx="14" fill="#fff" stroke="#d7e2ee" stroke-width="3"/>
+  <path d="M530 188L538 196L552 180" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="check"/>
+  <rect x="516" y="222" width="68" height="34" rx="14" fill="#fff" stroke="#d7e2ee" stroke-width="3"/>
+  <path d="M530 240L538 248L552 232" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="check" style="animation-delay:-1.2s"/>
+  <rect x="516" y="286" width="54" height="10" rx="5" fill="#dbe4ee"/>
+  <rect x="516" y="286" width="54" height="10" rx="5" fill="#2563eb" class="fill" style="animation-delay:-1.3s"/>
+</svg>

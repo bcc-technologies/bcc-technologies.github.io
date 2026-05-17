@@ -29,7 +29,7 @@
   font-size: 1.03rem;
 }
 
-.journal-section{ padding: 26px 0 70px; }
+/* .journal-section{ padding: 26px 0 70px; } */
 
 .journal-grid{
   display: grid;
@@ -338,14 +338,12 @@
   overflow: auto;
   border-radius: var(--r-lg);
   border: 1px solid var(--border);
-  /* background: rgba(255,255,255,0.78); */
-  /* box-shadow: 0 24px 70px rgba(15,17,21,0.22); */
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-topbar{
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  order: 0;
   display:flex;
   align-items:flex-start;
   justify-content: space-between;
@@ -421,10 +419,12 @@
 
 /* Cover: más bajo + sin recorte (contain) */
 .modal-cover{
-  margin: 14px 16px 0;
-  border-radius: var(--r-lg);
+  order: 1;
+  margin: 0;
+  border-radius: 0;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: none;
+  border-bottom: 1px solid var(--border);
   background: var(--surface-hover);
 
   /* antes era muy alto y “banner-like” */
@@ -448,16 +448,16 @@
 
 /* separación visual clara */
 .modal-sep{
-  height: 14px;
-  background: linear-gradient(to bottom, var(--hover), transparent);
-  margin: 0 0 0;
+  order: 2;
+  display: none;
 }
 
 /* Área del artículo (más “papel” y respiración) */
 .modal-article{
+  order: 3;
   padding: 20px 14px 24px;
   background: var(--surface-hover);
-  border-top: 1px solid var(--border)
+  border-top: none;
 }
 
 .modal-content{

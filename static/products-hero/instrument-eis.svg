@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+  <style>
+    .line{stroke:#d4dde8;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .packet{animation:packetA 4.6s linear infinite}
+    .curve{animation:curveA 4.6s ease-in-out infinite}
+    .led{animation:ledA 2.8s ease-in-out infinite}
+    @keyframes packetA{0%{transform:translateX(0);opacity:.15}20%{opacity:1}100%{transform:translateX(64px);opacity:.15}}
+    @keyframes curveA{0%,100%{opacity:.58}50%{opacity:1}}
+    @keyframes ledA{0%,100%{opacity:.4}50%{opacity:1}}
+    @media (prefers-reduced-motion: reduce){.packet,.curve,.led{animation:none!important}}
+  </style>
+  <rect x="88" y="102" width="156" height="252" rx="34" fill="#0f172a"/>
+  <rect x="110" y="126" width="112" height="82" rx="18" fill="#eff6ff"/>
+  <path d="M122 190C139 176 156 170 174 173C191 175 205 186 222 202" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" class="curve"/>
+  <path d="M122 203C140 196 157 196 174 201C192 206 206 214 222 220" stroke="#2563eb" stroke-width="6" stroke-linecap="round" class="curve"/>
+  <circle cx="124" cy="244" r="7" fill="#22c55e" class="led"/>
+  <circle cx="208" cy="244" r="7" fill="#f59e0b" class="led" style="animation-delay:-1.2s"/>
+  <circle cx="166" cy="312" r="26" fill="#111827"/>
+  <circle cx="166" cy="312" r="8" fill="#94a3b8"/>
+  <path d="M166 354V390" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+  <path d="M244 228H320" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
+  <circle cx="260" cy="228" r="6" fill="#2563eb" class="packet"/>
+  <rect x="354" y="122" width="196" height="196" rx="30" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
+  <path d="M380 286H524" class="line" opacity=".6"/>
+  <path d="M396 288V154" class="line" opacity=".6"/>
+  <path d="M398 264C422 214 448 184 474 182C499 180 522 208 542 258" stroke="#2563eb" stroke-width="7" stroke-linecap="round" class="curve"/>
+  <path d="M398 264C422 242 447 228 472 228C499 228 522 240 542 258" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" opacity=".92" class="curve"/>
+  <circle cx="478" cy="182" r="8" fill="#2563eb" class="led"/>
+  <rect x="380" y="336" width="110" height="12" rx="6" fill="#dbe4ee"/>
+  <rect x="380" y="336" width="78" height="12" rx="6" fill="#2563eb" class="curve"/>
+  <rect x="380" y="362" width="88" height="12" rx="6" fill="#e7edf4"/>
+  <rect x="380" y="362" width="52" height="12" rx="6" fill="#f59e0b" class="curve"/>
+</svg>
