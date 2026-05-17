@@ -1,4 +1,4 @@
-This Journal is based on a simple premise: in science and engineering, **it is not enough to obtain data**. It is necessary to obtain **reliable results** that are contextual, reproducible, and verifiable.
+This journal is based on a simple premise: in science and engineering, **it is not enough to simply collect data**. It is necessary to obtain **reliable results** that are contextual, reproducible, and verifiable.
 
 At BCC, we develop software and instrumentation for scientific image analysis. Our approach is based on a central idea:
 
@@ -8,27 +8,25 @@ At BCC, we develop software and instrumentation for scientific image analysis. O
 
 ## Operational noise and loss of reproducibility
 
-When a laboratory or industrial process obtains inconsistent results, the cause is often not a lack of technical capacity, but rather the accumulation of small sources of variation in the workflow, for example:
-
+When a laboratory or industrial process yields inconsistent results, the cause is often not a lack of technical capability, but rather the accumulation of small sources of variation in the workflow, for example:
 - Parameters applied but **not recorded** or recorded incompletely.
-- Adjustments made at runtime that are **not documented**.
-- Multiple informal variants of the same procedure ("everyone with their own method").
-- Plausible results, but **difficult to justify** to an auditor, customer, or publication.
+- Adjustments made during execution that **are not documented**.
+- Multiple informal variations of the same procedure (“everyone does it their own way”).
+- Results that are plausible but **difficult to justify** to an auditor, client, or for publication.
 
-In these cases, the problem is not only the sensor or the sample, but the **process**.
+In these cases, the problem is not solely the sensor or the sample, but the **process**.
 
 ---
 
-## An operational definition of "clarity"
+## An operational definition of “clarity”
 
-In this context, "clarity" is not understood as superficial simplification, but as a set of properties that increase the reliability of the system:
+In this context, “clarity” is not understood as superficial simplification, but rather as a set of properties that increase the system’s reliability:
 
-1. **Traceability by default**
-
-All results must be reconstructable: input data, parameters, software version, timestamp, operator, and experimental context.
+1. **Traceability by default**  
+   Every result must be reconstructible: input data, parameters, software version, timestamp, operator, and experimental context.
 
 2. **Explicit decisions**  
-   If the software filters, segments, calibrates, or compensates, these steps must be recorded and inspectable.
+   If the software filters, segments, calibrates, or compensates, those steps must be recorded and inspectable.
 
 3. **Decision-oriented design**  
    The interface must reduce ambiguity and cognitive load, prioritizing actions and readings relevant to consistent operation.
@@ -44,23 +42,22 @@ In instrumentation, interpretation errors can arise from minor details (nomencla
 - **What is reported** (and under what assumptions).
 - **What can be repeated** (and with what fidelity).
 
-This is why we treat the UI as part of the measurement system: if it induces systematic errors or hinders documentation, the performance of the instrument is compromised.
+For this reason, we treat the UI as part of the measurement system: if it induces systematic errors or hinders documentation, the instrument’s performance is compromised.
 
 ---
 
 ## Scope of the Journal
 
-We will publish content designed to be applicable in real analysis and measurement environments, including:
-
+We will publish content designed to be applicable in real-world analysis and measurement environments, including:
 - Analysis methodologies (e.g., segmentation, parameterization, and quality control).
-- Case studies (limitations observed and mitigation strategies).
+- Case studies (observed limitations and mitigation strategies).
 - Design principles applied to instrumentation (robust and verifiable operation).
-- Flow standardization: how to convert informal procedures into reproducible processes.
+- Standardization of workflows: how to convert informal procedures into reproducible processes.
 
 ---
 
-## Collaboration and technical discussion
+## Collaboration and Technical Discussion
 
-If your team works with scientific images (optical, SEM, or other modalities) or instrumentation data, it is common to encounter friction associated with repetition, inconsistencies, manual reports, or recurring discussions of parameters. If this is the case, we can evaluate the problem and propose an initial operational diagnosis.
+If your team works with scientific images (optical, SEM, or other modalities) or instrumentation data, it is common to encounter friction related to repetition, inconsistencies, manual reporting, or recurring discussions about parameters. If that is the case, we can assess the problem and propose an initial operational diagnosis.
 
-> Next article: **"Standardization of parameters: the first step before automating analysis"**
+> Next article: **“Parameter Standardization: The First Step Before Automating Analysis”**

@@ -182,30 +182,62 @@ function renderPosts() {
   const q = ($("#postsSearch").value || "").toLowerCase().trim();
   const sec = ($("#postsSectionFilter").value || "").trim();
 
-  const items = INDEX.posts.filter(p => {
+  const filtered = INDEX.posts.filter(p => {
     const hay = `${p.title} ${p.section} ${(p.tags||[]).join(" ")} ${p.excerpt||""}`.toLowerCase();
     if (q && !hay.includes(q)) return false;
     if (sec && p.section !== sec) return false;
     return true;
   });
 
-  const list = $("#postsList");
-  list.innerHTML = items.map(p => `
-    <div class="item" data-id="${p.id}">
-      <div>
-        <div class="item-title">${escapeHtml(p.title || "(sin título)")}</div>
-        <div class="meta">
-          <span class="badge">${escapeHtml(p.section || "Otros")}</span>
-          <span class="badge">${escapeHtml((p.lang || "es").toUpperCase())}</span>
-          <span class="badge">${escapeHtml(p.date || "")}</span>
-        </div>
-      </div>
-      <div class="badge">${escapeHtml(p.id)}</div>
-    </div>
-  `).join("") || `<div class="muted" style="padding:10px;">No hay entradas.</div>`;
+  const groups = new Map();
 
-  list.querySelectorAll(".item").forEach(el => {
-    el.addEventListener("click", () => loadPost(el.dataset.id));
+  for (const p of filtered) {
+    const key = p.translationId || p.id;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+
+  const groupedItems = [...groups.entries()].map(([key, posts]) => {
+    const main = posts.find(p => p.lang === "es") || posts[0];
+    const langs = posts
+      .slice()
+      .sort((a, b) => String(a.lang).localeCompare(String(b.lang)))
+      .map(p => `
+        <button class="badge lang-badge" data-id="${escapeHtml(p.id)}" type="button">
+          ${escapeHtml((p.lang || "es").toUpperCase())}
+        </button>
+      `).join("");
+
+    return `
+      <div class="item post-group" data-group="${escapeHtml(key)}">
+        <div>
+          <div class="item-title">${escapeHtml(main.title || "(sin título)")}</div>
+          <div class="meta">
+            <span class="badge">${escapeHtml(main.section || "Otros")}</span>
+            <span class="badge">${escapeHtml(main.date || "")}</span>
+            ${langs}
+          </div>
+        </div>
+        <div class="badge">${escapeHtml(key)}</div>
+      </div>
+    `;
+  });
+
+  const list = $("#postsList");
+  list.innerHTML = groupedItems.join("") || `<div class="muted" style="padding:10px;">No hay entradas.</div>`;
+
+  list.querySelectorAll(".lang-badge").forEach(btn => {
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      loadPost(btn.dataset.id);
+    });
+  });
+
+  list.querySelectorAll(".post-group").forEach(el => {
+    el.addEventListener("click", () => {
+      const firstLangBtn = el.querySelector(".lang-badge");
+      if (firstLangBtn?.dataset.id) loadPost(firstLangBtn.dataset.id);
+    });
   });
 }
 

@@ -321,6 +321,15 @@ body{
   min-height: 520px;
 }
 
+.lang-badge{
+  cursor: pointer;
+}
+
+.lang-badge:hover{
+  border-color: rgba(237,70,36,0.45);
+  background: rgba(237,70,36,0.12);
+}
+
 /* Dialogs */
 .dlg::backdrop{
   background: rgba(0,0,0,0.55);
