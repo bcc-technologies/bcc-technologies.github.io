@@ -102,33 +102,61 @@
   </header>
 
   <main class="with-header-offset">
-    <section class="journal-hero">
-      <div class="container hero-inner">
-        <div class="hero-kicker">Blog</div>
-        <h1 class="hero-title">{{POST_TITLE}}</h1>
-        <a class="post-back" href="/en/blog.html">Back to Blog</a>
+    <section class="journal-hero post-hero">
+      <div class="container post-hero-inner">
+        <a class="post-back-minimal" href="/en/blog.html">← Back to Blog</a>
+
+        <h1 class="hero-title post-hero-title">{{POST_HERO_TITLE}}</h1>
+        {{POST_DEK}}
+
+        <div class="post-hero-meta">
+          <span class="post-date">{{POST_DATE}}</span>
+          <span class="post-dot">&bull;</span>
+          <span class="post-readtime">{{POST_READTIME}}</span>
+        </div>
       </div>
     </section>
 
     <section class="journal-section">
       <div class="container post-shell">
         <article class="post-card glass">
-          <div class="post-head">
-            <div>
-              <div class="post-kicker">BCC Blog</div>
-              <div class="post-meta">
-                <span class="post-date">{{POST_DATE}}</span>
-                <span class="post-dot">&bull;</span>
-                <span class="post-readtime">{{POST_READTIME}}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tagrow post-tags">{{POST_TAGS}}</div>
           {{POST_COVER}}
 
           <div class="modal-article">
+          <div class="post-reader-layout">
             <div class="modal-content">{{POST_BODY}}</div>
+
+            <aside class="post-resource-rail" id="postResourceRail" aria-label="Recommended resources" data-open="false" hidden>
+              <button class="resource-rail-strip" id="resourceRailToggle" type="button" aria-expanded="false" aria-controls="resourceRailPanel">
+                <span class="resource-rail-dots" aria-hidden="true">⋯</span>
+                <span class="resource-rail-icon" aria-hidden="true">✦</span>
+                <span class="resource-rail-label">Explore</span>
+              </button>
+
+              <div class="resource-rail-panel glass" id="resourceRailPanel">
+                <div class="resource-panel-head">
+                  <div>
+                    <div class="resource-kicker">Resources</div>
+                    <div class="resource-title">Go deeper</div>
+                  </div>
+                  <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Close resources">×</button>
+                </div>
+                <div class="resource-list" id="resourceRailList"></div>
+              </div>
+            </aside>
+          </div>
+
+          {{POST_AUTHORS}}
+          {{POST_TAGS_BLOCK}}
+          {{POST_RECOMMENDED_POSTS}}
+
+          <section class="post-resources-mobile" id="postResourcesMobile" aria-labelledby="postResourcesMobileTitle" hidden>
+            <div class="resource-kicker">Resources</div>
+            <h2 class="resource-title" id="postResourcesMobileTitle">Go deeper</h2>
+            <div class="resource-list" id="postResourcesMobileList"></div>
+          </section>
+
+          <script type="application/json" id="postResourcesData">{{POST_RESOURCES_JSON}}</script>
           </div>
         </article>
       </div>
@@ -168,6 +196,162 @@
       </div>
     </div>
   </footer>
+  <script data-bcc-resource-rail-core>
+    function initResourceRail(labels) {
+      var dataEl = document.getElementById("postResourcesData");
+      var rail = document.getElementById("postResourceRail");
+      var toggle = document.getElementById("resourceRailToggle");
+      var panel = document.getElementById("resourceRailPanel");
+      var railList = document.getElementById("resourceRailList");
+      var mobile = document.getElementById("postResourcesMobile");
+      var mobileList = document.getElementById("postResourcesMobileList");
+
+      if (!dataEl || !rail || !toggle || !panel || !railList || !mobile || !mobileList) return;
+
+      var raw = (dataEl.textContent || "").trim();
+      if (!raw || raw.indexOf("{{") === 0) return;
+
+      var payload;
+      try { payload = JSON.parse(raw); } catch (e) { return; }
+
+      var resources = Array.isArray(payload) ? payload : (payload.resources || []);
+      resources = resources.filter(function(r) { return r && (r.title || r.name); });
+      if (!resources.length) return;
+
+      function esc(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function normType(type) {
+        return String(type || "web").toLowerCase().trim();
+      }
+
+      function typeLabel(type) {
+        type = normType(type);
+        return labels.types[type] || labels.fallbackType;
+      }
+
+      function typeIcon(type) {
+        type = normType(type);
+        if (type === "music") return "♪";
+        if (type === "book") return "⌘";
+        if (type === "paper" || type === "article" || type === "thesis") return "§";
+        if (type === "tool" || type === "software") return "◇";
+        if (type === "service" || type === "product") return "∴";
+        if (type === "video") return "▶";
+        if (type === "podcast") return "◌";
+        if (type === "dataset") return "▦";
+        return "✦";
+      }
+
+      function resourceLinks(r) {
+        var links = [];
+        if (Array.isArray(r.links)) links = links.concat(r.links);
+        if (r.url) links.push({ label: r.linkLabel || labels.defaultLink, url: r.url });
+        if (r.spotify) links.push({ label: "Spotify", url: r.spotify });
+        if (r.youtube) links.push({ label: "YouTube", url: r.youtube });
+        if (r.doi) links.push({ label: "DOI", url: String(r.doi).startsWith("http") ? r.doi : "https://doi.org/" + r.doi });
+
+        return links.filter(function(l) { return l && l.url; }).map(function(l) {
+          return '<a class="resource-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label || labels.defaultLink) + '</a>';
+        }).join("");
+      }
+
+      function resourceHtml(r) {
+        var type = normType(r.type);
+        var title = r.title || r.name || labels.fallbackTitle;
+        var creator = r.creator || r.author || r.artist || r.source || r.publisher || "";
+        var year = r.year ? " · " + r.year : "";
+        var note = r.note || r.description || r.summary || "";
+        var links = resourceLinks(r);
+
+        return '' +
+          '<article class="resource-card resource-card-' + esc(type) + '">' +
+            '<div class="resource-card-icon" aria-hidden="true">' + esc(typeIcon(type)) + '</div>' +
+            '<div class="resource-card-main">' +
+              '<div class="resource-card-type">' + esc(typeLabel(type)) + '</div>' +
+              '<h3 class="resource-card-title">' + esc(title) + '</h3>' +
+              (creator ? '<div class="resource-card-sub">' + esc(creator + year) + '</div>' : '') +
+              (note ? '<p class="resource-card-note">' + esc(note) + '</p>' : '') +
+              (links ? '<div class="resource-card-links">' + links + '</div>' : '') +
+            '</div>' +
+          '</article>';
+      }
+
+      var html = resources.map(resourceHtml).join("");
+      railList.innerHTML = html;
+      mobileList.innerHTML = html;
+      rail.hidden = false;
+      mobile.hidden = false;
+      toggle.setAttribute("aria-label", labels.open);
+      toggle.setAttribute("aria-expanded", "false");
+
+      function setOpen(open) {
+        rail.dataset.open = open ? "true" : "false";
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      toggle.addEventListener("click", function() {
+        setOpen(rail.dataset.open !== "true");
+      });
+
+      rail.querySelectorAll('[data-action="close-resources"]').forEach(function(btn) {
+        btn.setAttribute("aria-label", labels.close);
+        btn.addEventListener("click", function() { setOpen(false); });
+      });
+
+      document.addEventListener("keydown", function(ev) {
+        if (ev.key === "Escape") setOpen(false);
+      });
+    }
+  </script>
+  <script data-bcc-resource-rail>
+    (function() {
+      var labels = {
+        fallbackTitle: "Recommended resource",
+        fallbackType: "Resource",
+        open: "Open recommended resources",
+        close: "Close resources",
+        defaultLink: "Open",
+        types: {
+          book: "Reading",
+          article: "Article",
+          paper: "Paper",
+          thesis: "Thesis",
+          report: "Report",
+          dataset: "Dataset",
+          tool: "Tool",
+          software: "Software",
+          service: "Service",
+          product: "Product",
+          music: "Resonance",
+          video: "Video",
+          podcast: "Podcast",
+          web: "Web"
+        }
+      };
+      initResourceRail(labels);
+    })();
+  </script>
+  <script data-bcc-post-hero>
+    (function initPostHeroDek(){
+      var btn = document.querySelector("[data-post-title-toggle]");
+      if (!btn) return;
+      var panel = document.getElementById(btn.getAttribute("aria-controls"));
+      if (!panel) return;
+
+      btn.addEventListener("click", function(){
+        var open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", String(!open));
+        panel.dataset.open = String(!open);
+      });
+    })();
+  </script>
+
 </body>
 </html>
 

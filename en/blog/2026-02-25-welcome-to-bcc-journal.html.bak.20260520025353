@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -37,15 +37,14 @@
   <link rel="stylesheet" href="/css/pages/new_blog.css">
   <link rel="stylesheet" href="/css/pages/blog_post.css">
 
-  <link rel="canonical" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html">\n  <link rel="alternate" hreflang="es" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" />\n  <link rel="alternate" hreflang="en" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html" />
+  <link rel="canonical" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html">\n  <link rel="alternate" hreflang="es" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" />\n  <link rel="alternate" hreflang="en" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html" />
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Bienvenidos al BCC Journal: Simplificando lo complejo." />
   <meta property="og:description" content="Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas." />
-  <meta property="og:url" content="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" />
+  <meta property="og:url" content="/en/blog/2026-02-25-welcome-to-bcc-journal.html" />
   <meta property="og:image" content="/static/uploads/20260130182048-bcc.svg" />
   <meta property="article:published_time" content="2026-01-30T00:00:00.000Z" />
-  <meta property="article:author" content="https://bcctechnologies.com.do/aboutUs.html" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bienvenidos al BCC Journal: Simplificando lo complejo.","datePublished":"2026-01-30T00:00:00.000Z","image":"/static/uploads/20260130182048-bcc.svg","author":[{"@type":"Person","name":"Saúl Castillo","url":"https://bcctechnologies.com.do/aboutUs.html","affiliation":{"@type":"Organization","name":"BCC Technologies"}}],"mainEntityOfPage":"/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bienvenidos al BCC Journal: Simplificando lo complejo.","datePublished":"2026-01-30T00:00:00.000Z","image":"/static/uploads/20260130182048-bcc.svg","mainEntityOfPage":"/en/blog/2026-02-25-welcome-to-bcc-journal.html"}</script>
 
   <!-- Shared layout behavior -->
   <script src="/js/layout.js" defer></script>
@@ -64,31 +63,31 @@
 <body>
   <header>
     <div class="header-container glass-panel-header">
-      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
 
       <nav>
-        <a href="/" class="logo-link">
+        <a href="/en/index.html" class="logo-link">
           <span class="logo-text"><strong>BCC</strong></span>
           <span class="logo-symbol"><strong>&there4;</strong></span>
         </a>
 
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/aboutUs.html">Nosotros</a></li>
-          <li><a href="/products.html">Tecnología</a></li>
-          <li><a href="/science.html">Ciencia</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Blog</a></li>
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/science.html">Science</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Blog</a></li>
         </ul>
 
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
           <div class="nav-tools">
-            <a class="pref-btn lang-switch" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html" aria-label="Switch to English">EN</a>
-            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+            <a class="pref-btn lang-switch" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
               </svg>
@@ -107,7 +106,7 @@
       <div class="container hero-inner">
         <div class="hero-kicker">Blog</div>
         <h1 class="hero-title">Bienvenidos al BCC Journal: Simplificando lo complejo.</h1>
-        <a class="post-back" href="/blog.html">Volver al Blog</a>
+        <a class="post-back" href="/en/blog.html">Back to Blog</a>
       </div>
     </section>
 
@@ -118,38 +117,34 @@
             <div>
               <div class="post-kicker">BCC Blog</div>
               <div class="post-meta">
-                <span class="post-date">29 ene 2026</span>
+                <span class="post-date">Jan 29, 2026</span>
                 <span class="post-dot">&bull;</span>
                 <span class="post-readtime">2 min</span>
               </div>
             </div>
           </div>
 
-          <div class="post-authors" aria-label="Por"><span class="post-authors-label">Por</span><div class="post-authors-list"><a class="post-author" href="https://bcctechnologies.com.do/aboutUs.html" target="_blank" rel="noopener noreferrer"><span class="post-author-text">
-        <span class="post-author-name">Saúl Castillo</span>
-        <span class="post-author-meta">Cofounder/CEO · BCC Technologies</span>
-      </span></a></div></div>
           <div class="tagrow post-tags"><span class="tagchip">Empresa</span><span class="tagchip">metodología</span><span class="tagchip">instrumentación</span><span class="tagchip">diseño</span><span class="tagchip">trazabilidad</span></div>
           <div class="modal-cover"><img class="modal-cover-img" src="/static/uploads/20260130182048-bcc.svg" alt="Bienvenidos al BCC Journal: Simplificando lo complejo." loading="lazy" /></div>
 
           <div class="modal-article">
           <div class="post-reader-layout">
-            <div class="modal-content"><p>Este Journal nace de una premisa sencilla: en ciencia e ingeniería, <strong>no basta con obtener datos</strong>. Es necesario obtener <strong>resultados confiables</strong>, con contexto, reproducibles y susceptibles de verificación.</p><p>En BCC desarrollamos software e instrumentación para análisis de imágenes científicas. Nuestro enfoque se apoya en una idea central:</p><blockquote><strong>Si un sistema no es trazable, no puede considerarse un instrumento en sentido estricto.</strong></blockquote><hr /><h2>Ruido operativo y pérdida de reproducibilidad</h2><p>Cuando un laboratorio o un proceso industrial obtiene resultados inconsistentes, con frecuencia el origen no es la falta de capacidad técnica, sino la acumulación de pequeñas fuentes de variación en el flujo de trabajo, por ejemplo:</p><ul><li>Parámetros aplicados pero <strong>no registrados</strong> o registrados de forma incompleta.</li><li>Ajustes realizados en tiempo de ejecución que <strong>no quedan documentados</strong>.</li><li>Múltiples variantes informales del mismo procedimiento (“cada quien con su método”).</li><li>Resultados plausibles, pero <strong>difíciles de justificar</strong> ante auditoría, cliente o publicación.</li></ul><p>En estos casos, el problema no es únicamente el sensor o la muestra, sino el <strong>proceso</strong>.</p><hr /><h2>Una definición operativa de “claridad”</h2><p>En este contexto, “claridad” no se entiende como simplificación superficial, sino como un conjunto de propiedades que incrementan la confiabilidad del sistema:</p><ol><li><strong>Trazabilidad por defecto</strong></li></ol><p>Todo resultado debe poder reconstruirse: datos de entrada, parámetros, versión del software, marca temporal, operador y contexto experimental.</p><ol><li><strong>Decisiones explícitas</strong></li></ol><p>Si el software filtra, segmenta, calibra o compensa, esos pasos deben quedar registrados y ser inspeccionables.</p><ol><li><strong>Diseño orientado a decisiones</strong></li></ol><p>La interfaz debe reducir ambigüedad y carga cognitiva, priorizando acciones y lecturas relevantes para una operación consistente.</p><hr /><h2>Por qué la interfaz forma parte del instrumento</h2><p>En instrumentación, errores de interpretación pueden surgir de detalles mínimos (nomenclatura, defaults, controles ambiguos). La interfaz define:</p><ul><li><strong>Qué se mide</strong> (y qué se excluye).</li><li><strong>Cómo se ajusta</strong> (y si el ajuste queda documentado).</li><li><strong>Qué se reporta</strong> (y bajo qué supuestos).</li><li><strong>Qué puede repetirse</strong> (y con qué fidelidad).</li></ul><p>Por esto tratamos la UI como parte del sistema de medición: si induce errores sistemáticos o dificulta la documentación, el desempeño del instrumento se ve comprometido.</p><hr /><h2>Alcance del Journal</h2><p>Publicaremos contenidos diseñados para ser aplicables en entornos reales de análisis y medición, incluyendo:</p><ul><li>Metodologías de análisis (p. ej., segmentación, parametrización y control de calidad).</li><li>Casos de estudio (limitaciones observadas y estrategias de mitigación).</li><li>Principios de diseño aplicados a instrumentación (operación robusta y verificable).</li><li>Estandarización de flujos: cómo convertir procedimientos informales en procesos reproducibles.</li></ul><hr /><h2>Colaboración y discusión técnica</h2><p>Si tu equipo trabaja con imágenes científicas (óptica, SEM u otras modalidades) o con datos de instrumentación, es común que existan fricciones asociadas a repetición, inconsistencias, reportes manuales o discusión recurrente de parámetros. Si ese es el caso, podemos evaluar el problema y proponer un primer diagnóstico operativo.</p><blockquote>Próximo artículo: <strong>“Estandarización de parámetros: paso inicial antes de automatizar análisis”</strong></blockquote></div>
+            <div class="modal-content"><p>This journal is based on a simple premise: in science and engineering, <strong>it is not enough to simply collect data</strong>. It is necessary to obtain <strong>reliable results</strong> that are contextual, reproducible, and verifiable.</p><p>At BCC, we develop software and instrumentation for scientific image analysis. Our approach is based on a central idea:</p><blockquote><strong>If a system is not traceable, it cannot be considered an instrument in the strict sense.</strong></blockquote><hr /><h2>Operational noise and loss of reproducibility</h2><p>When a laboratory or industrial process yields inconsistent results, the cause is often not a lack of technical capability, but rather the accumulation of small sources of variation in the workflow, for example:</p><ul><li>Parameters applied but <strong>not recorded</strong> or recorded incompletely.</li><li>Adjustments made during execution that <strong>are not documented</strong>.</li><li>Multiple informal variations of the same procedure (“everyone does it their own way”).</li><li>Results that are plausible but <strong>difficult to justify</strong> to an auditor, client, or for publication.</li></ul><p>In these cases, the problem is not solely the sensor or the sample, but the <strong>process</strong>.</p><hr /><h2>An operational definition of “clarity”</h2><p>In this context, “clarity” is not understood as superficial simplification, but rather as a set of properties that increase the system’s reliability:</p><ol><li><strong>Traceability by default</strong></li></ol><p>Every result must be reconstructible: input data, parameters, software version, timestamp, operator, and experimental context.</p><ol><li><strong>Explicit decisions</strong></li></ol><p>If the software filters, segments, calibrates, or compensates, those steps must be recorded and inspectable.</p><ol><li><strong>Decision-oriented design</strong></li></ol><p>The interface must reduce ambiguity and cognitive load, prioritizing actions and readings relevant to consistent operation.</p><hr /><h2>Why the interface is part of the instrument</h2><p>In instrumentation, interpretation errors can arise from minor details (nomenclature, defaults, ambiguous controls). The interface defines:</p><ul><li><strong>What is measured</strong> (and what is excluded).</li><li><strong>How it is adjusted</strong> (and whether the adjustment is documented).</li><li><strong>What is reported</strong> (and under what assumptions).</li><li><strong>What can be repeated</strong> (and with what fidelity).</li></ul><p>For this reason, we treat the UI as part of the measurement system: if it induces systematic errors or hinders documentation, the instrument’s performance is compromised.</p><hr /><h2>Scope of the Journal</h2><p>We will publish content designed to be applicable in real-world analysis and measurement environments, including:</p><ul><li>Analysis methodologies (e.g., segmentation, parameterization, and quality control).</li><li>Case studies (observed limitations and mitigation strategies).</li><li>Design principles applied to instrumentation (robust and verifiable operation).</li><li>Standardization of workflows: how to convert informal procedures into reproducible processes.</li></ul><hr /><h2>Collaboration and Technical Discussion</h2><p>If your team works with scientific images (optical, SEM, or other modalities) or instrumentation data, it is common to encounter friction related to repetition, inconsistencies, manual reporting, or recurring discussions about parameters. If that is the case, we can assess the problem and propose an initial operational diagnosis.</p><blockquote>Next article: <strong>“Parameter Standardization: The First Step Before Automating Analysis”</strong></blockquote></div>
 
-            <aside class="post-resource-rail" id="postResourceRail" aria-label="Recursos recomendados" data-open="false" hidden>
+            <aside class="post-resource-rail" id="postResourceRail" aria-label="Recommended resources" data-open="false" hidden>
               <button class="resource-rail-strip" id="resourceRailToggle" type="button" aria-expanded="false" aria-controls="resourceRailPanel">
                 <span class="resource-rail-dots" aria-hidden="true">⋯</span>
                 <span class="resource-rail-icon" aria-hidden="true">✦</span>
-                <span class="resource-rail-label">Profundizar</span>
+                <span class="resource-rail-label">Explore</span>
               </button>
 
               <div class="resource-rail-panel glass" id="resourceRailPanel">
                 <div class="resource-panel-head">
                   <div>
-                    <div class="resource-kicker">Recursos</div>
-                    <div class="resource-title">Para profundizar</div>
+                    <div class="resource-kicker">Resources</div>
+                    <div class="resource-title">Go deeper</div>
                   </div>
-                  <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Cerrar recursos">×</button>
+                  <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Close resources">×</button>
                 </div>
                 <div class="resource-list" id="resourceRailList"></div>
               </div>
@@ -157,8 +152,8 @@
           </div>
 
           <section class="post-resources-mobile" id="postResourcesMobile" aria-labelledby="postResourcesMobileTitle" hidden>
-            <div class="resource-kicker">Recursos</div>
-            <h2 class="resource-title" id="postResourcesMobileTitle">Para profundizar</h2>
+            <div class="resource-kicker">Resources</div>
+            <h2 class="resource-title" id="postResourcesMobileTitle">Go deeper</h2>
             <div class="resource-list" id="postResourcesMobileList"></div>
           </section>
 
@@ -177,9 +172,9 @@
         <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
-        <a class="footer-contact" href="/contactUs.html">Contacto</a>
-        <a class="pref-btn lang-switch" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html" aria-label="Switch to English">EN</a>
-        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
           </svg>
@@ -318,23 +313,23 @@
   <script data-bcc-resource-rail>
     (function() {
       var labels = {
-        fallbackTitle: "Recurso recomendado",
-        fallbackType: "Recurso",
-        open: "Abrir recursos recomendados",
-        close: "Cerrar recursos",
-        defaultLink: "Abrir",
+        fallbackTitle: "Recommended resource",
+        fallbackType: "Resource",
+        open: "Open recommended resources",
+        close: "Close resources",
+        defaultLink: "Open",
         types: {
-          book: "Lectura",
-          article: "Artículo",
+          book: "Reading",
+          article: "Article",
           paper: "Paper",
-          thesis: "Tesis",
-          report: "Reporte",
+          thesis: "Thesis",
+          report: "Report",
           dataset: "Dataset",
-          tool: "Herramienta",
+          tool: "Tool",
           software: "Software",
-          service: "Servicio",
-          product: "Producto",
-          music: "Resonancia",
+          service: "Service",
+          product: "Product",
+          music: "Resonance",
           video: "Video",
           podcast: "Podcast",
           web: "Web"

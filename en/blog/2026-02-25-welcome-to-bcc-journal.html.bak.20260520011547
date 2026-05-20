@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <title>Bienvenidos al BCC Journal: Simplificando lo complejo. | BCC Journal</title>
+  <meta name="description" content="Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas." />
+  <meta name="bcc-lang-targets" content="es,en" />
+  <meta name="bcc-generated" content="blog-post" />
+  <!-- BCC-GENERATED: blog-post -->
+
+  <link rel="icon" type="image/png" href="/static/Favi2.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS system -->
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="/css/pages/new_blog.css">
+  <link rel="stylesheet" href="/css/pages/blog_post.css">
+
+  <link rel="canonical" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html">\n  <link rel="alternate" hreflang="es" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" />\n  <link rel="alternate" hreflang="en" href="/en/blog/2026-02-25-welcome-to-bcc-journal.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Bienvenidos al BCC Journal: Simplificando lo complejo." />
+  <meta property="og:description" content="Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas." />
+  <meta property="og:url" content="/en/blog/2026-02-25-welcome-to-bcc-journal.html" />
+  <meta property="og:image" content="/static/uploads/20260130182048-bcc.svg" />
+  <meta property="article:published_time" content="2026-01-30T00:00:00.000Z" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bienvenidos al BCC Journal: Simplificando lo complejo.","datePublished":"2026-01-30T00:00:00.000Z","image":"/static/uploads/20260130182048-bcc.svg","mainEntityOfPage":"/en/blog/2026-02-25-welcome-to-bcc-journal.html"}</script>
+
+  <!-- Shared layout behavior -->
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+
+  <!-- Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L9FYNRKVNH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L9FYNRKVNH');
+  </script>
+
+  <style data-bcc-resource-rail>
+
+/* BCC Blog Resource Rail — desktop rail + mobile widget */
+.post-with-resource-rail{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px;
+  gap: 14px;
+  align-items: start;
+}
+
+.post-with-resource-rail .post-card{
+  min-width: 0;
+  grid-column: 1;
+}
+
+.post-resource-rail{
+  grid-column: 2;
+  position: sticky;
+  top: 104px;
+  z-index: 5;
+  width: 54px;
+  min-height: 156px;
+  justify-self: start;
+}
+
+.post-resource-rail[hidden],
+.post-resources-mobile[hidden]{
+  display: none !important;
+}
+
+.resource-rail-strip{
+  width: 44px;
+  min-height: 156px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--surface) 84%, transparent),
+      color-mix(in oklab, var(--surface-hover) 90%, transparent));
+  color: var(--ink-muted);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 6px;
+  box-shadow: 0 18px 44px color-mix(in oklab, var(--ink) 10%, transparent);
+  transition: transform 160ms ease, border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.resource-rail-strip:hover,
+.post-resource-rail[data-open="true"] .resource-rail-strip{
+  transform: translateY(-1px);
+  border-color: var(--accent-soft-border);
+  color: var(--ink);
+  background: color-mix(in oklab, var(--accent-soft) 42%, var(--surface));
+}
+
+.resource-rail-dots{
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.resource-rail-icon{
+  width: 25px;
+  height: 25px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.resource-rail-label{
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.70rem;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.resource-rail-panel{
+  position: absolute;
+  top: 0;
+  right: 60px;
+  width: min(340px, 36vw);
+  max-height: min(72vh, 620px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: color-mix(in oklab, var(--surface) 90%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 70px color-mix(in oklab, var(--ink) 18%, transparent);
+  opacity: 0;
+  transform: translateX(8px) scale(0.985);
+  pointer-events: none;
+  transition: opacity 170ms ease, transform 170ms ease;
+}
+
+.post-resource-rail[data-open="true"] .resource-rail-panel{
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.resource-panel-head{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 13px 11px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.resource-kicker{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.70rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.resource-title{
+  margin: 2px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.resource-panel-close{
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.resource-panel-close:hover{
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+
+.resource-list{
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.resource-card{
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 11px;
+  background: color-mix(in oklab, var(--surface-hover) 88%, transparent);
+}
+
+.resource-card-top{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.resource-icon{
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.92rem;
+}
+
+.resource-card-main{
+  min-width: 0;
+}
+
+.resource-type{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.resource-name{
+  margin-top: 2px;
+  color: var(--ink);
+  font-weight: 780;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.resource-byline{
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+}
+
+.resource-note{
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.resource-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  color: var(--accent);
+  font-weight: 750;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.resource-link:hover{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.post-resources-mobile{
+  grid-column: 1 / -1;
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-hover);
+  padding: 14px;
+}
+
+.post-resources-mobile .resource-list{
+  padding: 12px 0 0;
+}
+
+@media (max-width: 1180px){
+  .post-with-resource-rail{
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 10px;
+  }
+
+  .resource-rail-panel{
+    width: min(320px, 42vw);
+  }
+}
+
+@media (max-width: 980px){
+  .post-with-resource-rail{
+    display: block;
+  }
+
+  .post-resource-rail{
+    display: none !important;
+  }
+
+  .post-resources-mobile:not([hidden]){
+    display: block;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/en/index.html" class="logo-link">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/en/aboutUs.html">About</a></li>
+          <li><a href="/en/products.html">Technology</a></li>
+          <li><a href="/en/science.html">Science</a></li>
+          <li><a href="/en/services.html">Services</a></li>
+          <li><a href="/en/blog.html">Blog</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/en/login.html" style="border-radius: 10%;">Login</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" aria-label="Switch to Spanish">ES</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <section class="journal-hero">
+      <div class="container hero-inner">
+        <div class="hero-kicker">Blog</div>
+        <h1 class="hero-title">Bienvenidos al BCC Journal: Simplificando lo complejo.</h1>
+        <a class="post-back" href="/en/blog.html">Back to Blog</a>
+      </div>
+    </section>
+
+    <section class="journal-section">
+      <div class="container post-shell post-with-resource-rail">
+        <article class="post-card glass">
+          <div class="post-head">
+            <div>
+              <div class="post-kicker">BCC Blog</div>
+              <div class="post-meta">
+                <span class="post-date">Jan 29, 2026</span>
+                <span class="post-dot">&bull;</span>
+                <span class="post-readtime">2 min</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tagrow post-tags"><span class="tagchip">Empresa</span><span class="tagchip">metodología</span><span class="tagchip">instrumentación</span><span class="tagchip">diseño</span><span class="tagchip">trazabilidad</span></div>
+          <div class="modal-cover"><img class="modal-cover-img" src="/static/uploads/20260130182048-bcc.svg" alt="Bienvenidos al BCC Journal: Simplificando lo complejo." loading="lazy" /></div>
+
+          <div class="modal-article">
+            <div class="modal-content"><p>This journal is based on a simple premise: in science and engineering, <strong>it is not enough to simply collect data</strong>. It is necessary to obtain <strong>reliable results</strong> that are contextual, reproducible, and verifiable.</p><p>At BCC, we develop software and instrumentation for scientific image analysis. Our approach is based on a central idea:</p><blockquote><strong>If a system is not traceable, it cannot be considered an instrument in the strict sense.</strong></blockquote><hr /><h2>Operational noise and loss of reproducibility</h2><p>When a laboratory or industrial process yields inconsistent results, the cause is often not a lack of technical capability, but rather the accumulation of small sources of variation in the workflow, for example:</p><ul><li>Parameters applied but <strong>not recorded</strong> or recorded incompletely.</li><li>Adjustments made during execution that <strong>are not documented</strong>.</li><li>Multiple informal variations of the same procedure (“everyone does it their own way”).</li><li>Results that are plausible but <strong>difficult to justify</strong> to an auditor, client, or for publication.</li></ul><p>In these cases, the problem is not solely the sensor or the sample, but the <strong>process</strong>.</p><hr /><h2>An operational definition of “clarity”</h2><p>In this context, “clarity” is not understood as superficial simplification, but rather as a set of properties that increase the system’s reliability:</p><ol><li><strong>Traceability by default</strong></li></ol><p>Every result must be reconstructible: input data, parameters, software version, timestamp, operator, and experimental context.</p><ol><li><strong>Explicit decisions</strong></li></ol><p>If the software filters, segments, calibrates, or compensates, those steps must be recorded and inspectable.</p><ol><li><strong>Decision-oriented design</strong></li></ol><p>The interface must reduce ambiguity and cognitive load, prioritizing actions and readings relevant to consistent operation.</p><hr /><h2>Why the interface is part of the instrument</h2><p>In instrumentation, interpretation errors can arise from minor details (nomenclature, defaults, ambiguous controls). The interface defines:</p><ul><li><strong>What is measured</strong> (and what is excluded).</li><li><strong>How it is adjusted</strong> (and whether the adjustment is documented).</li><li><strong>What is reported</strong> (and under what assumptions).</li><li><strong>What can be repeated</strong> (and with what fidelity).</li></ul><p>For this reason, we treat the UI as part of the measurement system: if it induces systematic errors or hinders documentation, the instrument’s performance is compromised.</p><hr /><h2>Scope of the Journal</h2><p>We will publish content designed to be applicable in real-world analysis and measurement environments, including:</p><ul><li>Analysis methodologies (e.g., segmentation, parameterization, and quality control).</li><li>Case studies (observed limitations and mitigation strategies).</li><li>Design principles applied to instrumentation (robust and verifiable operation).</li><li>Standardization of workflows: how to convert informal procedures into reproducible processes.</li></ul><hr /><h2>Collaboration and Technical Discussion</h2><p>If your team works with scientific images (optical, SEM, or other modalities) or instrumentation data, it is common to encounter friction related to repetition, inconsistencies, manual reporting, or recurring discussions about parameters. If that is the case, we can assess the problem and propose an initial operational diagnosis.</p><blockquote>Next article: <strong>“Parameter Standardization: The First Step Before Automating Analysis”</strong></blockquote></div>
+          </div>
+        </article>
+
+        <aside class="post-resource-rail" id="postResourceRail" aria-label="Recommended resources" data-open="false" hidden>
+          <button class="resource-rail-strip" id="resourceRailToggle" type="button" aria-expanded="false" aria-controls="resourceRailPanel">
+            <span class="resource-rail-dots" aria-hidden="true">⋯</span>
+            <span class="resource-rail-icon" aria-hidden="true">✦</span>
+            <span class="resource-rail-label">Explore</span>
+          </button>
+
+          <div class="resource-rail-panel glass" id="resourceRailPanel">
+            <div class="resource-panel-head">
+              <div>
+                <div class="resource-kicker">Resources</div>
+                <div class="resource-title">Go deeper</div>
+              </div>
+              <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Close resources">×</button>
+            </div>
+            <div class="resource-list" id="resourceRailList"></div>
+          </div>
+        </aside>
+
+        <section class="post-resources-mobile" id="postResourcesMobile" aria-labelledby="postResourcesMobileTitle" hidden>
+          <div class="resource-kicker">Resources</div>
+          <h2 class="resource-title" id="postResourcesMobileTitle">Go deeper</h2>
+          <div class="resource-list" id="postResourcesMobileList"></div>
+        </section>
+
+        <script type="application/json" id="postResourcesData">[
+  {
+    "type": "book",
+    "title": "The Design of Everyday Things",
+    "creator": "Don Norman",
+    "year": "2013",
+    "note": "Useful framing for the idea that interface design is part of the instrument, not decoration.",
+    "url": "https://www.nngroup.com/books/design-everyday-things-revised/",
+    "linkLabel": "Book"
+  },
+  {
+    "type": "paper",
+    "title": "FAIR Guiding Principles for scientific data management",
+    "creator": "Wilkinson et al.",
+    "year": "2016",
+    "note": "A technical reference for traceability, findability and reusable scientific data.",
+    "url": "https://www.nature.com/articles/sdata201618",
+    "linkLabel": "Paper"
+  },
+  {
+    "type": "music",
+    "title": "Time",
+    "creator": "Hans Zimmer",
+    "year": "2010",
+    "note": "A resonance for accumulation, delay and gradual resolution: useful while reading about operational clarity.",
+    "url": "https://www.youtube.com/results?search_query=Hans+Zimmer+Time",
+    "linkLabel": "Listen"
+  },
+  {
+    "type": "tool",
+    "title": "MAPs",
+    "creator": "BCC Technologies",
+    "note": "Our family of software tools for reproducible scientific image analysis.",
+    "url": "/products.html",
+    "linkLabel": "Explore"
+  }
+]</script>
+        <script data-bcc-resource-rail>
+
+(function(){
+  function esc(value){
+    return String(value == null ? "" : value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function iconFor(type){
+    const t = String(type || "").toLowerCase();
+    if (["music", "resonance", "resonancia"].includes(t)) return "♪";
+    if (["book", "libro"].includes(t)) return "▤";
+    if (["paper", "article", "articulo", "artículo", "reference", "ref"].includes(t)) return "§";
+    if (["tool", "software", "product", "service"].includes(t)) return "◇";
+    if (["video"].includes(t)) return "▶";
+    if (["dataset", "data"].includes(t)) return "◎";
+    return "✦";
+  }
+
+  function labelFor(type){
+    const t = String(type || "resource").toLowerCase();
+    const labels = {
+      music: "Resonance",
+      resonance: "Resonance",
+      resonancia: "Resonance",
+      book: "Reading",
+      libro: "Reading",
+      paper: "Reference",
+      article: "Article",
+      articulo: "Article",
+      "artículo": "Article",
+      tool: "Tool",
+      software: "Tool",
+      product: "Product",
+      service: "Service",
+      video: "Video",
+      dataset: "Dataset",
+      data: "Dataset"
+    };
+    return labels[t] || "Resource";
+  }
+
+  function renderResource(resource){
+    const type = labelFor(resource.type);
+    const title = resource.title || resource.name || "Untitled resource";
+    const creator = resource.creator || resource.author || resource.source || "";
+    const year = resource.year ? ` · ${esc(resource.year)}` : "";
+    const byline = creator ? `<div class="resource-byline">${esc(creator)}${year}</div>` : (resource.year ? `<div class="resource-byline">${esc(resource.year)}</div>` : "");
+    const note = resource.note || resource.reason || resource.description || "";
+    const linkLabel = resource.linkLabel || "Open";
+    const link = resource.url ? `<a class="resource-link" href="${esc(resource.url)}" target="_blank" rel="noopener noreferrer">${esc(linkLabel)} <span aria-hidden="true">↗</span></a>` : "";
+
+    return `
+      <article class="resource-card">
+        <div class="resource-card-top">
+          <span class="resource-icon" aria-hidden="true">${esc(iconFor(resource.type))}</span>
+          <div class="resource-card-main">
+            <div class="resource-type">${esc(type)}</div>
+            <div class="resource-name">${esc(title)}</div>
+            ${byline}
+          </div>
+        </div>
+        ${note ? `<p class="resource-note">${esc(note)}</p>` : ""}
+        ${link}
+      </article>
+    `;
+  }
+
+  function initResources(){
+    const dataEl = document.getElementById("postResourcesData");
+    const rail = document.getElementById("postResourceRail");
+    const toggle = document.getElementById("resourceRailToggle");
+    const panel = document.getElementById("resourceRailPanel");
+    const railList = document.getElementById("resourceRailList");
+    const mobile = document.getElementById("postResourcesMobile");
+    const mobileList = document.getElementById("postResourcesMobileList");
+
+    if (!dataEl || !rail || !railList || !mobile || !mobileList) return;
+
+    let resources = [];
+    try {
+      resources = JSON.parse(dataEl.textContent || "[]");
+    } catch (e) {
+      resources = [];
+    }
+
+    if (!Array.isArray(resources) || resources.length === 0) return;
+
+    const html = resources.map(renderResource).join("");
+    railList.innerHTML = html;
+    mobileList.innerHTML = html;
+    rail.hidden = false;
+    mobile.hidden = false;
+
+    function setOpen(open){
+      rail.dataset.open = open ? "true" : "false";
+      toggle?.setAttribute("aria-expanded", String(Boolean(open)));
+    }
+
+    toggle?.addEventListener("click", () => {
+      setOpen(rail.dataset.open !== "true");
+    });
+
+    rail.querySelectorAll('[data-action="close-resources"]').forEach(btn => {
+      btn.addEventListener("click", () => setOpen(false));
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (rail.dataset.open !== "true") return;
+      if (rail.contains(event.target)) return;
+      setOpen(false);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initResources);
+  } else {
+    initResources();
+  }
+})();
+
+        </script>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/en/contactUs.html">Contact</a>
+        <a class="pref-btn lang-switch" href="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" aria-label="Switch to Spanish">ES</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Toggle theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+

@@ -86,7 +86,6 @@
       <div class="side-group">
         <div class="side-label">Sistema</div>
         <button class="nav-item" data-tab="templates" type="button">Plantillas</button>
-        <button class="nav-item" data-tab="health" type="button">Salud</button>
       </div>
 
       <div class="side-foot">
@@ -709,11 +708,11 @@
 
       <!-- WIDGETS -->
       <section class="tab" id="tab-widgets">
-        <div class="widget-builder-layout">
-          <div class="card widget-builder-card">
-            <div class="card-head widget-builder-head">
+        <div class="grid2 wide-first">
+          <div class="card">
+            <div class="card-head">
               <div>
-                <div class="card-title">Widgets</div>
+                <div class="card-title">Editor de widget</div>
                 <div class="muted" id="widgetEditorHint">Nuevo widget</div>
               </div>
               <div class="row action-row">
@@ -726,381 +725,43 @@
               </div>
             </div>
 
-            <div class="form entity-form widget-builder-form">
-              <div class="widget-builder-intro">
-                <div>
-                  <div class="widget-step-label">Widget</div>
-                  <p class="muted">Crea bloques visuales para insertar en artículos.</p>
-                </div>
-              </div>
-
+            <div class="form entity-form">
               <div class="row">
                 <input class="input" id="widgetTitle" type="text" placeholder="Título del widget" />
                 <input class="input mono" id="widgetId" type="text" placeholder="id (auto)" />
               </div>
 
-              <input type="hidden" id="widgetType" value="callout" />
-              <input type="hidden" id="widgetSourceUrl" />
-              <input type="hidden" id="widgetTargetId" />
-              <textarea class="is-visually-hidden" id="widgetBody" aria-hidden="true"></textarea>
-              <textarea class="is-visually-hidden" id="widgetConfig" aria-hidden="true"></textarea>
-
-              <details class="widget-quickstart">
-                <summary>Crear desde preset</summary>
-                <div class="widget-preset-buttons" id="widgetPresetButtons">
-                  <button class="btn btn-ghost" data-widget-preset="callout-insight" type="button">Idea clave</button>
-                  <button class="btn btn-ghost" data-widget-preset="data-table" type="button">Tabla simple</button>
-                  <button class="btn btn-ghost" data-widget-preset="result-chart" type="button">Gráfico</button>
-                  <button class="btn btn-ghost" data-widget-preset="compare" type="button">Antes / después</button>
-                  <button class="btn btn-ghost" data-widget-preset="metrics" type="button">Métricas</button>
-                  <button class="btn btn-ghost" data-widget-preset="slider-demo" type="button">Demo slider</button>
-                </div>
-              </details>
-
-              <details class="widget-internal-details">
-                <summary>Organización interna</summary>
-                <label class="field-block widget-tags-field">
-                  <span>Tags internos</span>
-                  <input class="input" id="widgetTags" type="text" placeholder="Tags separados por coma" />
-                </label>
-              </details>
-
-              <div class="widget-step-label">Tipo</div>
-              <div class="widget-type-picker" id="widgetTypePicker" aria-label="Tipo de widget">
-                <button class="widget-type-tile is-active" data-widget-type="callout" type="button">
-                  <span>💡</span><strong>Idea clave</strong><em>Nota editorial, principio o advertencia.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="image" type="button">
-                  <span>🖼</span><strong>Imagen</strong><em>Imagen con caption, crédito y modo visual.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="image-compare" type="button">
-                  <span>⇄</span><strong>Comparador</strong><em>Antes/después o dos estados de una imagen.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="video" type="button">
-                  <span>▶</span><strong>Video</strong><em>Embed ligero con descripción.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="table" type="button">
-                  <span>▦</span><strong>Tabla</strong><em>Datos organizados sin romper la lectura.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="chart" type="button">
-                  <span>📊</span><strong>Gráfico</strong><em>Barras, línea o puntos desde datos simples.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="metrics" type="button">
-                  <span>▥</span><strong>Métricas</strong><em>Indicadores clave en cards pequeñas.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="scrollbox" type="button">
-                  <span>▤</span><strong>Ventana</strong><em>Detalle técnico, código o nota larga.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="product-preview" type="button">
-                  <span>◈</span><strong>Producto</strong><em>Preview contextual de un producto.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="service-preview" type="button">
-                  <span>▣</span><strong>Servicio</strong><em>Preview contextual de un servicio.</em>
-                </button>
-                <button class="widget-type-tile" data-widget-type="demo" type="button">
-                  <span>🧪</span><strong>Demo básica</strong><em>Prueba de concepto simple.</em>
-                </button>
+              <div class="row">
+                <select class="input" id="widgetType">
+                  <option value="callout">Callout / idea clave</option>
+                  <option value="image">Imagen avanzada</option>
+                  <option value="video">Video lazy</option>
+                  <option value="scrollbox">Ventana scrolleable</option>
+                  <option value="table">Tabla de datos</option>
+                  <option value="chart">Gráfico simple</option>
+                  <option value="product-preview">Preview de producto</option>
+                  <option value="service-preview">Preview de servicio</option>
+                  <option value="demo">Prueba de concepto</option>
+                </select>
+                <input class="input" id="widgetSourceUrl" type="text" placeholder="URL / fuente / imagen / video (opcional)" />
               </div>
 
-              <div class="widget-step-label">Contenido</div>
-              <div class="widget-builder-panels">
-                <div class="widget-fields is-active" data-widget-panel="callout">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Tono</span>
-                      <select class="input" id="widgetCalloutTone">
-                        <option value="insight">Insight</option>
-                        <option value="principle">Principio</option>
-                        <option value="method">Método</option>
-                        <option value="warning">Advertencia</option>
-                        <option value="question">Pregunta</option>
-                        <option value="neutral">Neutro</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Etiqueta visual</span>
-                      <input class="input" id="widgetCalloutLabel" type="text" placeholder="Ej: Principio operativo" />
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Texto</span>
-                    <textarea class="textarea" id="widgetCalloutBody" placeholder="Escribe la idea clave que debe destacarse."></textarea>
-                  </label>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="image">
-                  <label class="field-block full">
-                    <span>URL de imagen</span>
-                    <input class="input" id="widgetImageUrl" type="text" placeholder="/static/uploads/imagen.png o URL externa" />
-                  </label>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Alt text</span>
-                      <input class="input" id="widgetImageAlt" type="text" placeholder="Descripción accesible" />
-                    </label>
-                    <label class="field-block">
-                      <span>Modo</span>
-                      <select class="input" id="widgetImageMode">
-                        <option value="inline">Inline</option>
-                        <option value="wide">Ancha</option>
-                        <option value="zoom">Zoom / destacada</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Caption</span>
-                      <input class="input" id="widgetImageCaption" type="text" placeholder="Pie de imagen" />
-                    </label>
-                    <label class="field-block">
-                      <span>Crédito</span>
-                      <input class="input" id="widgetImageCredit" type="text" placeholder="Fuente o autor de la imagen" />
-                    </label>
-                  </div>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="image-compare">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Imagen izquierda / antes</span>
-                      <input class="input" id="widgetCompareBeforeUrl" type="text" placeholder="/static/uploads/antes.png" />
-                    </label>
-                    <label class="field-block">
-                      <span>Imagen derecha / después</span>
-                      <input class="input" id="widgetCompareAfterUrl" type="text" placeholder="/static/uploads/despues.png" />
-                    </label>
-                  </div>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Etiqueta izquierda</span>
-                      <input class="input" id="widgetCompareBeforeLabel" type="text" placeholder="Antes" />
-                    </label>
-                    <label class="field-block">
-                      <span>Etiqueta derecha</span>
-                      <input class="input" id="widgetCompareAfterLabel" type="text" placeholder="Después" />
-                    </label>
-                  </div>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Alt text</span>
-                      <input class="input" id="widgetCompareAlt" type="text" placeholder="Descripción accesible del comparador" />
-                    </label>
-                    <label class="field-block">
-                      <span>División inicial</span>
-                      <input class="input" id="widgetCompareSplit" type="number" min="5" max="95" placeholder="50" />
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Caption</span>
-                    <input class="input" id="widgetCompareCaption" type="text" placeholder="Qué está comparando esta imagen" />
-                  </label>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="video">
-                  <label class="field-block full">
-                    <span>URL del video</span>
-                    <input class="input" id="widgetVideoUrl" type="text" placeholder="YouTube, Vimeo o video local" />
-                  </label>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Thumbnail opcional</span>
-                      <input class="input" id="widgetVideoThumb" type="text" placeholder="URL de miniatura" />
-                    </label>
-                    <label class="field-block">
-                      <span>Carga</span>
-                      <select class="input" id="widgetVideoLoad">
-                        <option value="lazy">Lazy / al visualizar</option>
-                        <option value="click">Al presionar play</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Descripción corta</span>
-                    <textarea class="textarea" id="widgetVideoBody" placeholder="Qué aporta este video al texto."></textarea>
-                  </label>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="table">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Descripción</span>
-                      <input class="input" id="widgetTableDescription" type="text" placeholder="Ej: Parámetros usados en la muestra" />
-                    </label>
-                    <label class="field-block">
-                      <span>Modo</span>
-                      <select class="input" id="widgetTableDensity">
-                        <option value="comfortable">Cómodo</option>
-                        <option value="compact">Compacto</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Datos de tabla</span>
-                    <textarea class="textarea mono widget-data-input" id="widgetTableCsv" placeholder="Parámetro,Valor,Unidad&#10;Porosidad,0.34,%&#10;Umbral,128,px"></textarea>
-                  </label>
-                  <div class="widget-helper-row muted mono">Puedes pegar desde Excel/Sheets; usa comas o tabs.</div>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="chart">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Tipo de gráfico</span>
-                      <select class="input" id="widgetChartType">
-                        <option value="bar">Barras</option>
-                        <option value="line">Línea</option>
-                        <option value="scatter">Puntos</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Descripción</span>
-                      <input class="input" id="widgetChartDescription" type="text" placeholder="Qué muestra el gráfico" />
-                    </label>
-                  </div>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Eje X</span>
-                      <input class="input" id="widgetChartXLabel" type="text" placeholder="Ej: Umbral" />
-                    </label>
-                    <label class="field-block">
-                      <span>Eje Y</span>
-                      <input class="input" id="widgetChartYLabel" type="text" placeholder="Ej: Porosidad" />
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Datos</span>
-                    <textarea class="textarea mono widget-data-input" id="widgetChartData" placeholder="Umbral,Porosidad&#10;10,0.12&#10;20,0.19&#10;30,0.27"></textarea>
-                  </label>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="metrics">
-                  <label class="field-block full">
-                    <span>Descripción</span>
-                    <input class="input" id="widgetMetricsDescription" type="text" placeholder="Ej: Resultados principales de la muestra" />
-                  </label>
-                  <label class="field-block full">
-                    <span>Métricas</span>
-                    <textarea class="textarea mono widget-data-input" id="widgetMetricsCsv" placeholder="Métrica,Valor,Unidad,Nota&#10;Porosidad,34,% ,Promedio estimado&#10;Umbral,128,px,Valor usado"></textarea>
-                  </label>
-                  <div class="widget-helper-row muted mono">Formato recomendado: métrica, valor, unidad, nota. Puedes pegar desde Excel/Sheets.</div>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="scrollbox">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Etiqueta</span>
-                      <select class="input" id="widgetScrollLabel">
-                        <option value="Detalle técnico">Detalle técnico</option>
-                        <option value="Código">Código</option>
-                        <option value="Derivación">Derivación</option>
-                        <option value="Nota extendida">Nota extendida</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Altura</span>
-                      <select class="input" id="widgetScrollHeight">
-                        <option value="medium">Media</option>
-                        <option value="small">Baja</option>
-                        <option value="large">Alta</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Contenido</span>
-                    <textarea class="textarea mono" id="widgetScrollBody" placeholder="Puedes escribir Markdown breve, código o notas largas."></textarea>
-                  </label>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="product-preview">
-                  <label class="field-block full">
-                    <span>Producto</span>
-                    <select class="input" id="widgetProductTarget"></select>
-                  </label>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Modo</span>
-                      <select class="input" id="widgetProductMode">
-                        <option value="compact">Compacto</option>
-                        <option value="featured">Destacado</option>
-                        <option value="cta">CTA</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Nota contextual</span>
-                      <input class="input" id="widgetProductNote" type="text" placeholder="Por qué aparece aquí" />
-                    </label>
-                  </div>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="service-preview">
-                  <label class="field-block full">
-                    <span>Servicio</span>
-                    <select class="input" id="widgetServiceTarget"></select>
-                  </label>
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Modo</span>
-                      <select class="input" id="widgetServiceMode">
-                        <option value="compact">Compacto</option>
-                        <option value="featured">Destacado</option>
-                        <option value="cta">CTA</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Nota contextual</span>
-                      <input class="input" id="widgetServiceNote" type="text" placeholder="Por qué aparece aquí" />
-                    </label>
-                  </div>
-                </div>
-
-                <div class="widget-fields" data-widget-panel="demo">
-                  <div class="row">
-                    <label class="field-block">
-                      <span>Tipo de demo</span>
-                      <select class="input" id="widgetDemoKind">
-                        <option value="slider">Slider</option>
-                        <option value="toggle">Toggle</option>
-                        <option value="compare">Comparador</option>
-                      </select>
-                    </label>
-                    <label class="field-block">
-                      <span>Variable</span>
-                      <input class="input" id="widgetDemoVariable" type="text" placeholder="Ej: Umbral" />
-                    </label>
-                  </div>
-                  <div class="row">
-                    <label class="field-block"><span>Mínimo</span><input class="input" id="widgetDemoMin" type="number" placeholder="0" /></label>
-                    <label class="field-block"><span>Máximo</span><input class="input" id="widgetDemoMax" type="number" placeholder="255" /></label>
-                    <label class="field-block"><span>Inicial</span><input class="input" id="widgetDemoInitial" type="number" placeholder="128" /></label>
-                  </div>
-                  <label class="field-block full">
-                    <span>Texto explicativo</span>
-                    <textarea class="textarea" id="widgetDemoBody" placeholder="Qué se puede explorar con esta demo."></textarea>
-                  </label>
-                </div>
+              <div class="row">
+                <input class="input mono" id="widgetTargetId" type="text" placeholder="ID relacionado (producto, servicio, etc.)" />
+                <input class="input" id="widgetTags" type="text" placeholder="Tags (coma)" />
               </div>
 
-              <details class="advanced-widget-json">
-                <summary>Configuración avanzada</summary>
-                <div class="advanced-widget-grid">
-                  <textarea class="textarea mono" id="widgetAdvancedConfigView" placeholder="JSON generado automáticamente"></textarea>
-                  <button class="btn btn-ghost" id="btnApplyWidgetAdvancedJson" type="button">Aplicar JSON manual</button>
-                </div>
-              </details>
+              <textarea class="textarea" id="widgetBody" placeholder="Contenido del widget. Para tabla: CSV simple. Para scrollbox/callout: Markdown breve."></textarea>
+              <textarea class="textarea mono" id="widgetConfig" placeholder='Config JSON opcional. Ej: {"variant":"principle"} o {"columns":["A","B"],"rows":[[1,2],[3,4]]}'></textarea>
 
-              <div class="widget-validation-zone">
-                <div class="widget-step-label">Validación</div>
-                <div class="widget-validation-list" id="widgetValidationList"></div>
-              </div>
-
-              <div class="widget-preview-zone">
-                <div class="widget-step-label">Preview</div>
-                <div class="entity-live-preview" id="widgetLivePreview"></div>
-                <div class="muted mono">Al guardar, podrás insertarlo en una entrada con <code>[[widget:ID]]</code>.</div>
+              <div class="entity-live-preview" id="widgetLivePreview"></div>
+              <div class="muted mono">
+                Inserta este bloque en una entrada con <code>[[widget:ID]]</code>. Fase 1: callouts, imágenes, videos, scrollbox, tablas, charts y previews.
               </div>
             </div>
           </div>
 
-          <div class="card entity-library widget-library">
+          <div class="card entity-library">
             <div class="card-head">
               <div>
                 <div class="card-title">Widgets</div>
@@ -1115,14 +776,12 @@
               <input class="input" id="widgetsSearch" type="search" placeholder="Buscar widgets…" />
               <select class="input" id="widgetsTypeFilter" aria-label="Filtrar por tipo">
                 <option value="">Todos</option>
-                <option value="callout">Ideas</option>
+                <option value="callout">Callouts</option>
                 <option value="image">Imágenes</option>
-                <option value="image-compare">Comparadores</option>
                 <option value="video">Videos</option>
-                <option value="scrollbox">Ventanas</option>
+                <option value="scrollbox">Scrollboxes</option>
                 <option value="table">Tablas</option>
                 <option value="chart">Gráficos</option>
-                <option value="metrics">Métricas</option>
                 <option value="product-preview">Productos</option>
                 <option value="service-preview">Servicios</option>
                 <option value="demo">Demos</option>
@@ -1259,68 +918,6 @@
                 <textarea class="textarea mono template-source" id="templateRenderSource" readonly placeholder="El HTML renderizado aparecerá aquí."></textarea>
               </details>
             </aside>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- HEALTH -->
-      <section class="tab" id="tab-health">
-        <div class="health-page">
-          <section class="card health-hero">
-            <div>
-              <div class="card-title">Salud</div>
-              <div class="muted">Diagnóstico breve de lo que está listo y lo que necesita atención.</div>
-            </div>
-            <div class="health-actions">
-              <button class="btn btn-primary" id="btnRefreshHealth" type="button">Actualizar</button>
-              <button class="btn" id="btnOpenWidgetDocs" type="button">Guía</button>
-            </div>
-          </section>
-
-          <div class="health-grid">
-            <section class="card health-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">Resumen</div>
-                  <div class="muted">Vista rápida</div>
-                </div>
-              </div>
-              <div class="health-score" id="healthScore">—</div>
-              <div class="health-summary-grid" id="healthSummaryGrid"></div>
-            </section>
-
-            <section class="card health-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">Entrada actual</div>
-                  <div class="muted">Checklist del artículo abierto</div>
-                </div>
-              </div>
-              <div class="health-list" id="currentPostChecklist"></div>
-            </section>
-          </div>
-
-          <div class="health-grid wide">
-            <section class="card health-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">Widgets</div>
-                  <div class="muted">Problemas de configuración</div>
-                </div>
-              </div>
-              <div class="health-list" id="widgetHealthList"></div>
-            </section>
-
-            <section class="card health-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-title">Pendientes editoriales</div>
-                  <div class="muted">Revisión antes de publicar</div>
-                </div>
-              </div>
-              <div class="health-list" id="blogHealthList"></div>
-            </section>
           </div>
         </div>
       </section>

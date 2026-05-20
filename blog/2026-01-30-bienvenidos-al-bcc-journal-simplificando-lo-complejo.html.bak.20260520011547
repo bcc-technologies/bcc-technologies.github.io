@@ -44,8 +44,7 @@
   <meta property="og:url" content="/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html" />
   <meta property="og:image" content="/static/uploads/20260130182048-bcc.svg" />
   <meta property="article:published_time" content="2026-01-30T00:00:00.000Z" />
-  <meta property="article:author" content="https://bcctechnologies.com.do/aboutUs.html" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bienvenidos al BCC Journal: Simplificando lo complejo.","datePublished":"2026-01-30T00:00:00.000Z","image":"/static/uploads/20260130182048-bcc.svg","author":[{"@type":"Person","name":"Saúl Castillo","url":"https://bcctechnologies.com.do/aboutUs.html","affiliation":{"@type":"Organization","name":"BCC Technologies"}}],"mainEntityOfPage":"/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Bienvenidos al BCC Journal: Simplificando lo complejo.","datePublished":"2026-01-30T00:00:00.000Z","image":"/static/uploads/20260130182048-bcc.svg","mainEntityOfPage":"/blog/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.html"}</script>
 
   <!-- Shared layout behavior -->
   <script src="/js/layout.js" defer></script>
@@ -125,44 +124,11 @@
             </div>
           </div>
 
-          <div class="post-authors" aria-label="Por"><span class="post-authors-label">Por</span><div class="post-authors-list"><a class="post-author" href="https://bcctechnologies.com.do/aboutUs.html" target="_blank" rel="noopener noreferrer"><span class="post-author-text">
-        <span class="post-author-name">Saúl Castillo</span>
-        <span class="post-author-meta">Cofounder/CEO · BCC Technologies</span>
-      </span></a></div></div>
           <div class="tagrow post-tags"><span class="tagchip">Empresa</span><span class="tagchip">metodología</span><span class="tagchip">instrumentación</span><span class="tagchip">diseño</span><span class="tagchip">trazabilidad</span></div>
           <div class="modal-cover"><img class="modal-cover-img" src="/static/uploads/20260130182048-bcc.svg" alt="Bienvenidos al BCC Journal: Simplificando lo complejo." loading="lazy" /></div>
 
           <div class="modal-article">
-          <div class="post-reader-layout">
             <div class="modal-content"><p>Este Journal nace de una premisa sencilla: en ciencia e ingeniería, <strong>no basta con obtener datos</strong>. Es necesario obtener <strong>resultados confiables</strong>, con contexto, reproducibles y susceptibles de verificación.</p><p>En BCC desarrollamos software e instrumentación para análisis de imágenes científicas. Nuestro enfoque se apoya en una idea central:</p><blockquote><strong>Si un sistema no es trazable, no puede considerarse un instrumento en sentido estricto.</strong></blockquote><hr /><h2>Ruido operativo y pérdida de reproducibilidad</h2><p>Cuando un laboratorio o un proceso industrial obtiene resultados inconsistentes, con frecuencia el origen no es la falta de capacidad técnica, sino la acumulación de pequeñas fuentes de variación en el flujo de trabajo, por ejemplo:</p><ul><li>Parámetros aplicados pero <strong>no registrados</strong> o registrados de forma incompleta.</li><li>Ajustes realizados en tiempo de ejecución que <strong>no quedan documentados</strong>.</li><li>Múltiples variantes informales del mismo procedimiento (“cada quien con su método”).</li><li>Resultados plausibles, pero <strong>difíciles de justificar</strong> ante auditoría, cliente o publicación.</li></ul><p>En estos casos, el problema no es únicamente el sensor o la muestra, sino el <strong>proceso</strong>.</p><hr /><h2>Una definición operativa de “claridad”</h2><p>En este contexto, “claridad” no se entiende como simplificación superficial, sino como un conjunto de propiedades que incrementan la confiabilidad del sistema:</p><ol><li><strong>Trazabilidad por defecto</strong></li></ol><p>Todo resultado debe poder reconstruirse: datos de entrada, parámetros, versión del software, marca temporal, operador y contexto experimental.</p><ol><li><strong>Decisiones explícitas</strong></li></ol><p>Si el software filtra, segmenta, calibra o compensa, esos pasos deben quedar registrados y ser inspeccionables.</p><ol><li><strong>Diseño orientado a decisiones</strong></li></ol><p>La interfaz debe reducir ambigüedad y carga cognitiva, priorizando acciones y lecturas relevantes para una operación consistente.</p><hr /><h2>Por qué la interfaz forma parte del instrumento</h2><p>En instrumentación, errores de interpretación pueden surgir de detalles mínimos (nomenclatura, defaults, controles ambiguos). La interfaz define:</p><ul><li><strong>Qué se mide</strong> (y qué se excluye).</li><li><strong>Cómo se ajusta</strong> (y si el ajuste queda documentado).</li><li><strong>Qué se reporta</strong> (y bajo qué supuestos).</li><li><strong>Qué puede repetirse</strong> (y con qué fidelidad).</li></ul><p>Por esto tratamos la UI como parte del sistema de medición: si induce errores sistemáticos o dificulta la documentación, el desempeño del instrumento se ve comprometido.</p><hr /><h2>Alcance del Journal</h2><p>Publicaremos contenidos diseñados para ser aplicables en entornos reales de análisis y medición, incluyendo:</p><ul><li>Metodologías de análisis (p. ej., segmentación, parametrización y control de calidad).</li><li>Casos de estudio (limitaciones observadas y estrategias de mitigación).</li><li>Principios de diseño aplicados a instrumentación (operación robusta y verificable).</li><li>Estandarización de flujos: cómo convertir procedimientos informales en procesos reproducibles.</li></ul><hr /><h2>Colaboración y discusión técnica</h2><p>Si tu equipo trabaja con imágenes científicas (óptica, SEM u otras modalidades) o con datos de instrumentación, es común que existan fricciones asociadas a repetición, inconsistencias, reportes manuales o discusión recurrente de parámetros. Si ese es el caso, podemos evaluar el problema y proponer un primer diagnóstico operativo.</p><blockquote>Próximo artículo: <strong>“Estandarización de parámetros: paso inicial antes de automatizar análisis”</strong></blockquote></div>
-
-            <aside class="post-resource-rail" id="postResourceRail" aria-label="Recursos recomendados" data-open="false" hidden>
-              <button class="resource-rail-strip" id="resourceRailToggle" type="button" aria-expanded="false" aria-controls="resourceRailPanel">
-                <span class="resource-rail-dots" aria-hidden="true">⋯</span>
-                <span class="resource-rail-icon" aria-hidden="true">✦</span>
-                <span class="resource-rail-label">Profundizar</span>
-              </button>
-
-              <div class="resource-rail-panel glass" id="resourceRailPanel">
-                <div class="resource-panel-head">
-                  <div>
-                    <div class="resource-kicker">Recursos</div>
-                    <div class="resource-title">Para profundizar</div>
-                  </div>
-                  <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Cerrar recursos">×</button>
-                </div>
-                <div class="resource-list" id="resourceRailList"></div>
-              </div>
-            </aside>
-          </div>
-
-          <section class="post-resources-mobile" id="postResourcesMobile" aria-labelledby="postResourcesMobileTitle" hidden>
-            <div class="resource-kicker">Recursos</div>
-            <h2 class="resource-title" id="postResourcesMobileTitle">Para profundizar</h2>
-            <div class="resource-list" id="postResourcesMobileList"></div>
-          </section>
-
-          <script type="application/json" id="postResourcesData">[]</script>
           </div>
         </article>
       </div>
@@ -202,147 +168,6 @@
       </div>
     </div>
   </footer>
-  <script data-bcc-resource-rail-core>
-    function initResourceRail(labels) {
-      var dataEl = document.getElementById("postResourcesData");
-      var rail = document.getElementById("postResourceRail");
-      var toggle = document.getElementById("resourceRailToggle");
-      var panel = document.getElementById("resourceRailPanel");
-      var railList = document.getElementById("resourceRailList");
-      var mobile = document.getElementById("postResourcesMobile");
-      var mobileList = document.getElementById("postResourcesMobileList");
-
-      if (!dataEl || !rail || !toggle || !panel || !railList || !mobile || !mobileList) return;
-
-      var raw = (dataEl.textContent || "").trim();
-      if (!raw || raw.indexOf("{{") === 0) return;
-
-      var payload;
-      try { payload = JSON.parse(raw); } catch (e) { return; }
-
-      var resources = Array.isArray(payload) ? payload : (payload.resources || []);
-      resources = resources.filter(function(r) { return r && (r.title || r.name); });
-      if (!resources.length) return;
-
-      function esc(value) {
-        return String(value == null ? "" : value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      function normType(type) {
-        return String(type || "web").toLowerCase().trim();
-      }
-
-      function typeLabel(type) {
-        type = normType(type);
-        return labels.types[type] || labels.fallbackType;
-      }
-
-      function typeIcon(type) {
-        type = normType(type);
-        if (type === "music") return "♪";
-        if (type === "book") return "⌘";
-        if (type === "paper" || type === "article" || type === "thesis") return "§";
-        if (type === "tool" || type === "software") return "◇";
-        if (type === "service" || type === "product") return "∴";
-        if (type === "video") return "▶";
-        if (type === "podcast") return "◌";
-        if (type === "dataset") return "▦";
-        return "✦";
-      }
-
-      function resourceLinks(r) {
-        var links = [];
-        if (Array.isArray(r.links)) links = links.concat(r.links);
-        if (r.url) links.push({ label: r.linkLabel || labels.defaultLink, url: r.url });
-        if (r.spotify) links.push({ label: "Spotify", url: r.spotify });
-        if (r.youtube) links.push({ label: "YouTube", url: r.youtube });
-        if (r.doi) links.push({ label: "DOI", url: String(r.doi).startsWith("http") ? r.doi : "https://doi.org/" + r.doi });
-
-        return links.filter(function(l) { return l && l.url; }).map(function(l) {
-          return '<a class="resource-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label || labels.defaultLink) + '</a>';
-        }).join("");
-      }
-
-      function resourceHtml(r) {
-        var type = normType(r.type);
-        var title = r.title || r.name || labels.fallbackTitle;
-        var creator = r.creator || r.author || r.artist || r.source || r.publisher || "";
-        var year = r.year ? " · " + r.year : "";
-        var note = r.note || r.description || r.summary || "";
-        var links = resourceLinks(r);
-
-        return '' +
-          '<article class="resource-card resource-card-' + esc(type) + '">' +
-            '<div class="resource-card-icon" aria-hidden="true">' + esc(typeIcon(type)) + '</div>' +
-            '<div class="resource-card-main">' +
-              '<div class="resource-card-type">' + esc(typeLabel(type)) + '</div>' +
-              '<h3 class="resource-card-title">' + esc(title) + '</h3>' +
-              (creator ? '<div class="resource-card-sub">' + esc(creator + year) + '</div>' : '') +
-              (note ? '<p class="resource-card-note">' + esc(note) + '</p>' : '') +
-              (links ? '<div class="resource-card-links">' + links + '</div>' : '') +
-            '</div>' +
-          '</article>';
-      }
-
-      var html = resources.map(resourceHtml).join("");
-      railList.innerHTML = html;
-      mobileList.innerHTML = html;
-      rail.hidden = false;
-      mobile.hidden = false;
-      toggle.setAttribute("aria-label", labels.open);
-      toggle.setAttribute("aria-expanded", "false");
-
-      function setOpen(open) {
-        rail.dataset.open = open ? "true" : "false";
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      }
-
-      toggle.addEventListener("click", function() {
-        setOpen(rail.dataset.open !== "true");
-      });
-
-      rail.querySelectorAll('[data-action="close-resources"]').forEach(function(btn) {
-        btn.setAttribute("aria-label", labels.close);
-        btn.addEventListener("click", function() { setOpen(false); });
-      });
-
-      document.addEventListener("keydown", function(ev) {
-        if (ev.key === "Escape") setOpen(false);
-      });
-    }
-  </script>
-  <script data-bcc-resource-rail>
-    (function() {
-      var labels = {
-        fallbackTitle: "Recurso recomendado",
-        fallbackType: "Recurso",
-        open: "Abrir recursos recomendados",
-        close: "Cerrar recursos",
-        defaultLink: "Abrir",
-        types: {
-          book: "Lectura",
-          article: "Artículo",
-          paper: "Paper",
-          thesis: "Tesis",
-          report: "Reporte",
-          dataset: "Dataset",
-          tool: "Herramienta",
-          software: "Software",
-          service: "Servicio",
-          product: "Producto",
-          music: "Resonancia",
-          video: "Video",
-          podcast: "Podcast",
-          web: "Web"
-        }
-      };
-      initResourceRail(labels);
-    })();
-  </script>
 </body>
 </html>
 

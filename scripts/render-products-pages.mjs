@@ -117,7 +117,7 @@ function renderHero(hero) {
                     ? `<ul class="showcase-topics">${(item.topics || []).map((topic) => `<li class="showcase-topic">${escapeHtml(topic)}</li>`).join('')}</ul>`
                     : '';
                   const mediaMarkup = item.media === 'hero'
-                    ? `<div class="showcase-stage" data-layout="${escapeHtml(item.topicsLayout || 'default')}">${imageMarkup}${topicsMarkup}</div>`
+                    ? `${imageMarkup}${topicsMarkup}`
                     : imageMarkup;
                   return `<article class="showcase-item" data-media="${escapeHtml(item.media || 'ui')}">${mediaMarkup}<strong>${escapeHtml(item.title || '')}</strong><a ${metaAttrs.join(' ')}>${escapeHtml(item.meta || '')}</a></article>`;
                 }).join('')}

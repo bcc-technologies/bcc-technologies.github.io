@@ -2101,7 +2101,6 @@ html[data-js="true"] .reveal.is-visible{ opacity:1; transform: translateY(0); }
   font-size:.66rem;
   font-weight:700;
   letter-spacing:.01em;
-  box-shadow:0 8px 18px rgba(15,23,42,.08);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
 }

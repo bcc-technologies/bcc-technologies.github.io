@@ -15,7 +15,14 @@
       ],
       "excerpt": "Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas.",
       "cover": "/static/uploads/20260130182048-bcc.svg",
-      "bodyUrl": "/content/posts/2026-02-25-welcome-to-bcc-journal.md"
+      "bodyUrl": "/content/posts/2026-02-25-welcome-to-bcc-journal.md",
+      "authorIds": [
+        "bcc.tech"
+      ],
+      "referenceIds": [],
+      "resourceIds": [
+        "maps"
+      ]
     },
     {
       "id": "2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo",
@@ -32,9 +39,65 @@
       ],
       "excerpt": "Por qué tratamos el software como instrumentación científica: trazabilidad, reproducibilidad y decisiones más sólidas.",
       "cover": "/static/uploads/20260130182048-bcc.svg",
-      "bodyUrl": "/content/posts/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.md"
+      "bodyUrl": "/content/posts/2026-01-30-bienvenidos-al-bcc-journal-simplificando-lo-complejo.md",
+      "authorIds": [
+        "bcc.tech"
+      ],
+      "referenceIds": [],
+      "resourceIds": [
+        "maps"
+      ]
     }
   ],
   "products": [],
-  "services": []
+  "services": [],
+  "authors": [
+    {
+      "role": "",
+      "affiliation": "",
+      "avatar": "",
+      "url": "",
+      "email": "",
+      "bio": "",
+      "tags": [],
+      "id": "bcc.tech",
+      "name": "BCC Technologies"
+    },
+    {
+      "role": "Cofounder/CEO",
+      "affiliation": "BCC Technologies",
+      "avatar": "",
+      "url": "https://bcctechnologies.com.do/aboutUs.html",
+      "email": "",
+      "bio": "",
+      "tags": [],
+      "id": "saulecast",
+      "name": "Saúl Castillo"
+    }
+  ],
+  "references": [],
+  "resources": [
+    {
+      "type": "product",
+      "creator": "BCCTechnologies",
+      "year": "",
+      "url": "",
+      "relation": "",
+      "note": "",
+      "tags": [],
+      "id": "maps",
+      "title": "MAPs"
+    },
+    {
+      "type": "music",
+      "creator": "Billy Joel",
+      "year": "",
+      "url": "",
+      "relation": "",
+      "note": "",
+      "tags": [],
+      "id": "vienna",
+      "title": "Vienna"
+    }
+  ]
 }

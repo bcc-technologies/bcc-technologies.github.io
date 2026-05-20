@@ -569,7 +569,6 @@ async function refreshAll() {
   renderWidgets();
   populateTemplatePostSelect();
   await refreshGitStatus();
-  renderHealthDashboard();
 }
 
 async function refreshGitStatus() {
@@ -2270,7 +2269,6 @@ function editorialCommands() {
     { id: "assets", icon: "🗂", title: "Assets", desc: "Abrir librería local de imágenes", run: openAssetsDialog },
     { id: "posts", icon: "✎", title: "Entradas", desc: "Volver al editor principal", run: () => document.querySelector('[data-tab="posts"]')?.click() },
     { id: "templates", icon: "▧", title: "Plantillas", desc: "Renderizar, auditar y aplicar plantillas", run: () => document.querySelector('[data-tab="templates"]')?.click() },
-    { id: "health", icon: "✓", title: "Salud editorial", desc: "Revisar checklist, widgets y pendientes", run: () => document.querySelector('[data-tab="health"]')?.click() },
     { id: "authors", icon: "👤", title: "Autores", desc: "Abrir panel de perfiles de autor", run: () => document.querySelector('[data-tab="authors"]')?.click() },
     { id: "references", icon: "[@]", title: "Referencias", desc: "Abrir biblioteca bibliográfica", run: () => document.querySelector('[data-tab="references"]')?.click() },
     { id: "resources", icon: "✦", title: "Recursos", desc: "Abrir biblioteca de recursos recomendados", run: () => document.querySelector('[data-tab="resources"]')?.click() },
@@ -2763,33 +2761,27 @@ $("#btnDeleteResource")?.addEventListener("click", async () => {
 
 // ---- WIDGETS
 const WIDGET_TYPE_LABELS = {
-  callout: "Idea clave",
-  image: "Imagen",
-  "image-compare": "Comparador",
+  callout: "Callout",
+  image: "Imagen avanzada",
   video: "Video",
-  scrollbox: "Ventana",
+  scrollbox: "Scrollbox",
   table: "Tabla",
   chart: "Gráfico",
-  metrics: "Métricas",
   "product-preview": "Preview producto",
   "service-preview": "Preview servicio",
   demo: "Demo"
 };
 const WIDGET_TYPE_ICONS = {
-  callout: "💡",
+  callout: "※",
   image: "🖼",
-  "image-compare": "⇄",
   video: "▶",
   scrollbox: "▤",
   table: "▦",
-  chart: "📊",
-  metrics: "▥",
+  chart: "⌁",
   "product-preview": "◈",
   "service-preview": "▣",
-  demo: "🧪"
+  demo: "⚗"
 };
-const WIDGET_TYPES = Object.keys(WIDGET_TYPE_LABELS);
-
 function widgetTypeLabel(type) {
   return WIDGET_TYPE_LABELS[String(type || "callout").toLowerCase()] || WIDGET_TYPE_LABELS.callout;
 }
@@ -2797,8 +2789,8 @@ function widgetTypeIcon(type) {
   return WIDGET_TYPE_ICONS[String(type || "callout").toLowerCase()] || WIDGET_TYPE_ICONS.callout;
 }
 function parseWidgetConfig(raw) {
-  const text = typeof raw === "string" ? raw.trim() : JSON.stringify(raw || {});
-  if (!text || text === "{}") return {};
+  const text = String(raw || "").trim();
+  if (!text) return {};
   try {
     const parsed = JSON.parse(text);
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
@@ -2806,481 +2798,32 @@ function parseWidgetConfig(raw) {
     return {};
   }
 }
-function widgetConfigString(obj) {
-  const clean = obj && typeof obj === "object" ? obj : {};
-  return Object.keys(clean).length ? JSON.stringify(clean, null, 2) : "";
-}
-function csvTextToTable(text) {
-  const lines = String(text || "")
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map(x => x.trim())
-    .filter(Boolean);
-  if (!lines.length) return { columns: [], rows: [] };
-  const split = (line) => {
-    const delimiter = line.includes("\t") ? "\t" : ",";
-    return line.split(delimiter).map(x => x.trim());
-  };
-  return { columns: split(lines[0]), rows: lines.slice(1).map(split) };
-}
-function tableToCsvText(columns = [], rows = []) {
-  const lines = [];
-  if (Array.isArray(columns) && columns.length) lines.push(columns.join(","));
-  if (Array.isArray(rows)) rows.forEach(row => lines.push((Array.isArray(row) ? row : []).join(",")));
-  return lines.join("\n");
-}
-function chartTextToConfig(text) {
-  const table = csvTextToTable(text);
-  const labels = [];
-  const values = [];
-  for (const row of table.rows || []) {
-    if (!row.length) continue;
-    labels.push(row[0]);
-    const n = Number(String(row[1] ?? "").replace(",", "."));
-    values.push(Number.isFinite(n) ? n : 0);
-  }
-  return { labels, values };
-}
-function chartConfigToText(cfg = {}) {
-  const labels = Array.isArray(cfg.labels) ? cfg.labels : [];
-  const values = Array.isArray(cfg.values) ? cfg.values : [];
-  const rows = labels.map((label, i) => [label, values[i] ?? ""]);
-  return tableToCsvText([cfg.xLabel || "x", cfg.yLabel || "y"], rows);
-}
-function metricsTextToConfig(text) {
-  const table = csvTextToTable(text);
-  const metrics = (table.rows || []).map(row => ({
-    label: row[0] || "",
-    value: row[1] || "",
-    unit: row[2] || "",
-    note: row[3] || ""
-  })).filter(x => x.label || x.value);
-  return { metrics };
-}
-function metricsConfigToText(cfg = {}) {
-  const metrics = Array.isArray(cfg.metrics) ? cfg.metrics : [];
-  const rows = metrics.map(m => [m.label || "", m.value || "", m.unit || "", m.note || ""]);
-  return tableToCsvText(["Métrica", "Valor", "Unidad", "Nota"], rows);
-}
-function setFieldValue(sel, value = "") {
-  const el = $(sel);
-  if (el) el.value = value ?? "";
-}
-function getFieldValue(sel) {
-  return ($(sel)?.value || "").trim();
-}
-function setWidgetType(type, preserve = true) {
-  const cleanType = WIDGET_TYPES.includes(String(type || "").toLowerCase()) ? String(type).toLowerCase() : "callout";
-  const typeEl = $("#widgetType");
-  if (typeEl) typeEl.value = cleanType;
-
-  document.querySelectorAll(".widget-type-tile[data-widget-type]").forEach(btn => {
-    btn.classList.toggle("is-active", btn.dataset.widgetType === cleanType);
-    btn.setAttribute("aria-pressed", String(btn.dataset.widgetType === cleanType));
-  });
-  document.querySelectorAll(".widget-fields[data-widget-panel]").forEach(panel => {
-    panel.classList.toggle("is-active", panel.dataset.widgetPanel === cleanType);
-  });
-
-  populateWidgetRelationOptions(cleanType);
-  if (!preserve) seedWidgetDefaults(cleanType);
-  renderWidgetLivePreview();
-}
-function seedWidgetDefaults(type) {
-  if (type === "table" && !getFieldValue("#widgetTableCsv")) {
-    setFieldValue("#widgetTableCsv", "Parámetro,Valor,Unidad\nPorosidad,0.34,%\nUmbral,128,px");
-  }
-  if (type === "chart" && !getFieldValue("#widgetChartData")) {
-    setFieldValue("#widgetChartData", "Umbral,Porosidad\n10,0.12\n20,0.19\n30,0.27");
-  }
-  if (type === "metrics" && !getFieldValue("#widgetMetricsCsv")) {
-    setFieldValue("#widgetMetricsCsv", "Métrica,Valor,Unidad,Nota\nPorosidad,34,%,Promedio estimado\nUmbral,128,px,Valor usado");
-  }
-  if (type === "image-compare") {
-    if (!getFieldValue("#widgetCompareBeforeLabel")) setFieldValue("#widgetCompareBeforeLabel", "Antes");
-    if (!getFieldValue("#widgetCompareAfterLabel")) setFieldValue("#widgetCompareAfterLabel", "Después");
-    if (!getFieldValue("#widgetCompareSplit")) setFieldValue("#widgetCompareSplit", "50");
-  }
-  if (type === "demo") {
-    if (!getFieldValue("#widgetDemoVariable")) setFieldValue("#widgetDemoVariable", "Umbral");
-    if (!getFieldValue("#widgetDemoMin")) setFieldValue("#widgetDemoMin", "0");
-    if (!getFieldValue("#widgetDemoMax")) setFieldValue("#widgetDemoMax", "255");
-    if (!getFieldValue("#widgetDemoInitial")) setFieldValue("#widgetDemoInitial", "128");
-  }
-}
-function populateSelectOptions(select, items, emptyLabel) {
-  if (!select) return;
-  const current = select.value;
-  const options = [`<option value="">${escapeHtml(emptyLabel)}</option>`].concat(
-    items.map(item => `<option value="${escapeAttr(item.id)}">${escapeHtml(item.label)}</option>`)
-  );
-  select.innerHTML = options.join("");
-  if (current && items.some(item => item.id === current)) select.value = current;
-}
-function populateWidgetRelationOptions(type = $("#widgetType")?.value || "callout") {
-  if (type === "product-preview") {
-    populateSelectOptions($("#widgetProductTarget"), currentProductOptions().map(x => ({ id: x.id, label: x.label })), "Selecciona un producto");
-  }
-  if (type === "service-preview") {
-    populateSelectOptions($("#widgetServiceTarget"), currentServiceOptions().map(x => ({ id: x.id, label: x.label })), "Selecciona un servicio");
-  }
-}
-function widgetPayloadFromBuilder() {
-  const type = String($("#widgetType")?.value || "callout").toLowerCase();
-  let sourceUrl = "";
-  let targetId = "";
-  let body = "";
-  let config = {};
-
-  if (type === "callout") {
-    body = getFieldValue("#widgetCalloutBody");
-    config = {
-      variant: getFieldValue("#widgetCalloutTone") || "insight",
-      label: getFieldValue("#widgetCalloutLabel")
-    };
-  } else if (type === "image") {
-    sourceUrl = getFieldValue("#widgetImageUrl");
-    body = getFieldValue("#widgetImageCaption");
-    config = {
-      alt: getFieldValue("#widgetImageAlt"),
-      caption: getFieldValue("#widgetImageCaption"),
-      credit: getFieldValue("#widgetImageCredit"),
-      mode: getFieldValue("#widgetImageMode") || "inline"
-    };
-  } else if (type === "image-compare") {
-    sourceUrl = getFieldValue("#widgetCompareBeforeUrl");
-    body = getFieldValue("#widgetCompareCaption");
-    config = {
-      beforeUrl: getFieldValue("#widgetCompareBeforeUrl"),
-      afterUrl: getFieldValue("#widgetCompareAfterUrl"),
-      beforeLabel: getFieldValue("#widgetCompareBeforeLabel") || "Antes",
-      afterLabel: getFieldValue("#widgetCompareAfterLabel") || "Después",
-      alt: getFieldValue("#widgetCompareAlt"),
-      caption: getFieldValue("#widgetCompareCaption"),
-      split: Number(getFieldValue("#widgetCompareSplit") || 50)
-    };
-  } else if (type === "video") {
-    sourceUrl = getFieldValue("#widgetVideoUrl");
-    body = getFieldValue("#widgetVideoBody");
-    config = {
-      thumbnail: getFieldValue("#widgetVideoThumb"),
-      load: getFieldValue("#widgetVideoLoad") || "lazy"
-    };
-  } else if (type === "table") {
-    body = getFieldValue("#widgetTableCsv");
-    const parsed = csvTextToTable(body);
-    config = {
-      description: getFieldValue("#widgetTableDescription"),
-      density: getFieldValue("#widgetTableDensity") || "comfortable",
-      columns: parsed.columns,
-      rows: parsed.rows
-    };
-  } else if (type === "chart") {
-    body = getFieldValue("#widgetChartDescription");
-    const chart = chartTextToConfig(getFieldValue("#widgetChartData"));
-    config = {
-      chartType: getFieldValue("#widgetChartType") || "bar",
-      xLabel: getFieldValue("#widgetChartXLabel"),
-      yLabel: getFieldValue("#widgetChartYLabel"),
-      labels: chart.labels,
-      values: chart.values
-    };
-  } else if (type === "metrics") {
-    body = getFieldValue("#widgetMetricsDescription");
-    const metricConfig = metricsTextToConfig(getFieldValue("#widgetMetricsCsv"));
-    config = {
-      description: getFieldValue("#widgetMetricsDescription"),
-      metrics: metricConfig.metrics
-    };
-  } else if (type === "scrollbox") {
-    body = getFieldValue("#widgetScrollBody");
-    config = {
-      label: getFieldValue("#widgetScrollLabel") || "Detalle técnico",
-      height: getFieldValue("#widgetScrollHeight") || "medium"
-    };
-  } else if (type === "product-preview") {
-    targetId = getFieldValue("#widgetProductTarget");
-    body = getFieldValue("#widgetProductNote");
-    config = { mode: getFieldValue("#widgetProductMode") || "compact" };
-  } else if (type === "service-preview") {
-    targetId = getFieldValue("#widgetServiceTarget");
-    body = getFieldValue("#widgetServiceNote");
-    config = { mode: getFieldValue("#widgetServiceMode") || "compact" };
-  } else if (type === "demo") {
-    body = getFieldValue("#widgetDemoBody");
-    config = {
-      demoType: getFieldValue("#widgetDemoKind") || "slider",
-      variable: getFieldValue("#widgetDemoVariable"),
-      min: Number(getFieldValue("#widgetDemoMin")),
-      max: Number(getFieldValue("#widgetDemoMax")),
-      initial: Number(getFieldValue("#widgetDemoInitial"))
-    };
-  }
-
-  Object.keys(config).forEach(key => {
-    if (config[key] === "" || config[key] === null || config[key] === undefined) delete config[key];
-    if (typeof config[key] === "number" && !Number.isFinite(config[key])) delete config[key];
-  });
-
-  setFieldValue("#widgetSourceUrl", sourceUrl);
-  setFieldValue("#widgetTargetId", targetId);
-  setFieldValue("#widgetBody", body);
-  setFieldValue("#widgetConfig", widgetConfigString(config));
-  setFieldValue("#widgetAdvancedConfigView", widgetConfigString(config));
-
+function widgetPayloadFromForm() {
   return {
     id: $("#widgetId")?.value.trim() || slugifyId($("#widgetTitle")?.value || "widget", "widget"),
-    type,
+    type: $("#widgetType")?.value || "callout",
     title: $("#widgetTitle")?.value.trim() || "",
-    sourceUrl,
-    targetId,
+    sourceUrl: $("#widgetSourceUrl")?.value.trim() || "",
+    targetId: $("#widgetTargetId")?.value.trim() || "",
     tags: parseTags($("#widgetTags")?.value || ""),
-    body,
-    config: widgetConfigString(config)
+    body: $("#widgetBody")?.value.trim() || "",
+    config: $("#widgetConfig")?.value.trim() || ""
   };
-}
-function widgetPayloadFromForm() {
-  return widgetPayloadFromBuilder();
-}
-function applyWidgetPayloadToBuilder(w = {}) {
-  const type = String(w.type || "callout").toLowerCase();
-  const cfg = parseWidgetConfig(w.config);
-  setWidgetType(type, true);
-
-  if (type === "callout") {
-    setFieldValue("#widgetCalloutTone", cfg.variant || cfg.tone || "insight");
-    setFieldValue("#widgetCalloutLabel", cfg.label || "");
-    setFieldValue("#widgetCalloutBody", w.body || "");
-  } else if (type === "image") {
-    setFieldValue("#widgetImageUrl", w.sourceUrl || w.url || cfg.url || "");
-    setFieldValue("#widgetImageAlt", cfg.alt || "");
-    setFieldValue("#widgetImageCaption", cfg.caption || w.body || "");
-    setFieldValue("#widgetImageCredit", cfg.credit || "");
-    setFieldValue("#widgetImageMode", cfg.mode || "inline");
-  } else if (type === "image-compare") {
-    setFieldValue("#widgetCompareBeforeUrl", cfg.beforeUrl || w.sourceUrl || "");
-    setFieldValue("#widgetCompareAfterUrl", cfg.afterUrl || "");
-    setFieldValue("#widgetCompareBeforeLabel", cfg.beforeLabel || "Antes");
-    setFieldValue("#widgetCompareAfterLabel", cfg.afterLabel || "Después");
-    setFieldValue("#widgetCompareAlt", cfg.alt || "");
-    setFieldValue("#widgetCompareSplit", Number.isFinite(Number(cfg.split)) ? cfg.split : 50);
-    setFieldValue("#widgetCompareCaption", cfg.caption || w.body || "");
-  } else if (type === "video") {
-    setFieldValue("#widgetVideoUrl", w.sourceUrl || w.url || cfg.url || "");
-    setFieldValue("#widgetVideoThumb", cfg.thumbnail || "");
-    setFieldValue("#widgetVideoLoad", cfg.load || "lazy");
-    setFieldValue("#widgetVideoBody", w.body || "");
-  } else if (type === "table") {
-    setFieldValue("#widgetTableDescription", cfg.description || "");
-    setFieldValue("#widgetTableDensity", cfg.density || "comfortable");
-    setFieldValue("#widgetTableCsv", (Array.isArray(cfg.columns) || Array.isArray(cfg.rows)) ? tableToCsvText(cfg.columns, cfg.rows) : (w.body || ""));
-  } else if (type === "chart") {
-    setFieldValue("#widgetChartType", cfg.chartType || "bar");
-    setFieldValue("#widgetChartDescription", w.body || cfg.description || "");
-    setFieldValue("#widgetChartXLabel", cfg.xLabel || "");
-    setFieldValue("#widgetChartYLabel", cfg.yLabel || "");
-    setFieldValue("#widgetChartData", (Array.isArray(cfg.labels) || Array.isArray(cfg.values)) ? chartConfigToText(cfg) : "");
-  } else if (type === "metrics") {
-    setFieldValue("#widgetMetricsDescription", w.body || cfg.description || "");
-    setFieldValue("#widgetMetricsCsv", Array.isArray(cfg.metrics) ? metricsConfigToText(cfg) : "");
-  } else if (type === "scrollbox") {
-    setFieldValue("#widgetScrollLabel", cfg.label || "Detalle técnico");
-    setFieldValue("#widgetScrollHeight", cfg.height || "medium");
-    setFieldValue("#widgetScrollBody", w.body || "");
-  } else if (type === "product-preview") {
-    populateWidgetRelationOptions(type);
-    setFieldValue("#widgetProductTarget", w.targetId || cfg.targetId || cfg.id || "");
-    setFieldValue("#widgetProductMode", cfg.mode || "compact");
-    setFieldValue("#widgetProductNote", w.body || "");
-  } else if (type === "service-preview") {
-    populateWidgetRelationOptions(type);
-    setFieldValue("#widgetServiceTarget", w.targetId || cfg.targetId || cfg.id || "");
-    setFieldValue("#widgetServiceMode", cfg.mode || "compact");
-    setFieldValue("#widgetServiceNote", w.body || "");
-  } else if (type === "demo") {
-    setFieldValue("#widgetDemoKind", cfg.demoType || "slider");
-    setFieldValue("#widgetDemoVariable", cfg.variable || "");
-    setFieldValue("#widgetDemoMin", Number.isFinite(Number(cfg.min)) ? cfg.min : "");
-    setFieldValue("#widgetDemoMax", Number.isFinite(Number(cfg.max)) ? cfg.max : "");
-    setFieldValue("#widgetDemoInitial", Number.isFinite(Number(cfg.initial)) ? cfg.initial : "");
-    setFieldValue("#widgetDemoBody", w.body || "");
-  }
-  setFieldValue("#widgetAdvancedConfigView", widgetConfigString(cfg));
-  renderWidgetLivePreview();
 }
 function widgetPreviewHtml(w) {
   const type = String(w.type || "callout").toLowerCase();
-  const cfg = parseWidgetConfig(w.config);
   const meta = [widgetTypeLabel(type), w.targetId, w.sourceUrl].filter(Boolean).join(" · ");
-  let extra = "";
-  if (type === "table") {
-    const parsed = parseWidgetConfig(w.config);
-    const count = Array.isArray(parsed.rows) ? parsed.rows.length : csvTextToTable(w.body).rows.length;
-    extra = `<div class="entity-preview-links mono">${count} fila(s)</div>`;
-  } else if (type === "chart") {
-    const count = Array.isArray(cfg.values) ? cfg.values.length : 0;
-    extra = `<div class="entity-preview-links mono">${cfg.chartType || "bar"} · ${count} punto(s)</div>`;
-  } else if (type === "metrics") {
-    const count = Array.isArray(cfg.metrics) ? cfg.metrics.length : 0;
-    extra = `<div class="entity-preview-links mono">${count} métrica(s)</div>`;
-  } else if (type === "image-compare") {
-    extra = `<div class="entity-preview-links mono">comparador · ${escapeHtml(cfg.beforeLabel || "antes")} / ${escapeHtml(cfg.afterLabel || "después")}</div>`;
-  } else if ((type === "product-preview" || type === "service-preview") && w.targetId) {
-    extra = `<div class="entity-preview-links mono">relacionado: ${escapeHtml(w.targetId)}</div>`;
-  }
   return `
     <div class="entity-preview-card widget-preview-card">
       <div class="resource-preview-icon" aria-hidden="true">${escapeHtml(widgetTypeIcon(type))}</div>
       <div>
-        <div class="entity-preview-meta">${escapeHtml(meta || widgetTypeLabel(type))}</div>
+        <div class="entity-preview-meta">${escapeHtml(meta || "Widget")}</div>
         <div class="entity-preview-title">${escapeHtml(w.title || w.id || "Widget sin título")}</div>
         ${w.body ? `<div class="entity-preview-body">${escapeHtml(w.body).slice(0, 260)}</div>` : ""}
-        ${extra}
+        ${w.config ? `<div class="entity-preview-links mono">config JSON</div>` : ""}
       </div>
     </div>`;
 }
-
-function validateWidgetPayload(w = widgetPayloadFromBuilder()) {
-  const warnings = [];
-  const errors = [];
-  const type = String(w.type || "callout").toLowerCase();
-  const cfg = parseWidgetConfig(w);
-  const title = String(w.title || "").trim();
-  const body = String(w.body || "").trim();
-  const sourceUrl = String(w.sourceUrl || "").trim();
-  const targetId = String(w.targetId || "").trim();
-
-  if (!title) errors.push("Falta título.");
-
-  if (type === "callout" && !body) warnings.push("La idea clave no tiene texto.");
-
-  if (type === "image") {
-    if (!sourceUrl) errors.push("Falta la URL de la imagen.");
-    if (!cfg.alt) warnings.push("Falta alt text accesible.");
-    if (!cfg.caption && !body) warnings.push("Falta caption o explicación.");
-  }
-
-  if (type === "image-compare") {
-    if (!cfg.beforeUrl || !cfg.afterUrl) errors.push("El comparador necesita dos imágenes.");
-    if (!cfg.alt) warnings.push("Falta descripción accesible del comparador.");
-  }
-
-  if (type === "video") {
-    if (!sourceUrl) errors.push("Falta URL del video.");
-    if (!body) warnings.push("Agrega una nota breve sobre qué aporta el video.");
-  }
-
-  if (type === "table") {
-    const parsed = Array.isArray(cfg.rows) ? cfg : csvTextToTable(body);
-    if (!Array.isArray(parsed.rows) || parsed.rows.length === 0) errors.push("La tabla no tiene filas.");
-    if (!Array.isArray(parsed.columns) || parsed.columns.length === 0) warnings.push("La tabla no tiene encabezados claros.");
-  }
-
-  if (type === "chart") {
-    const values = Array.isArray(cfg.values) ? cfg.values : [];
-    const labels = Array.isArray(cfg.labels) ? cfg.labels : [];
-    if (!values.length || !labels.length) errors.push("El gráfico no tiene datos suficientes.");
-    if (!cfg.xLabel || !cfg.yLabel) warnings.push("Conviene indicar nombres de ejes.");
-  }
-
-  if (type === "metrics") {
-    if (!Array.isArray(cfg.metrics) || !cfg.metrics.length) errors.push("No hay métricas configuradas.");
-  }
-
-  if (type === "scrollbox" && !body) errors.push("La ventana scrolleable no tiene contenido.");
-
-  if (type === "product-preview") {
-    if (!targetId) errors.push("Selecciona un producto.");
-    else if (!(INDEX.products || []).some(p => p.id === targetId)) errors.push(`Producto no encontrado: ${targetId}`);
-  }
-
-  if (type === "service-preview") {
-    if (!targetId) errors.push("Selecciona un servicio.");
-    else if (!(INDEX.services || []).some(s => s.id === targetId)) errors.push(`Servicio no encontrado: ${targetId}`);
-  }
-
-  if (type === "demo") {
-    const min = Number(cfg.min);
-    const max = Number(cfg.max);
-    const initial = Number(cfg.initial);
-    if (!cfg.variable) warnings.push("La demo no tiene nombre de variable.");
-    if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max) errors.push("Rango inválido: mínimo debe ser menor que máximo.");
-    if (Number.isFinite(initial) && Number.isFinite(min) && Number.isFinite(max) && (initial < min || initial > max)) warnings.push("El valor inicial queda fuera del rango.");
-  }
-
-  return { ok: errors.length === 0, errors, warnings };
-}
-
-function renderWidgetValidation(payload = widgetPayloadFromBuilder()) {
-  const el = $("#widgetValidationList");
-  if (!el) return validateWidgetPayload(payload);
-  const v = validateWidgetPayload(payload);
-  const rows = [
-    ...v.errors.map(msg => ({ type: "error", msg })),
-    ...v.warnings.map(msg => ({ type: "warn", msg }))
-  ];
-  el.innerHTML = rows.length ? rows.map(row => `
-    <div class="validation-item is-${escapeAttr(row.type)}">
-      <span>${row.type === "error" ? "×" : "!"}</span>
-      <div>${escapeHtml(row.msg)}</div>
-    </div>
-  `).join("") : `<div class="validation-item is-ok"><span>✓</span><div>Listo.</div></div>`;
-  return v;
-}
-
-function applyWidgetPreset(preset) {
-  clearWidgetEditor();
-  if (preset === "callout-insight") {
-    setWidgetType("callout", false);
-    setFieldValue("#widgetTitle", "Idea clave");
-    setFieldValue("#widgetCalloutTone", "insight");
-    setFieldValue("#widgetCalloutLabel", "Principio");
-    setFieldValue("#widgetCalloutBody", "Escribe aquí la idea central que el lector debe recordar.");
-  } else if (preset === "data-table") {
-    setWidgetType("table", false);
-    setFieldValue("#widgetTitle", "Tabla de datos");
-    setFieldValue("#widgetTableDescription", "Datos principales del análisis.");
-    setFieldValue("#widgetTableCsv", "Parámetro,Valor,Unidad\nPorosidad,34,%\nUmbral,128,px");
-  } else if (preset === "result-chart") {
-    setWidgetType("chart", false);
-    setFieldValue("#widgetTitle", "Resultados comparados");
-    setFieldValue("#widgetChartType", "bar");
-    setFieldValue("#widgetChartXLabel", "Condición");
-    setFieldValue("#widgetChartYLabel", "Resultado");
-    setFieldValue("#widgetChartData", "Condición,Resultado\nA,0.12\nB,0.19\nC,0.27");
-  } else if (preset === "compare") {
-    setWidgetType("image-compare", false);
-    setFieldValue("#widgetTitle", "Comparación visual");
-    setFieldValue("#widgetCompareBeforeLabel", "Antes");
-    setFieldValue("#widgetCompareAfterLabel", "Después");
-    setFieldValue("#widgetCompareSplit", "50");
-    setFieldValue("#widgetCompareCaption", "Describe qué cambia entre ambas imágenes.");
-  } else if (preset === "metrics") {
-    setWidgetType("metrics", false);
-    setFieldValue("#widgetTitle", "Métricas principales");
-    setFieldValue("#widgetMetricsDescription", "Resumen numérico del resultado.");
-    setFieldValue("#widgetMetricsCsv", "Métrica,Valor,Unidad,Nota\nPorosidad,34,%,Promedio estimado\nUmbral,128,px,Valor usado");
-  } else if (preset === "slider-demo") {
-    setWidgetType("demo", false);
-    setFieldValue("#widgetTitle", "Demo con slider");
-    setFieldValue("#widgetDemoKind", "slider");
-    setFieldValue("#widgetDemoVariable", "Umbral");
-    setFieldValue("#widgetDemoMin", "0");
-    setFieldValue("#widgetDemoMax", "255");
-    setFieldValue("#widgetDemoInitial", "128");
-    setFieldValue("#widgetDemoBody", "Mueve el control para explorar cómo cambia la variable.");
-  }
-  renderWidgetLivePreview();
-  toast("Preset aplicado");
-}
-
-function widgetValidationSummary(w) {
-  const v = validateWidgetPayload(w);
-  if (!v.ok) return { label: `${v.errors.length} error(es)`, cls: "is-error" };
-  if (v.warnings.length) return { label: `${v.warnings.length} aviso(s)`, cls: "is-warn" };
-  return { label: "OK", cls: "is-ok" };
-}
-
 function renderWidgets() {
   const list = $("#widgetsList");
   if (!list) return;
@@ -3301,7 +2844,6 @@ function renderWidgets() {
           <div class="item-title">${escapeHtml(w.title || w.id)}</div>
           <div class="meta">
             <span class="badge">${escapeHtml(widgetTypeLabel(w.type))}</span>
-              <span class="badge widget-validation-badge ${escapeAttr(widgetValidationSummary(w).cls)}">${escapeHtml(widgetValidationSummary(w).label)}</span>
             ${w.targetId ? `<span class="muted">${escapeHtml(w.targetId)}</span>` : ""}
             ${w.__local ? `<span class="badge local-badge">LOCAL</span>` : ""}
           </div>
@@ -3329,90 +2871,35 @@ function loadWidget(id) {
   $("#widgetTags").value = (w.tags || []).join(", ");
   $("#widgetBody").value = w.body || "";
   $("#widgetConfig").value = typeof w.config === "string" ? w.config : (w.config ? JSON.stringify(w.config, null, 2) : "");
-  applyWidgetPayloadToBuilder(w);
+  renderWidgetLivePreview();
   renderWidgets();
 }
 function clearWidgetEditor() {
   currentWidgetId = "";
   $("#widgetEditorHint").textContent = "Nuevo widget";
-  const clearSelectors = [
-    "#widgetId", "#widgetTitle", "#widgetSourceUrl", "#widgetTargetId", "#widgetTags", "#widgetBody", "#widgetConfig", "#widgetAdvancedConfigView",
-    "#widgetCalloutLabel", "#widgetCalloutBody", "#widgetImageUrl", "#widgetImageAlt", "#widgetImageCaption", "#widgetImageCredit",
-    "#widgetCompareBeforeUrl", "#widgetCompareAfterUrl", "#widgetCompareBeforeLabel", "#widgetCompareAfterLabel", "#widgetCompareAlt", "#widgetCompareSplit", "#widgetCompareCaption",
-    "#widgetVideoUrl", "#widgetVideoThumb", "#widgetVideoBody", "#widgetTableDescription", "#widgetTableCsv", "#widgetChartDescription", "#widgetChartXLabel", "#widgetChartYLabel", "#widgetChartData", "#widgetMetricsDescription", "#widgetMetricsCsv", "#widgetScrollBody", "#widgetProductNote", "#widgetServiceNote", "#widgetDemoVariable", "#widgetDemoMin", "#widgetDemoMax", "#widgetDemoInitial", "#widgetDemoBody"
-  ];
-  clearSelectors.forEach(sel => { if ($(sel)) $(sel).value = ""; });
-  setFieldValue("#widgetCalloutTone", "insight");
-  setFieldValue("#widgetImageMode", "inline");
-  setFieldValue("#widgetVideoLoad", "lazy");
-  setFieldValue("#widgetTableDensity", "comfortable");
-  setFieldValue("#widgetChartType", "bar");
-  setFieldValue("#widgetCompareBeforeLabel", "Antes");
-  setFieldValue("#widgetCompareAfterLabel", "Después");
-  setFieldValue("#widgetCompareSplit", "50");
-  setFieldValue("#widgetScrollLabel", "Detalle técnico");
-  setFieldValue("#widgetScrollHeight", "medium");
-  setFieldValue("#widgetProductMode", "compact");
-  setFieldValue("#widgetServiceMode", "compact");
-  setFieldValue("#widgetDemoKind", "slider");
-  setWidgetType("callout", true);
+  ["#widgetId", "#widgetTitle", "#widgetSourceUrl", "#widgetTargetId", "#widgetTags", "#widgetBody", "#widgetConfig"].forEach(sel => { if ($(sel)) $(sel).value = ""; });
+  if ($("#widgetType")) $("#widgetType").value = "callout";
+  renderWidgetLivePreview();
   renderWidgets();
 }
 function renderWidgetLivePreview() {
   const el = $("#widgetLivePreview");
   if (!el) return;
-  const payload = widgetPayloadFromBuilder();
-  el.innerHTML = widgetPreviewHtml(payload);
-  renderWidgetValidation(payload);
+  el.innerHTML = widgetPreviewHtml(widgetPayloadFromForm());
 }
-function applyWidgetAdvancedJson() {
-  const raw = getFieldValue("#widgetAdvancedConfigView");
-  if (!raw) return;
-  try {
-    const parsed = JSON.parse(raw);
-    const current = widgetPayloadFromBuilder();
-    current.config = JSON.stringify(parsed, null, 2);
-    $("#widgetConfig").value = current.config;
-    applyWidgetPayloadToBuilder(current);
-    toast("JSON aplicado");
-  } catch (_e) {
-    toast("JSON inválido", false);
-  }
-}
-function initWidgetBuilder() {
-  document.querySelectorAll(".widget-type-tile[data-widget-type]").forEach(btn => {
-    btn.addEventListener("click", () => setWidgetType(btn.dataset.widgetType, false));
-  });
-  document.querySelectorAll("[data-widget-preset]").forEach(btn => {
-    btn.addEventListener("click", () => applyWidgetPreset(btn.dataset.widgetPreset));
-  });
-  const builderSelectors = [
-    "#widgetTitle", "#widgetId", "#widgetTags", "#widgetCalloutTone", "#widgetCalloutLabel", "#widgetCalloutBody",
-    "#widgetImageUrl", "#widgetImageAlt", "#widgetImageCaption", "#widgetImageCredit", "#widgetImageMode",
-    "#widgetCompareBeforeUrl", "#widgetCompareAfterUrl", "#widgetCompareBeforeLabel", "#widgetCompareAfterLabel", "#widgetCompareAlt", "#widgetCompareSplit", "#widgetCompareCaption",
-    "#widgetVideoUrl", "#widgetVideoThumb", "#widgetVideoLoad", "#widgetVideoBody",
-    "#widgetTableDescription", "#widgetTableDensity", "#widgetTableCsv",
-    "#widgetChartType", "#widgetChartDescription", "#widgetChartXLabel", "#widgetChartYLabel", "#widgetChartData",
-    "#widgetMetricsDescription", "#widgetMetricsCsv",
-    "#widgetScrollLabel", "#widgetScrollHeight", "#widgetScrollBody",
-    "#widgetProductTarget", "#widgetProductMode", "#widgetProductNote",
-    "#widgetServiceTarget", "#widgetServiceMode", "#widgetServiceNote",
-    "#widgetDemoKind", "#widgetDemoVariable", "#widgetDemoMin", "#widgetDemoMax", "#widgetDemoInitial", "#widgetDemoBody"
-  ];
-  builderSelectors.forEach(sel => {
-    $(sel)?.addEventListener("input", renderWidgetLivePreview);
-    $(sel)?.addEventListener("change", renderWidgetLivePreview);
-  });
-  $("#btnApplyWidgetAdvancedJson")?.addEventListener("click", applyWidgetAdvancedJson);
-  setWidgetType($("#widgetType")?.value || "callout", true);
-}
+["#widgetTitle", "#widgetType", "#widgetSourceUrl", "#widgetTargetId", "#widgetTags", "#widgetBody", "#widgetConfig"].forEach(sel => {
+  $(sel)?.addEventListener("input", renderWidgetLivePreview);
+  $(sel)?.addEventListener("change", renderWidgetLivePreview);
+});
 $("#widgetsSearch")?.addEventListener("input", renderWidgets);
 $("#widgetsTypeFilter")?.addEventListener("change", renderWidgets);
 $("#btnNewWidget")?.addEventListener("click", clearWidgetEditor);
 $("#btnSaveWidget")?.addEventListener("click", async () => {
   const payload = widgetPayloadFromForm();
-  const validation = renderWidgetValidation(payload);
-  if (!validation.ok) return toast(validation.errors[0] || "El widget tiene errores", false);
+  if (!payload.title) return toast("El widget necesita título", false);
+  if (payload.config) {
+    try { JSON.parse(payload.config); } catch (_e) { return toast("Config JSON inválido", false); }
+  }
   const id = await upsertEntity("widgets", payload, "widgets");
   loadWidget(id);
   updateEditorDerivedViews();
@@ -3422,130 +2909,9 @@ $("#btnDeleteWidget")?.addEventListener("click", async () => {
   await deleteEntity("widgets", id, "widgets");
   clearWidgetEditor();
 });
-initWidgetBuilder();
 
 
 
-
-
-// ---- Editorial health dashboard
-function postUsesWidgets(post) {
-  try {
-    const body = post?.id ? (localStorage.getItem(`bccAdmin.autosave.${post.id}`) || "") : "";
-    return (body.match(/\[\[widget:([^\]]+)\]\]/g) || []).length;
-  } catch (_e) {
-    return 0;
-  }
-}
-
-function currentPostChecklistItems() {
-  const post = getCurrentPostRecord() || collectPostPayload?.() || {};
-  const body = $("#postBody")?.value || "";
-  const widgetIds = [...body.matchAll(/\[\[widget:([^\]]+)\]\]/g)].map(m => m[1].trim());
-  const missingWidgets = widgetIds.filter(id => !(INDEX.widgets || []).some(w => w.id === id));
-  return [
-    { ok: Boolean(post.title || $("#postTitle")?.value), label: "Título" },
-    { ok: Boolean(post.excerpt || $("#postExcerpt")?.value), label: "Excerpt / bajada" },
-    { ok: parseTags($("#postAuthors")?.value || post.authorIds || "").length > 0, label: "Autoría" },
-    { ok: parseTags($("#postTags")?.value || post.tags || "").length > 0, label: "Tags" },
-    { ok: Boolean(post.cover || $("#postCover")?.value), label: "Cover" },
-    { ok: parseTags($("#postResources")?.value || post.resourceIds || "").length > 0, label: "Recursos recomendados", soft: true },
-    { ok: missingWidgets.length === 0, label: missingWidgets.length ? `Widgets faltantes: ${missingWidgets.join(", ")}` : "Widgets referenciados" },
-    { ok: Boolean(post.translationId || $("#postTranslationId")?.value), label: "Grupo de traducción", soft: true }
-  ];
-}
-
-function healthItemHtml(item) {
-  const cls = item.ok ? "is-ok" : (item.soft ? "is-soft" : "is-warn");
-  const icon = item.ok ? "✓" : (item.soft ? "·" : "!");
-  return `<div class="health-item ${cls}"><span>${icon}</span><div>${escapeHtml(item.label)}</div></div>`;
-}
-
-function renderCurrentPostChecklist() {
-  const el = $("#currentPostChecklist");
-  if (!el) return;
-  const items = currentPostChecklistItems();
-  el.innerHTML = items.map(healthItemHtml).join("");
-}
-
-function renderWidgetHealth() {
-  const el = $("#widgetHealthList");
-  if (!el) return { errors: 0, warnings: 0 };
-  const widgets = INDEX.widgets || [];
-  let errors = 0;
-  let warnings = 0;
-  const rows = widgets.map(w => {
-    const v = validateWidgetPayload(w);
-    errors += v.errors.length;
-    warnings += v.warnings.length;
-    const status = !v.ok ? "is-warn" : (v.warnings.length ? "is-soft" : "is-ok");
-    const msg = !v.ok ? v.errors[0] : (v.warnings[0] || "Listo");
-    return `<div class="health-item ${status}"><span>${!v.ok ? "!" : "✓"}</span><div><strong>${escapeHtml(w.title || w.id)}</strong><small>${escapeHtml(widgetTypeLabel(w.type))} · ${escapeHtml(msg)}</small></div></div>`;
-  });
-  el.innerHTML = rows.join("") || `<div class="muted" style="padding:10px;">No hay widgets.</div>`;
-  return { errors, warnings };
-}
-
-function renderBlogHealth() {
-  const el = $("#blogHealthList");
-  if (!el) return;
-  const posts = INDEX.posts || [];
-  const groups = buildPostGroups(posts);
-  const missingTranslation = [...groups.values()].filter(g => postGroupCompleteness(g).complete === false).length;
-  const withoutAuthor = posts.filter(p => !(p.authorIds || p.authors || []).length).slice(0, 8);
-  const withoutExcerpt = posts.filter(p => !String(p.excerpt || "").trim()).slice(0, 8);
-  const withoutCover = posts.filter(p => !String(p.cover || "").trim()).slice(0, 8);
-  const orphanResources = (INDEX.resources || []).filter(r => !posts.some(p => (p.resourceIds || p.resources || []).includes(r.id))).slice(0, 8);
-  const rows = [
-    { ok: missingTranslation === 0, label: missingTranslation ? `${missingTranslation} grupo(s) con traducción incompleta` : "Traducciones completas" },
-    { ok: withoutAuthor.length === 0, label: withoutAuthor.length ? `${withoutAuthor.length} entrada(s) sin autoría visible` : "Autoría asignada" },
-    { ok: withoutExcerpt.length === 0, label: withoutExcerpt.length ? `${withoutExcerpt.length} entrada(s) sin excerpt` : "Excerpts completos", soft: true },
-    { ok: withoutCover.length === 0, label: withoutCover.length ? `${withoutCover.length} entrada(s) sin cover` : "Covers completos", soft: true },
-    { ok: orphanResources.length === 0, label: orphanResources.length ? `${orphanResources.length} recurso(s) sin uso` : "Recursos conectados", soft: true }
-  ];
-  el.innerHTML = rows.map(healthItemHtml).join("");
-}
-
-function renderHealthSummary(widgetResult = renderWidgetHealth()) {
-  const grid = $("#healthSummaryGrid");
-  const score = $("#healthScore");
-  if (!grid || !score) return;
-  const posts = INDEX.posts || [];
-  const groups = buildPostGroups(posts);
-  const completeGroups = [...groups.values()].filter(g => postGroupCompleteness(g).complete).length;
-  const widgets = INDEX.widgets || [];
-  const badWidgets = widgets.filter(w => !validateWidgetPayload(w).ok).length;
-  const withoutAuthor = posts.filter(p => !(p.authorIds || p.authors || []).length).length;
-  const metrics = [
-    ["Entradas", posts.length],
-    ["Grupos ES/EN", groups.size],
-    ["Grupos completos", completeGroups],
-    ["Widgets", widgets.length],
-    ["Widgets con error", badWidgets],
-    ["Sin autor", withoutAuthor]
-  ];
-  const penalty = badWidgets * 10 + withoutAuthor * 4 + Math.max(0, groups.size - completeGroups) * 6;
-  const value = Math.max(0, Math.min(100, 100 - penalty));
-  score.innerHTML = `<strong>${value}%</strong><span>preparación</span>`;
-  grid.innerHTML = metrics.map(([label, value]) => `<div class="health-metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`).join("");
-}
-
-function renderHealthDashboard() {
-  renderCurrentPostChecklist();
-  const widgetResult = renderWidgetHealth();
-  renderBlogHealth();
-  renderHealthSummary(widgetResult);
-}
-
-function initHealthDashboard() {
-  $("#btnRefreshHealth")?.addEventListener("click", () => {
-    renderHealthDashboard();
-    toast("Diagnóstico actualizado");
-  });
-  $("#btnOpenWidgetDocs")?.addEventListener("click", () => {
-    window.open("/EDITORIAL_GUIDE.md", "_blank", "noopener,noreferrer");
-  });
-}
 
 // ---- Template render + maintenance
 let lastRenderedTemplateHtml = "";
@@ -3986,8 +3352,6 @@ $("#btnRefresh").addEventListener("click", async () => {
     initSlashCommands();
     initEditorialSuite();
     initTemplateTools();
-    initHealthDashboard();
-    renderHealthDashboard();
   } catch (e) {
     toast(`Error cargando: ${e.message}`, false);
   }
