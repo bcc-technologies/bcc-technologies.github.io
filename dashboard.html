@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - BCC</title>
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/prefs.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/dashboard.js" defer></script>
+</head>
+<body class="dashboard-shell">
+  <header>
+    <div class="header-container glass-panel-header">
+      <nav>
+        <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/products.html">Tecnologia</a></li>
+          <li><a href="/science.html">Ciencia</a></li>
+          <li><a href="/services.html">Servicios</a></li>
+          <li><a href="/blog.html">Blog</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/admin-dashboard.html" data-admin-link hidden>Admin</a>
+          <a class="btn btn-ghost" href="http://localhost:3777/" data-cms-link hidden>CMS</a>
+          <div class="account-menu" data-account-menu>
+            <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
+              <span class="account-avatar" data-user-initial>?</span>
+              <span class="account-copy">
+                <strong data-user-menu-name>Cuenta</strong>
+                <small data-user-menu-role>Usuario</small>
+              </span>
+            </button>
+            <div class="account-dropdown" data-account-dropdown hidden>
+              <a href="/dashboard.html">Dashboard</a>
+              <a href="/">Salir del dashboard</a>
+              <button type="button" data-logout>Cerrar sesion</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="dashboard-topbar">
+      <div>
+        <div class="dashboard-kicker">Cuenta BCC</div>
+        <h1>Hola, <span data-user-name>...</span></h1>
+        <p class="dashboard-subtitle">Panel inicial para clientes y usuarios generales. Aqui viviran descargas, licencias, solicitudes de soporte y reportes asociados a la cuenta.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a class="btn btn-primary" href="/products.html">Ver productos</a>
+        <a class="btn btn-ghost" href="/contactUs.html">Solicitar soporte</a>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel">
+        <h2>Perfil</h2>
+        <div class="metric"><span class="muted-text">Correo</span><strong data-user-email>...</strong></div>
+        <div class="metric"><span class="muted-text">Compania</span><strong data-user-company>...</strong></div>
+      </article>
+      <article class="dashboard-panel">
+        <h2>Acceso</h2>
+        <div class="metric"><span class="muted-text">Nivel</span><strong data-user-role>...</strong></div>
+        <p class="muted-text">Los permisos se calculan desde el rol asignado por administracion.</p>
+      </article>
+      <article class="dashboard-panel">
+        <h2>Licencias</h2>
+        <div class="metric"><span class="muted-text">Estado</span><strong>Sin licencias activas</strong></div>
+        <p class="muted-text">Preparado para conectar descargas y productos comprados.</p>
+      </article>
+      <article class="dashboard-panel wide">
+        <h2>Permisos disponibles</h2>
+        <ul class="permission-list" data-permissions></ul>
+      </article>
+      <article class="dashboard-panel">
+        <h2>Soporte</h2>
+        <p class="muted-text">No hay tickets abiertos. El siguiente paso es conectar este modulo a solicitudes reales.</p>
+      </article>
+      <article class="dashboard-panel full">
+        <h2>Datos de cuenta</h2>
+        <form class="profile-form" data-profile-form>
+          <p class="auth-message" data-profile-message hidden></p>
+          <label>
+            Nombre
+            <input type="text" name="name" autocomplete="name" required />
+          </label>
+          <label>
+            Compania
+            <input type="text" name="company" autocomplete="organization" />
+          </label>
+          <label>
+            Cargo
+            <input type="text" name="title" autocomplete="organization-title" />
+          </label>
+          <button class="btn btn-primary" type="submit">Guardar cambios</button>
+        </form>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

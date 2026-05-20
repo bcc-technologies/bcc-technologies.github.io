@@ -24,6 +24,7 @@
   <script src="/js/layout.js" defer></script>
   <script src="/js/nav.js" defer></script>
   <script src="/js/prefs.js" defer></script>
+  <script src="/js/auth.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/signup.html">
   <link rel="alternate" hreflang="es" href="/signup.html">
   <link rel="alternate" hreflang="x-default" href="/signup.html">
@@ -77,13 +78,14 @@
     <section class="signup-card">
       <h1>Create Account</h1>
       <p>Create your <strong>BCC Account</strong> to access tools, dashboards, and exclusive scientific software.</p>
-      <form>
-        <input type="text" placeholder="Full Name" required />
-        <input type="email" placeholder="Company or Work Email" required />
-        <input type="text" placeholder="Company Name" required />
-        <input type="text" placeholder="Job Title" />
-        <input type="password" placeholder="Password" required />
-        <input type="password" placeholder="Confirm Password" required />
+      <form data-signup-form>
+        <p class="auth-message" data-auth-message hidden></p>
+        <input type="text" name="name" autocomplete="name" placeholder="Full Name" required />
+        <input type="email" name="email" autocomplete="email" placeholder="Company or Work Email" required />
+        <input type="text" name="company" autocomplete="organization" placeholder="Company Name" required />
+        <input type="text" name="title" autocomplete="organization-title" placeholder="Job Title" />
+        <input type="password" name="password" autocomplete="new-password" placeholder="Password" required minlength="8" />
+        <input type="password" name="confirmPassword" autocomplete="new-password" placeholder="Confirm Password" required minlength="8" />
         <button type="submit">
           SIGN UP
           <span class="arrow">→</span>

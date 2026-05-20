@@ -2,6 +2,8 @@
   "name": "bcc-technologies.github.io",
   "private": true,
   "scripts": {
+    "accounts:dev": "node accounts-server.mjs",
+    "cms:dev": "npm --prefix admin-local run dev",
     "render:products": "node scripts/render-products-pages.mjs",
     "check:products": "node scripts/render-products-pages.mjs --check",
     "test": "node --test tests/*.mjs",

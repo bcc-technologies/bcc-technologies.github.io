@@ -175,6 +175,88 @@ button{ user-select: none; }
   flex-wrap: wrap;
 }
 
+.account-menu{
+  position: relative;
+}
+
+.account-trigger{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface2);
+  color: var(--text);
+  padding: 5px 12px 5px 6px;
+  cursor: pointer;
+}
+
+.account-avatar{
+  width: 29px;
+  height: 29px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(237,70,36,0.18);
+  color: var(--text-strong);
+  font-weight: 850;
+}
+
+.account-copy{
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  line-height: 1.08;
+}
+
+.account-copy strong{
+  font-size: .86rem;
+  color: var(--text-strong);
+}
+
+.account-copy small{
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.account-dropdown{
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 210px;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: rgba(20,24,33,0.96);
+  box-shadow: var(--shadow);
+}
+
+.account-dropdown[hidden]{
+  display: none !important;
+}
+
+.account-dropdown a,
+.account-dropdown button{
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  padding: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.account-dropdown a:hover,
+.account-dropdown button:hover{
+  background: var(--surface3);
+}
+
 .publish{
   display: flex;
   gap: 8px;

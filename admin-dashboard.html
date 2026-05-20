@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - BCC</title>
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/prefs.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/admin-dashboard.js" defer></script>
+</head>
+<body class="dashboard-shell">
+  <header>
+    <div class="header-container glass-panel-header">
+      <nav>
+        <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/dashboard.html">Usuario</a></li>
+          <li><a href="http://localhost:3777/">CMS local</a></li>
+          <li><a href="/blog.html">Blog</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="account-menu" data-account-menu>
+            <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
+              <span class="account-avatar" data-user-initial>?</span>
+              <span class="account-copy">
+                <strong data-user-menu-name>Cuenta</strong>
+                <small data-user-menu-role>Usuario</small>
+              </span>
+            </button>
+            <div class="account-dropdown" data-account-dropdown hidden>
+              <a href="/dashboard.html">Dashboard</a>
+              <a href="/">Salir del dashboard</a>
+              <button type="button" data-logout>Cerrar sesion</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="dashboard-topbar">
+      <div>
+        <div class="dashboard-kicker">Administracion</div>
+        <h1>Panel interno</h1>
+        <p class="dashboard-subtitle">Gestion inicial de cuentas, roles y accesos. Sesion activa: <strong data-user-name>...</strong> - <span data-user-role>...</span>.</p>
+      </div>
+      <div class="dashboard-actions">
+        <a class="btn btn-primary" href="http://localhost:3777/">Abrir CMS local</a>
+        <a class="btn btn-ghost" href="/dashboard.html">Vista cliente</a>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel full">
+        <h2>Cuentas registradas</h2>
+        <p class="muted-text" data-admin-message>Cargando...</p>
+        <table class="account-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Compania</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Ultimo acceso</th>
+            </tr>
+          </thead>
+          <tbody data-users-table></tbody>
+        </table>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

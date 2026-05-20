@@ -23,6 +23,7 @@
   <script src="js/layout.js" defer></script>
   <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
+  <script src="js/auth.js" defer></script>
   <link rel="alternate" hreflang="es" href="/login.html">
   <link rel="alternate" hreflang="en" href="/en/login.html">
   <link rel="alternate" hreflang="x-default" href="/login.html">
@@ -76,8 +77,10 @@
     <section class="login-card">
       <h1>Iniciar Sesión</h1>
       <p>Inicie sesión en su <strong>Cuenta BCC</strong> para descargar el software más reciente y acceder a contenido exclusivo</p>
-      <form>
-        <input type="email" placeholder="Correo corporativo o profesional" required />
+      <form data-login-form>
+        <p class="auth-message" data-auth-message hidden></p>
+        <input type="email" name="email" autocomplete="email" placeholder="Correo corporativo o profesional" required />
+        <input type="password" name="password" autocomplete="current-password" placeholder="Contraseña" required />
         <button type="submit">
           ingresar
           <span class="arrow">→</span>
@@ -85,7 +88,7 @@
       </form>
       <p class="register-link">
         ¿No tienes una cuenta?
-        <a href="./signup">Crea una cuenta gratis.</a>
+        <a href="/signup.html">Crea una cuenta gratis.</a>
       </p>
       <div class="legal-links">
         <a href="#">Términos</a> /

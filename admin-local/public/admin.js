@@ -8,6 +8,10 @@ function toast(msg, ok = true) {
   setTimeout(() => (toastEl.style.display = "none"), 2400);
 }
 
+function roleLabel(role) {
+  return { client: "Cliente", staff: "Personal", admin: "Administrador" }[role] || role || "Usuario";
+}
+
 async function api(path, opts = {}) {
   const res = await fetch(path, {
     headers: opts.body instanceof FormData ? undefined : { "Content-Type": "application/json" },
@@ -497,6 +501,32 @@ function initUiToggles() {
     requestAnimationFrame(syncEditorPanelHeights);
   });
 
+  $("#btnAccountMenu")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const dropdown = $("#accountDropdown");
+    if (!dropdown) return;
+    const open = dropdown.hidden;
+    dropdown.hidden = !open;
+    $("#btnAccountMenu")?.setAttribute("aria-expanded", String(open));
+  });
+
+  document.addEventListener("click", (event) => {
+    const menu = $("#accountMenu");
+    const dropdown = $("#accountDropdown");
+    if (!menu || !dropdown || dropdown.hidden || menu.contains(event.target)) return;
+    dropdown.hidden = true;
+    $("#btnAccountMenu")?.setAttribute("aria-expanded", "false");
+  });
+
+  $("#btnLogout")?.addEventListener("click", async () => {
+    try {
+      await api("/api/auth/logout", { method: "POST", body: "{}" });
+    } catch (_e) {
+      // Continue to the login screen even if the local request fails.
+    }
+    window.location.assign("http://localhost:3888/login.html");
+  });
+
   $("#btnToggleLibraryTop")?.addEventListener("click", () => {
     setPostsLibraryCollapsed(!document.body.classList.contains("posts-library-collapsed"));
     requestAnimationFrame(syncEditorPanelHeights);
@@ -578,6 +608,18 @@ async function refreshGitStatus() {
   el.classList.remove("clean", "dirty");
   el.classList.add(st.dirty ? "dirty" : "clean");
   el.querySelector(".status-text").textContent = st.dirty ? "Cambios sin publicar" : "Repo limpio";
+}
+
+async function hydrateAccountMenu() {
+  try {
+    const { user } = await api("/api/auth/me");
+    const display = user?.displayName || user?.name || "Cuenta";
+    if ($("#accountName")) $("#accountName").textContent = display;
+    if ($("#accountRole")) $("#accountRole").textContent = roleLabel(user?.role);
+    if ($("#accountInitial")) $("#accountInitial").textContent = display.trim().charAt(0).toUpperCase() || "?";
+  } catch (_e) {
+    // The CMS guard handles invalid sessions on API/page load.
+  }
 }
 
 function markCurrent(scopeSelector, id) {
@@ -3973,6 +4015,7 @@ $("#btnRefresh").addEventListener("click", async () => {
 (async () => {
   try {
     initUiToggles();
+    await hydrateAccountMenu();
     await refreshAll();
     clearPostEditor();
     clearProductEditor();
@@ -3992,10 +4035,6 @@ $("#btnRefresh").addEventListener("click", async () => {
     toast(`Error cargando: ${e.message}`, false);
   }
 })();
-
-
-
-
 
 
 

@@ -1536,9 +1536,97 @@
     syncPrompt();
   }
 
+  async function initAccountNav() {
+    const navActions = document.querySelector('.nav-actions');
+    if (!navActions || navActions.dataset.accountBound === 'true') return;
+
+    const loginLink = Array.from(navActions.querySelectorAll('a')).find((link) => {
+      const href = link.getAttribute('href') || '';
+      return /(?:^|\/)login\.html(?:$|[?#])/i.test(href);
+    });
+    if (!loginLink) return;
+
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const user = data && data.user;
+      if (!user) return;
+
+      navActions.dataset.accountBound = 'true';
+      const display = user.displayName || user.name || 'Cuenta';
+      const role = ({ client: 'Cliente', staff: 'Personal', admin: 'Administrador' })[user.role] || 'Usuario';
+      const locale = getLocale();
+      const dashboardUrl = '/dashboard.html';
+
+      const menu = document.createElement('div');
+      menu.className = 'account-menu';
+      menu.innerHTML = `
+        <button class="account-trigger" type="button" aria-expanded="false">
+          <span class="account-avatar">${escapeHtml(display.trim().charAt(0).toUpperCase() || '?')}</span>
+          <span class="account-copy">
+            <strong>${escapeHtml(display)}</strong>
+            <small>${escapeHtml(role)}</small>
+          </span>
+        </button>
+        <div class="account-dropdown" hidden>
+          <a href="${dashboardUrl}">${locale === 'en' ? 'Dashboard' : 'Dashboard'}</a>
+          <button type="button" data-public-logout>${locale === 'en' ? 'Log out' : 'Cerrar sesion'}</button>
+        </div>
+      `;
+
+      loginLink.replaceWith(menu);
+      bindAccountMenu(menu);
+    } catch (_e) {
+      // Static hosting or no account server available: keep the normal login link.
+    }
+  }
+
+  function bindAccountMenu(menu) {
+    const trigger = menu.querySelector('.account-trigger');
+    const dropdown = menu.querySelector('.account-dropdown');
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const open = dropdown.hidden;
+      dropdown.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', (event) => {
+      if (dropdown.hidden || menu.contains(event.target)) return;
+      dropdown.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+
+    menu.querySelector('[data-public-logout]')?.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+      } catch (_e) {}
+      window.location.assign('/login.html');
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setupNav();
     markCurrentPage();
     initConsole();
+    initAccountNav();
   });
 })();

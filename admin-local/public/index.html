@@ -57,6 +57,22 @@
         <span aria-hidden="true">↻</span>
       </button>
 
+      <a class="btn btn-compact" href="http://localhost:3888/dashboard.html" aria-label="Volver al dashboard">Dashboard</a>
+
+      <div class="account-menu" id="accountMenu">
+        <button class="account-trigger" id="btnAccountMenu" type="button" aria-expanded="false">
+          <span class="account-avatar" id="accountInitial">?</span>
+          <span class="account-copy">
+            <strong id="accountName">Cuenta</strong>
+            <small id="accountRole">Usuario</small>
+          </span>
+        </button>
+        <div class="account-dropdown" id="accountDropdown" hidden>
+          <a href="http://localhost:3888/dashboard.html">Dashboard</a>
+          <button type="button" id="btnLogout">Cerrar sesion</button>
+        </div>
+      </div>
+
       <div class="publish">
         <input class="input" id="commitMsg" type="text" placeholder="Mensaje de commit (ej: Add post)" />
         <button class="btn btn-primary icon-btn" id="btnPublish" type="button" aria-label="Publicar cambios" title="Publicar cambios">
@@ -1459,7 +1475,5 @@
 
 </body>
 </html>
-
-
 
 

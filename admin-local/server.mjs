@@ -22,9 +22,92 @@ const BLOG_TEMPLATES_DIR = path.join(__dirname, "templates");
 const BLOG_TEMPLATE_ES = path.join(BLOG_TEMPLATES_DIR, "blog-post.es.html");
 const BLOG_TEMPLATE_EN = path.join(BLOG_TEMPLATES_DIR, "blog-post.en.html");
 const BLOG_GEN_MARKER = "BCC-GENERATED: blog-post";
+const ACCOUNTS_DATA_DIR = path.resolve(process.env.BCC_ACCOUNTS_DATA_DIR || path.join(REPO_ROOT, "server-data"));
+const ACCOUNTS_USERS_PATH = path.join(ACCOUNTS_DATA_DIR, "users.json");
+const ACCOUNTS_SESSIONS_PATH = path.join(ACCOUNTS_DATA_DIR, "sessions.json");
+const SESSION_COOKIE = "bcc_session";
+const ACCOUNT_LOGIN_URL = process.env.BCC_ACCOUNTS_LOGIN_URL || "http://localhost:3888/login.html";
+const CMS_ALLOWED_ROLES = new Set(["staff", "admin"]);
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
+
+function readAccountJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf-8") || "null") ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function parseCookies(header = "") {
+  return Object.fromEntries(String(header || "").split(";").map(part => {
+    const [key, ...rest] = part.trim().split("=");
+    return [key, decodeURIComponent(rest.join("=") || "")];
+  }).filter(([key]) => key));
+}
+
+function accountUserFromRequest(req) {
+  const token = parseCookies(req.headers.cookie || "")[SESSION_COOKIE];
+  if (!token) return null;
+  const sessions = readAccountJson(ACCOUNTS_SESSIONS_PATH, []);
+  const session = sessions.find(s => s.token === token && new Date(s.expiresAt).getTime() > Date.now());
+  if (!session) return null;
+  const users = readAccountJson(ACCOUNTS_USERS_PATH, []);
+  return users.find(u => u.id === session.userId && u.status !== "disabled") || null;
+}
+
+function parsePersonName(name) {
+  const clean = String(name || "").trim().replace(/\s+/g, " ");
+  const firstName = clean ? clean.split(" ")[0] : "";
+  return { displayName: firstName || clean };
+}
+
+function publicAccountUser(user) {
+  const parsed = parsePersonName(user?.name);
+  return {
+    id: user?.id,
+    name: user?.name || "",
+    displayName: user?.nameParts?.displayName || parsed.displayName || user?.name || "",
+    email: user?.email || "",
+    role: user?.role || "client"
+  };
+}
+
+function wantsHtml(req) {
+  return String(req.headers.accept || "").includes("text/html") || req.path === "/";
+}
+
+function requireCmsAccess(req, res, next) {
+  const user = accountUserFromRequest(req);
+  if (!user) {
+    if (req.path.startsWith("/api/")) return res.status(401).json({ ok: false, error: "No autenticado" });
+    const nextUrl = `${req.protocol}://${req.get("host")}${req.originalUrl || "/"}`;
+    return res.redirect(`${ACCOUNT_LOGIN_URL}?next=${encodeURIComponent(nextUrl)}`);
+  }
+  if (!CMS_ALLOWED_ROLES.has(user.role)) {
+    if (req.path.startsWith("/api/") || !wantsHtml(req)) return res.status(403).json({ ok: false, error: "Permiso insuficiente" });
+    return res.status(403).send("Permiso insuficiente para abrir el CMS local.");
+  }
+  req.accountUser = user;
+  next();
+}
+
+app.post("/api/auth/logout", (req, res) => {
+  const token = parseCookies(req.headers.cookie || "")[SESSION_COOKIE];
+  if (token) {
+    const sessions = readAccountJson(ACCOUNTS_SESSIONS_PATH, []);
+    fs.writeFileSync(ACCOUNTS_SESSIONS_PATH, `${JSON.stringify(sessions.filter(s => s.token !== token), null, 2)}\n`, "utf-8");
+  }
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  res.json({ ok: true });
+});
+
+app.use(requireCmsAccess);
+
+app.get("/api/auth/me", (req, res) => {
+  res.json({ ok: true, user: publicAccountUser(req.accountUser) });
+});
 
 // Admin UI assets live in this package's public folder.
 app.use("/", express.static(path.join(__dirname, "public")));
@@ -1606,8 +1689,8 @@ app.post("/api/git/publish", (req, res) => {
   }
 });
 
-const PORT = 3777;
+const PORT = Number(process.env.PORT || process.env.BCC_CMS_PORT || 3777);
 app.listen(PORT, () => {
   ensureDirs();
-  console.log(`Admin local: http://localhost:${PORT}`);
+  console.log(`Admin local protegido: http://localhost:${PORT}`);
 });
