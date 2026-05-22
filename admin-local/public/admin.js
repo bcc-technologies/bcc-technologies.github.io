@@ -37,6 +37,20 @@ function escapeAttr(s) {
   return escapeHtml(s).replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
+const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+function safeUrl(value, { allowRelative = true } = {}) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (allowRelative && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  try {
+    const parsed = new URL(raw);
+    return SAFE_URL_PROTOCOLS.has(parsed.protocol) ? raw : "";
+  } catch (_e) {
+    return "";
+  }
+}
+
 // ---- Minimal Markdown preview (includes images + lists + links + quotes)
 function mdToHtml(md) {
   const lines = String(md || "").split("\n");
@@ -56,15 +70,17 @@ function mdToHtml(md) {
     // images
     const withImgs = esc.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, url) => {
       const safeAlt = escapeHtml(alt);
-      const safeUrl = escapeHtml(String(url).trim());
+      const cleanUrl = safeUrl(String(url).trim());
+      if (!cleanUrl) return safeAlt;
       const cap = safeAlt ? `<figcaption>${safeAlt}</figcaption>` : "";
-      return `<figure class="article-figure"><img src="${safeUrl}" alt="${safeAlt}"/>${cap}</figure>`;
+      return `<figure class="article-figure"><img src="${escapeAttr(cleanUrl)}" alt="${safeAlt}"/>${cap}</figure>`;
     });
     // links
     return withImgs.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
       const safeText = escapeHtml(text);
-      const safeUrl = escapeHtml(String(url).trim());
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+      const cleanUrl = safeUrl(String(url).trim());
+      if (!cleanUrl) return safeText;
+      return `<a href="${escapeAttr(cleanUrl)}" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
     })
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
@@ -1190,9 +1206,10 @@ function blockPreviewHtml(type, id) {
   if (type === "author") {
     const a = (INDEX.authors || []).find(x => x.id === id);
     if (!a) return "<p>(Autor no encontrado)</p>";
+    const avatarUrl = safeUrl(a.avatar);
     return `
-      <div class="entity-preview-card author-preview-card ${a.avatar ? "has-avatar" : "no-avatar"}">
-        ${a.avatar ? `<img class="entity-avatar" src="${escapeAttr(a.avatar)}" alt="${escapeAttr(a.name || a.id)}"/>` : ""}
+      <div class="entity-preview-card author-preview-card ${avatarUrl ? "has-avatar" : "no-avatar"}">
+        ${avatarUrl ? `<img class="entity-avatar" src="${escapeAttr(avatarUrl)}" alt="${escapeAttr(a.name || a.id)}"/>` : ""}
         <div>
           <div class="entity-preview-title">${escapeHtml(a.name || a.id)}</div>
           <div class="entity-preview-meta">${escapeHtml([a.role, a.affiliation].filter(Boolean).join(" · ") || "Autor")}</div>
@@ -1205,12 +1222,13 @@ function blockPreviewHtml(type, id) {
     const r = (INDEX.references || []).find(x => x.id === id);
     if (!r) return "<p>(Referencia no encontrada)</p>";
     const citation = r.citation || [r.authors, r.year ? `(${r.year})` : "", r.title, r.venue].filter(Boolean).join(". ");
+    const refUrl = safeUrl(r.url);
     return `
       <div class="entity-preview-card reference-preview-card">
         <div class="entity-preview-title">${escapeHtml(r.title || r.id)}</div>
         <div class="entity-preview-meta">${escapeHtml([r.type || "referencia", r.year, r.venue].filter(Boolean).join(" · "))}</div>
         ${citation ? `<div class="entity-preview-body">${escapeHtml(citation)}</div>` : ""}
-        ${r.doi || r.url ? `<div class="entity-preview-links">${r.doi ? `DOI: ${escapeHtml(r.doi)}` : ""}${r.doi && r.url ? " · " : ""}${r.url ? `<a href="${escapeAttr(r.url)}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>` : ""}</div>` : ""}
+        ${r.doi || refUrl ? `<div class="entity-preview-links">${r.doi ? `DOI: ${escapeHtml(r.doi)}` : ""}${r.doi && refUrl ? " · " : ""}${refUrl ? `<a href="${escapeAttr(refUrl)}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>` : ""}</div>` : ""}
       </div>
     `;
   }
@@ -1220,6 +1238,7 @@ function blockPreviewHtml(type, id) {
     if (!r) return "<p>(Recurso no encontrado)</p>";
     const icon = resourceTypeIcon(r.type || type);
     const kicker = resourceTypeLabel(r.type || type);
+    const resourceUrl = safeUrl(r.url);
     const meta = [r.creator, r.year, r.relation].filter(Boolean).join(" · ");
     return `
       <div class="entity-preview-card resource-preview-card">
@@ -1229,7 +1248,7 @@ function blockPreviewHtml(type, id) {
           <div class="entity-preview-title">${escapeHtml(r.title || r.id)}</div>
           ${meta ? `<div class="entity-preview-meta">${escapeHtml(meta)}</div>` : ""}
           ${r.note ? `<div class="entity-preview-body">${escapeHtml(r.note)}</div>` : ""}
-          ${r.url ? `<div class="entity-preview-links"><a href="${escapeAttr(r.url)}" target="_blank" rel="noopener noreferrer">Abrir recurso</a></div>` : ""}
+          ${resourceUrl ? `<div class="entity-preview-links"><a href="${escapeAttr(resourceUrl)}" target="_blank" rel="noopener noreferrer">Abrir recurso</a></div>` : ""}
         </div>
       </div>
     `;
@@ -4035,7 +4054,3 @@ $("#btnRefresh").addEventListener("click", async () => {
     toast(`Error cargando: ${e.message}`, false);
   }
 })();
-
-
-
-

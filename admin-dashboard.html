@@ -22,8 +22,8 @@
       <nav>
         <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/dashboard.html">Usuario</a></li>
-          <li><a href="http://localhost:3777/">CMS local</a></li>
+          <li><a href="/admin-dashboard.html">Administrador</a></li>
+          <li data-local-cms-link hidden><a href="http://localhost:3777/">CMS local</a></li>
           <li><a href="/blog.html">Blog</a></li>
         </ul>
         <div class="nav-actions">
@@ -36,7 +36,7 @@
               </span>
             </button>
             <div class="account-dropdown" data-account-dropdown hidden>
-              <a href="/dashboard.html">Dashboard</a>
+              <a href="/admin-dashboard.html" data-dashboard-link>Dashboard</a>
               <a href="/">Salir del dashboard</a>
               <button type="button" data-logout>Cerrar sesion</button>
             </div>
@@ -54,7 +54,8 @@
         <p class="dashboard-subtitle">Gestion inicial de cuentas, roles y accesos. Sesion activa: <strong data-user-name>...</strong> - <span data-user-role>...</span>.</p>
       </div>
       <div class="dashboard-actions">
-        <a class="btn btn-primary" href="http://localhost:3777/">Abrir CMS local</a>
+        <a class="btn btn-primary" href="http://localhost:3777/" data-local-cms-link hidden>Abrir CMS local</a>
+        <a class="btn btn-ghost" href="/staff-dashboard.html">Vista personal</a>
         <a class="btn btn-ghost" href="/dashboard.html">Vista cliente</a>
       </div>
     </section>
@@ -68,15 +69,64 @@
             <tr>
               <th>Usuario</th>
               <th>Compania</th>
-              <th>Rol</th>
+              <th>Accesos</th>
               <th>Estado</th>
               <th>Ultimo acceso</th>
+              <th>Accion</th>
             </tr>
           </thead>
           <tbody data-users-table></tbody>
         </table>
       </article>
+
+      <article class="dashboard-panel full">
+        <h2>Auditoria de accesos</h2>
+        <p class="muted-text" data-audit-message>Cargando...</p>
+        <table class="account-table audit-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Administrador</th>
+              <th>Cuenta afectada</th>
+              <th>Cambio</th>
+            </tr>
+          </thead>
+          <tbody data-audit-table></tbody>
+        </table>
+      </article>
     </section>
   </main>
+
+  <dialog class="access-modal" data-access-modal>
+    <form method="dialog" class="access-modal-panel">
+      <div class="access-modal-head">
+        <div>
+          <h2>Editar accesos</h2>
+          <p class="muted-text" data-access-modal-user>Selecciona una cuenta.</p>
+        </div>
+        <button class="icon-close" type="button" data-access-modal-close aria-label="Cerrar">×</button>
+      </div>
+      <div class="access-modal-body">
+        <label class="access-field">
+          <span>Rol base</span>
+          <select data-modal-role-select></select>
+          <small data-modal-role-note hidden>No puedes quitarte tu propio rol de administrador.</small>
+        </label>
+        <fieldset class="access-choice-group">
+          <legend>Roles internos</legend>
+          <div data-modal-staff-roles></div>
+        </fieldset>
+        <fieldset class="access-choice-group">
+          <legend>Departamentos</legend>
+          <div data-modal-departments></div>
+        </fieldset>
+      </div>
+      <p class="auth-message" data-access-modal-message hidden></p>
+      <div class="access-modal-actions">
+        <button class="btn btn-ghost" type="button" data-access-modal-close>Cancelar</button>
+        <button class="btn btn-primary" type="button" data-access-modal-save>Guardar acceso</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

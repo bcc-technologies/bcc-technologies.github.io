@@ -10,17 +10,37 @@ const ROOT = __dirname;
 const DATA_DIR = path.resolve(process.env.BCC_ACCOUNTS_DATA_DIR || path.join(ROOT, "server-data"));
 const USERS_PATH = path.join(DATA_DIR, "users.json");
 const SESSIONS_PATH = path.join(DATA_DIR, "sessions.json");
+const ACCESS_AUDIT_PATH = path.join(DATA_DIR, "access-audit.json");
 
 const PORT = Number(process.env.PORT || process.env.BCC_ACCOUNTS_PORT || 3888);
 const SESSION_COOKIE = "bcc_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const MAX_BODY_BYTES = 1024 * 1024;
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
-  staff: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access"],
-  admin: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
+  staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
 };
+
+const STAFF_ROLE_PERMISSIONS = {
+  author: ["content:write", "cms:access"],
+  cofounder: ["content:write", "cms:access", "strategy:view"],
+  department_director: ["content:write", "cms:access", "department:manage"]
+};
+
+const DEPARTMENT_PERMISSIONS = {
+  technology: ["department:technology"],
+  finance: ["department:finance"],
+  operations: ["department:operations"],
+  marketing: ["department:marketing"],
+  hr: ["department:hr"]
+};
+
+const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
+const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
+const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -40,6 +60,7 @@ function ensureStore() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(USERS_PATH)) fs.writeFileSync(USERS_PATH, "[]\n", "utf-8");
   if (!fs.existsSync(SESSIONS_PATH)) fs.writeFileSync(SESSIONS_PATH, "[]\n", "utf-8");
+  if (!fs.existsSync(ACCESS_AUDIT_PATH)) fs.writeFileSync(ACCESS_AUDIT_PATH, "[]\n", "utf-8");
 }
 
 function readJson(file, fallback) {
@@ -91,7 +112,9 @@ function parsePersonName(name) {
 
 function publicUser(user) {
   if (!user) return null;
-  const permissions = ROLE_PERMISSIONS[user.role] || ROLE_PERMISSIONS.client;
+  const staffRoles = normalizeList(user.staffRoles || user.staff_roles, STAFF_ROLES);
+  const departments = normalizeList(user.departments, DEPARTMENTS);
+  const permissions = permissionsForUser(user.role, staffRoles, departments);
   const nameParts = {
     ...parsePersonName(user.name),
     ...(user.nameParts && typeof user.nameParts === "object" ? user.nameParts : {})
@@ -105,11 +128,69 @@ function publicUser(user) {
     company: user.company || "",
     title: user.title || "",
     role: user.role || "client",
+    staffRoles,
+    departments,
     status: user.status || "active",
     permissions,
     createdAt: user.createdAt,
     lastLoginAt: user.lastLoginAt || ""
   };
+}
+
+function normalizeList(value, allowed) {
+  const list = Array.isArray(value) ? value : [];
+  return [...new Set(list.map(item => String(item || "").trim()).filter(item => allowed.includes(item)))];
+}
+
+function validatePassword(password) {
+  const value = String(password || "");
+  return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
+function permissionsForUser(role, staffRoles = [], departments = []) {
+  const permissions = new Set(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client);
+  normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => {
+    (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission));
+  });
+  normalizeList(departments, DEPARTMENTS).forEach(department => {
+    (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission));
+  });
+  if (role === "admin") {
+    STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
+    DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
+  }
+  return [...permissions];
+}
+
+function accessSnapshot(user) {
+  return {
+    role: user?.role || "client",
+    staffRoles: normalizeList(user?.staffRoles || user?.staff_roles, STAFF_ROLES),
+    departments: normalizeList(user?.departments, DEPARTMENTS)
+  };
+}
+
+function sameAccess(left, right) {
+  return left.role === right.role
+    && left.staffRoles.length === right.staffRoles.length
+    && left.departments.length === right.departments.length
+    && left.staffRoles.every(value => right.staffRoles.includes(value))
+    && left.departments.every(value => right.departments.includes(value));
+}
+
+function writeAccessAudit(actor, target, before, after) {
+  const logs = readJson(ACCESS_AUDIT_PATH, []);
+  logs.push({
+    id: crypto.randomUUID(),
+    actorId: actor.id,
+    actorEmail: actor.email,
+    targetUserId: target.id,
+    targetEmail: target.email,
+    before,
+    after,
+    createdAt: new Date().toISOString()
+  });
+  writeJson(ACCESS_AUDIT_PATH, logs.slice(-1000));
 }
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
@@ -141,6 +222,16 @@ function cookieHeader(name, value, options = {}) {
 function sendJson(res, status, payload, headers = {}) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", ...headers });
   res.end(JSON.stringify(payload));
+}
+
+function assertSameOrigin(req, res) {
+  if (!MUTATING_METHODS.has(req.method)) return true;
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const expected = `http://${req.headers.host || "localhost"}`;
+  if (origin === expected) return true;
+  sendJson(res, 403, { ok: false, error: "Origen no permitido" });
+  return false;
 }
 
 function redirect(res, location) {
@@ -201,6 +292,7 @@ function can(user, permission) {
 
 async function handleApi(req, res, url) {
   try {
+    if (!assertSameOrigin(req, res)) return;
     if (req.method === "GET" && url.pathname === "/api/auth/me") {
       const session = getSession(req);
       return sendJson(res, 200, { ok: true, user: publicUser(session?.user) });
@@ -212,7 +304,7 @@ async function handleApi(req, res, url) {
       const password = String(body.password || "");
       const name = String(body.name || "").trim();
       if (!name || !email || !password) return sendJson(res, 400, { ok: false, error: "Nombre, email y contraseña son requeridos." });
-      if (password.length < 8) return sendJson(res, 400, { ok: false, error: "La contraseña debe tener al menos 8 caracteres." });
+      if (!validatePassword(password)) return sendJson(res, 400, { ok: false, error: PASSWORD_RULE_MESSAGE });
 
       const users = readJson(USERS_PATH, []);
       if (users.some(u => u.email === email)) return sendJson(res, 409, { ok: false, error: "Ya existe una cuenta con ese correo." });
@@ -229,6 +321,8 @@ async function handleApi(req, res, url) {
         company: String(body.company || "").trim(),
         title: String(body.title || "").trim(),
         role,
+        staffRoles: [],
+        departments: [],
         status: "active",
         passwordHash: hashPassword(password),
         createdAt: now,
@@ -295,6 +389,25 @@ async function handleApi(req, res, url) {
       return sendJson(res, 200, { ok: true, users });
     }
 
+    if (req.method === "GET" && url.pathname === "/api/admin/access-audit") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "users:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const logs = readJson(ACCESS_AUDIT_PATH, [])
+        .slice()
+        .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
+        .slice(0, 50)
+        .map(log => ({
+          id: log.id,
+          actorEmail: log.actorEmail || "",
+          targetEmail: log.targetEmail || "",
+          beforeAccess: accessSnapshot(log.before || {}),
+          afterAccess: accessSnapshot(log.after || {}),
+          createdAt: log.createdAt || ""
+        }));
+      return sendJson(res, 200, { ok: true, logs });
+    }
+
     const roleMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
     if (req.method === "PATCH" && roleMatch) {
       const user = requireUser(req, res);
@@ -303,6 +416,8 @@ async function handleApi(req, res, url) {
       const body = await readBody(req);
       const role = String(body.role || "");
       if (!ROLE_PERMISSIONS[role]) return sendJson(res, 400, { ok: false, error: "Rol inválido" });
+      const staffRoles = normalizeList(body.staffRoles, STAFF_ROLES);
+      const departments = normalizeList(body.departments, DEPARTMENTS);
       const users = readJson(USERS_PATH, []);
       const targetId = roleMatch[1];
       const target = users.find(u => u.id === targetId);
@@ -314,8 +429,19 @@ async function handleApi(req, res, url) {
       if (target.role === "admin" && role !== "admin" && adminCount <= 1) {
         return sendJson(res, 400, { ok: false, error: "Debe existir al menos un administrador activo." });
       }
-      const updated = users.map(u => u.id === targetId ? { ...u, role } : u);
+      const beforeAccess = accessSnapshot(target);
+      const afterAccess = {
+        role,
+        staffRoles: role === "client" ? [] : staffRoles,
+        departments: role === "client" ? [] : departments
+      };
+      const updated = users.map(u => u.id === targetId ? {
+        ...u,
+        ...afterAccess,
+        updatedAt: new Date().toISOString()
+      } : u);
       writeJson(USERS_PATH, updated);
+      if (!sameAccess(beforeAccess, afterAccess)) writeAccessAudit(user, target, beforeAccess, afterAccess);
       return sendJson(res, 200, { ok: true });
     }
 
@@ -363,8 +489,9 @@ const server = http.createServer((req, res) => {
   return serveStatic(req, res, url);
 });
 
-server.listen(PORT, () => {
+const HOST = process.env.BCC_ACCOUNTS_HOST || "127.0.0.1";
+server.listen(PORT, HOST, () => {
   ensureStore();
-  console.log(`BCC accounts server: http://localhost:${PORT}`);
+  console.log(`BCC accounts server: http://${HOST}:${PORT}`);
   console.log("First registered user becomes admin unless BCC_ADMIN_EMAILS is set.");
 });

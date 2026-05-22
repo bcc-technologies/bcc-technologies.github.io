@@ -24,7 +24,7 @@ test("accounts server registers first admin and protects admin API", async () =>
         email: "admin-test@example.com",
         company: "BCC",
         title: "Admin",
-        password: "password123"
+        password: "Password123!"
       })
     });
     const cookie = res.headers.get("set-cookie");
@@ -71,7 +71,7 @@ test("accounts server registers first admin and protects admin API", async () =>
   }
 });
 
-test("local CMS requires staff or admin account session", async () => {
+test("local CMS requires admin or authorized staff account session", async () => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "bcc-auth-cms-"));
   const accountsPort = 3901;
   const cmsPort = 3902;
@@ -100,11 +100,33 @@ test("local CMS requires staff or admin account session", async () => {
         email: "cms-admin@example.com",
         company: "BCC",
         title: "Admin",
-        password: "password123"
+        password: "Password123!"
       })
     });
     const cookie = res.headers.get("set-cookie");
     assert.equal(res.status, 201);
+
+    res = await fetch(`http://localhost:${accountsPort}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "CMS Staff",
+        email: "cms-staff@example.com",
+        company: "BCC",
+        title: "Staff",
+        password: "Password123!"
+      })
+    });
+    const staffCookie = res.headers.get("set-cookie");
+    const staffSignup = await res.json();
+    assert.equal(res.status, 201);
+
+    res = await fetch(`http://localhost:${accountsPort}/api/admin/users/${staffSignup.user.id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ role: "staff" })
+    });
+    assert.equal(res.status, 200);
 
     await waitForServer(`http://localhost:${cmsPort}/api/health`, 401);
 
@@ -115,6 +137,33 @@ test("local CMS requires staff or admin account session", async () => {
     const health = await res.json();
     assert.equal(res.status, 200);
     assert.equal(health.ok, true);
+
+    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie: staffCookie } });
+    assert.equal(res.status, 403);
+
+    res = await fetch(`http://localhost:${accountsPort}/api/admin/users/${staffSignup.user.id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ role: "staff", staffRoles: ["author"], departments: ["marketing"] })
+    });
+    assert.equal(res.status, 200);
+    const audit = JSON.parse(fs.readFileSync(path.join(dataDir, "access-audit.json"), "utf-8"));
+    assert.equal(audit.length, 2);
+    assert.equal(audit[1].targetEmail, "cms-staff@example.com");
+    assert.deepEqual(audit[1].after.staffRoles, ["author"]);
+
+    res = await fetch(`http://localhost:${accountsPort}/api/admin/access-audit`, { headers: { cookie } });
+    const auditResponse = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(auditResponse.logs.length, 2);
+    assert.equal(auditResponse.logs[0].targetEmail, "cms-staff@example.com");
+    assert.deepEqual(auditResponse.logs[0].afterAccess.staffRoles, ["author"]);
+
+    res = await fetch(`http://localhost:${accountsPort}/api/admin/access-audit`, { headers: { cookie: staffCookie } });
+    assert.equal(res.status, 403);
+
+    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie: staffCookie } });
+    assert.equal(res.status, 200);
 
     res = await fetch(`http://localhost:${cmsPort}/api/auth/me`, { headers: { cookie } });
     const cmsUser = await res.json();

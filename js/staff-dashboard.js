@@ -1,14 +1,13 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const user = await window.BCCAuth.requireAuth({ roles: ["client"] });
+  const user = await window.BCCAuth.requireAuth({ roles: ["staff"] });
   if (!user) return;
 
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-full-name]").forEach(el => { el.textContent = user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = roleLabel(user.role); });
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compania registrada"; });
   hydrateAccountMenu(user);
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
-
   hydrateProfileForm(user);
 
   const permissions = document.querySelector("[data-permissions]");
@@ -28,6 +27,10 @@ function hydrateAccountMenu(user) {
   document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = display.trim().charAt(0).toUpperCase() || "?"; });
   document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
   document.querySelectorAll("[data-admin-return]").forEach(el => { el.hidden = !user.permissions.includes("admin:view"); });
+  document.querySelectorAll("[data-cms-access]").forEach(el => {
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    el.hidden = !isLocal || !user.permissions.includes("cms:access");
+  });
 }
 
 function hydrateProfileForm(user) {

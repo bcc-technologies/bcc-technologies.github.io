@@ -27,10 +27,21 @@ const ACCOUNTS_USERS_PATH = path.join(ACCOUNTS_DATA_DIR, "users.json");
 const ACCOUNTS_SESSIONS_PATH = path.join(ACCOUNTS_DATA_DIR, "sessions.json");
 const SESSION_COOKIE = "bcc_session";
 const ACCOUNT_LOGIN_URL = process.env.BCC_ACCOUNTS_LOGIN_URL || "http://localhost:3888/login.html";
-const CMS_ALLOWED_ROLES = new Set(["staff", "admin"]);
+const CMS_ALLOWED_STAFF_ROLES = new Set(["author", "cofounder", "department_director"]);
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
+
+app.use((req, res, next) => {
+  if (!MUTATING_METHODS.has(req.method)) return next();
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  const expected = `${req.protocol}://${req.get("host")}`;
+  if (origin === expected) return next();
+  return res.status(403).json({ ok: false, error: "Origen no permitido" });
+});
 
 function readAccountJson(file, fallback) {
   try {
@@ -70,8 +81,15 @@ function publicAccountUser(user) {
     name: user?.name || "",
     displayName: user?.nameParts?.displayName || parsed.displayName || user?.name || "",
     email: user?.email || "",
-    role: user?.role || "client"
+    role: user?.role || "client",
+    staffRoles: Array.isArray(user?.staffRoles) ? user.staffRoles : []
   };
+}
+
+function canAccessCms(user) {
+  if (user?.role === "admin") return true;
+  const staffRoles = Array.isArray(user?.staffRoles) ? user.staffRoles : [];
+  return staffRoles.some(role => CMS_ALLOWED_STAFF_ROLES.has(role));
 }
 
 function wantsHtml(req) {
@@ -85,7 +103,7 @@ function requireCmsAccess(req, res, next) {
     const nextUrl = `${req.protocol}://${req.get("host")}${req.originalUrl || "/"}`;
     return res.redirect(`${ACCOUNT_LOGIN_URL}?next=${encodeURIComponent(nextUrl)}`);
   }
-  if (!CMS_ALLOWED_ROLES.has(user.role)) {
+  if (!canAccessCms(user)) {
     if (req.path.startsWith("/api/") || !wantsHtml(req)) return res.status(403).json({ ok: false, error: "Permiso insuficiente" });
     return res.status(403).send("Permiso insuficiente para abrir el CMS local.");
   }
@@ -177,6 +195,26 @@ function normSlug(s) {
     .replace(/(^-|-$)/g, "");
 }
 
+function requireSafeId(value, fallbackSource = "") {
+  const raw = String(value || "").trim();
+  const normalized = normSlug(raw || fallbackSource);
+  if (!normalized) throw new Error("ID invalido");
+  if (raw && raw !== normalized) throw new Error("ID invalido: usa solo letras, numeros y guiones");
+  return normalized;
+}
+
+function safeUrl(value, { allowRelative = true } = {}) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (allowRelative && raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  try {
+    const parsed = new URL(raw);
+    return SAFE_URL_PROTOCOLS.has(parsed.protocol) ? raw : "";
+  } catch {
+    return "";
+  }
+}
+
 function run(cmd, args, cwd = REPO_ROOT) {
   const out = spawnSync(cmd, args, { cwd, encoding: "utf-8" });
   if (out.error) throw out.error;
@@ -233,7 +271,7 @@ function entityCardHtml(type, id, idx) {
         ${s.category ? `<div class="bcc-card-sub">${escapeHtml(s.category)}</div>` : ""}
         ${s.summary ? `<div class="bcc-card-body">${escapeHtml(s.summary)}</div>` : ""}
         ${caps.length ? `<ul class="bcc-card-list">${caps.map(c => `<li>${escapeHtml(c)}</li>`).join("")}</ul>` : ""}
-        ${s.pageUrl ? `<a class="bcc-card-link" href="${escapeAttr(s.pageUrl)}">Ver servicio</a>` : ""}
+        ${safeUrl(s.pageUrl) ? `<a class="bcc-card-link" href="${escapeAttr(safeUrl(s.pageUrl))}">Ver servicio</a>` : ""}
       </div>
     `.trim();
   }
@@ -247,7 +285,7 @@ function entityCardHtml(type, id, idx) {
         <div class="bcc-card-title">${escapeHtml(p.name || p.id)}</div>
         ${p.category || p.status ? `<div class="bcc-card-sub">${escapeHtml([p.category, p.status].filter(Boolean).join(" · "))}</div>` : ""}
         ${p.summary ? `<div class="bcc-card-body">${escapeHtml(p.summary)}</div>` : ""}
-        ${p.pageUrl ? `<a class="bcc-card-link" href="${escapeAttr(p.pageUrl)}">Ver producto</a>` : ""}
+        ${safeUrl(p.pageUrl) ? `<a class="bcc-card-link" href="${escapeAttr(safeUrl(p.pageUrl))}">Ver producto</a>` : ""}
       </div>
     `.trim();
   }
@@ -261,7 +299,7 @@ function entityCardHtml(type, id, idx) {
         <div class="bcc-card-title">${escapeHtml(a.name || a.id)}</div>
         ${a.role || a.affiliation ? `<div class="bcc-card-sub">${escapeHtml([a.role, a.affiliation].filter(Boolean).join(" · "))}</div>` : ""}
         ${a.bio ? `<div class="bcc-card-body">${escapeHtml(a.bio)}</div>` : ""}
-        ${a.url ? `<a class="bcc-card-link" href="${escapeAttr(a.url)}" target="_blank" rel="noopener noreferrer">Perfil</a>` : ""}
+        ${safeUrl(a.url) ? `<a class="bcc-card-link" href="${escapeAttr(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">Perfil</a>` : ""}
       </div>
     `.trim();
   }
@@ -276,7 +314,7 @@ function entityCardHtml(type, id, idx) {
         <div class="bcc-card-title">${escapeHtml(r.title || r.id)}</div>
         ${[r.type, r.year, r.venue].filter(Boolean).length ? `<div class="bcc-card-sub">${escapeHtml([r.type, r.year, r.venue].filter(Boolean).join(" · "))}</div>` : ""}
         ${citation ? `<div class="bcc-card-body">${escapeHtml(citation)}</div>` : ""}
-        ${r.url || r.doi ? `<a class="bcc-card-link" href="${escapeAttr(r.url || `https://doi.org/${r.doi}`)}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>` : ""}
+        ${safeUrl(r.url || (r.doi ? `https://doi.org/${r.doi}` : "")) ? `<a class="bcc-card-link" href="${escapeAttr(safeUrl(r.url || `https://doi.org/${r.doi}`))}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>` : ""}
       </div>
     `.trim();
   }
@@ -290,7 +328,7 @@ function entityCardHtml(type, id, idx) {
         <div class="bcc-card-title">${escapeHtml(r.title || r.id)}</div>
         ${[r.creator, r.year, r.relation].filter(Boolean).length ? `<div class="bcc-card-sub">${escapeHtml([r.creator, r.year, r.relation].filter(Boolean).join(" · "))}</div>` : ""}
         ${r.note ? `<div class="bcc-card-body">${escapeHtml(r.note)}</div>` : ""}
-        ${r.url ? `<a class="bcc-card-link" href="${escapeAttr(r.url)}" target="_blank" rel="noopener noreferrer">Abrir recurso</a>` : ""}
+        ${safeUrl(r.url) ? `<a class="bcc-card-link" href="${escapeAttr(safeUrl(r.url))}" target="_blank" rel="noopener noreferrer">Abrir recurso</a>` : ""}
       </div>
     `.trim();
   }
@@ -314,9 +352,11 @@ function mdInline(s, idx) {
   s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, url) => {
     const u = String(url || "").trim().replace(/^<|>$/g, "");
     const caption = String(alt || "").trim();
+    const cleanUrl = safeUrl(u);
+    if (!cleanUrl) return escapeHtml(caption);
     return `
       <figure class="md-figure">
-        <img src="${escapeAttr(u)}" alt="${escapeAttr(caption)}" loading="lazy" />
+        <img src="${escapeAttr(cleanUrl)}" alt="${escapeAttr(caption)}" loading="lazy" />
         ${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ``}
       </figure>
     `.trim();
@@ -324,7 +364,9 @@ function mdInline(s, idx) {
 
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
     const u = String(url || "").trim().replace(/^<|>$/g, "");
-    return `<a href="${escapeAttr(u)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
+    const cleanUrl = safeUrl(u);
+    if (!cleanUrl) return escapeHtml(text);
+    return `<a href="${escapeAttr(cleanUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`;
   });
 
   s = s.replace(/`([^`]+)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`);
@@ -525,7 +567,7 @@ function serializeResourcesForPost(post, idx, includeResources = true) {
       title: r.title || "",
       creator: r.creator || "",
       year: r.year || "",
-      url: r.url || "",
+      url: safeUrl(r.url),
       relation: r.relation || "",
       note: r.note || "",
       tags: Array.isArray(r.tags) ? r.tags : []
@@ -673,8 +715,8 @@ function clampNumber(n, min, max, fallback) {
 }
 
 function renderImageCompare(widget, cfg) {
-  const beforeUrl = String(cfg.beforeUrl || widget.sourceUrl || "").trim();
-  const afterUrl = String(cfg.afterUrl || "").trim();
+  const beforeUrl = safeUrl(cfg.beforeUrl || widget.sourceUrl || "");
+  const afterUrl = safeUrl(cfg.afterUrl || "");
   if (!beforeUrl || !afterUrl) return `<div class="bcc-widget-empty">Comparador incompleto: faltan dos imágenes.</div>`;
   const split = clampNumber(cfg.split, 5, 95, 50);
   const beforeLabel = cfg.beforeLabel || "Antes";
@@ -734,7 +776,7 @@ function renderWidgetHtml(type, id, idx) {
   const cfg = parseWidgetConfig(widget);
   const title = escapeHtml(widget.title || widget.id || "Widget");
   const body = String(widget.body || "").trim();
-  const sourceUrl = String(widget.sourceUrl || widget.url || cfg.url || "").trim();
+  const sourceUrl = safeUrl(widget.sourceUrl || widget.url || cfg.url || "");
   const targetId = String(widget.targetId || cfg.targetId || cfg.id || "").trim();
 
   if (cleanType === "product-preview" && targetId) return entityCardHtml("product", targetId, idx);
@@ -753,7 +795,8 @@ function renderWidgetHtml(type, id, idx) {
   }
 
   if (cleanType === "video") {
-    const src = youtubeEmbedFromUrl(sourceUrl);
+    const src = safeUrl(youtubeEmbedFromUrl(sourceUrl), { allowRelative: false });
+    if (!src) return `<div class="bcc-widget-empty">URL de video no permitida.</div>`;
     return `<section class="bcc-widget bcc-widget-video">
       <div class="bcc-widget-head"><span>${escapeHtml(widgetTypeIcon(cleanType))}</span><strong>${title}</strong></div>
       <div class="bcc-video-frame"><iframe src="${escapeAttr(src)}" loading="lazy" title="${escapeAttr(widget.title || "Video")}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
@@ -812,9 +855,11 @@ function authorBylineHtml(authors, lang = "es") {
     const name = escapeHtml(rawName);
     const meta = [a.role, a.affiliation].filter(Boolean).join(" · ");
     const bio = String(a.bio || "").trim();
-    const hasAvatar = Boolean(String(a.avatar || "").trim());
+    const avatarUrl = safeUrl(a.avatar);
+    const profileUrl = safeUrl(a.url);
+    const hasAvatar = Boolean(avatarUrl);
     const avatar = hasAvatar
-      ? `<img class="post-author-avatar" src="${escapeAttr(a.avatar)}" alt="" loading="lazy" />`
+      ? `<img class="post-author-avatar" src="${escapeAttr(avatarUrl)}" alt="" loading="lazy" />`
       : "";
     const body = `
       ${avatar}
@@ -822,12 +867,12 @@ function authorBylineHtml(authors, lang = "es") {
         <span class="post-author-name">${name}</span>
         ${meta ? `<span class="post-author-meta">${escapeHtml(meta)}</span>` : ""}
         ${bio ? `<span class="post-author-bio">${escapeHtml(bio)}</span>` : ""}
-        ${a.url ? `<span class="post-author-link-hint">${escapeHtml(hint)} →</span>` : ""}
+        ${profileUrl ? `<span class="post-author-link-hint">${escapeHtml(hint)} →</span>` : ""}
       </span>
     `.trim();
     const cls = `post-author${hasAvatar ? " has-avatar" : " no-avatar"}`;
-    return a.url
-      ? `<a class="${cls}" href="${escapeAttr(a.url)}" target="_blank" rel="noopener noreferrer">${body}</a>`
+    return profileUrl
+      ? `<a class="${cls}" href="${escapeAttr(profileUrl)}" target="_blank" rel="noopener noreferrer">${body}</a>`
       : `<span class="${cls}">${body}</span>`;
   }).join("");
   return `
@@ -928,12 +973,13 @@ function postLang(post) {
 function postOutputPath(post) {
   const lang = postLang(post);
   const outDir = lang === "en" ? BLOG_EN_DIR : BLOG_DIR;
-  return path.join(outDir, `${post.id}.html`);
+  return path.join(outDir, `${requireSafeId(post?.id || "")}.html`);
 }
 
 function postOutputUrl(post) {
   const lang = postLang(post);
-  return lang === "en" ? `/en/blog/${post.id}.html` : `/blog/${post.id}.html`;
+  const id = requireSafeId(post?.id || "");
+  return lang === "en" ? `/en/blog/${id}.html` : `/blog/${id}.html`;
 }
 
 function buildTranslationMap(posts) {
@@ -989,7 +1035,8 @@ function renderPostHtml(post, idx, options = {}) {
   const langTargets = (altEsId && altEnId) ? "es,en" : lang;
   const langSwitchHref = lang === "en" ? (hrefEs || "/blog.html") : (hrefEn || "/en/blog.html");
 
-  const mdPath = path.join(POSTS_DIR, `${post.id}.md`);
+  const postId = requireSafeId(post.id || "");
+  const mdPath = path.join(POSTS_DIR, `${postId}.md`);
   const raw = typeof options.rawBody === "string"
     ? options.rawBody
     : (fs.existsSync(mdPath) ? fs.readFileSync(mdPath, "utf-8") : "");
@@ -1010,7 +1057,7 @@ function renderPostHtml(post, idx, options = {}) {
     ? tags.map(t => `<span class="tagchip">${escapeHtml(t)}</span>`).join("")
     : "";
 
-  const coverUrl = String(post.cover || "").trim();
+  const coverUrl = safeUrl(post.cover);
   const coverHtml = coverUrl
     ? `<div class="modal-cover"><img class="modal-cover-img" src="${escapeAttr(coverUrl)}" alt="${escapeAttr(post.title || "")}" loading="lazy" /></div>`
     : "";
@@ -1093,9 +1140,9 @@ function auditPosts(options = {}) {
   const includeResources = options.includeResources !== false;
 
   const items = posts.map(post => {
-    const outPath = postOutputPath(post);
-    const output = path.relative(REPO_ROOT, outPath).replace(/\\/g, "/");
     try {
+      const outPath = postOutputPath(post);
+      const output = path.relative(REPO_ROOT, outPath).replace(/\\/g, "/");
       const html = renderPostHtml(post, idx, { includeResources });
       if (!fs.existsSync(outPath)) {
         return { id: post.id, title: post.title, lang: postLang(post), path: postOutputUrl(post), output, status: "missing", reason: "HTML generado no existe" };
@@ -1109,7 +1156,7 @@ function auditPosts(options = {}) {
       }
       return { id: post.id, title: post.title, lang: postLang(post), path: postOutputUrl(post), output, status: "current", reason: "HTML actualizado" };
     } catch (e) {
-      return { id: post.id, title: post.title, lang: postLang(post), path: postOutputUrl(post), output, status: "error", reason: String(e.message || e) };
+      return { id: post.id, title: post.title, lang: postLang(post), path: "", output: "", status: "error", reason: String(e.message || e) };
     }
   });
 
@@ -1180,17 +1227,21 @@ function generateBlogPages(options = {}) {
   const keepEs = new Set();
   const keepEn = new Set();
   for (const post of allPosts) {
-    const outPath = postOutputPath(post);
-    if (postLang(post) === "en") keepEn.add(outPath);
-    else keepEs.add(outPath);
+    try {
+      const outPath = postOutputPath(post);
+      if (postLang(post) === "en") keepEn.add(outPath);
+      else keepEs.add(outPath);
+    } catch {
+      // Invalid stored post IDs are reported during the render loop.
+    }
   }
 
   const items = [];
   for (const post of posts) {
     if (!post?.id) continue;
-    const outPath = postOutputPath(post);
-    const output = path.relative(REPO_ROOT, outPath).replace(/\\/g, "/");
     try {
+      const outPath = postOutputPath(post);
+      const output = path.relative(REPO_ROOT, outPath).replace(/\\/g, "/");
       const html = renderPostHtml(post, idx, { includeResources });
       const exists = fs.existsSync(outPath);
       const current = exists ? fs.readFileSync(outPath, "utf-8") : "";
@@ -1218,7 +1269,7 @@ function generateBlogPages(options = {}) {
         items.push({ id: post.id, title: post.title, lang: postLang(post), path: postOutputUrl(post), output, status: "skipped", reason: "Ya estaba actualizado" });
       }
     } catch (e) {
-      items.push({ id: post.id, title: post.title, lang: postLang(post), path: postOutputUrl(post), output, status: "error", reason: String(e.message || e) });
+      items.push({ id: post.id, title: post.title, lang: postLang(post), path: "", output: "", status: "error", reason: String(e.message || e) });
     }
   }
 
@@ -1252,7 +1303,7 @@ function generateBlogPages(options = {}) {
 function renderPostFromPayload(payload = {}) {
   ensureDirs();
   const idx = readIndex();
-  const id = String(payload.id || payload.draft?.id || "").trim();
+  const id = requireSafeId(payload.id || payload.draft?.id || "");
   if (!id) throw new Error("missing id");
 
   const basePost = (Array.isArray(idx.posts) ? idx.posts : []).find(p => p.id === id);
@@ -1262,7 +1313,7 @@ function renderPostFromPayload(payload = {}) {
   const post = {
     ...(basePost || {}),
     ...(draft || {}),
-    id: String((draft?.id || id)).trim()
+    id: requireSafeId(draft?.id || id)
   };
 
   const tempIdx = {
@@ -1301,7 +1352,9 @@ function upsertCollectionItem(collectionName, req, res, requiredField = "name", 
     }
 
     const idSource = payload.id || payload.name || payload.title || collectionName.slice(0, -1);
-    const id = String(payload.id && String(payload.id).trim() ? payload.id : normSlug(idSource)).trim();
+    const id = payload.id && String(payload.id).trim()
+      ? requireSafeId(payload.id)
+      : requireSafeId("", idSource);
     if (!id) return res.status(400).json({ ok: false, error: "id inválido" });
 
     const idx = readIndex();
@@ -1327,7 +1380,7 @@ function upsertCollectionItem(collectionName, req, res, requiredField = "name", 
 
 function deleteCollectionItem(collectionName, req, res) {
   try {
-    const id = String(req.body?.id || "").trim();
+    const id = requireSafeId(req.body?.id || "");
     if (!id) return res.status(400).json({ ok: false, error: "missing id" });
     const idx = readIndex();
     idx[collectionName] = idx[collectionName].filter(x => x.id !== id);
@@ -1352,10 +1405,10 @@ const storage = multer.diskStorage({
 
 function isAllowedImage(file) {
   const okMime = new Set([
-    "image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"
+    "image/png", "image/jpeg", "image/webp", "image/gif"
   ]);
   const ext = path.extname(file.originalname || "").toLowerCase();
-  const okExt = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"]);
+  const okExt = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif"]);
   return okMime.has(file.mimetype) && okExt.has(ext);
 }
 
@@ -1404,7 +1457,7 @@ app.get("/api/index", (_req, res) => {
 
 app.get("/api/posts/body", (req, res) => {
   try {
-    const id = String(req.query.id || "");
+    const id = requireSafeId(req.query.id || "");
     if (!id) return res.status(400).json({ ok: false, error: "missing id" });
 
     const mdPath = path.join(POSTS_DIR, `${id}.md`);
@@ -1441,8 +1494,8 @@ app.post("/api/posts/upsert", (req, res) => {
     }
 
     const id = idIn && String(idIn).trim()
-      ? String(idIn).trim()
-      : `${date}-${normSlug(title)}`;
+      ? requireSafeId(idIn)
+      : requireSafeId("", `${date}-${normSlug(title)}`);
 
     ensureDirs();
     fs.writeFileSync(path.join(POSTS_DIR, `${id}.md`), body, "utf-8");
@@ -1502,7 +1555,7 @@ app.post("/api/posts/upsert", (req, res) => {
 
 app.post("/api/posts/delete", (req, res) => {
   try {
-    const id = String(req.body?.id || "");
+    const id = requireSafeId(req.body?.id || "");
     if (!id) return res.status(400).json({ ok: false, error: "missing id" });
 
     const idx = readIndex();
@@ -1556,10 +1609,10 @@ app.post("/api/products/upsert", (req, res) => {
     const { id: idIn, name, category = "", status = "Activo", summary = "", pageUrl = "", tags = [] } = req.body || {};
     if (!name) return res.status(400).json({ ok: false, error: "name requerido" });
 
-    const id = idIn && String(idIn).trim() ? String(idIn).trim() : normSlug(name);
+    const id = idIn && String(idIn).trim() ? requireSafeId(idIn) : requireSafeId("", name);
 
     const idx = readIndex();
-    const item = { id, name, category, status, summary, pageUrl, tags: Array.isArray(tags) ? tags : [] };
+    const item = { id, name, category, status, summary, pageUrl: safeUrl(pageUrl), tags: Array.isArray(tags) ? tags : [] };
 
     const i = idx.products.findIndex(x => x.id === id);
     if (i >= 0) idx.products[i] = item;
@@ -1574,7 +1627,7 @@ app.post("/api/products/upsert", (req, res) => {
 
 app.post("/api/products/delete", (req, res) => {
   try {
-    const id = String(req.body?.id || "");
+    const id = requireSafeId(req.body?.id || "");
     if (!id) return res.status(400).json({ ok: false, error: "missing id" });
 
     const idx = readIndex();
@@ -1602,13 +1655,13 @@ app.post("/api/services/upsert", (req, res) => {
 
     if (!name) return res.status(400).json({ ok: false, error: "name requerido" });
 
-    const id = idIn && String(idIn).trim() ? String(idIn).trim() : normSlug(name);
+    const id = idIn && String(idIn).trim() ? requireSafeId(idIn) : requireSafeId("", name);
 
     const idx = readIndex();
     const item = {
       id, name, category, summary,
       capabilities, deliverables, requirements,
-      pageUrl,
+      pageUrl: safeUrl(pageUrl),
       tags: Array.isArray(tags) ? tags : []
     };
 
@@ -1625,7 +1678,7 @@ app.post("/api/services/upsert", (req, res) => {
 
 app.post("/api/services/delete", (req, res) => {
   try {
-    const id = String(req.body?.id || "");
+    const id = requireSafeId(req.body?.id || "");
     if (!id) return res.status(400).json({ ok: false, error: "missing id" });
 
     const idx = readIndex();
@@ -1690,7 +1743,8 @@ app.post("/api/git/publish", (req, res) => {
 });
 
 const PORT = Number(process.env.PORT || process.env.BCC_CMS_PORT || 3777);
-app.listen(PORT, () => {
+const HOST = process.env.BCC_CMS_HOST || "127.0.0.1";
+app.listen(PORT, HOST, () => {
   ensureDirs();
-  console.log(`Admin local protegido: http://localhost:${PORT}`);
+  console.log(`Admin local protegido: http://${HOST}:${PORT}`);
 });

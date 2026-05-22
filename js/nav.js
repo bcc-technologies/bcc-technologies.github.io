@@ -1554,7 +1554,7 @@
       const display = user.displayName || user.name || 'Cuenta';
       const role = ({ client: 'Cliente', staff: 'Personal', admin: 'Administrador' })[user.role] || 'Usuario';
       const locale = getLocale();
-      const dashboardUrl = '/dashboard.html';
+      const dashboardUrl = dashboardUrlForRole(user.role);
 
       const menu = document.createElement('div');
       menu.className = 'account-menu';
@@ -1626,6 +1626,12 @@
       displayName,
       role
     };
+  }
+
+  function dashboardUrlForRole(role) {
+    if (role === 'admin') return '/admin-dashboard.html';
+    if (role === 'staff') return '/staff-dashboard.html';
+    return '/dashboard.html';
   }
 
   function bindAccountMenu(menu) {

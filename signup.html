@@ -84,8 +84,8 @@
         <input type="email" name="email" autocomplete="email" placeholder="Correo corporativo o profesional" required />
         <input type="text" name="company" autocomplete="organization" placeholder="Nombre de la compañía" required />
         <input type="text" name="title" autocomplete="organization-title" placeholder="Titulo de su trabajo" />
-        <input type="password" name="password" autocomplete="new-password" placeholder="Contraseña" required minlength="8" />
-        <input type="password" name="confirmPassword" autocomplete="new-password" placeholder="Confirmar contraseña" required minlength="8" />
+        <input type="password" name="password" autocomplete="new-password" placeholder="Contraseña" required minlength="8" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Minimo 8 caracteres, una mayuscula, una minuscula y un simbolo." />
+        <input type="password" name="confirmPassword" autocomplete="new-password" placeholder="Confirmar contraseña" required minlength="8" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Minimo 8 caracteres, una mayuscula, una minuscula y un simbolo." />
         <button type="submit">
           registrar
           <span class="arrow">→</span>

@@ -208,6 +208,69 @@
   margin-top: 2px;
 }
 
+.access-summary{
+  display: grid;
+  gap: 7px;
+  min-width: 260px;
+}
+
+.access-summary span{
+  display: inline-flex;
+  margin-top: 0;
+}
+
+.access-summary small{
+  color: var(--ink-muted);
+  font-size: .82rem;
+}
+
+.role-badge,
+.chip-list span,
+.muted-chip{
+  width: fit-content;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.role-badge{
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.role-client{
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.role-staff{
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+}
+
+.chip-list{
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-list span{
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.muted-chip{
+  color: var(--ink-muted);
+  background: transparent;
+}
+
 .account-table select{
   min-width: 130px;
   background: var(--surface);
@@ -222,11 +285,183 @@
   cursor: not-allowed;
 }
 
+.access-editor{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  max-width: 520px;
+}
+
+.access-editor fieldset{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.access-editor legend{
+  padding: 0 4px;
+  color: var(--ink-muted);
+  font-size: .76rem;
+  text-transform: uppercase;
+}
+
+.access-editor label{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: .86rem;
+}
+
+.access-editor input{
+  accent-color: var(--accent);
+}
+
+.access-editor .btn{
+  justify-self: start;
+}
+
 .role-lock-note{
   display: block;
   margin-top: 6px;
   color: var(--ink-muted);
   font-size: .78rem;
+}
+
+.audit-table td{
+  vertical-align: top;
+}
+
+.audit-change{
+  min-width: 280px;
+  color: var(--ink-muted);
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+.access-modal{
+  width: min(720px, calc(100% - 32px));
+  max-height: min(760px, calc(100vh - 32px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  padding: 0;
+}
+
+.access-modal::backdrop{
+  background: rgba(10, 14, 20, .48);
+  backdrop-filter: blur(3px);
+}
+
+.access-modal-panel{
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.access-modal-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.access-modal-head h2{
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.icon-close{
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.access-modal-body{
+  display: grid;
+  gap: 14px;
+}
+
+.access-field{
+  display: grid;
+  gap: 7px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 800;
+}
+
+.access-field select{
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.access-field small{
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.access-choice-group{
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.access-choice-group legend{
+  padding: 0 4px;
+  color: var(--ink-muted);
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-choice-group div{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.access-choice-group label{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: .88rem;
+  cursor: pointer;
+}
+
+.access-choice-group input{
+  accent-color: var(--accent);
+}
+
+.access-modal-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .auth-message{

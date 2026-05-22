@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - BCC</title>
+  <title>Personal - BCC</title>
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
@@ -14,7 +14,7 @@
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
   <script src="js/auth.js" defer></script>
-  <script src="js/dashboard.js" defer></script>
+  <script src="js/staff-dashboard.js" defer></script>
 </head>
 <body class="dashboard-shell">
   <header>
@@ -22,10 +22,9 @@
       <nav>
         <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
         <ul class="nav-links" id="primary-nav">
-          <li><a href="/products.html">Tecnologia</a></li>
-          <li><a href="/science.html">Ciencia</a></li>
-          <li><a href="/services.html">Servicios</a></li>
+          <li><a href="/staff-dashboard.html">Personal</a></li>
           <li><a href="/blog.html">Blog</a></li>
+          <li><a href="/services.html">Servicios</a></li>
         </ul>
         <div class="nav-actions">
           <div class="account-menu" data-account-menu>
@@ -37,7 +36,7 @@
               </span>
             </button>
             <div class="account-dropdown" data-account-dropdown hidden>
-              <a href="/dashboard.html" data-dashboard-link>Dashboard</a>
+              <a href="/staff-dashboard.html" data-dashboard-link>Dashboard</a>
               <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
               <a href="/">Salir del dashboard</a>
               <button type="button" data-logout>Cerrar sesion</button>
@@ -51,14 +50,15 @@
   <main class="dashboard-main">
     <section class="dashboard-topbar">
       <div>
-        <div class="dashboard-kicker">Cuenta BCC</div>
+        <div class="dashboard-kicker">Personal BCC</div>
         <h1>Hola, <span data-user-name>...</span></h1>
-        <p class="dashboard-subtitle">Panel de cliente para descargas, licencias, solicitudes de soporte y reportes asociados a la cuenta.</p>
+        <p class="dashboard-subtitle">Panel de trabajo para seguimiento de clientes, contenido y solicitudes internas asignadas al equipo.</p>
       </div>
       <div class="dashboard-actions">
         <a class="btn btn-ghost" href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
-        <a class="btn btn-primary" href="/products.html">Ver productos</a>
-        <a class="btn btn-ghost" href="/contactUs.html">Solicitar soporte</a>
+        <a class="btn btn-primary" href="http://localhost:3777/" data-cms-access data-local-cms-link hidden>Abrir CMS</a>
+        <a class="btn btn-primary" href="/blog.html">Revisar contenido</a>
+        <a class="btn btn-ghost" href="/contactUs.html">Solicitudes</a>
       </div>
     </section>
 
@@ -71,20 +71,20 @@
       <article class="dashboard-panel">
         <h2>Acceso</h2>
         <div class="metric"><span class="muted-text">Nivel</span><strong data-user-role>...</strong></div>
-        <p class="muted-text">Los permisos se calculan desde el rol asignado por administracion.</p>
+        <p class="muted-text">El acceso al CMS depende de los roles internos asignados por administracion.</p>
       </article>
       <article class="dashboard-panel">
-        <h2>Licencias</h2>
-        <div class="metric"><span class="muted-text">Estado</span><strong>Sin licencias activas</strong></div>
-        <p class="muted-text">Preparado para conectar descargas y productos comprados.</p>
+        <h2>Clientes</h2>
+        <div class="metric"><span class="muted-text">Seguimiento</span><strong>Sin casos asignados</strong></div>
+        <p class="muted-text">Preparado para conectar cuentas, reportes y solicitudes de clientes.</p>
       </article>
       <article class="dashboard-panel wide">
         <h2>Permisos disponibles</h2>
         <ul class="permission-list" data-permissions></ul>
       </article>
       <article class="dashboard-panel">
-        <h2>Soporte</h2>
-        <p class="muted-text">No hay tickets abiertos. El siguiente paso es conectar este modulo a solicitudes reales.</p>
+        <h2>Contenido</h2>
+        <p class="muted-text">No hay tareas editoriales asignadas desde el sistema.</p>
       </article>
       <article class="dashboard-panel full">
         <h2>Datos de cuenta</h2>

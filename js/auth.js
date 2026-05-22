@@ -1,8 +1,51 @@
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
-  staff: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access"],
-  admin: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
+  staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
 };
+
+const STAFF_ROLE_PERMISSIONS = {
+  author: ["content:write", "cms:access"],
+  cofounder: ["content:write", "cms:access", "strategy:view"],
+  department_director: ["content:write", "cms:access", "department:manage"]
+};
+
+const DEPARTMENT_PERMISSIONS = {
+  technology: ["department:technology"],
+  finance: ["department:finance"],
+  operations: ["department:operations"],
+  marketing: ["department:marketing"],
+  hr: ["department:hr"]
+};
+
+const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
+const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
+const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
+
+function normalizeList(value, allowed) {
+  const list = Array.isArray(value) ? value : [];
+  return [...new Set(list.map(item => String(item || "").trim()).filter(item => allowed.includes(item)))];
+}
+
+function validatePassword(password) {
+  const value = String(password || "");
+  return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
+function permissionsForProfile(role, staffRoles = [], departments = []) {
+  const permissions = new Set(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client);
+  normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => {
+    (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission));
+  });
+  normalizeList(departments, DEPARTMENTS).forEach(department => {
+    (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission));
+  });
+  if (role === "admin") {
+    STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
+    DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
+  }
+  return [...permissions];
+}
 
 async function loadSupabaseClient() {
   if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
@@ -96,6 +139,8 @@ function publicProfile(profile, authUser = null) {
   const fullName = profile?.full_name || metadata.full_name || metadata.name || authUser?.email || "";
   const parsed = parsePersonName(fullName);
   const role = profile?.role || "client";
+  const staffRoles = normalizeList(profile?.staff_roles, STAFF_ROLES);
+  const departments = normalizeList(profile?.departments, DEPARTMENTS);
   return {
     id: profile?.id || authUser?.id,
     name: fullName,
@@ -112,8 +157,10 @@ function publicProfile(profile, authUser = null) {
     company: profile?.company || metadata.company || "",
     title: profile?.title || metadata.title || "",
     role,
+    staffRoles,
+    departments,
     status: "active",
-    permissions: ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client,
+    permissions: permissionsForProfile(role, staffRoles, departments),
     createdAt: profile?.created_at || authUser?.created_at || "",
     lastLoginAt: authUser?.last_sign_in_at || ""
   };
@@ -146,7 +193,9 @@ async function currentUser() {
       display_name: parsed.displayName,
       company: metadata.company || "",
       title: metadata.title || "",
-      role: "client"
+      role: "client",
+      staff_roles: [],
+      departments: []
     };
     const created = await supabase.from("profiles").insert(payload).select("*").single();
     if (!created.error) profile = created.data;
@@ -164,10 +213,12 @@ function authMessage(text, tone = "error") {
 }
 
 function routeForUser(user) {
-  return user?.permissions?.includes("admin:view") ? "/admin-dashboard.html" : "/dashboard.html";
+  if (user?.permissions?.includes("admin:view")) return "/admin-dashboard.html";
+  if (user?.permissions?.includes("staff:view")) return "/staff-dashboard.html";
+  return "/dashboard.html";
 }
 
-async function requireAuth({ admin = false } = {}) {
+async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
     if (location.hash || location.search.includes("code=")) {
       await waitForSupabaseSession();
@@ -180,7 +231,15 @@ async function requireAuth({ admin = false } = {}) {
       return null;
     }
     if (admin && !user.permissions.includes("admin:view")) {
-      window.location.replace("/dashboard.html");
+      window.location.replace(routeForUser(user));
+      return null;
+    }
+    if (permission && !user.permissions.includes(permission)) {
+      window.location.replace(routeForUser(user));
+      return null;
+    }
+    if (Array.isArray(roles) && roles.length && !roles.includes(user.role) && !user.permissions.includes("admin:view")) {
+      window.location.replace(routeForUser(user));
       return null;
     }
     return user;
@@ -247,18 +306,51 @@ async function bccApi(path, options = {}) {
     return { ok: true, users: data.map(profile => publicProfile(profile)) };
   }
 
+  if (path === "/api/admin/access-audit") {
+    const me = await currentUser();
+    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
+    const { data, error } = await supabase
+      .from("access_audit_logs")
+      .select("id, actor_email, target_email, before_access, after_access, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return {
+      ok: true,
+      logs: data.map(log => ({
+        id: log.id,
+        actorEmail: log.actor_email,
+        targetEmail: log.target_email,
+        beforeAccess: normalizeAccessPayload(log.before_access),
+        afterAccess: normalizeAccessPayload(log.after_access),
+        createdAt: log.created_at
+      }))
+    };
+  }
+
   const roleMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
   if (roleMatch && options.method === "PATCH") {
     const body = JSON.parse(options.body || "{}");
-    const { error } = await supabase.rpc("set_user_role", {
+    const { error } = await supabase.rpc("set_user_access", {
       target_user_id: decodeURIComponent(roleMatch[1]),
-      next_role: body.role
+      next_role: body.role,
+      next_staff_roles: body.staffRoles || [],
+      next_departments: body.departments || []
     });
     if (error) throw error;
     return { ok: true };
   }
 
   throw new Error(`Endpoint no migrado a Supabase: ${path}`);
+}
+
+function normalizeAccessPayload(value) {
+  const payload = value && typeof value === "object" ? value : {};
+  return {
+    role: payload.role || "client",
+    staffRoles: normalizeList(payload.staffRoles, STAFF_ROLES),
+    departments: normalizeList(payload.departments, DEPARTMENTS)
+  };
 }
 
 window.BCCAuth = { api: bccApi, requireAuth, logout, routeForUser, currentUser, updateProfile, loadSupabaseClient };
@@ -318,6 +410,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = String(form.get("password") || "");
       if (password !== String(form.get("confirmPassword") || "")) {
         authMessage("Las contraseñas no coinciden.");
+        return;
+      }
+      if (!validatePassword(password)) {
+        authMessage(PASSWORD_RULE_MESSAGE);
         return;
       }
       try {
@@ -399,6 +495,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = String(form.get("password") || "");
       if (password !== String(form.get("confirmPassword") || "")) {
         authMessage("Las contraseñas no coinciden.");
+        return;
+      }
+      if (!validatePassword(password)) {
+        authMessage(PASSWORD_RULE_MESSAGE);
         return;
       }
       try {

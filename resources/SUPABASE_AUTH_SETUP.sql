@@ -13,8 +13,21 @@ create table if not exists public.profiles (
   company text not null default '',
   title text not null default '',
   role text not null default 'client' check (role in ('client', 'staff', 'admin')),
+  staff_roles text[] not null default '{}',
+  departments text[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.access_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_id uuid references auth.users(id) on delete set null,
+  target_user_id uuid references auth.users(id) on delete set null,
+  actor_email text not null default '',
+  target_email text not null default '',
+  before_access jsonb not null default '{}'::jsonb,
+  after_access jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
 );
 
 alter table public.profiles add column if not exists email text not null default '';
@@ -27,6 +40,8 @@ alter table public.profiles add column if not exists display_name text not null 
 alter table public.profiles add column if not exists company text not null default '';
 alter table public.profiles add column if not exists title text not null default '';
 alter table public.profiles add column if not exists role text not null default 'client';
+alter table public.profiles add column if not exists staff_roles text[] not null default '{}';
+alter table public.profiles add column if not exists departments text[] not null default '{}';
 alter table public.profiles add column if not exists created_at timestamptz not null default now();
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
 
@@ -43,7 +58,36 @@ begin
   end if;
 end $$;
 
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_staff_roles_check'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table public.profiles
+    add constraint profiles_staff_roles_check
+    check (staff_roles <@ array['author', 'cofounder', 'department_director']::text[]);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_departments_check'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table public.profiles
+    add constraint profiles_departments_check
+    check (departments <@ array['technology', 'finance', 'operations', 'marketing', 'hr']::text[]);
+  end if;
+end $$;
+
 alter table public.profiles enable row level security;
+alter table public.access_audit_logs enable row level security;
 
 create schema if not exists private;
 revoke all on schema private from public;
@@ -83,6 +127,16 @@ for select
 to authenticated
 using (private.is_admin());
 
+drop policy if exists "Admins can read access audit logs" on public.access_audit_logs;
+create policy "Admins can read access audit logs"
+on public.access_audit_logs
+for select
+to authenticated
+using (private.is_admin());
+
+revoke all on public.access_audit_logs from public, anon, authenticated;
+grant select on public.access_audit_logs to authenticated;
+
 drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can insert own profile"
 on public.profiles
@@ -107,7 +161,10 @@ as $$
 declare
   active_admin_count integer;
 begin
-  if old.role is distinct from new.role and not private.is_admin() then
+  if (old.role is distinct from new.role
+      or old.staff_roles is distinct from new.staff_roles
+      or old.departments is distinct from new.departments)
+     and not private.is_admin() then
     raise exception 'No puedes cambiar roles directamente';
   end if;
 
@@ -166,7 +223,9 @@ begin
     display_name,
     company,
     title,
-    role
+    role,
+    staff_roles,
+    departments
   )
   values (
     new.id,
@@ -179,7 +238,9 @@ begin
     coalesce(meta->>'display_name', split_part(name, ' ', 1), ''),
     coalesce(meta->>'company', ''),
     coalesce(meta->>'title', ''),
-    'client'
+    'client',
+    '{}',
+    '{}'
   )
   on conflict (id) do nothing;
   return new;
@@ -198,7 +259,12 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function private.handle_new_user();
 
-create or replace function private.set_user_role(target_user_id uuid, next_role text)
+create or replace function private.set_user_access(
+  target_user_id uuid,
+  next_role text,
+  next_staff_roles text[] default null,
+  next_departments text[] default null
+)
 returns void
 language plpgsql
 security definer
@@ -207,10 +273,28 @@ as $$
 declare
   caller_role text;
   target_role text;
+  target_email text;
   active_admin_count integer;
+  clean_staff_roles text[] := coalesce(next_staff_roles, '{}'::text[]);
+  clean_departments text[] := coalesce(next_departments, '{}'::text[]);
+  old_staff_roles text[];
+  old_departments text[];
+  final_staff_roles text[];
+  final_departments text[];
 begin
+  clean_staff_roles := array(select distinct unnest(clean_staff_roles));
+  clean_departments := array(select distinct unnest(clean_departments));
+
   if next_role not in ('client', 'staff', 'admin') then
     raise exception 'Rol invalido';
+  end if;
+
+  if not clean_staff_roles <@ array['author', 'cofounder', 'department_director']::text[] then
+    raise exception 'Rol interno invalido';
+  end if;
+
+  if not clean_departments <@ array['technology', 'finance', 'operations', 'marketing', 'hr']::text[] then
+    raise exception 'Departamento invalido';
   end if;
 
   select role into caller_role
@@ -221,7 +305,8 @@ begin
     raise exception 'Permiso insuficiente';
   end if;
 
-  select role into target_role
+  select role, staff_roles, departments, email
+  into target_role, old_staff_roles, old_departments, target_email
   from public.profiles
   where id = target_user_id;
 
@@ -241,15 +326,67 @@ begin
     raise exception 'Debe existir al menos un administrador activo';
   end if;
 
+  final_staff_roles := case when next_role in ('staff', 'admin') then clean_staff_roles else '{}'::text[] end;
+  final_departments := case when next_role in ('staff', 'admin') then clean_departments else '{}'::text[] end;
+
   update public.profiles
   set role = next_role,
+      staff_roles = final_staff_roles,
+      departments = final_departments,
       updated_at = now()
   where id = target_user_id;
+
+  if target_role is distinct from next_role
+     or old_staff_roles is distinct from final_staff_roles
+     or old_departments is distinct from final_departments then
+    insert into public.access_audit_logs (
+      actor_id,
+      target_user_id,
+      actor_email,
+      target_email,
+      before_access,
+      after_access
+    )
+    values (
+      auth.uid(),
+      target_user_id,
+      coalesce((select email from public.profiles where id = auth.uid()), ''),
+      coalesce(target_email, ''),
+      jsonb_build_object('role', target_role, 'staffRoles', old_staff_roles, 'departments', old_departments),
+      jsonb_build_object('role', next_role, 'staffRoles', final_staff_roles, 'departments', final_departments)
+    );
+  end if;
 end;
+$$;
+
+revoke all on function private.set_user_access(uuid, text, text[], text[]) from public, anon;
+grant execute on function private.set_user_access(uuid, text, text[], text[]) to authenticated, service_role;
+
+create or replace function private.set_user_role(target_user_id uuid, next_role text)
+returns void
+language sql
+security definer
+set search_path = public, private, pg_temp
+as $$
+  select private.set_user_access(target_user_id, next_role, null, null);
 $$;
 
 revoke all on function private.set_user_role(uuid, text) from public, anon;
 grant execute on function private.set_user_role(uuid, text) to authenticated, service_role;
+
+create or replace function public.set_user_access(
+  target_user_id uuid,
+  next_role text,
+  next_staff_roles text[] default '{}',
+  next_departments text[] default '{}'
+)
+returns void
+language sql
+security invoker
+set search_path = public, private, pg_temp
+as $$
+  select private.set_user_access(target_user_id, next_role, next_staff_roles, next_departments);
+$$;
 
 create or replace function public.set_user_role(target_user_id uuid, next_role text)
 returns void
@@ -266,3 +403,5 @@ drop function if exists public.handle_new_user();
 
 revoke all on function public.set_user_role(uuid, text) from public, anon;
 grant execute on function public.set_user_role(uuid, text) to authenticated;
+revoke all on function public.set_user_access(uuid, text, text[], text[]) from public, anon;
+grant execute on function public.set_user_access(uuid, text, text[], text[]) to authenticated;
