@@ -1547,10 +1547,7 @@
     if (!loginLink) return;
 
     try {
-      const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
-      if (!res.ok) return;
-      const data = await res.json();
-      const user = data && data.user;
+      const user = await currentSupabaseUserForNav();
       if (!user) return;
 
       navActions.dataset.accountBound = 'true';
@@ -1580,6 +1577,55 @@
     } catch (_e) {
       // Static hosting or no account server available: keep the normal login link.
     }
+  }
+
+  async function currentSupabaseUserForNav() {
+    const config = window.BCC_SUPABASE || {
+      url: 'https://bglkyqiqzrcwegpjrucc.supabase.co',
+      anonKey: 'sb_publishable_X_3U_TNtC9BuVwc-vMCsug_GVFmI5cQ'
+    };
+
+    if (!window.supabase?.createClient) {
+      await new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-supabase-js]');
+        if (existing) {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', reject, { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.dataset.supabaseJs = 'true';
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    const client = window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    window.BCCNavSupabaseClient = client;
+
+    const { data: userData } = await client.auth.getUser();
+    if (!userData?.user) return null;
+
+    const { data: profile } = await client
+      .from('profiles')
+      .select('id, full_name, display_name, role')
+      .eq('id', userData.user.id)
+      .maybeSingle();
+
+    const fullName = profile?.full_name || userData.user.user_metadata?.full_name || userData.user.email || 'Cuenta';
+    const displayName = profile?.display_name || fullName.split(/\s+/)[0] || 'Cuenta';
+    const role = profile?.role || 'client';
+
+    return {
+      id: userData.user.id,
+      name: fullName,
+      displayName,
+      role
+    };
   }
 
   function bindAccountMenu(menu) {

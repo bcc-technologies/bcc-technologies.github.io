@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirma tu correo - BCC</title>
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="css/pages/login.css">
+  <script src="js/layout.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/prefs.js" defer></script>
+</head>
+<body>
+  <main class="login-container with-header-offset">
+    <section class="login-card">
+      <h1>Confirma tu correo</h1>
+      <p>Ya creamos tu cuenta. Revisa tu bandeja de entrada y abre el enlace de confirmacion para activar el acceso.</p>
+      <p class="auth-message" data-tone="ok" id="emailHint"></p>
+      <a class="btn btn-primary" href="/login.html">Ir al login</a>
+    </section>
+  </main>
+  <script>
+    const email = new URLSearchParams(location.search).get("email");
+    if (email) document.getElementById("emailHint").textContent = email;
+  </script>
+</body>
+</html>

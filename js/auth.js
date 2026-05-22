@@ -1,12 +1,158 @@
-async function bccApi(path, options = {}) {
-  const res = await fetch(path, {
-    credentials: "same-origin",
-    headers: options.body instanceof FormData ? {} : { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || data.ok === false) throw new Error(data.error || "Solicitud fallida.");
-  return data;
+const ROLE_PERMISSIONS = {
+  client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
+  staff: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access"],
+  admin: ["dashboard:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
+};
+
+async function loadSupabaseClient() {
+  if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
+  if (!window.BCC_SUPABASE) throw new Error("Falta configuración de Supabase.");
+
+  if (!window.supabase?.createClient) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("No se pudo cargar Supabase."));
+      document.head.appendChild(script);
+    });
+  }
+
+  window.BCCSupabaseClient = window.supabase.createClient(
+    window.BCC_SUPABASE.url,
+    window.BCC_SUPABASE.anonKey,
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+  );
+  return window.BCCSupabaseClient;
+}
+
+async function waitForSupabaseSession(timeoutMs = 5000) {
+  const supabase = await loadSupabaseClient();
+  const deadline = Date.now() + timeoutMs;
+  let lastSession = null;
+
+  while (Date.now() < deadline) {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) return data.session;
+    lastSession = data?.session || null;
+    await new Promise(resolve => setTimeout(resolve, 150));
+  }
+
+  return lastSession;
+}
+
+async function preparePasswordRecovery(timeoutMs = 7000) {
+  const supabase = await loadSupabaseClient();
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    history.replaceState(null, "", location.pathname);
+    return waitForSupabaseSession(timeoutMs);
+  }
+
+  if (location.hash) {
+    const hash = new URLSearchParams(location.hash.slice(1));
+    const accessToken = hash.get("access_token");
+    const refreshToken = hash.get("refresh_token");
+    if (accessToken && refreshToken) {
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      if (error) throw error;
+      history.replaceState(null, "", location.pathname);
+      return waitForSupabaseSession(timeoutMs);
+    }
+  }
+
+  return waitForSupabaseSession(timeoutMs);
+}
+
+function parsePersonName(name) {
+  const clean = String(name || "").trim().replace(/\s+/g, " ");
+  const parts = clean ? clean.split(" ") : [];
+  const firstName = parts[0] || "";
+  let middleNames = "";
+  let firstLastName = "";
+  let secondLastName = "";
+  if (parts.length === 2) firstLastName = parts[1];
+  else if (parts.length === 3) {
+    firstLastName = parts[1];
+    secondLastName = parts[2];
+  } else if (parts.length >= 4) {
+    middleNames = parts.slice(1, -2).join(" ");
+    firstLastName = parts[parts.length - 2];
+    secondLastName = parts[parts.length - 1];
+  }
+  return { fullName: clean, firstName, middleNames, firstLastName, secondLastName, displayName: firstName || clean };
+}
+
+function publicProfile(profile, authUser = null) {
+  if (!profile && !authUser) return null;
+  const metadata = authUser?.user_metadata || {};
+  const fullName = profile?.full_name || metadata.full_name || metadata.name || authUser?.email || "";
+  const parsed = parsePersonName(fullName);
+  const role = profile?.role || "client";
+  return {
+    id: profile?.id || authUser?.id,
+    name: fullName,
+    displayName: profile?.display_name || parsed.displayName,
+    nameParts: {
+      fullName,
+      firstName: profile?.first_name || parsed.firstName,
+      middleNames: profile?.middle_names || parsed.middleNames,
+      firstLastName: profile?.first_last_name || parsed.firstLastName,
+      secondLastName: profile?.second_last_name || parsed.secondLastName,
+      displayName: profile?.display_name || parsed.displayName
+    },
+    email: authUser?.email || profile?.email || "",
+    company: profile?.company || metadata.company || "",
+    title: profile?.title || metadata.title || "",
+    role,
+    status: "active",
+    permissions: ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client,
+    createdAt: profile?.created_at || authUser?.created_at || "",
+    lastLoginAt: authUser?.last_sign_in_at || ""
+  };
+}
+
+async function currentUser() {
+  const supabase = await loadSupabaseClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) return null;
+
+  let { data: profile, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userData.user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (!profile) {
+    const metadata = userData.user.user_metadata || {};
+    const parsed = parsePersonName(metadata.full_name || metadata.name || "");
+    const payload = {
+      id: userData.user.id,
+      email: userData.user.email || "",
+      full_name: parsed.fullName,
+      first_name: parsed.firstName,
+      middle_names: parsed.middleNames,
+      first_last_name: parsed.firstLastName,
+      second_last_name: parsed.secondLastName,
+      display_name: parsed.displayName,
+      company: metadata.company || "",
+      title: metadata.title || "",
+      role: "client"
+    };
+    const created = await supabase.from("profiles").insert(payload).select("*").single();
+    if (!created.error) profile = created.data;
+  }
+
+  return publicProfile(profile, userData.user);
 }
 
 function authMessage(text, tone = "error") {
@@ -23,7 +169,12 @@ function routeForUser(user) {
 
 async function requireAuth({ admin = false } = {}) {
   try {
-    const { user } = await bccApi("/api/auth/me");
+    if (location.hash || location.search.includes("code=")) {
+      await waitForSupabaseSession();
+      if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    }
+
+    const user = await currentUser();
     if (!user) {
       window.location.replace(`/login.html?next=${encodeURIComponent(location.pathname)}`);
       return null;
@@ -33,18 +184,84 @@ async function requireAuth({ admin = false } = {}) {
       return null;
     }
     return user;
-  } catch {
+  } catch (error) {
+    console.error(error);
     window.location.replace(`/login.html?next=${encodeURIComponent(location.pathname)}`);
     return null;
   }
 }
 
 async function logout() {
-  await bccApi("/api/auth/logout", { method: "POST", body: "{}" });
+  const supabase = await loadSupabaseClient();
+  await supabase.auth.signOut();
   window.location.assign("/login.html");
 }
 
-window.BCCAuth = { api: bccApi, requireAuth, logout, routeForUser };
+async function updateProfile(payload) {
+  const supabase = await loadSupabaseClient();
+  const { data: sessionData } = await supabase.auth.getUser();
+  if (!sessionData.user) throw new Error("No autenticado.");
+  const parsed = parsePersonName(payload.name);
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: parsed.fullName,
+      first_name: parsed.firstName,
+      middle_names: parsed.middleNames,
+      first_last_name: parsed.firstLastName,
+      second_last_name: parsed.secondLastName,
+      display_name: parsed.displayName,
+      company: String(payload.company || "").trim(),
+      title: String(payload.title || "").trim(),
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", sessionData.user.id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return publicProfile(data, sessionData.user);
+}
+
+async function bccApi(path, options = {}) {
+  const supabase = await loadSupabaseClient();
+
+  if (path === "/api/auth/me") {
+    return { ok: true, user: await currentUser() };
+  }
+
+  if (path === "/api/auth/logout") {
+    await supabase.auth.signOut();
+    return { ok: true };
+  }
+
+  if (path === "/api/auth/profile" && options.method === "PATCH") {
+    const body = JSON.parse(options.body || "{}");
+    return { ok: true, user: await updateProfile(body) };
+  }
+
+  if (path === "/api/admin/users") {
+    const me = await currentUser();
+    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
+    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return { ok: true, users: data.map(profile => publicProfile(profile)) };
+  }
+
+  const roleMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
+  if (roleMatch && options.method === "PATCH") {
+    const body = JSON.parse(options.body || "{}");
+    const { error } = await supabase.rpc("set_user_role", {
+      target_user_id: decodeURIComponent(roleMatch[1]),
+      next_role: body.role
+    });
+    if (error) throw error;
+    return { ok: true };
+  }
+
+  throw new Error(`Endpoint no migrado a Supabase: ${path}`);
+}
+
+window.BCCAuth = { api: bccApi, requireAuth, logout, routeForUser, currentUser, updateProfile, loadSupabaseClient };
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-account-trigger]").forEach(button => {
@@ -77,15 +294,15 @@ document.addEventListener("DOMContentLoaded", () => {
       authMessage("");
       const form = new FormData(loginForm);
       try {
-        const data = await bccApi("/api/auth/login", {
-          method: "POST",
-          body: JSON.stringify({
-            email: form.get("email"),
-            password: form.get("password")
-          })
+        const supabase = await loadSupabaseClient();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: String(form.get("email") || "").trim(),
+          password: String(form.get("password") || "")
         });
+        if (error) throw error;
+        const user = await currentUser();
         const next = new URLSearchParams(location.search).get("next");
-        window.location.assign(next || data.redirectTo || routeForUser(data.user));
+        window.location.assign(next || routeForUser(user || publicProfile(null, data.user)));
       } catch (error) {
         authMessage(error.message);
       }
@@ -104,17 +321,93 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       try {
-        const data = await bccApi("/api/auth/signup", {
-          method: "POST",
-          body: JSON.stringify({
-            name: form.get("name"),
-            email: form.get("email"),
-            company: form.get("company"),
-            title: form.get("title"),
-            password
-          })
+        const supabase = await loadSupabaseClient();
+        const parsed = parsePersonName(form.get("name"));
+        const { data, error } = await supabase.auth.signUp({
+          email: String(form.get("email") || "").trim(),
+          password,
+          options: {
+            data: {
+              full_name: parsed.fullName,
+              first_name: parsed.firstName,
+              middle_names: parsed.middleNames,
+              first_last_name: parsed.firstLastName,
+              second_last_name: parsed.secondLastName,
+              display_name: parsed.displayName,
+              company: String(form.get("company") || "").trim(),
+              title: String(form.get("title") || "").trim()
+            },
+            emailRedirectTo: `${location.origin}/auth-callback.html`
+          }
         });
-        window.location.assign(data.redirectTo || routeForUser(data.user));
+        if (error) throw error;
+
+        if (!data.session) {
+          window.location.assign(`/check-email.html?email=${encodeURIComponent(String(form.get("email") || "").trim())}`);
+          return;
+        }
+
+        window.location.assign(routeForUser(await currentUser()));
+      } catch (error) {
+        authMessage(error.message);
+      }
+    });
+  }
+
+  const forgotPasswordForm = document.querySelector("[data-forgot-password-form]");
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      authMessage("");
+      const form = new FormData(forgotPasswordForm);
+      try {
+        const supabase = await loadSupabaseClient();
+        const { error } = await supabase.auth.resetPasswordForEmail(String(form.get("email") || "").trim(), {
+          redirectTo: `${location.origin}/reset-password.html`
+        });
+        if (error) throw error;
+        forgotPasswordForm.hidden = true;
+        authMessage("Te enviamos un enlace para cambiar tu contraseña. Revisa tu correo.", "ok");
+      } catch (error) {
+        authMessage(error.message);
+      }
+    });
+  }
+
+  const resetPasswordForm = document.querySelector("[data-reset-password-form]");
+  if (resetPasswordForm) {
+    const status = document.querySelector("[data-reset-status]");
+    resetPasswordForm.hidden = true;
+
+    preparePasswordRecovery()
+      .then(session => {
+        if (!session) throw new Error("El enlace expiró o ya fue usado. Solicita uno nuevo.");
+        if (status) status.textContent = "Escribe tu nueva contraseña.";
+        resetPasswordForm.hidden = false;
+      })
+      .catch(error => {
+        if (status) {
+          status.textContent = error.message || "No se pudo validar el enlace de recuperación.";
+          status.dataset.tone = "error";
+        }
+      });
+
+    resetPasswordForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      authMessage("");
+      const form = new FormData(resetPasswordForm);
+      const password = String(form.get("password") || "");
+      if (password !== String(form.get("confirmPassword") || "")) {
+        authMessage("Las contraseñas no coinciden.");
+        return;
+      }
+      try {
+        const supabase = await loadSupabaseClient();
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+        authMessage("Contraseña actualizada. Ya puedes entrar con tu nueva contraseña.", "ok");
+        resetPasswordForm.hidden = true;
+        setTimeout(() => window.location.assign("/login.html"), 1600);
       } catch (error) {
         authMessage(error.message);
       }

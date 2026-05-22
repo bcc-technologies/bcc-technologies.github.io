@@ -1,0 +1,268 @@
+-- BCC Technologies account system for Supabase.
+-- Run this in Supabase SQL Editor after creating the project.
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null default '',
+  full_name text not null default '',
+  first_name text not null default '',
+  middle_names text not null default '',
+  first_last_name text not null default '',
+  second_last_name text not null default '',
+  display_name text not null default '',
+  company text not null default '',
+  title text not null default '',
+  role text not null default 'client' check (role in ('client', 'staff', 'admin')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles add column if not exists email text not null default '';
+alter table public.profiles add column if not exists full_name text not null default '';
+alter table public.profiles add column if not exists first_name text not null default '';
+alter table public.profiles add column if not exists middle_names text not null default '';
+alter table public.profiles add column if not exists first_last_name text not null default '';
+alter table public.profiles add column if not exists second_last_name text not null default '';
+alter table public.profiles add column if not exists display_name text not null default '';
+alter table public.profiles add column if not exists company text not null default '';
+alter table public.profiles add column if not exists title text not null default '';
+alter table public.profiles add column if not exists role text not null default 'client';
+alter table public.profiles add column if not exists created_at timestamptz not null default now();
+alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_role_check'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table public.profiles
+    add constraint profiles_role_check check (role in ('client', 'staff', 'admin'));
+  end if;
+end $$;
+
+alter table public.profiles enable row level security;
+
+create schema if not exists private;
+revoke all on schema private from public;
+revoke all on schema private from anon;
+grant usage on schema private to authenticated;
+grant usage on schema private to service_role;
+
+create or replace function private.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and role = 'admin'
+  );
+$$;
+
+revoke all on function private.is_admin() from public, anon;
+grant execute on function private.is_admin() to authenticated, service_role;
+
+drop policy if exists "Users can read own profile" on public.profiles;
+create policy "Users can read own profile"
+on public.profiles
+for select
+to authenticated
+using (auth.uid() = id);
+
+drop policy if exists "Admins can read profiles" on public.profiles;
+create policy "Admins can read profiles"
+on public.profiles
+for select
+to authenticated
+using (private.is_admin());
+
+drop policy if exists "Users can insert own profile" on public.profiles;
+create policy "Users can insert own profile"
+on public.profiles
+for insert
+to authenticated
+with check (auth.uid() = id and role = 'client');
+
+drop policy if exists "Users can update own non-role profile" on public.profiles;
+create policy "Users can update own non-role profile"
+on public.profiles
+for update
+to authenticated
+using (auth.uid() = id)
+with check (auth.uid() = id);
+
+create or replace function private.prevent_unsafe_role_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  active_admin_count integer;
+begin
+  if old.role is distinct from new.role and not private.is_admin() then
+    raise exception 'No puedes cambiar roles directamente';
+  end if;
+
+  if old.role is distinct from new.role
+     and old.id = auth.uid()
+     and old.role = 'admin'
+     and new.role <> 'admin' then
+    raise exception 'No puedes quitarte tu propio rol de administrador';
+  end if;
+
+  if old.role is distinct from new.role
+     and old.role = 'admin'
+     and new.role <> 'admin' then
+    select count(*) into active_admin_count
+    from public.profiles
+    where role = 'admin';
+
+    if active_admin_count <= 1 then
+      raise exception 'Debe existir al menos un administrador activo';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke all on function private.prevent_unsafe_role_change() from public, anon, authenticated;
+grant execute on function private.prevent_unsafe_role_change() to service_role;
+
+drop trigger if exists protect_profile_role_update on public.profiles;
+create trigger protect_profile_role_update
+before update on public.profiles
+for each row execute function private.prevent_unsafe_role_change();
+
+create or replace function private.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  meta jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  name text := coalesce(meta->>'full_name', meta->>'name', '');
+begin
+  -- This trigger must never block auth.users creation. If profile insertion
+  -- fails, the fallback exception block below keeps signup alive and the
+  -- frontend can create/repair the profile after login.
+  insert into public.profiles (
+    id,
+    email,
+    full_name,
+    first_name,
+    middle_names,
+    first_last_name,
+    second_last_name,
+    display_name,
+    company,
+    title,
+    role
+  )
+  values (
+    new.id,
+    coalesce(new.email, ''),
+    name,
+    coalesce(meta->>'first_name', split_part(name, ' ', 1), ''),
+    coalesce(meta->>'middle_names', ''),
+    coalesce(meta->>'first_last_name', ''),
+    coalesce(meta->>'second_last_name', ''),
+    coalesce(meta->>'display_name', split_part(name, ' ', 1), ''),
+    coalesce(meta->>'company', ''),
+    coalesce(meta->>'title', ''),
+    'client'
+  )
+  on conflict (id) do nothing;
+  return new;
+exception
+  when others then
+    raise warning 'profiles insert failed for user %: %', new.id, sqlerrm;
+    return new;
+end;
+$$;
+
+revoke all on function private.handle_new_user() from public, anon, authenticated;
+grant execute on function private.handle_new_user() to service_role;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function private.handle_new_user();
+
+create or replace function private.set_user_role(target_user_id uuid, next_role text)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  caller_role text;
+  target_role text;
+  active_admin_count integer;
+begin
+  if next_role not in ('client', 'staff', 'admin') then
+    raise exception 'Rol invalido';
+  end if;
+
+  select role into caller_role
+  from public.profiles
+  where id = auth.uid();
+
+  if caller_role is distinct from 'admin' then
+    raise exception 'Permiso insuficiente';
+  end if;
+
+  select role into target_role
+  from public.profiles
+  where id = target_user_id;
+
+  if target_role is null then
+    raise exception 'Usuario no encontrado';
+  end if;
+
+  if target_user_id = auth.uid() and target_role = 'admin' and next_role <> 'admin' then
+    raise exception 'No puedes quitarte tu propio rol de administrador';
+  end if;
+
+  select count(*) into active_admin_count
+  from public.profiles
+  where role = 'admin';
+
+  if target_role = 'admin' and next_role <> 'admin' and active_admin_count <= 1 then
+    raise exception 'Debe existir al menos un administrador activo';
+  end if;
+
+  update public.profiles
+  set role = next_role,
+      updated_at = now()
+  where id = target_user_id;
+end;
+$$;
+
+revoke all on function private.set_user_role(uuid, text) from public, anon;
+grant execute on function private.set_user_role(uuid, text) to authenticated, service_role;
+
+create or replace function public.set_user_role(target_user_id uuid, next_role text)
+returns void
+language sql
+security invoker
+set search_path = public, private, pg_temp
+as $$
+  select private.set_user_role(target_user_id, next_role);
+$$;
+
+drop function if exists public.is_admin();
+drop function if exists public.prevent_unsafe_role_change();
+drop function if exists public.handle_new_user();
+
+revoke all on function public.set_user_role(uuid, text) from public, anon;
+grant execute on function public.set_user_role(uuid, text) to authenticated;

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmando acceso - BCC</title>
+  <link rel="stylesheet" href="css/00-tokens.css">
+  <link rel="stylesheet" href="css/01-base.css">
+  <link rel="stylesheet" href="css/02-layout.css">
+  <link rel="stylesheet" href="css/03-components.css">
+  <link rel="stylesheet" href="css/pages/login.css">
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+</head>
+<body>
+  <main class="login-container with-header-offset">
+    <section class="login-card">
+      <h1>Confirmando acceso</h1>
+      <p id="authCallbackStatus">Estamos verificando tu correo.</p>
+    </section>
+  </main>
+  <script>
+    (async function() {
+      const status = document.getElementById("authCallbackStatus");
+      try {
+        await window.BCCAuth.loadSupabaseClient();
+        const user = await window.BCCAuth.currentUser();
+        if (!user) throw new Error("No se pudo completar la confirmacion. Intenta iniciar sesion.");
+        window.location.replace(window.BCCAuth.routeForUser(user));
+      } catch (error) {
+        status.textContent = error.message || "No se pudo confirmar el acceso.";
+        setTimeout(() => window.location.replace("/login.html"), 2200);
+      }
+    })();
+  </script>
+</body>
+</html>
