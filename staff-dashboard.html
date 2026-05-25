@@ -9,103 +9,172 @@
   <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/dashboard.css">
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
+  <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/staff-dashboard.js" defer></script>
+  <script src="js/workspace-shell.js" defer></script>
 </head>
-<body class="dashboard-shell">
-  <header>
-    <div class="header-container glass-panel-header">
-      <nav>
-        <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
-        <ul class="nav-links" id="primary-nav">
-          <li><a href="/staff-dashboard.html">Personal</a></li>
-          <li><a href="/blog.html">Blog</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-        </ul>
-        <div class="nav-actions">
-          <div class="account-menu" data-account-menu>
-            <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
-              <span class="account-avatar" data-user-initial>?</span>
-              <span class="account-copy">
-                <strong data-user-menu-name>Cuenta</strong>
-                <small data-user-menu-role>Usuario</small>
-              </span>
-            </button>
-            <div class="account-dropdown" data-account-dropdown hidden>
-              <a href="/staff-dashboard.html" data-dashboard-link>Dashboard</a>
-              <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
-              <a href="/">Salir del dashboard</a>
-              <button type="button" data-logout>Cerrar sesion</button>
-            </div>
+<body class="dashboard-shell workspace-shell workspace-refined staff-workspace">
+  <div class="workspace">
+    <a href="/" class="logo-link workspace-brand" aria-label="BCC Technologies">
+      <span class="logo-text"><strong>BCC</strong></span>
+      <span class="logo-symbol"><strong>&there4;</strong></span>
+    </a>
+    <header class="workspace-header">
+      <div class="workspace-title">
+        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegacion">
+          <i data-lucide="menu"></i>
+        </button>
+        <div>
+          <strong>Inicio</strong>
+          <span>Panel de personal</span>
+        </div>
+      </div>
+      <label class="workspace-search account-search">
+        <i data-lucide="search"></i>
+        <input type="search" data-workspace-search placeholder="Buscar herramientas..." autocomplete="off" aria-label="Buscar herramientas" />
+      </label>
+      <div class="workspace-tools">
+        <button class="workspace-icon-button" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <i data-lucide="sun-moon"></i>
+        </button>
+        <div class="account-menu" data-account-menu>
+          <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
+            <span class="account-avatar" data-user-initial>?</span>
+            <span class="account-copy">
+              <strong data-user-menu-name>Cuenta</strong>
+              <small data-user-menu-role>Personal</small>
+            </span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="account-dropdown" data-account-dropdown hidden>
+            <a href="/staff-dashboard.html" data-dashboard-link>Mi dashboard</a>
+            <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
+            <a href="/dashboard.html">Vista cliente</a>
+            <a href="/">Salir del dashboard</a>
+            <button type="button" data-logout>Cerrar sesion</button>
           </div>
         </div>
+      </div>
+    </header>
+    <aside class="workspace-sidebar">
+      <nav class="workspace-nav" aria-label="Secciones de personal">
+        <p class="workspace-nav-label">Personal</p>
+        <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <a href="#trabajo"><i data-lucide="clipboard-list"></i><span>Trabajo</span></a>
+        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <p class="workspace-nav-label">Herramientas</p>
+        <a href="/blog.html"><i data-lucide="file-text"></i><span>Contenido</span></a>
+        <a href="http://localhost:3777/" data-cms-access data-local-cms-link hidden><i data-lucide="panels-top-left"></i><span>CMS local</span></a>
+        <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administracion</span></a>
       </nav>
+      <section class="workspace-help">
+        <strong>Acceso interno</strong>
+        <p>Tus herramientas dependen de los roles asignados.</p>
+      </section>
+      <div class="workspace-sidebar-foot">
+        <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
+        <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Vista cliente</span></a>
+        <a href="/"><i data-lucide="arrow-left"></i><span>Volver al sitio</span></a>
+      </div>
+    </aside>
+    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegacion"></button>
+
+    <div class="workspace-content">
+      <main class="workspace-main">
+        <section class="workspace-intro" id="resumen">
+          <div>
+            <h1>Hola, <span data-user-name>...</span></h1>
+            <p>Gestiona contenido y utiliza las herramientas habilitadas para tus funciones.</p>
+          </div>
+          <div class="dashboard-actions">
+            <a class="btn btn-primary" href="http://localhost:3777/" data-cms-access data-local-cms-link hidden><i data-lucide="panels-top-left"></i>Abrir CMS</a>
+            <a class="btn btn-primary" href="/blog.html"><i data-lucide="file-text"></i>Revisar contenido</a>
+            <a class="btn btn-ghost" href="/contactUs.html"><i data-lucide="inbox"></i>Solicitudes</a>
+          </div>
+        </section>
+
+        <section class="workspace-metrics account-metrics refined-metrics" aria-label="Estado de personal">
+          <div><span>Rol base</span><strong data-user-role>...</strong><small>Cuenta interna</small></div>
+          <div><span>Roles internos</span><strong data-staff-role-count>-</strong><small data-staff-role-summary>Sin asignacion</small></div>
+          <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignacion</small></div>
+          <div><span>CMS</span><strong data-cms-status>-</strong><small>Segun permisos actuales</small></div>
+        </section>
+
+        <div class="account-workspace-grid staff-grid" id="trabajo">
+          <section class="account-primary">
+            <article class="module-surface staff-access-surface">
+              <div class="module-head">
+                <div>
+                  <h2>Accesos de trabajo</h2>
+                  <p>Herramientas disponibles segun tus funciones actuales.</p>
+                </div>
+                <span class="status-pill" data-cms-pill>CMS no asignado</span>
+              </div>
+              <div class="tool-rows">
+                <div data-cms-tool>
+                  <i data-lucide="panels-top-left"></i>
+                  <div><strong>Sistema de contenido</strong><span data-cms-description>Necesitas un rol autorizado para ingresar.</span></div>
+                  <a href="http://localhost:3777/" data-cms-access data-local-cms-link hidden>Abrir</a>
+                </div>
+                <div>
+                  <i data-lucide="file-text"></i>
+                  <div><strong>Contenido publicado</strong><span>Consulta articulos y materiales disponibles.</span></div>
+                  <a href="/blog.html">Abrir</a>
+                </div>
+                <div>
+                  <i data-lucide="messages-square"></i>
+                  <div><strong>Solicitudes</strong><span>Coordina consultas con el equipo BCC.</span></div>
+                  <a href="/contactUs.html">Abrir</a>
+                </div>
+              </div>
+            </article>
+
+            <article class="module-surface" id="perfil">
+              <div class="module-head">
+                <div>
+                  <h2>Datos profesionales</h2>
+                  <p>Información asociada a tu cuenta interna.</p>
+                </div>
+              </div>
+              <form class="profile-form workspace-profile-form" data-profile-form>
+                <p class="auth-message" data-profile-message hidden></p>
+                <label>
+                  Nombre completo
+                  <input type="text" name="name" autocomplete="name" required />
+                </label>
+                <label>
+                  Compania
+                  <input type="text" name="company" autocomplete="organization" />
+                </label>
+                <label>
+                  Cargo
+                  <input type="text" name="title" autocomplete="organization-title" />
+                </label>
+                <button class="btn btn-primary" type="submit">Guardar cambios</button>
+              </form>
+            </article>
+          </section>
+
+          <aside class="account-rail">
+            <article class="module-surface">
+              <h2>Perfil interno</h2>
+              <dl class="account-details">
+                <div><dt>Correo</dt><dd data-user-email>...</dd></div>
+                <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+                <div><dt>Nivel</dt><dd data-user-role>...</dd></div>
+              </dl>
+            </article>
+            <article class="module-surface">
+              <h2>Permisos activos</h2>
+              <ul class="permission-list permission-readable" data-permissions></ul>
+            </article>
+          </aside>
+        </div>
+      </main>
     </div>
-  </header>
-
-  <main class="dashboard-main">
-    <section class="dashboard-topbar">
-      <div>
-        <div class="dashboard-kicker">Personal BCC</div>
-        <h1>Hola, <span data-user-name>...</span></h1>
-        <p class="dashboard-subtitle">Panel de trabajo para seguimiento de clientes, contenido y solicitudes internas asignadas al equipo.</p>
-      </div>
-      <div class="dashboard-actions">
-        <a class="btn btn-ghost" href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
-        <a class="btn btn-primary" href="http://localhost:3777/" data-cms-access data-local-cms-link hidden>Abrir CMS</a>
-        <a class="btn btn-primary" href="/blog.html">Revisar contenido</a>
-        <a class="btn btn-ghost" href="/contactUs.html">Solicitudes</a>
-      </div>
-    </section>
-
-    <section class="dashboard-grid">
-      <article class="dashboard-panel">
-        <h2>Perfil</h2>
-        <div class="metric"><span class="muted-text">Correo</span><strong data-user-email>...</strong></div>
-        <div class="metric"><span class="muted-text">Compania</span><strong data-user-company>...</strong></div>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Acceso</h2>
-        <div class="metric"><span class="muted-text">Nivel</span><strong data-user-role>...</strong></div>
-        <p class="muted-text">El acceso al CMS depende de los roles internos asignados por administracion.</p>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Clientes</h2>
-        <div class="metric"><span class="muted-text">Seguimiento</span><strong>Sin casos asignados</strong></div>
-        <p class="muted-text">Preparado para conectar cuentas, reportes y solicitudes de clientes.</p>
-      </article>
-      <article class="dashboard-panel wide">
-        <h2>Permisos disponibles</h2>
-        <ul class="permission-list" data-permissions></ul>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Contenido</h2>
-        <p class="muted-text">No hay tareas editoriales asignadas desde el sistema.</p>
-      </article>
-      <article class="dashboard-panel full">
-        <h2>Datos de cuenta</h2>
-        <form class="profile-form" data-profile-form>
-          <p class="auth-message" data-profile-message hidden></p>
-          <label>
-            Nombre
-            <input type="text" name="name" autocomplete="name" required />
-          </label>
-          <label>
-            Compania
-            <input type="text" name="company" autocomplete="organization" />
-          </label>
-          <label>
-            Cargo
-            <input type="text" name="title" autocomplete="organization-title" />
-          </label>
-          <button class="btn btn-primary" type="submit">Guardar cambios</button>
-        </form>
-      </article>
-    </section>
-  </main>
+  </div>
 </body>
 </html>

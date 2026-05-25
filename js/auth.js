@@ -20,6 +20,7 @@ const DEPARTMENT_PERMISSIONS = {
 
 const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
 const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
+let currentPageUser = null;
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
 function normalizeList(value, allowed) {
@@ -201,7 +202,12 @@ async function currentUser() {
     if (!created.error) profile = created.data;
   }
 
-  return publicProfile(profile, userData.user);
+  currentPageUser = publicProfile(profile, userData.user);
+  return currentPageUser;
+}
+
+async function authorizedUser() {
+  return currentPageUser || currentUser();
 }
 
 function authMessage(text, tone = "error") {
@@ -253,6 +259,7 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
 async function logout() {
   const supabase = await loadSupabaseClient();
   await supabase.auth.signOut();
+  currentPageUser = null;
   window.location.assign("/login.html");
 }
 
@@ -278,7 +285,8 @@ async function updateProfile(payload) {
     .select("*")
     .single();
   if (error) throw error;
-  return publicProfile(data, sessionData.user);
+  currentPageUser = publicProfile(data, sessionData.user);
+  return currentPageUser;
 }
 
 async function bccApi(path, options = {}) {
@@ -290,6 +298,7 @@ async function bccApi(path, options = {}) {
 
   if (path === "/api/auth/logout") {
     await supabase.auth.signOut();
+    currentPageUser = null;
     return { ok: true };
   }
 
@@ -299,7 +308,7 @@ async function bccApi(path, options = {}) {
   }
 
   if (path === "/api/admin/users") {
-    const me = await currentUser();
+    const me = await authorizedUser();
     if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (error) throw error;
@@ -307,7 +316,7 @@ async function bccApi(path, options = {}) {
   }
 
   if (path === "/api/admin/access-audit") {
-    const me = await currentUser();
+    const me = await authorizedUser();
     if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
     const { data, error } = await supabase
       .from("access_audit_logs")

@@ -1,69 +1,149 @@
 let adminUsers = [];
+let adminAuditLogs = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ admin: true });
   if (!user) return;
   window.BCCAdminCurrentUser = user;
 
-  document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
-  document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  hydrateAccountMenu(user);
+  document.querySelectorAll("[data-user-menu-name]").forEach(el => { el.textContent = user.displayName || user.name; });
+  document.querySelectorAll("[data-user-menu-role]").forEach(el => { el.textContent = roleLabel(user.role); });
+  document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = (user.displayName || user.name || "?").trim().charAt(0).toUpperCase(); });
+  document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
+
   hydrateLocalCmsLinks();
+  bindWorkspaceControls();
   bindAccessModal();
-  await loadUsers();
-  await loadAuditLogs();
+  refreshIcons();
+  await Promise.all([loadUsers(), loadAuditLogs()]);
 });
 
 async function loadUsers() {
-  const table = document.querySelector("[data-users-table]");
   const message = document.querySelector("[data-admin-message]");
-  if (!table) return;
   try {
     const { users } = await window.BCCAuth.api("/api/admin/users");
     adminUsers = users;
-    table.replaceChildren(...users.map(userRow));
-    if (message) message.textContent = `${users.length} cuenta(s) registrada(s).`;
+    renderUsers();
+    renderMetrics();
   } catch (error) {
     if (message) message.textContent = error.message;
   }
 }
 
 async function loadAuditLogs() {
-  const table = document.querySelector("[data-audit-table]");
+  const feed = document.querySelector("[data-audit-feed]");
   const message = document.querySelector("[data-audit-message]");
-  if (!table) return;
+  if (!feed) return;
   try {
     const { logs } = await window.BCCAuth.api("/api/admin/access-audit");
-    table.replaceChildren(...logs.map(auditRow));
-    if (message) message.textContent = logs.length
-      ? `${logs.length} cambio(s) reciente(s).`
-      : "Todavia no hay cambios de acceso registrados.";
+    adminAuditLogs = logs;
+    feed.replaceChildren(...logs.slice(0, 10).map(auditItem));
+    if (message) {
+      message.textContent = logs.length ? "Cambios de permisos registrados." : "Todavia no hay cambios registrados.";
+    }
+    const count = document.querySelector("[data-audit-count]");
+    if (count) count.textContent = String(logs.length);
+    renderMetrics();
   } catch (error) {
     if (message) message.textContent = error.message;
   }
 }
 
+function renderUsers() {
+  const table = document.querySelector("[data-users-table]");
+  const message = document.querySelector("[data-admin-message]");
+  if (!table) return;
+  const users = filteredUsers();
+  if (!users.length) {
+    const empty = document.createElement("tr");
+    empty.innerHTML = `<td class="table-empty" colspan="5">No hay cuentas que coincidan con los filtros.</td>`;
+    table.replaceChildren(empty);
+  } else {
+    table.replaceChildren(...users.map(userRow));
+  }
+  if (message) message.textContent = `${users.length} de ${adminUsers.length} cuenta(s).`;
+  refreshIcons();
+}
+
+function filteredUsers() {
+  const query = [...document.querySelectorAll("[data-user-search], [data-user-search-mobile]")]
+    .map(input => String(input.value || "").trim().toLowerCase())
+    .find(Boolean) || "";
+  const role = document.querySelector("[data-role-filter]")?.value || "";
+  const department = document.querySelector("[data-department-filter]")?.value || "";
+  const cmsOnly = Boolean(document.querySelector("[data-cms-filter]")?.checked);
+  return adminUsers.filter(user => {
+    const searchable = [user.name, user.email, user.company, user.title].join(" ").toLowerCase();
+    if (query && !searchable.includes(query)) return false;
+    if (role && user.role !== role) return false;
+    if (department && !(user.departments || []).includes(department)) return false;
+    if (cmsOnly && !hasCmsAccess(user)) return false;
+    return true;
+  });
+}
+
+function renderMetrics() {
+  setText("[data-metric-accounts]", adminUsers.length);
+  setText("[data-metric-staff]", adminUsers.filter(user => user.role === "staff" || user.role === "admin").length);
+  setText("[data-metric-cms]", adminUsers.filter(hasCmsAccess).length);
+  setText("[data-metric-changes]", adminAuditLogs.length);
+}
+
 function userRow(user) {
-  const staffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const departments = Array.isArray(user.departments) ? user.departments : [];
   const row = document.createElement("tr");
   row.innerHTML = `
-    <td><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)}</span></td>
-    <td>${escapeHtml(user.company || "-")}</td>
-    <td>
-      <div class="access-summary">
-        <span class="role-badge role-${escapeHtml(user.role)}">${escapeHtml(roleLabel(user.role))}</span>
-        ${chipList(staffRoles, staffRoleOptions(), "Sin rol interno")}
-        ${chipList(departments, departmentOptions(), "Sin departamento")}
-        <small>${escapeHtml(effectiveAccessLabel(user))}</small>
-      </div>
+    <td class="user-cell" data-label="Cuenta">
+      <strong>${escapeHtml(user.name)}</strong>
+      <span>${escapeHtml(user.email)}</span>
+      <small>${escapeHtml(user.company || "Sin compania")}</small>
     </td>
-    <td>${escapeHtml(user.status || "active")}</td>
-    <td>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "-"}</td>
-    <td><button class="btn btn-ghost btn-compact" type="button" data-edit-access>Editar</button></td>
+    <td data-label="Rol y area">
+      <span class="role-badge role-${escapeHtml(user.role)}">${escapeHtml(roleLabel(user.role))}</span>
+      ${chipList(departments, departmentOptions(), "Sin area")}
+    </td>
+    <td data-label="Acceso">
+      <span class="access-state ${hasCmsAccess(user) ? "enabled" : ""}">
+        ${hasCmsAccess(user) ? "CMS habilitado" : "Sin CMS"}
+      </span>
+      ${chipList(user.staffRoles || [], staffRoleOptions(), "Sin rol interno")}
+    </td>
+    <td class="activity-date" data-label="Ultima actividad">${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Sin acceso"}</td>
+    <td class="table-action">
+      <button class="btn btn-ghost btn-compact" type="button" data-edit-access>
+        <i data-lucide="sliders-horizontal"></i>Editar
+      </button>
+    </td>
   `;
   row.querySelector("[data-edit-access]").addEventListener("click", () => openAccessModal(user));
   return row;
+}
+
+function auditItem(log) {
+  const item = document.createElement("li");
+  item.innerHTML = `
+    <span class="activity-dot"></span>
+    <div>
+      <strong>${escapeHtml(log.actorEmail || "Administrador")}</strong>
+      <p>${escapeHtml(shortAccessChange(log.beforeAccess, log.afterAccess))}</p>
+      <small>${escapeHtml(log.targetEmail || "-")} · ${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</small>
+    </div>
+  `;
+  return item;
+}
+
+function bindWorkspaceControls() {
+  ["[data-user-search]", "[data-user-search-mobile]", "[data-role-filter]", "[data-department-filter]", "[data-cms-filter]"].forEach(selector => {
+    const control = document.querySelector(selector);
+    if (!control) return;
+    control.addEventListener("input", renderUsers);
+    control.addEventListener("change", renderUsers);
+  });
+  const menuButton = document.querySelector("[data-workspace-menu]");
+  menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
+  document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
+    link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
+  });
 }
 
 function bindAccessModal() {
@@ -73,30 +153,31 @@ function bindAccessModal() {
     button.addEventListener("click", () => modal.close());
   });
   modal.querySelector("[data-access-modal-save]")?.addEventListener("click", saveAccessFromModal);
+  modal.addEventListener("change", updateAccessPreview);
 }
 
 function openAccessModal(user) {
   const modal = document.querySelector("[data-access-modal]");
   if (!modal) return;
-  const currentUser = window.BCCAdminCurrentUser;
-  const isSelfAdmin = currentUser?.id === user.id && user.role === "admin";
+  const isSelfAdmin = window.BCCAdminCurrentUser?.id === user.id && user.role === "admin";
   modal.dataset.userId = user.id;
   const message = modal.querySelector("[data-access-modal-message]");
   if (message) {
     message.hidden = true;
     message.textContent = "";
   }
-  modal.querySelector("[data-access-modal-user]").textContent = `${user.name} <${user.email}>`;
+  modal.querySelector("[data-access-modal-user]").textContent = `${user.name} · ${user.email}`;
   const roleSelect = modal.querySelector("[data-modal-role-select]");
   roleSelect.innerHTML = ["client", "staff", "admin"]
     .map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${roleLabel(role)}</option>`)
     .join("");
   roleSelect.disabled = isSelfAdmin;
-  const note = modal.querySelector("[data-modal-role-note]");
-  if (note) note.hidden = !isSelfAdmin;
+  modal.querySelector("[data-modal-role-note]").hidden = !isSelfAdmin;
   renderChoiceGroup(modal.querySelector("[data-modal-staff-roles]"), staffRoleOptions(), user.staffRoles || [], "staff-role");
   renderChoiceGroup(modal.querySelector("[data-modal-departments]"), departmentOptions(), user.departments || [], "department");
+  updateAccessPreview();
   modal.showModal();
+  refreshIcons();
 }
 
 function renderChoiceGroup(container, options, selected, key) {
@@ -108,6 +189,18 @@ function renderChoiceGroup(container, options, selected, key) {
       <span>${escapeHtml(option.label)}</span>
     </label>
   `).join("");
+}
+
+function updateAccessPreview() {
+  const modal = document.querySelector("[data-access-modal]");
+  const preview = modal?.querySelector("[data-access-preview] strong");
+  if (!modal || !preview) return;
+  const role = modal.querySelector("[data-modal-role-select]")?.value || "client";
+  const staffRoles = [...modal.querySelectorAll("[data-staff-role]:checked")].map(input => input.dataset.staffRole);
+  const labels = [];
+  labels.push(roleLabel(role));
+  if (role === "admin" || staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item))) labels.push("CMS");
+  preview.textContent = labels.join(" · ");
 }
 
 async function saveAccessFromModal() {
@@ -126,47 +219,20 @@ async function saveAccessFromModal() {
       showModalMessage(message, "No hay cambios de acceso para guardar.", "error");
       return;
     }
-    const sensitive = isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments);
-    const intro = sensitive
+    const intro = isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments)
       ? "Este cambio afecta permisos sensibles."
       : "Vas a cambiar los accesos de esta cuenta.";
     const confirmed = window.confirm(`${intro}\n\nUsuario: ${user.name} <${user.email}>\n${changes.join("\n")}\n\n¿Confirmas este cambio?`);
     if (!confirmed) return;
     await window.BCCAuth.api(`/api/admin/users/${encodeURIComponent(user.id)}/role`, {
       method: "PATCH",
-      body: JSON.stringify({
-        role,
-        staffRoles: nextStaffRoles,
-        departments: nextDepartments
-      })
+      body: JSON.stringify({ role, staffRoles: nextStaffRoles, departments: nextDepartments })
     });
     modal.close();
-    await loadUsers();
-    await loadAuditLogs();
+    await Promise.all([loadUsers(), loadAuditLogs()]);
   } catch (error) {
     showModalMessage(message, error.message, "error");
   }
-}
-
-function showModalMessage(message, text, tone) {
-  if (!message) {
-    window.alert(text);
-    return;
-  }
-  message.textContent = text;
-  message.dataset.tone = tone;
-  message.hidden = false;
-}
-
-function auditRow(log) {
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</td>
-    <td><strong>${escapeHtml(log.actorEmail || "-")}</strong></td>
-    <td><strong>${escapeHtml(log.targetEmail || "-")}</strong></td>
-    <td class="audit-change">${escapeHtml(formatAccessChange(log.beforeAccess, log.afterAccess))}</td>
-  `;
-  return row;
 }
 
 function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments) {
@@ -183,60 +249,32 @@ function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments) {
   return changes;
 }
 
+function shortAccessChange(before = {}, after = {}) {
+  const changes = accessChangeSummary({
+    role: before.role || "client",
+    staffRoles: before.staffRoles || [],
+    departments: before.departments || []
+  }, after.role || "client", after.staffRoles || [], after.departments || []);
+  return changes[0] || "Acceso revisado";
+}
+
 function isSensitiveAccessChange(user, nextRole, nextStaffRoles, nextDepartments) {
-  const currentUser = window.BCCAdminCurrentUser;
   const oldStaffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const oldDepartments = Array.isArray(user.departments) ? user.departments : [];
-  if (currentUser?.id === user.id) return true;
+  if (window.BCCAdminCurrentUser?.id === user.id) return true;
   if (user.role === "admin" || nextRole === "admin") return true;
   if (!sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director"].includes(role))) return true;
-  if (!sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department))) return true;
-  return false;
+  return !sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department));
 }
 
-function sameSet(left, right) {
-  const a = [...new Set(left)].sort();
-  const b = [...new Set(right)].sort();
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
-function labelsFor(values, options) {
-  const labels = new Map(options.map(option => [option.value, option.label]));
-  return [...new Set(values)].map(value => labels.get(value) || value).join(", ");
-}
-
-function formatAccessChange(before = {}, after = {}) {
-  const parts = [];
-  if (before.role !== after.role) parts.push(`Rol: ${roleLabel(before.role)} -> ${roleLabel(after.role)}`);
-  const beforeStaff = Array.isArray(before.staffRoles) ? before.staffRoles : [];
-  const afterStaff = Array.isArray(after.staffRoles) ? after.staffRoles : [];
-  const beforeDepartments = Array.isArray(before.departments) ? before.departments : [];
-  const afterDepartments = Array.isArray(after.departments) ? after.departments : [];
-  if (!sameSet(beforeStaff, afterStaff)) {
-    parts.push(`Roles internos: ${labelsFor(beforeStaff, staffRoleOptions()) || "ninguno"} -> ${labelsFor(afterStaff, staffRoleOptions()) || "ninguno"}`);
-  }
-  if (!sameSet(beforeDepartments, afterDepartments)) {
-    parts.push(`Departamentos: ${labelsFor(beforeDepartments, departmentOptions()) || "ninguno"} -> ${labelsFor(afterDepartments, departmentOptions()) || "ninguno"}`);
-  }
-  return parts.join(" | ") || "Sin cambios";
+function hasCmsAccess(user) {
+  return Array.isArray(user.permissions) && user.permissions.includes("cms:access");
 }
 
 function chipList(values, options, emptyLabel) {
-  const labels = labelsFor(values, options);
+  const labels = labelsFor(values || [], options);
   if (!labels) return `<span class="muted-chip">${escapeHtml(emptyLabel)}</span>`;
   return `<span class="chip-list">${labels.split(", ").map(label => `<span>${escapeHtml(label)}</span>`).join("")}</span>`;
-}
-
-function effectiveAccessLabel(user) {
-  const permissions = Array.isArray(user.permissions) ? user.permissions : [];
-  const labels = [];
-  if (permissions.includes("admin:view")) labels.push("Admin");
-  if (permissions.includes("staff:view")) labels.push("Personal");
-  if (permissions.includes("cms:access")) labels.push("CMS");
-  if (permissions.includes("clients:view")) labels.push("Clientes");
-  if (permissions.includes("content:view")) labels.push("Contenido");
-  if (!labels.length) labels.push("Cliente");
-  return `Acceso efectivo: ${labels.join(", ")}`;
 }
 
 function roleLabel(role) {
@@ -247,7 +285,7 @@ function staffRoleOptions() {
   return [
     { value: "author", label: "Autor" },
     { value: "cofounder", label: "Cofounder" },
-    { value: "department_director", label: "Director de departamento" }
+    { value: "department_director", label: "Director" }
   ];
 }
 
@@ -261,17 +299,36 @@ function departmentOptions() {
   ];
 }
 
-function hydrateAccountMenu(user) {
-  const display = user.displayName || user.name || "Cuenta";
-  document.querySelectorAll("[data-user-menu-name]").forEach(el => { el.textContent = display; });
-  document.querySelectorAll("[data-user-menu-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = display.trim().charAt(0).toUpperCase() || "?"; });
-  document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
+function sameSet(left, right) {
+  const a = [...new Set(left)].sort();
+  const b = [...new Set(right)].sort();
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function labelsFor(values, options) {
+  const labels = new Map(options.map(option => [option.value, option.label]));
+  return [...new Set(values)].map(value => labels.get(value) || value).join(", ");
+}
+
+function showModalMessage(message, text, tone) {
+  if (!message) return window.alert(text);
+  message.textContent = text;
+  message.dataset.tone = tone;
+  message.hidden = false;
+}
+
+function setText(selector, value) {
+  const target = document.querySelector(selector);
+  if (target) target.textContent = String(value);
 }
 
 function hydrateLocalCmsLinks() {
   const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
   document.querySelectorAll("[data-local-cms-link]").forEach(el => { el.hidden = !isLocal; });
+}
+
+function refreshIcons() {
+  window.BCCWorkspaceIcons?.createIcons();
 }
 
 function escapeHtml(value) {

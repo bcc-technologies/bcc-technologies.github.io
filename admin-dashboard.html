@@ -3,108 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - BCC</title>
+  <title>Administracion - BCC</title>
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/dashboard.css">
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
+  <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/admin-dashboard.js" defer></script>
+  <script src="js/workspace-shell.js" defer></script>
 </head>
-<body class="dashboard-shell">
-  <header>
-    <div class="header-container glass-panel-header">
-      <nav>
-        <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
-        <ul class="nav-links" id="primary-nav">
-          <li><a href="/admin-dashboard.html">Administrador</a></li>
-          <li data-local-cms-link hidden><a href="http://localhost:3777/">CMS local</a></li>
-          <li><a href="/blog.html">Blog</a></li>
-        </ul>
-        <div class="nav-actions">
-          <div class="account-menu" data-account-menu>
-            <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
-              <span class="account-avatar" data-user-initial>?</span>
-              <span class="account-copy">
-                <strong data-user-menu-name>Cuenta</strong>
-                <small data-user-menu-role>Usuario</small>
-              </span>
-            </button>
-            <div class="account-dropdown" data-account-dropdown hidden>
-              <a href="/admin-dashboard.html" data-dashboard-link>Dashboard</a>
-              <a href="/">Salir del dashboard</a>
-              <button type="button" data-logout>Cerrar sesion</button>
-            </div>
+<body class="dashboard-shell workspace-shell workspace-refined admin-workspace">
+  <div class="workspace">
+    <a href="/" class="logo-link workspace-brand" aria-label="BCC Technologies">
+      <span class="logo-text"><strong>BCC</strong></span>
+      <span class="logo-symbol"><strong>&there4;</strong></span>
+    </a>
+    <header class="workspace-header">
+      <div class="workspace-title">
+        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegacion">
+          <i data-lucide="menu"></i>
+        </button>
+        <div>
+          <strong>Administracion</strong>
+          <span>Panel interno</span>
+        </div>
+      </div>
+      <label class="workspace-search">
+        <i data-lucide="search"></i>
+        <input type="search" data-user-search placeholder="Buscar cuentas..." autocomplete="off" />
+      </label>
+      <div class="workspace-tools">
+        <button class="workspace-icon-button" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <i data-lucide="sun-moon"></i>
+        </button>
+        <div class="account-menu" data-account-menu>
+          <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
+            <span class="account-avatar" data-user-initial>?</span>
+            <span class="account-copy">
+              <strong data-user-menu-name>Cuenta</strong>
+              <small data-user-menu-role>Usuario</small>
+            </span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="account-dropdown" data-account-dropdown hidden>
+            <a href="/admin-dashboard.html" data-dashboard-link>Panel administrador</a>
+            <a href="/staff-dashboard.html">Vista personal</a>
+            <a href="/dashboard.html">Vista cliente</a>
+            <a href="/">Salir del dashboard</a>
+            <button type="button" data-logout>Cerrar sesion</button>
           </div>
         </div>
+      </div>
+    </header>
+    <aside class="workspace-sidebar">
+      <nav class="workspace-nav" aria-label="Secciones de administracion">
+        <p class="workspace-nav-label">Administracion</p>
+        <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
+        <a href="#auditoria"><i data-lucide="history"></i><span>Auditoria</span></a>
+        <p class="workspace-nav-label">Vistas y contenido</p>
+        <a href="/staff-dashboard.html"><i data-lucide="briefcase-business"></i><span>Personal</span></a>
+        <a href="/blog.html"><i data-lucide="file-text"></i><span>Contenido</span></a>
+        <a href="http://localhost:3777/" data-local-cms-link hidden><i data-lucide="panels-top-left"></i><span>CMS local</span></a>
       </nav>
+      <section class="workspace-help">
+        <strong>Seguridad</strong>
+        <p>Cada cambio de acceso queda registrado en auditoria.</p>
+      </section>
+      <div class="workspace-sidebar-foot">
+        <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
+        <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Vista cliente</span></a>
+        <a href="/"><i data-lucide="arrow-left"></i><span>Volver al sitio</span></a>
+      </div>
+    </aside>
+    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegacion"></button>
+
+    <div class="workspace-content">
+      <main class="workspace-main">
+        <section class="workspace-intro" id="resumen">
+          <div>
+            <h1>Control de accesos</h1>
+            <p>Administra cuentas, permisos internos y acceso al CMS con historial verificable.</p>
+          </div>
+          <div class="dashboard-actions">
+            <a class="btn btn-primary" href="http://localhost:3777/" data-local-cms-link hidden>
+              <i data-lucide="panels-top-left"></i>Abrir CMS local
+            </a>
+            <a class="btn btn-ghost" href="#auditoria"><i data-lucide="history"></i>Ver auditoria</a>
+          </div>
+        </section>
+
+        <section class="workspace-metrics" aria-label="Resumen de accesos">
+          <div><span>Cuentas</span><strong data-metric-accounts>-</strong><small>Registradas</small></div>
+          <div><span>Personal activo</span><strong data-metric-staff>-</strong><small>Staff y admin</small></div>
+          <div><span>Con acceso CMS</span><strong data-metric-cms>-</strong><small>Permiso efectivo</small></div>
+          <div><span>Cambios recientes</span><strong data-metric-changes>-</strong><small>Auditoria visible</small></div>
+        </section>
+
+        <div class="workspace-grid">
+          <section class="users-surface" id="usuarios">
+            <div class="surface-toolbar">
+              <div>
+                <h2>Usuarios</h2>
+                <p class="muted-text" data-admin-message>Cargando...</p>
+              </div>
+              <div class="surface-filters" aria-label="Filtrar usuarios">
+                <label class="surface-mobile-search">
+                  <i data-lucide="search"></i>
+                  <input type="search" data-user-search-mobile placeholder="Buscar cuentas..." autocomplete="off" />
+                </label>
+                <select data-role-filter aria-label="Filtrar por rol">
+                  <option value="">Todos los roles</option>
+                  <option value="client">Clientes</option>
+                  <option value="staff">Personal</option>
+                  <option value="admin">Administradores</option>
+                </select>
+                <select data-department-filter aria-label="Filtrar por departamento">
+                  <option value="">Todos los departamentos</option>
+                  <option value="technology">Tecnologia</option>
+                  <option value="finance">Finanzas</option>
+                  <option value="operations">Operaciones</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="hr">Recursos humanos</option>
+                </select>
+                <label class="cms-filter"><input type="checkbox" data-cms-filter /> Solo CMS</label>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="account-table workspace-users-table">
+                <thead>
+                  <tr>
+                    <th>Cuenta</th>
+                    <th>Rol y area</th>
+                    <th>Acceso</th>
+                    <th>Ultima actividad</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-users-table></tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="activity-surface" id="auditoria">
+            <div class="activity-head">
+              <h2>Actividad reciente</h2>
+              <span data-audit-count>-</span>
+            </div>
+            <p class="muted-text" data-audit-message>Cargando...</p>
+            <ol class="activity-feed" data-audit-feed></ol>
+          </aside>
+        </div>
+      </main>
     </div>
-  </header>
+  </div>
 
-  <main class="dashboard-main">
-    <section class="dashboard-topbar">
-      <div>
-        <div class="dashboard-kicker">Administracion</div>
-        <h1>Panel interno</h1>
-        <p class="dashboard-subtitle">Gestion inicial de cuentas, roles y accesos. Sesion activa: <strong data-user-name>...</strong> - <span data-user-role>...</span>.</p>
-      </div>
-      <div class="dashboard-actions">
-        <a class="btn btn-primary" href="http://localhost:3777/" data-local-cms-link hidden>Abrir CMS local</a>
-        <a class="btn btn-ghost" href="/staff-dashboard.html">Vista personal</a>
-        <a class="btn btn-ghost" href="/dashboard.html">Vista cliente</a>
-      </div>
-    </section>
-
-    <section class="dashboard-grid">
-      <article class="dashboard-panel full">
-        <h2>Cuentas registradas</h2>
-        <p class="muted-text" data-admin-message>Cargando...</p>
-        <table class="account-table">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Compania</th>
-              <th>Accesos</th>
-              <th>Estado</th>
-              <th>Ultimo acceso</th>
-              <th>Accion</th>
-            </tr>
-          </thead>
-          <tbody data-users-table></tbody>
-        </table>
-      </article>
-
-      <article class="dashboard-panel full">
-        <h2>Auditoria de accesos</h2>
-        <p class="muted-text" data-audit-message>Cargando...</p>
-        <table class="account-table audit-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Administrador</th>
-              <th>Cuenta afectada</th>
-              <th>Cambio</th>
-            </tr>
-          </thead>
-          <tbody data-audit-table></tbody>
-        </table>
-      </article>
-    </section>
-  </main>
-
-  <dialog class="access-modal" data-access-modal>
-    <form method="dialog" class="access-modal-panel">
+  <dialog class="access-drawer" data-access-modal>
+    <form method="dialog" class="access-drawer-panel">
       <div class="access-modal-head">
         <div>
           <h2>Editar accesos</h2>
           <p class="muted-text" data-access-modal-user>Selecciona una cuenta.</p>
         </div>
-        <button class="icon-close" type="button" data-access-modal-close aria-label="Cerrar">×</button>
+        <button class="icon-close" type="button" data-access-modal-close aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
       </div>
       <div class="access-modal-body">
         <label class="access-field">
@@ -120,6 +187,10 @@
           <legend>Departamentos</legend>
           <div data-modal-departments></div>
         </fieldset>
+        <section class="access-preview" data-access-preview>
+          <span>Acceso efectivo</span>
+          <strong>Cliente</strong>
+        </section>
       </div>
       <p class="auth-message" data-access-modal-message hidden></p>
       <div class="access-modal-actions">

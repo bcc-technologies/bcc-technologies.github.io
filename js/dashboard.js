@@ -2,24 +2,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["client"] });
   if (!user) return;
 
+  hydrateUser(user);
+  hydrateAccountMenu(user);
+  bindWorkspaceMenu();
+  hydrateProfileForm(user);
+  renderPermissions(user);
+  refreshIcons();
+});
+
+function hydrateUser(user) {
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
-  document.querySelectorAll("[data-user-full-name]").forEach(el => { el.textContent = user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  hydrateAccountMenu(user);
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
-
-  hydrateProfileForm(user);
-
-  const permissions = document.querySelector("[data-permissions]");
-  if (permissions) {
-    permissions.replaceChildren(...user.permissions.map(permission => {
-      const li = document.createElement("li");
-      li.textContent = permission;
-      return li;
-    }));
-  }
-});
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compania registrada"; });
+  const completed = [user.name, user.email, user.company, user.title].filter(Boolean).length;
+  document.querySelectorAll("[data-profile-completion]").forEach(el => { el.textContent = `${completed}/4`; });
+}
 
 function hydrateAccountMenu(user) {
   const display = user.displayName || user.name || "Cuenta";
@@ -28,6 +26,14 @@ function hydrateAccountMenu(user) {
   document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = display.trim().charAt(0).toUpperCase() || "?"; });
   document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
   document.querySelectorAll("[data-admin-return]").forEach(el => { el.hidden = !user.permissions.includes("admin:view"); });
+}
+
+function bindWorkspaceMenu() {
+  const menuButton = document.querySelector("[data-workspace-menu]");
+  menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
+  document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
+    link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
+  });
 }
 
 function hydrateProfileForm(user) {
@@ -49,9 +55,7 @@ function hydrateProfileForm(user) {
           title: form.elements.title.value
         })
       });
-      document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = data.user.displayName || data.user.name; });
-      document.querySelectorAll("[data-user-full-name]").forEach(el => { el.textContent = data.user.name; });
-      document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = data.user.company || "Sin compania registrada"; });
+      hydrateUser(data.user);
       hydrateAccountMenu(data.user);
       if (message) {
         message.textContent = "Cambios guardados.";
@@ -68,6 +72,33 @@ function hydrateProfileForm(user) {
   });
 }
 
+function renderPermissions(user) {
+  const permissions = document.querySelector("[data-permissions]");
+  if (!permissions) return;
+  const labels = user.permissions.map(permissionLabel).filter(Boolean);
+  permissions.replaceChildren(...labels.map(label => {
+    const li = document.createElement("li");
+    li.textContent = label;
+    return li;
+  }));
+}
+
+function permissionLabel(permission) {
+  return {
+    "dashboard:view": "Panel de cuenta",
+    "profile:update": "Actualizar perfil",
+    "downloads:view": "Descargas",
+    "support:create": "Solicitar soporte",
+    "admin:view": "Administracion",
+    "staff:view": "Vista personal",
+    "cms:access": "CMS"
+  }[permission] || "";
+}
+
 function roleLabel(role) {
   return { client: "Cliente", staff: "Personal", admin: "Administrador" }[role] || role;
+}
+
+function refreshIcons() {
+  window.BCCWorkspaceIcons?.createIcons();
 }

@@ -3,109 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - BCC</title>
+  <title>Mi cuenta - BCC</title>
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/dashboard.css">
-  <script src="js/layout.js" defer></script>
-  <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
+  <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/dashboard.js" defer></script>
+  <script src="js/workspace-shell.js" defer></script>
 </head>
-<body class="dashboard-shell">
-  <header>
-    <div class="header-container glass-panel-header">
-      <nav>
-        <a href="/" class="logo-link"><span class="logo-text"><strong>BCC</strong></span><span class="logo-symbol"><strong>&there4;</strong></span></a>
-        <ul class="nav-links" id="primary-nav">
-          <li><a href="/products.html">Tecnologia</a></li>
-          <li><a href="/science.html">Ciencia</a></li>
-          <li><a href="/services.html">Servicios</a></li>
-          <li><a href="/blog.html">Blog</a></li>
-        </ul>
-        <div class="nav-actions">
-          <div class="account-menu" data-account-menu>
-            <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
-              <span class="account-avatar" data-user-initial>?</span>
-              <span class="account-copy">
-                <strong data-user-menu-name>Cuenta</strong>
-                <small data-user-menu-role>Usuario</small>
-              </span>
-            </button>
-            <div class="account-dropdown" data-account-dropdown hidden>
-              <a href="/dashboard.html" data-dashboard-link>Dashboard</a>
-              <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
-              <a href="/">Salir del dashboard</a>
-              <button type="button" data-logout>Cerrar sesion</button>
-            </div>
+<body class="dashboard-shell workspace-shell workspace-refined customer-workspace">
+  <div class="workspace">
+    <a href="/" class="logo-link workspace-brand" aria-label="BCC Technologies">
+      <span class="logo-text"><strong>BCC</strong></span>
+      <span class="logo-symbol"><strong>&there4;</strong></span>
+    </a>
+    <header class="workspace-header">
+      <div class="workspace-title">
+        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegacion">
+          <i data-lucide="menu"></i>
+        </button>
+        <div>
+          <strong>Inicio</strong>
+          <span>Panel de cliente</span>
+        </div>
+      </div>
+      <label class="workspace-search account-search">
+        <i data-lucide="search"></i>
+        <input type="search" data-workspace-search placeholder="Buscar recursos..." autocomplete="off" aria-label="Buscar recursos" />
+      </label>
+      <div class="workspace-tools">
+        <button class="workspace-icon-button" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <i data-lucide="sun-moon"></i>
+        </button>
+        <div class="account-menu" data-account-menu>
+          <button class="account-trigger" type="button" data-account-trigger aria-expanded="false">
+            <span class="account-avatar" data-user-initial>?</span>
+            <span class="account-copy">
+              <strong data-user-menu-name>Cuenta</strong>
+              <small data-user-menu-role>Cliente</small>
+            </span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="account-dropdown" data-account-dropdown hidden>
+            <a href="/dashboard.html" data-dashboard-link>Mi dashboard</a>
+            <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
+            <a href="/">Salir del dashboard</a>
+            <button type="button" data-logout>Cerrar sesion</button>
           </div>
         </div>
+      </div>
+    </header>
+    <aside class="workspace-sidebar">
+      <nav class="workspace-nav" aria-label="Secciones de cuenta">
+        <p class="workspace-nav-label">Cuenta</p>
+        <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <a href="#seguridad"><i data-lucide="shield-check"></i><span>Seguridad</span></a>
+        <p class="workspace-nav-label">Operaciones</p>
+        <a href="#solicitudes"><i data-lucide="inbox"></i><span>Solicitudes</span></a>
+        <a href="/products.html"><i data-lucide="package"></i><span>Productos</span></a>
+        <a href="/contactUs.html"><i data-lucide="life-buoy"></i><span>Soporte</span></a>
+        <p class="workspace-nav-label">Recursos</p>
+        <a href="/blog.html"><i data-lucide="book-open"></i><span>Recursos</span></a>
+        <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administracion</span></a>
       </nav>
+      <section class="workspace-help">
+        <strong>Necesitas ayuda?</strong>
+        <p>Contacta al equipo para iniciar una consulta.</p>
+        <a href="/contactUs.html">Solicitar soporte</a>
+      </section>
+      <div class="workspace-sidebar-foot">
+        <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
+        <a href="/"><i data-lucide="arrow-left"></i><span>Volver al sitio</span></a>
+      </div>
+    </aside>
+    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegacion"></button>
+
+    <div class="workspace-content">
+      <main class="workspace-main">
+        <section class="workspace-intro" id="resumen">
+          <div>
+            <h1>Hola, <span data-user-name>...</span></h1>
+            <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes y los datos de tu organizacion.</p>
+          </div>
+          <div class="dashboard-actions">
+            <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
+          </div>
+        </section>
+
+        <section class="setup-progress module-surface" aria-label="Configuracion de cuenta">
+          <div class="module-head compact">
+            <h2>Configuracion de cuenta</h2>
+            <a href="#perfil">Ver detalles <i data-lucide="chevron-right"></i></a>
+          </div>
+          <div class="setup-steps">
+            <div class="complete"><i data-lucide="check"></i><strong>Informacion basica</strong><small data-profile-completion>-</small></div>
+            <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
+            <div class="complete"><i data-lucide="check"></i><strong>Organizacion</strong><small>Configurada</small></div>
+            <div><span>4</span><strong>Primera solicitud</strong><small>Pendiente</small></div>
+          </div>
+        </section>
+
+        <div class="client-operation-grid">
+          <section class="client-actions-column">
+            <article class="module-surface quick-actions">
+              <h2>Acciones frecuentes</h2>
+              <div class="resource-rows">
+                <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
+                <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="chevron-right"></i></a>
+                <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentacion</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
+              </div>
+            </article>
+            <article class="module-surface client-resources">
+              <h2>Recursos recomendados</h2>
+              <div class="resource-rows">
+                <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
+                <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catalogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
+              </div>
+            </article>
+          </section>
+
+          <article class="module-surface request-empty" id="solicitudes">
+            <div class="empty-icon"><i data-lucide="folder-open"></i></div>
+            <h2>Aun no tienes solicitudes</h2>
+            <p>Cuando crees una solicitud, podras darle seguimiento desde este panel.</p>
+            <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
+          </article>
+
+          <aside class="account-rail client-summary">
+            <article class="module-surface">
+              <h2>Resumen de cuenta</h2>
+              <dl class="account-details">
+                <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+                <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
+                <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
+              </dl>
+              <div class="security-summary" id="seguridad">
+                <div><i data-lucide="check-circle-2"></i><strong>Sesion protegida</strong><span>Acceso autenticado activo</span></div>
+                <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periodicamente</span></div>
+              </div>
+            </article>
+          </aside>
+        </div>
+
+        <section class="profile-workspace" id="perfil">
+          <article class="module-surface">
+              <div class="module-head">
+                <div>
+                  <h2>Datos de cuenta</h2>
+                  <p>Mantén actualizados tus datos para comunicaciones y solicitudes.</p>
+                </div>
+                <span class="status-pill enabled"><i data-lucide="check-circle-2"></i>Cuenta activa</span>
+              </div>
+              <form class="profile-form workspace-profile-form" data-profile-form>
+                <p class="auth-message" data-profile-message hidden></p>
+                <label>
+                  Nombre completo
+                  <input type="text" name="name" autocomplete="name" required />
+                </label>
+                <label>
+                  Compania
+                  <input type="text" name="company" autocomplete="organization" />
+                </label>
+                <label>
+                  Cargo
+                  <input type="text" name="title" autocomplete="organization-title" />
+                </label>
+                <button class="btn btn-primary" type="submit">Guardar cambios</button>
+              </form>
+            </article>
+            <article class="module-surface">
+              <h2>Capacidades activas</h2>
+              <ul class="permission-list permission-readable" data-permissions></ul>
+            </article>
+        </section>
+      </main>
     </div>
-  </header>
-
-  <main class="dashboard-main">
-    <section class="dashboard-topbar">
-      <div>
-        <div class="dashboard-kicker">Cuenta BCC</div>
-        <h1>Hola, <span data-user-name>...</span></h1>
-        <p class="dashboard-subtitle">Panel de cliente para descargas, licencias, solicitudes de soporte y reportes asociados a la cuenta.</p>
-      </div>
-      <div class="dashboard-actions">
-        <a class="btn btn-ghost" href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
-        <a class="btn btn-primary" href="/products.html">Ver productos</a>
-        <a class="btn btn-ghost" href="/contactUs.html">Solicitar soporte</a>
-      </div>
-    </section>
-
-    <section class="dashboard-grid">
-      <article class="dashboard-panel">
-        <h2>Perfil</h2>
-        <div class="metric"><span class="muted-text">Correo</span><strong data-user-email>...</strong></div>
-        <div class="metric"><span class="muted-text">Compania</span><strong data-user-company>...</strong></div>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Acceso</h2>
-        <div class="metric"><span class="muted-text">Nivel</span><strong data-user-role>...</strong></div>
-        <p class="muted-text">Los permisos se calculan desde el rol asignado por administracion.</p>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Licencias</h2>
-        <div class="metric"><span class="muted-text">Estado</span><strong>Sin licencias activas</strong></div>
-        <p class="muted-text">Preparado para conectar descargas y productos comprados.</p>
-      </article>
-      <article class="dashboard-panel wide">
-        <h2>Permisos disponibles</h2>
-        <ul class="permission-list" data-permissions></ul>
-      </article>
-      <article class="dashboard-panel">
-        <h2>Soporte</h2>
-        <p class="muted-text">No hay tickets abiertos. El siguiente paso es conectar este modulo a solicitudes reales.</p>
-      </article>
-      <article class="dashboard-panel full">
-        <h2>Datos de cuenta</h2>
-        <form class="profile-form" data-profile-form>
-          <p class="auth-message" data-profile-message hidden></p>
-          <label>
-            Nombre
-            <input type="text" name="name" autocomplete="name" required />
-          </label>
-          <label>
-            Compania
-            <input type="text" name="company" autocomplete="organization" />
-          </label>
-          <label>
-            Cargo
-            <input type="text" name="title" autocomplete="organization-title" />
-          </label>
-          <button class="btn btn-primary" type="submit">Guardar cambios</button>
-        </form>
-      </article>
-    </section>
-  </main>
+  </div>
 </body>
 </html>
