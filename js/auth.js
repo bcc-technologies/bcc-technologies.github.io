@@ -307,6 +307,143 @@ async function bccApi(path, options = {}) {
     return { ok: true, user: await updateProfile(body) };
   }
 
+  if (path === "/api/workspace/tasks" && (!options.method || options.method === "GET")) {
+    const { data, error } = await supabase
+      .from("workspace_tasks")
+      .select(WORKSPACE_TASK_COLUMNS)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return { ok: true, tasks: data.map(publicWorkspaceTask) };
+  }
+
+  if (path === "/api/workspace/tasks" && options.method === "POST") {
+    const body = normalizeWorkspaceTaskInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("workspace_tasks")
+      .insert(body)
+      .select(WORKSPACE_TASK_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, task: publicWorkspaceTask(data) };
+  }
+
+  const workspaceTaskMatch = path.match(/^\/api\/workspace\/tasks\/([^/]+)$/);
+  if (workspaceTaskMatch && options.method === "PATCH") {
+    const body = normalizeWorkspaceTaskInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_tasks")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(workspaceTaskMatch[1]))
+      .select(WORKSPACE_TASK_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, task: publicWorkspaceTask(data) };
+  }
+
+  if (workspaceTaskMatch && options.method === "DELETE") {
+    const { error } = await supabase
+      .from("workspace_tasks")
+      .delete()
+      .eq("id", decodeURIComponent(workspaceTaskMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
+  if (path === "/api/workspace/forms" && (!options.method || options.method === "GET")) {
+    const { data, error } = await supabase
+      .from("workspace_forms")
+      .select(WORKSPACE_FORM_COLUMNS)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return { ok: true, forms: data.map(publicWorkspaceForm) };
+  }
+
+  if (path === "/api/workspace/forms" && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("workspace_forms")
+      .insert(body)
+      .select(WORKSPACE_FORM_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, form: publicWorkspaceForm(data) };
+  }
+
+  if (path === "/api/workspace/form-responses/me") {
+    const { data, error } = await supabase
+      .from("workspace_form_responses")
+      .select(WORKSPACE_RESPONSE_COLUMNS)
+      .order("submitted_at", { ascending: false });
+    if (error) throw error;
+    return { ok: true, responses: data.map(publicWorkspaceResponse) };
+  }
+
+  const workspaceFormMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)$/);
+  if (workspaceFormMatch && options.method === "PATCH") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_forms")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(workspaceFormMatch[1]))
+      .select(WORKSPACE_FORM_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, form: publicWorkspaceForm(data) };
+  }
+
+  const responseListMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)\/responses$/);
+  if (responseListMatch) {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const formId = decodeURIComponent(responseListMatch[1]);
+    const { data, error } = await supabase
+      .from("workspace_form_responses")
+      .select(WORKSPACE_RESPONSE_COLUMNS)
+      .eq("form_id", formId)
+      .order("submitted_at", { ascending: false });
+    if (error) throw error;
+    const profileIds = [...new Set(data.map(item => item.respondent_id))];
+    const { data: profiles, error: profileError } = profileIds.length
+      ? await supabase.from("profiles").select("id, display_name, full_name, email").in("id", profileIds)
+      : { data: [], error: null };
+    if (profileError) throw profileError;
+    const labels = new Map(profiles.map(profile => [profile.id, profile.display_name || profile.full_name || profile.email]));
+    return {
+      ok: true,
+      responses: data.map(item => ({ ...publicWorkspaceResponse(item), respondentLabel: labels.get(item.respondent_id) || "Usuario" }))
+    };
+  }
+
+  const responseSubmitMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)\/response$/);
+  if (responseSubmitMatch && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me) throw new Error("No autenticado.");
+    const formId = decodeURIComponent(responseSubmitMatch[1]);
+    const { data: form, error: formError } = await supabase
+      .from("workspace_forms")
+      .select(WORKSPACE_FORM_COLUMNS)
+      .eq("id", formId)
+      .single();
+    if (formError) throw formError;
+    const answers = normalizeWorkspaceAnswers(JSON.parse(options.body || "{}").answers, form.questions);
+    const { data, error } = await supabase
+      .from("workspace_form_responses")
+      .upsert({
+        form_id: formId,
+        respondent_id: me.id,
+        answers,
+        submitted_at: new Date().toISOString()
+      }, { onConflict: "form_id,respondent_id" })
+      .select(WORKSPACE_RESPONSE_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, response: publicWorkspaceResponse(data) };
+  }
+
   if (path === "/api/admin/users") {
     const me = await authorizedUser();
     if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
@@ -359,6 +496,136 @@ function normalizeAccessPayload(value) {
     role: payload.role || "client",
     staffRoles: normalizeList(payload.staffRoles, STAFF_ROLES),
     departments: normalizeList(payload.departments, DEPARTMENTS)
+  };
+}
+
+const WORKSPACE_TASK_COLUMNS = "id, title, description, status, priority, due_date, completed_at, created_at, updated_at";
+const WORKSPACE_TASK_STATUSES = ["backlog", "in_progress", "done"];
+const WORKSPACE_TASK_PRIORITIES = ["low", "medium", "high"];
+const WORKSPACE_FORM_COLUMNS = "id, title, purpose, audience, questions, status, created_at, updated_at";
+const WORKSPACE_RESPONSE_COLUMNS = "id, form_id, respondent_id, answers, submitted_at";
+const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
+const WORKSPACE_FORM_STATUSES = ["draft", "published"];
+const WORKSPACE_QUESTION_TYPES = ["short_text", "long_text", "scale", "choice"];
+
+function normalizeWorkspaceTaskInput(value, requireTitle = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const task = {};
+
+  if (requireTitle || Object.prototype.hasOwnProperty.call(payload, "title")) {
+    const title = String(payload.title || "").trim();
+    if (!title || title.length > 160) throw new Error("Escribe un titulo valido para la tarea.");
+    task.title = title;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "description")) {
+    const description = String(payload.description || "").trim();
+    if (description.length > 500) throw new Error("El detalle de la tarea es demasiado largo.");
+    task.description = description;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "priority")) {
+    if (!WORKSPACE_TASK_PRIORITIES.includes(payload.priority)) throw new Error("Prioridad invalida.");
+    task.priority = payload.priority;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "dueDate")) {
+    const dueDate = payload.dueDate ? String(payload.dueDate) : null;
+    if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) throw new Error("Fecha limite invalida.");
+    task.due_date = dueDate;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    if (!WORKSPACE_TASK_STATUSES.includes(payload.status)) throw new Error("Estado invalido.");
+    task.status = payload.status;
+    task.completed_at = payload.status === "done" ? new Date().toISOString() : null;
+  }
+  return task;
+}
+
+function publicWorkspaceTask(task) {
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description || "",
+    status: task.status,
+    priority: task.priority,
+    dueDate: task.due_date || null,
+    completedAt: task.completed_at || null,
+    createdAt: task.created_at,
+    updatedAt: task.updated_at
+  };
+}
+
+function normalizeWorkspaceFormInput(value, requireContent = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const form = {};
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "title")) {
+    const title = String(payload.title || "").trim();
+    if (!title || title.length > 120) throw new Error("Escribe un titulo valido para el formulario.");
+    form.title = title;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "purpose")) {
+    const purpose = String(payload.purpose || "").trim();
+    if (!purpose || purpose.length > 280) throw new Error("Escribe un objetivo valido para el formulario.");
+    form.purpose = purpose;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "audience")) {
+    if (!WORKSPACE_FORM_AUDIENCES.includes(payload.audience)) throw new Error("Audiencia invalida.");
+    form.audience = payload.audience;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "questions")) {
+    if (!Array.isArray(payload.questions) || !payload.questions.length || payload.questions.length > 12) {
+      throw new Error("Incluye entre 1 y 12 preguntas.");
+    }
+    form.questions = payload.questions.map((item, index) => {
+      const id = String(item.id || `question_${index + 1}`).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48);
+      const label = String(item.label || "").trim().slice(0, 180);
+      const type = WORKSPACE_QUESTION_TYPES.includes(item.type) ? item.type : "long_text";
+      if (!id || !label) throw new Error("Cada pregunta necesita un identificador y texto.");
+      const options = type === "choice"
+        ? [...new Set((Array.isArray(item.options) ? item.options : []).map(option => String(option).trim()).filter(Boolean))].slice(0, 8)
+        : [];
+      if (type === "choice" && options.length < 2) throw new Error("Una pregunta de opciones requiere al menos dos respuestas.");
+      return { id, label, type, required: Boolean(item.required), options };
+    });
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    if (!WORKSPACE_FORM_STATUSES.includes(payload.status)) throw new Error("Estado invalido.");
+    form.status = payload.status;
+  }
+  return form;
+}
+
+function publicWorkspaceForm(form) {
+  return {
+    id: form.id,
+    title: form.title,
+    purpose: form.purpose,
+    audience: form.audience,
+    questions: Array.isArray(form.questions) ? form.questions : [],
+    status: form.status,
+    createdAt: form.created_at,
+    updatedAt: form.updated_at
+  };
+}
+
+function normalizeWorkspaceAnswers(value, questions) {
+  const payload = value && typeof value === "object" ? value : {};
+  const answers = {};
+  (Array.isArray(questions) ? questions : []).forEach(item => {
+    const answer = String(payload[item.id] || "").trim();
+    if (item.required && !answer) throw new Error("Responde las preguntas obligatorias.");
+    if (answer.length > 1500) throw new Error("Una respuesta es demasiado larga.");
+    if (item.type === "scale" && answer && !["1", "2", "3", "4", "5"].includes(answer)) throw new Error("Valor de escala invalido.");
+    if (item.type === "choice" && answer && !(item.options || []).includes(answer)) throw new Error("Seleccion invalida.");
+    answers[item.id] = answer;
+  });
+  return answers;
+}
+
+function publicWorkspaceResponse(response) {
+  return {
+    id: response.id,
+    formId: response.form_id,
+    answers: response.answers || {},
+    submittedAt: response.submitted_at
   };
 }
 

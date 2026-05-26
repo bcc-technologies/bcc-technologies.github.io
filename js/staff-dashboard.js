@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceMenu();
   hydrateProfileForm(user);
   renderPermissions(user);
+    window.BCCWorkspaceProductivity?.init(user);
+    window.BCCWorkspaceForms?.init(user);
   refreshIcons();
 });
 

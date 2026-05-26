@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateLocalCmsLinks();
   bindWorkspaceControls();
   bindAccessModal();
+    window.BCCWorkspaceProductivity?.init(user);
+    window.BCCWorkspaceForms?.init(user);
   refreshIcons();
   await Promise.all([loadUsers(), loadAuditLogs()]);
 });

@@ -13,6 +13,8 @@
   <script src="js/supabase-config.js" defer></script>
   <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
+  <script src="js/workspace-productivity.js" defer></script>
+  <script src="js/workspace-forms.js" defer></script>
   <script src="js/staff-dashboard.js" defer></script>
   <script src="js/workspace-shell.js" defer></script>
 </head>
@@ -66,6 +68,8 @@
         <a href="#trabajo"><i data-lucide="clipboard-list"></i><span>Trabajo</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
         <p class="workspace-nav-label">Herramientas</p>
+        <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Trabajo y KPIs</span></a>
+        <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
         <a href="/blog.html"><i data-lucide="file-text"></i><span>Contenido</span></a>
         <a href="http://localhost:3777/" data-cms-access data-local-cms-link hidden><i data-lucide="panels-top-left"></i><span>CMS local</span></a>
         <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administracion</span></a>
@@ -102,6 +106,9 @@
           <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignacion</small></div>
           <div><span>CMS</span><strong data-cms-status>-</strong><small>Segun permisos actuales</small></div>
         </section>
+
+        <section id="productividad" data-productivity-workspace aria-label="Trabajo y seguimiento"></section>
+        <section id="formularios" data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
 
         <div class="account-workspace-grid staff-grid" id="trabajo">
           <section class="account-primary">
