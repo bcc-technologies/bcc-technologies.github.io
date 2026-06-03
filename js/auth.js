@@ -155,6 +155,7 @@ function publicProfile(profile, authUser = null) {
       displayName: profile?.display_name || parsed.displayName
     },
     email: authUser?.email || profile?.email || "",
+    emails: [],
     company: profile?.company || metadata.company || "",
     title: profile?.title || metadata.title || "",
     role,
@@ -289,6 +290,136 @@ async function updateProfile(payload) {
   return currentPageUser;
 }
 
+const ACCOUNT_EMAIL_COLUMNS = "id, email, is_primary, is_confirmed, created_at, confirmed_at";
+
+function normalizeAccountEmailRow(row) {
+  return {
+    id: row.id,
+    email: row.email || "",
+    primary: Boolean(row.is_primary),
+    confirmed: Boolean(row.is_confirmed),
+    createdAt: row.created_at || "",
+    confirmedAt: row.confirmed_at || ""
+  };
+}
+
+function generateConfirmationCode() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function ensurePrimaryAccountEmail(supabase, authUser) {
+  const email = String(authUser?.email || "").trim().toLowerCase();
+  if (!authUser?.id || !email) return;
+  const { data } = await supabase
+    .from("account_emails")
+    .select("id")
+    .eq("user_id", authUser.id)
+    .eq("email", email)
+    .maybeSingle();
+  if (data?.id) return;
+  await supabase
+    .from("account_emails")
+    .insert({
+      user_id: authUser.id,
+      email,
+      is_primary: true,
+      is_confirmed: true,
+      confirmed_at: new Date().toISOString()
+    });
+}
+
+async function listAccountEmails() {
+  const supabase = await loadSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("No autenticado.");
+  await ensurePrimaryAccountEmail(supabase, userData.user);
+  const { data, error } = await supabase
+    .from("account_emails")
+    .select(ACCOUNT_EMAIL_COLUMNS)
+    .order("is_primary", { ascending: false })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data || []).map(normalizeAccountEmailRow);
+}
+
+async function addAccountEmail(payload) {
+  const email = String(payload?.email || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Escribe un correo valido.");
+  const supabase = await loadSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("No autenticado.");
+  await ensurePrimaryAccountEmail(supabase, userData.user);
+  const confirmationToken = generateConfirmationCode();
+  const { error } = await supabase
+    .from("account_emails")
+    .insert({
+      user_id: userData.user.id,
+      email,
+      is_primary: false,
+      is_confirmed: false,
+      confirmation_token: confirmationToken
+    });
+  if (error) throw error;
+  return { ok: true, emails: await listAccountEmails(), confirmationToken };
+}
+
+async function confirmAccountEmail(payload) {
+  const email = String(payload?.email || "").trim().toLowerCase();
+  const token = String(payload?.token || "").trim();
+  if (!email || !token) throw new Error("Escribe el correo y el codigo de confirmacion.");
+  const supabase = await loadSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("No autenticado.");
+  const { error } = await supabase.rpc("confirm_account_email", { target_email: email, token });
+  if (error) throw error;
+  return { ok: true, emails: await listAccountEmails() };
+}
+
+async function makePrimaryAccountEmail(emailId) {
+  const supabase = await loadSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("No autenticado.");
+  const { data: target, error: targetError } = await supabase
+    .from("account_emails")
+    .select(ACCOUNT_EMAIL_COLUMNS)
+    .eq("id", emailId)
+    .eq("user_id", userData.user.id)
+    .maybeSingle();
+  if (targetError) throw targetError;
+  if (!target) throw new Error("Correo no encontrado.");
+  if (!target.is_confirmed) throw new Error("Confirma el correo antes de hacerlo principal.");
+
+  const { error: authError } = await supabase.auth.updateUser({ email: target.email }, {
+    emailRedirectTo: `${location.origin}/auth-callback.html`
+  });
+  if (authError) throw authError;
+
+  const { error } = await supabase.rpc("set_primary_account_email", { target_email_id: emailId });
+  if (error) throw error;
+  if (currentPageUser) currentPageUser = { ...currentPageUser, email: target.email };
+  return { ok: true, user: currentPageUser, emails: await listAccountEmails(), pendingAuthConfirmation: true };
+}
+
+async function deleteAccountEmail(emailId) {
+  const supabase = await loadSupabaseClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("No autenticado.");
+  const { data: target, error: targetError } = await supabase
+    .from("account_emails")
+    .select("id, is_primary")
+    .eq("id", emailId)
+    .eq("user_id", userData.user.id)
+    .maybeSingle();
+  if (targetError) throw targetError;
+  if (!target) throw new Error("Correo no encontrado.");
+  if (target.is_primary) throw new Error("No puedes eliminar el correo principal.");
+  const { error } = await supabase.rpc("delete_account_email", { target_email_id: emailId });
+  if (error) throw error;
+  return { ok: true, emails: await listAccountEmails() };
+}
+
 async function bccApi(path, options = {}) {
   const supabase = await loadSupabaseClient();
 
@@ -305,6 +436,28 @@ async function bccApi(path, options = {}) {
   if (path === "/api/auth/profile" && options.method === "PATCH") {
     const body = JSON.parse(options.body || "{}");
     return { ok: true, user: await updateProfile(body) };
+  }
+
+  if (path === "/api/account/emails" && (!options.method || options.method === "GET")) {
+    return { ok: true, emails: await listAccountEmails() };
+  }
+
+  if (path === "/api/account/emails" && options.method === "POST") {
+    return addAccountEmail(JSON.parse(options.body || "{}"));
+  }
+
+  if (path === "/api/account/emails/confirm" && options.method === "POST") {
+    return confirmAccountEmail(JSON.parse(options.body || "{}"));
+  }
+
+  const primaryEmailMatch = path.match(/^\/api\/account\/emails\/([^/]+)\/primary$/);
+  if (primaryEmailMatch && options.method === "PATCH") {
+    return makePrimaryAccountEmail(decodeURIComponent(primaryEmailMatch[1]));
+  }
+
+  const deleteEmailMatch = path.match(/^\/api\/account\/emails\/([^/]+)$/);
+  if (deleteEmailMatch && options.method === "DELETE") {
+    return deleteAccountEmail(decodeURIComponent(deleteEmailMatch[1]));
   }
 
   if (path === "/api/workspace/tasks" && (!options.method || options.method === "GET")) {

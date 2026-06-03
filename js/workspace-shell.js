@@ -52,11 +52,12 @@
   });
 
   const sectionLinks = [...nav.querySelectorAll('a[href^="#"]')];
+  const hasWorkspaceViews = Boolean(document.querySelector("[data-workspace-view]"));
   const sections = sectionLinks
     .map(link => document.querySelector(link.getAttribute("href")))
     .filter(Boolean);
 
-  if (sections.length && "IntersectionObserver" in window) {
+  if (!hasWorkspaceViews && sections.length && "IntersectionObserver" in window) {
     const updateActiveSection = () => {
       const anchor = 96;
       const current = sections.reduce((closest, section) => {

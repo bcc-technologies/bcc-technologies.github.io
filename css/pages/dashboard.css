@@ -1435,6 +1435,15 @@
   scroll-behavior: smooth;
 }
 
+.workspace-view{
+  display: grid;
+  gap: 18px;
+}
+
+.workspace-view[hidden]{
+  display: none !important;
+}
+
 .workspace-refined [id]{
   scroll-margin-top: 92px;
 }
@@ -1655,6 +1664,83 @@
   flex: 0 1 auto;
 }
 
+.account-email-manager{
+  display: grid;
+  gap: 16px;
+}
+
+.account-email-list{
+  display: grid;
+  gap: 10px;
+}
+
+.account-email-row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.account-email-row strong{
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: .92rem;
+}
+
+.account-email-row span{
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-muted);
+  font-size: .78rem;
+}
+
+.account-email-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-email-actions .btn{
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: .8rem;
+}
+
+.account-email-form{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.account-email-form.confirm{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.account-email-form label{
+  display: grid;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 700;
+}
+
+.account-email-form input{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+}
+
 .workspace-collapsed .workspace{
   --workspace-sidebar-width: 62px;
 }
@@ -1759,6 +1845,16 @@
   .client-operation-grid,
   .profile-workspace{
     grid-template-columns: 1fr;
+  }
+
+  .account-email-row,
+  .account-email-form,
+  .account-email-form.confirm{
+    grid-template-columns: 1fr;
+  }
+
+  .account-email-actions{
+    justify-content: flex-start;
   }
 
   .client-summary{

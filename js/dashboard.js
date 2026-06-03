@@ -5,9 +5,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateUser(user);
   hydrateAccountMenu(user);
   bindWorkspaceMenu();
+  bindWorkspaceViews();
   hydrateProfileForm(user);
+  bindEmailManager(user);
   renderPermissions(user);
-    window.BCCWorkspaceProductivity?.init(user);
     window.BCCWorkspaceForms?.init(user);
   refreshIcons();
 });
@@ -19,6 +20,143 @@ function hydrateUser(user) {
   document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compania registrada"; });
   const completed = [user.name, user.email, user.company, user.title].filter(Boolean).length;
   document.querySelectorAll("[data-profile-completion]").forEach(el => { el.textContent = `${completed}/4`; });
+}
+
+async function bindEmailManager(user) {
+  const list = document.querySelector("[data-account-emails]");
+  const addForm = document.querySelector("[data-email-add-form]");
+  const confirmForm = document.querySelector("[data-email-confirm-form]");
+  if (!list) return;
+
+  let emails = Array.isArray(user.emails) && user.emails.length ? user.emails : [{ id: "primary", email: user.email, primary: true, confirmed: true }];
+
+  const setMessage = (text, tone = "ok") => {
+    const message = document.querySelector("[data-email-message]");
+    if (!message) return;
+    message.textContent = text || "";
+    message.dataset.tone = tone;
+    message.hidden = !text;
+  };
+
+  const refresh = async () => {
+    const data = await window.BCCAuth.api("/api/account/emails");
+    emails = data.emails || [];
+    renderAccountEmails(emails);
+  };
+
+  const renderAccountEmails = items => {
+    if (!items.length) {
+      list.innerHTML = `<p class="muted-text">No hay correos registrados.</p>`;
+      return;
+    }
+    list.replaceChildren(...items.map(item => {
+      const row = document.createElement("div");
+      row.className = "account-email-row";
+      row.dataset.emailId = item.id;
+
+      const meta = document.createElement("div");
+      meta.innerHTML = `
+        <strong>${escapeHtml(item.email)}</strong>
+        <span>${item.primary ? "Principal" : "Adicional"} · ${item.confirmed ? "Confirmado" : "Pendiente de confirmacion"}</span>
+      `;
+
+      const actions = document.createElement("div");
+      actions.className = "account-email-actions";
+      if (!item.primary && item.confirmed) {
+        const primaryButton = document.createElement("button");
+        primaryButton.type = "button";
+        primaryButton.className = "btn btn-ghost";
+        primaryButton.dataset.emailPrimary = item.id;
+        primaryButton.textContent = "Hacer principal";
+        actions.append(primaryButton);
+      }
+      if (!item.primary) {
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "btn btn-ghost";
+        deleteButton.dataset.emailDelete = item.id;
+        deleteButton.textContent = "Eliminar";
+        actions.append(deleteButton);
+      }
+      row.append(meta, actions);
+      return row;
+    }));
+    refreshIcons();
+  };
+
+  list.addEventListener("click", async event => {
+    const primaryButton = event.target.closest("[data-email-primary]");
+    const deleteButton = event.target.closest("[data-email-delete]");
+    if (!primaryButton && !deleteButton) return;
+    setMessage("");
+    try {
+      if (primaryButton) {
+        const data = await window.BCCAuth.api(`/api/account/emails/${encodeURIComponent(primaryButton.dataset.emailPrimary)}/primary`, { method: "PATCH" });
+        if (data.user) {
+          hydrateUser(data.user);
+          hydrateAccountMenu(data.user);
+        }
+        emails = data.emails || emails;
+        renderAccountEmails(emails);
+        setMessage(data.pendingAuthConfirmation ? "Revisa tu correo para completar el cambio del correo principal." : "Correo principal actualizado.");
+      }
+      if (deleteButton) {
+        const data = await window.BCCAuth.api(`/api/account/emails/${encodeURIComponent(deleteButton.dataset.emailDelete)}`, { method: "DELETE" });
+        emails = data.emails || emails;
+        renderAccountEmails(emails);
+        setMessage("Correo eliminado.");
+      }
+    } catch (error) {
+      setMessage(error.message, "error");
+    }
+  });
+
+  addForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    setMessage("");
+    try {
+      const data = await window.BCCAuth.api("/api/account/emails", {
+        method: "POST",
+        body: JSON.stringify({ email: addForm.elements.email.value })
+      });
+      emails = data.emails || emails;
+      renderAccountEmails(emails);
+      if (confirmForm?.elements.email) confirmForm.elements.email.value = addForm.elements.email.value;
+      addForm.reset();
+      setMessage(data.confirmationToken ? `Correo agregado. Codigo de confirmacion: ${data.confirmationToken}` : "Correo agregado. Revisa tu correo para confirmarlo.");
+    } catch (error) {
+      setMessage(error.message, "error");
+    }
+  });
+
+  confirmForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    setMessage("");
+    try {
+      const data = await window.BCCAuth.api("/api/account/emails/confirm", {
+        method: "POST",
+        body: JSON.stringify({
+          email: confirmForm.elements.email.value,
+          token: confirmForm.elements.token.value
+        })
+      });
+      emails = data.emails || emails;
+      renderAccountEmails(emails);
+      confirmForm.reset();
+      setMessage("Correo confirmado.");
+    } catch (error) {
+      setMessage(error.message, "error");
+    }
+  });
+
+  renderAccountEmails(emails);
+  refresh().catch(error => setMessage(error.message, "error"));
+}
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = String(value || "");
+  return div.innerHTML;
 }
 
 function hydrateAccountMenu(user) {
@@ -36,6 +174,46 @@ function bindWorkspaceMenu() {
   document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
     link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
   });
+}
+
+function bindWorkspaceViews() {
+  const views = [...document.querySelectorAll("[data-workspace-view]")];
+  if (!views.length) return;
+
+  const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
+  const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
+  const title = document.querySelector("[data-workspace-view-title]");
+  const viewIds = new Set(views.map(view => view.id));
+
+  const showView = id => {
+    const nextId = viewIds.has(id) ? id : "resumen";
+    views.forEach(view => {
+      view.hidden = view.id !== nextId;
+    });
+    sidebarLinks.forEach(link => {
+      link.classList.toggle("active", link.getAttribute("href") === `#${nextId}`);
+    });
+    const activeView = views.find(view => view.id === nextId);
+    if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
+    document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
+  links.forEach(link => {
+    link.addEventListener("click", event => {
+      const id = link.getAttribute("href").slice(1);
+      if (!viewIds.has(id)) return;
+      event.preventDefault();
+      if (window.location.hash !== `#${id}`) {
+        window.history.pushState(null, "", `#${id}`);
+      }
+      showView(id);
+      document.body.classList.remove("workspace-nav-open");
+    });
+  });
+
+  window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
+  showView(window.location.hash.slice(1));
 }
 
 function hydrateProfileForm(user) {

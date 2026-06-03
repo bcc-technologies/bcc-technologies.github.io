@@ -81,6 +81,52 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ""));
+}
+
+function normalizeUserEmails(user) {
+  const primaryEmail = normalizeEmail(user?.email);
+  const raw = Array.isArray(user?.emails) ? user.emails : [];
+  const seen = new Set();
+  const emails = raw
+    .map(item => ({
+      id: item.id || crypto.randomUUID(),
+      email: normalizeEmail(item.email),
+      primary: Boolean(item.primary),
+      confirmed: Boolean(item.confirmed),
+      confirmationToken: item.confirmationToken || "",
+      createdAt: item.createdAt || user?.createdAt || new Date().toISOString(),
+      confirmedAt: item.confirmedAt || ""
+    }))
+    .filter(item => item.email && !seen.has(item.email) && seen.add(item.email));
+
+  if (primaryEmail && !emails.some(item => item.email === primaryEmail)) {
+    emails.unshift({
+      id: crypto.randomUUID(),
+      email: primaryEmail,
+      primary: true,
+      confirmed: true,
+      createdAt: user?.createdAt || new Date().toISOString(),
+      confirmedAt: user?.createdAt || new Date().toISOString()
+    });
+  }
+
+  return emails.map(item => ({
+    ...item,
+    primary: item.email === primaryEmail,
+    confirmed: item.email === primaryEmail ? true : item.confirmed
+  }));
+}
+
+function publicEmails(user) {
+  return normalizeUserEmails(user).map(({ confirmationToken, ...item }) => item);
+}
+
+function emailBelongsToAnotherUser(users, userId, email) {
+  return users.some(user => user.id !== userId && normalizeUserEmails(user).some(item => item.email === email));
+}
+
 function parsePersonName(name) {
   const clean = String(name || "").trim().replace(/\s+/g, " ");
   const parts = clean ? clean.split(" ") : [];
@@ -125,6 +171,7 @@ function publicUser(user) {
     displayName: nameParts.displayName || nameParts.firstName || user.name,
     nameParts,
     email: user.email,
+    emails: publicEmails(user),
     company: user.company || "",
     title: user.title || "",
     role: user.role || "client",
@@ -307,7 +354,7 @@ async function handleApi(req, res, url) {
       if (!validatePassword(password)) return sendJson(res, 400, { ok: false, error: PASSWORD_RULE_MESSAGE });
 
       const users = readJson(USERS_PATH, []);
-      if (users.some(u => u.email === email)) return sendJson(res, 409, { ok: false, error: "Ya existe una cuenta con ese correo." });
+      if (users.some(u => normalizeUserEmails(u).some(item => item.email === email))) return sendJson(res, 409, { ok: false, error: "Ya existe una cuenta con ese correo." });
 
       const adminEmails = String(process.env.BCC_ADMIN_EMAILS || "").split(",").map(normalizeEmail).filter(Boolean);
       const role = users.length === 0 || adminEmails.includes(email) ? "admin" : "client";
@@ -318,6 +365,14 @@ async function handleApi(req, res, url) {
         name,
         nameParts,
         email,
+        emails: [{
+          id: crypto.randomUUID(),
+          email,
+          primary: true,
+          confirmed: true,
+          createdAt: now,
+          confirmedAt: now
+        }],
         company: String(body.company || "").trim(),
         title: String(body.title || "").trim(),
         role,
@@ -340,7 +395,7 @@ async function handleApi(req, res, url) {
     if (req.method === "POST" && url.pathname === "/api/auth/login") {
       const body = await readBody(req);
       const email = normalizeEmail(body.email);
-      const user = readJson(USERS_PATH, []).find(u => u.email === email);
+      const user = readJson(USERS_PATH, []).find(u => normalizeUserEmails(u).some(item => item.email === email && item.confirmed));
       if (!user || user.status === "disabled" || !verifyPassword(body.password, user.passwordHash)) {
         return sendJson(res, 401, { ok: false, error: "Credenciales inválidas." });
       }
@@ -379,6 +434,105 @@ async function handleApi(req, res, url) {
       } : u);
       writeJson(USERS_PATH, updated);
       return sendJson(res, 200, { ok: true, user: publicUser(updated.find(u => u.id === user.id)) });
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/account/emails") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      return sendJson(res, 200, { ok: true, emails: publicEmails(user) });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/account/emails") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      const body = await readBody(req);
+      const email = normalizeEmail(body.email);
+      if (!isEmail(email)) return sendJson(res, 400, { ok: false, error: "Escribe un correo valido." });
+      const users = readJson(USERS_PATH, []);
+      if (emailBelongsToAnotherUser(users, user.id, email)) return sendJson(res, 409, { ok: false, error: "Ese correo ya pertenece a otra cuenta." });
+      const currentEmails = normalizeUserEmails(user);
+      if (currentEmails.some(item => item.email === email)) return sendJson(res, 409, { ok: false, error: "Ese correo ya esta en tu cuenta." });
+      const now = new Date().toISOString();
+      const confirmationToken = crypto.randomBytes(24).toString("base64url");
+      const nextEmail = {
+        id: crypto.randomUUID(),
+        email,
+        primary: false,
+        confirmed: false,
+        confirmationToken,
+        createdAt: now,
+        confirmedAt: ""
+      };
+      const updated = users.map(item => item.id === user.id ? { ...item, emails: [...currentEmails, nextEmail], updatedAt: now } : item);
+      writeJson(USERS_PATH, updated);
+      const nextUser = updated.find(item => item.id === user.id);
+      const payload = { ok: true, email: publicEmails(nextUser).find(item => item.email === email), emails: publicEmails(nextUser) };
+      if (process.env.NODE_ENV !== "production") payload.confirmationToken = confirmationToken;
+      return sendJson(res, 201, payload);
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/account/emails/confirm") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      const body = await readBody(req);
+      const email = normalizeEmail(body.email);
+      const token = String(body.token || "").trim();
+      const currentEmails = normalizeUserEmails(user);
+      const target = currentEmails.find(item => item.email === email);
+      if (!target) return sendJson(res, 404, { ok: false, error: "Correo no encontrado." });
+      if (target.confirmed) return sendJson(res, 200, { ok: true, emails: publicEmails(user) });
+      if (!token || token !== String(target.confirmationToken || "")) return sendJson(res, 400, { ok: false, error: "Codigo de confirmacion invalido." });
+      const now = new Date().toISOString();
+      const users = readJson(USERS_PATH, []);
+      const updated = users.map(item => item.id === user.id ? {
+        ...item,
+        emails: currentEmails.map(emailItem => emailItem.email === email ? { ...emailItem, confirmed: true, confirmedAt: now, confirmationToken: "" } : emailItem),
+        updatedAt: now
+      } : item);
+      writeJson(USERS_PATH, updated);
+      return sendJson(res, 200, { ok: true, emails: publicEmails(updated.find(item => item.id === user.id)) });
+    }
+
+    const primaryEmailMatch = url.pathname.match(/^\/api\/account\/emails\/([^/]+)\/primary$/);
+    if (req.method === "PATCH" && primaryEmailMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      const targetId = decodeURIComponent(primaryEmailMatch[1]);
+      const currentEmails = normalizeUserEmails(user);
+      const target = currentEmails.find(item => item.id === targetId);
+      if (!target) return sendJson(res, 404, { ok: false, error: "Correo no encontrado." });
+      if (!target.confirmed) return sendJson(res, 400, { ok: false, error: "Confirma el correo antes de hacerlo principal." });
+      const users = readJson(USERS_PATH, []);
+      if (emailBelongsToAnotherUser(users, user.id, target.email)) return sendJson(res, 409, { ok: false, error: "Ese correo ya pertenece a otra cuenta." });
+      const now = new Date().toISOString();
+      const updated = users.map(item => item.id === user.id ? {
+        ...item,
+        email: target.email,
+        emails: currentEmails.map(emailItem => ({ ...emailItem, primary: emailItem.id === targetId, confirmed: emailItem.id === targetId ? true : emailItem.confirmed })),
+        updatedAt: now
+      } : item);
+      writeJson(USERS_PATH, updated);
+      const nextUser = updated.find(item => item.id === user.id);
+      return sendJson(res, 200, { ok: true, user: publicUser(nextUser), emails: publicEmails(nextUser) });
+    }
+
+    const deleteEmailMatch = url.pathname.match(/^\/api\/account\/emails\/([^/]+)$/);
+    if (req.method === "DELETE" && deleteEmailMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      const targetId = decodeURIComponent(deleteEmailMatch[1]);
+      const currentEmails = normalizeUserEmails(user);
+      const target = currentEmails.find(item => item.id === targetId);
+      if (!target) return sendJson(res, 404, { ok: false, error: "Correo no encontrado." });
+      if (target.primary) return sendJson(res, 400, { ok: false, error: "No puedes eliminar el correo principal." });
+      const users = readJson(USERS_PATH, []);
+      const updated = users.map(item => item.id === user.id ? {
+        ...item,
+        emails: currentEmails.filter(emailItem => emailItem.id !== targetId),
+        updatedAt: new Date().toISOString()
+      } : item);
+      writeJson(USERS_PATH, updated);
+      return sendJson(res, 200, { ok: true, emails: publicEmails(updated.find(item => item.id === user.id)) });
     }
 
     if (req.method === "GET" && url.pathname === "/api/admin/users") {

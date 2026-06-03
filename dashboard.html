@@ -13,7 +13,6 @@
   <script src="js/supabase-config.js" defer></script>
   <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
-  <script src="js/workspace-productivity.js" defer></script>
   <script src="js/workspace-forms.js" defer></script>
   <script src="js/dashboard.js" defer></script>
   <script src="js/workspace-shell.js" defer></script>
@@ -30,7 +29,7 @@
           <i data-lucide="menu"></i>
         </button>
         <div>
-          <strong>Inicio</strong>
+          <strong data-workspace-view-title>Inicio</strong>
           <span>Panel de cliente</span>
         </div>
       </div>
@@ -65,9 +64,9 @@
         <p class="workspace-nav-label">Cuenta</p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <a href="#correos"><i data-lucide="mail"></i><span>Correos</span></a>
         <a href="#seguridad"><i data-lucide="shield-check"></i><span>Seguridad</span></a>
         <p class="workspace-nav-label">Operaciones</p>
-        <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Trabajo</span></a>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
         <a href="#solicitudes"><i data-lucide="inbox"></i><span>Solicitudes</span></a>
         <a href="/products.html"><i data-lucide="package"></i><span>Productos</span></a>
@@ -90,76 +89,62 @@
 
     <div class="workspace-content">
       <main class="workspace-main">
-        <section class="workspace-intro" id="resumen">
-          <div>
-            <h1>Hola, <span data-user-name>...</span></h1>
-            <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes y los datos de tu organizacion.</p>
-          </div>
-          <div class="dashboard-actions">
-            <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
-          </div>
-        </section>
-
-        <section class="setup-progress module-surface" aria-label="Configuracion de cuenta">
-          <div class="module-head compact">
-            <h2>Configuracion de cuenta</h2>
-            <a href="#perfil">Ver detalles <i data-lucide="chevron-right"></i></a>
-          </div>
-          <div class="setup-steps">
-            <div class="complete"><i data-lucide="check"></i><strong>Informacion basica</strong><small data-profile-completion>-</small></div>
-            <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
-            <div class="complete"><i data-lucide="check"></i><strong>Organizacion</strong><small>Configurada</small></div>
-            <div><span>4</span><strong>Primera solicitud</strong><small>Pendiente</small></div>
-          </div>
-        </section>
-
-        <section id="productividad" data-productivity-workspace aria-label="Trabajo y seguimiento"></section>
-        <section id="formularios" data-forms-workspace data-forms-view="client" aria-label="Formularios y retroalimentacion"></section>
-
-        <div class="client-operation-grid">
-          <section class="client-actions-column">
-            <article class="module-surface quick-actions">
-              <h2>Acciones frecuentes</h2>
-              <div class="resource-rows">
-                <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
-                <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="chevron-right"></i></a>
-                <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentacion</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
-              </div>
-            </article>
-            <article class="module-surface client-resources">
-              <h2>Recursos recomendados</h2>
-              <div class="resource-rows">
-                <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
-                <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catalogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
-              </div>
-            </article>
+        <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
+          <section class="workspace-intro">
+            <div>
+              <h1>Hola, <span data-user-name>...</span></h1>
+              <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes y los datos de tu organizacion.</p>
+            </div>
+            <div class="dashboard-actions">
+              <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
+            </div>
           </section>
+          <section class="setup-progress module-surface" aria-label="Configuracion de cuenta">
+            <div class="module-head compact">
+              <h2>Configuracion de cuenta</h2>
+              <a href="#perfil">Ver detalles <i data-lucide="chevron-right"></i></a>
+            </div>
+            <div class="setup-steps">
+              <div class="complete"><i data-lucide="check"></i><strong>Informacion basica</strong><small data-profile-completion>-</small></div>
+              <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
+              <div class="complete"><i data-lucide="check"></i><strong>Organizacion</strong><small>Configurada</small></div>
+              <div><span>4</span><strong>Primera solicitud</strong><small>Pendiente</small></div>
+            </div>
+          </section>
+          <div class="client-operation-grid">
+            <section class="client-actions-column">
+              <article class="module-surface quick-actions">
+                <h2>Acciones frecuentes</h2>
+                <div class="resource-rows">
+                  <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentacion</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
+                </div>
+              </article>
+              <article class="module-surface client-resources">
+                <h2>Recursos recomendados</h2>
+                <div class="resource-rows">
+                  <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catalogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
+                </div>
+              </article>
+            </section>
+            <aside class="account-rail client-summary">
+              <article class="module-surface">
+                <h2>Resumen de cuenta</h2>
+                <dl class="account-details">
+                  <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+                  <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
+                  <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
+                </dl>
+              </article>
+            </aside>
+          </div>
+        </section>
 
-          <article class="module-surface request-empty" id="solicitudes">
-            <div class="empty-icon"><i data-lucide="folder-open"></i></div>
-            <h2>Aun no tienes solicitudes</h2>
-            <p>Cuando crees una solicitud, podras darle seguimiento desde este panel.</p>
-            <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
-          </article>
-
-          <aside class="account-rail client-summary">
+        <section class="workspace-view" id="perfil" data-workspace-view data-view-title="Mi perfil" hidden>
+          <div class="profile-workspace">
             <article class="module-surface">
-              <h2>Resumen de cuenta</h2>
-              <dl class="account-details">
-                <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
-                <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
-                <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
-              </dl>
-              <div class="security-summary" id="seguridad">
-                <div><i data-lucide="check-circle-2"></i><strong>Sesion protegida</strong><span>Acceso autenticado activo</span></div>
-                <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periodicamente</span></div>
-              </div>
-            </article>
-          </aside>
-        </div>
-
-        <section class="profile-workspace" id="perfil">
-          <article class="module-surface">
               <div class="module-head">
                 <div>
                   <h2>Datos de cuenta</h2>
@@ -188,6 +173,72 @@
               <h2>Capacidades activas</h2>
               <ul class="permission-list permission-readable" data-permissions></ul>
             </article>
+          </div>
+        </section>
+
+        <section class="workspace-view" id="correos" data-workspace-view data-view-title="Correos" hidden>
+          <article class="module-surface account-email-manager">
+            <div class="module-head">
+              <div>
+                <h2>Correos de la cuenta</h2>
+                <p>Agrega correos confirmados y elige cual sera el principal.</p>
+              </div>
+            </div>
+            <p class="auth-message" data-email-message hidden></p>
+            <div class="account-email-list" data-account-emails></div>
+            <form class="account-email-form" data-email-add-form>
+              <label>
+                Correo adicional
+                <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
+              </label>
+              <button class="btn btn-primary" type="submit">Agregar correo</button>
+            </form>
+            <form class="account-email-form confirm" data-email-confirm-form>
+              <label>
+                Correo a confirmar
+                <input type="email" name="email" autocomplete="email" required />
+              </label>
+              <label>
+                Codigo de confirmacion
+                <input type="text" name="token" autocomplete="one-time-code" required />
+              </label>
+              <button class="btn btn-ghost" type="submit">Confirmar correo</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="workspace-view" id="seguridad" data-workspace-view data-view-title="Seguridad" hidden>
+          <article class="module-surface security-view">
+            <div class="module-head">
+              <div>
+                <h2>Seguridad de la cuenta</h2>
+                <p>Estado de sesion, perfil y acceso autenticado.</p>
+              </div>
+              <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesion activa</span>
+            </div>
+            <dl class="account-details">
+              <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+              <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
+              <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
+            </dl>
+            <div class="security-summary">
+              <div><i data-lucide="check-circle-2"></i><strong>Sesion protegida</strong><span>Acceso autenticado activo</span></div>
+              <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periodicamente</span></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
+          <section data-forms-workspace data-forms-view="client" aria-label="Formularios y retroalimentacion"></section>
+        </section>
+
+        <section class="workspace-view" id="solicitudes" data-workspace-view data-view-title="Solicitudes" hidden>
+          <article class="module-surface request-empty">
+            <div class="empty-icon"><i data-lucide="folder-open"></i></div>
+            <h2>Aun no tienes solicitudes</h2>
+            <p>Cuando crees una solicitud, podras darle seguimiento desde este panel.</p>
+            <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
+          </article>
         </section>
       </main>
     </div>

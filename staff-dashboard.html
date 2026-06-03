@@ -30,7 +30,7 @@
           <i data-lucide="menu"></i>
         </button>
         <div>
-          <strong>Inicio</strong>
+          <strong data-workspace-view-title>Inicio</strong>
           <span>Panel de personal</span>
         </div>
       </div>
@@ -67,6 +67,7 @@
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#trabajo"><i data-lucide="clipboard-list"></i><span>Trabajo</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <a href="#correos"><i data-lucide="mail"></i><span>Correos</span></a>
         <p class="workspace-nav-label">Herramientas</p>
         <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Trabajo y KPIs</span></a>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
@@ -88,98 +89,138 @@
 
     <div class="workspace-content">
       <main class="workspace-main">
-        <section class="workspace-intro" id="resumen">
-          <div>
-            <h1>Hola, <span data-user-name>...</span></h1>
-            <p>Gestiona contenido y utiliza las herramientas habilitadas para tus funciones.</p>
-          </div>
-          <div class="dashboard-actions">
-            <a class="btn btn-primary" href="http://localhost:3777/" data-cms-access data-local-cms-link hidden><i data-lucide="panels-top-left"></i>Abrir CMS</a>
-            <a class="btn btn-primary" href="/blog.html"><i data-lucide="file-text"></i>Revisar contenido</a>
-            <a class="btn btn-ghost" href="/contactUs.html"><i data-lucide="inbox"></i>Solicitudes</a>
-          </div>
-        </section>
-
-        <section class="workspace-metrics account-metrics refined-metrics" aria-label="Estado de personal">
-          <div><span>Rol base</span><strong data-user-role>...</strong><small>Cuenta interna</small></div>
-          <div><span>Roles internos</span><strong data-staff-role-count>-</strong><small data-staff-role-summary>Sin asignacion</small></div>
-          <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignacion</small></div>
-          <div><span>CMS</span><strong data-cms-status>-</strong><small>Segun permisos actuales</small></div>
-        </section>
-
-        <section id="productividad" data-productivity-workspace aria-label="Trabajo y seguimiento"></section>
-        <section id="formularios" data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
-
-        <div class="account-workspace-grid staff-grid" id="trabajo">
-          <section class="account-primary">
-            <article class="module-surface staff-access-surface">
-              <div class="module-head">
-                <div>
-                  <h2>Accesos de trabajo</h2>
-                  <p>Herramientas disponibles segun tus funciones actuales.</p>
-                </div>
-                <span class="status-pill" data-cms-pill>CMS no asignado</span>
-              </div>
-              <div class="tool-rows">
-                <div data-cms-tool>
-                  <i data-lucide="panels-top-left"></i>
-                  <div><strong>Sistema de contenido</strong><span data-cms-description>Necesitas un rol autorizado para ingresar.</span></div>
-                  <a href="http://localhost:3777/" data-cms-access data-local-cms-link hidden>Abrir</a>
-                </div>
-                <div>
-                  <i data-lucide="file-text"></i>
-                  <div><strong>Contenido publicado</strong><span>Consulta articulos y materiales disponibles.</span></div>
-                  <a href="/blog.html">Abrir</a>
-                </div>
-                <div>
-                  <i data-lucide="messages-square"></i>
-                  <div><strong>Solicitudes</strong><span>Coordina consultas con el equipo BCC.</span></div>
-                  <a href="/contactUs.html">Abrir</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="module-surface" id="perfil">
-              <div class="module-head">
-                <div>
-                  <h2>Datos profesionales</h2>
-                  <p>Información asociada a tu cuenta interna.</p>
-                </div>
-              </div>
-              <form class="profile-form workspace-profile-form" data-profile-form>
-                <p class="auth-message" data-profile-message hidden></p>
-                <label>
-                  Nombre completo
-                  <input type="text" name="name" autocomplete="name" required />
-                </label>
-                <label>
-                  Compania
-                  <input type="text" name="company" autocomplete="organization" />
-                </label>
-                <label>
-                  Cargo
-                  <input type="text" name="title" autocomplete="organization-title" />
-                </label>
-                <button class="btn btn-primary" type="submit">Guardar cambios</button>
-              </form>
-            </article>
+        <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
+          <section class="workspace-intro">
+            <div>
+              <h1>Hola, <span data-user-name>...</span></h1>
+              <p>Gestiona contenido y utiliza las herramientas habilitadas para tus funciones.</p>
+            </div>
+            <div class="dashboard-actions">
+              <a class="btn btn-primary" href="http://localhost:3777/" data-cms-access data-local-cms-link hidden><i data-lucide="panels-top-left"></i>Abrir CMS</a>
+              <a class="btn btn-primary" href="/blog.html"><i data-lucide="file-text"></i>Revisar contenido</a>
+              <a class="btn btn-ghost" href="/contactUs.html"><i data-lucide="inbox"></i>Solicitudes</a>
+            </div>
           </section>
+          <section class="workspace-metrics account-metrics refined-metrics" aria-label="Estado de personal">
+            <div><span>Rol base</span><strong data-user-role>...</strong><small>Cuenta interna</small></div>
+            <div><span>Roles internos</span><strong data-staff-role-count>-</strong><small data-staff-role-summary>Sin asignacion</small></div>
+            <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignacion</small></div>
+            <div><span>CMS</span><strong data-cms-status>-</strong><small>Segun permisos actuales</small></div>
+          </section>
+        </section>
 
-          <aside class="account-rail">
-            <article class="module-surface">
-              <h2>Perfil interno</h2>
-              <dl class="account-details">
-                <div><dt>Correo</dt><dd data-user-email>...</dd></div>
-                <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
-                <div><dt>Nivel</dt><dd data-user-role>...</dd></div>
-              </dl>
-            </article>
-            <article class="module-surface">
-              <h2>Permisos activos</h2>
-              <ul class="permission-list permission-readable" data-permissions></ul>
-            </article>
-          </aside>
-        </div>
+        <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Trabajo" hidden>
+          <div class="account-workspace-grid staff-grid">
+            <section class="account-primary">
+              <article class="module-surface staff-access-surface">
+                <div class="module-head">
+                  <div>
+                    <h2>Accesos de trabajo</h2>
+                    <p>Herramientas disponibles segun tus funciones actuales.</p>
+                  </div>
+                  <span class="status-pill" data-cms-pill>CMS no asignado</span>
+                </div>
+                <div class="tool-rows">
+                  <div data-cms-tool>
+                    <i data-lucide="panels-top-left"></i>
+                    <div><strong>Sistema de contenido</strong><span data-cms-description>Necesitas un rol autorizado para ingresar.</span></div>
+                    <a href="http://localhost:3777/" data-cms-access data-local-cms-link hidden>Abrir</a>
+                  </div>
+                  <div>
+                    <i data-lucide="file-text"></i>
+                    <div><strong>Contenido publicado</strong><span>Consulta articulos y materiales disponibles.</span></div>
+                    <a href="/blog.html">Abrir</a>
+                  </div>
+                  <div>
+                    <i data-lucide="messages-square"></i>
+                    <div><strong>Solicitudes</strong><span>Coordina consultas con el equipo BCC.</span></div>
+                    <a href="/contactUs.html">Abrir</a>
+                  </div>
+                </div>
+              </article>
+            </section>
+            <aside class="account-rail">
+              <article class="module-surface">
+                <h2>Perfil interno</h2>
+                <dl class="account-details">
+                  <div><dt>Correo</dt><dd data-user-email>...</dd></div>
+                  <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+                  <div><dt>Nivel</dt><dd data-user-role>...</dd></div>
+                </dl>
+              </article>
+              <article class="module-surface">
+                <h2>Permisos activos</h2>
+                <ul class="permission-list permission-readable" data-permissions></ul>
+              </article>
+            </aside>
+          </div>
+        </section>
+
+        <section class="workspace-view" id="perfil" data-workspace-view data-view-title="Mi perfil" hidden>
+          <article class="module-surface">
+            <div class="module-head">
+              <div>
+                <h2>Datos profesionales</h2>
+                <p>Informacion asociada a tu cuenta interna.</p>
+              </div>
+            </div>
+            <form class="profile-form workspace-profile-form" data-profile-form>
+              <p class="auth-message" data-profile-message hidden></p>
+              <label>
+                Nombre completo
+                <input type="text" name="name" autocomplete="name" required />
+              </label>
+              <label>
+                Compania
+                <input type="text" name="company" autocomplete="organization" />
+              </label>
+              <label>
+                Cargo
+                <input type="text" name="title" autocomplete="organization-title" />
+              </label>
+              <button class="btn btn-primary" type="submit">Guardar cambios</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="workspace-view" id="correos" data-workspace-view data-view-title="Correos" hidden>
+          <article class="module-surface account-email-manager">
+            <div class="module-head">
+              <div>
+                <h2>Correos de la cuenta</h2>
+                <p>Agrega correos confirmados y elige cual sera el principal.</p>
+              </div>
+            </div>
+            <p class="auth-message" data-email-message hidden></p>
+            <div class="account-email-list" data-account-emails></div>
+            <form class="account-email-form" data-email-add-form>
+              <label>
+                Correo adicional
+                <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
+              </label>
+              <button class="btn btn-primary" type="submit">Agregar correo</button>
+            </form>
+            <form class="account-email-form confirm" data-email-confirm-form>
+              <label>
+                Correo a confirmar
+                <input type="email" name="email" autocomplete="email" required />
+              </label>
+              <label>
+                Codigo de confirmacion
+                <input type="text" name="token" autocomplete="one-time-code" required />
+              </label>
+              <button class="btn btn-ghost" type="submit">Confirmar correo</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="workspace-view" id="productividad" data-workspace-view data-view-title="Trabajo y KPIs" hidden>
+          <section data-productivity-workspace aria-label="Trabajo y seguimiento"></section>
+        </section>
+
+        <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
+          <section data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
+        </section>
       </main>
     </div>
   </div>

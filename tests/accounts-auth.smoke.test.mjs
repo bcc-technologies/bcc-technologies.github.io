@@ -40,6 +40,72 @@ test("accounts server registers first admin and protects admin API", async () =>
     res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie } });
     const me = await res.json();
     assert.equal(me.user.email, "admin-test@example.com");
+    assert.equal(me.user.emails.length, 1);
+    assert.equal(me.user.emails[0].primary, true);
+    assert.equal(me.user.emails[0].confirmed, true);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails`, { headers: { cookie } });
+    let emailList = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(emailList.emails.length, 1);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ email: "admin-alt@example.com" })
+    });
+    const addedEmail = await res.json();
+    assert.equal(res.status, 201);
+    assert.equal(addedEmail.email.confirmed, false);
+    assert.match(addedEmail.confirmationToken, /.+/);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
+      method: "PATCH",
+      headers: { cookie }
+    });
+    assert.equal(res.status, 400);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ email: "admin-alt@example.com", token: addedEmail.confirmationToken })
+    });
+    emailList = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(emailList.emails.find(item => item.email === "admin-alt@example.com").confirmed, true);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
+      method: "PATCH",
+      headers: { cookie }
+    });
+    const primaryEmail = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(primaryEmail.user.email, "admin-alt@example.com");
+    assert.equal(primaryEmail.emails.find(item => item.email === "admin-alt@example.com").primary, true);
+
+    const oldEmailId = primaryEmail.emails.find(item => item.email === "admin-test@example.com").id;
+    res = await fetch(`http://localhost:${port}/api/account/emails/${oldEmailId}`, {
+      method: "DELETE",
+      headers: { cookie }
+    });
+    emailList = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(emailList.emails.some(item => item.email === "admin-test@example.com"), false);
+
+    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}`, {
+      method: "DELETE",
+      headers: { cookie }
+    });
+    assert.equal(res.status, 400);
+
+    res = await fetch(`http://localhost:${port}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "admin-alt@example.com", password: "Password123!" })
+    });
+    const login = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(login.user.email, "admin-alt@example.com");
 
     res = await fetch(`http://localhost:${port}/api/admin/users`, { headers: { cookie } });
     const users = await res.json();
