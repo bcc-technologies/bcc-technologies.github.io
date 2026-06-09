@@ -1,4 +1,4 @@
-This journal is based on a simple premise: in science and engineering, **it is not enough to simply collect data**. It is necessary to obtain **reliable results** that are contextual, reproducible, and verifiable.
+This blog is based on a simple premise: in science and engineering, **it is not enough to simply collect data**. It is necessary to obtain **reliable results** that are contextual, reproducible, and verifiable.
 
 At BCC, we develop software and instrumentation for scientific image analysis. Our approach is based on a central idea:
 
@@ -46,7 +46,7 @@ For this reason, we treat the UI as part of the measurement system: if it induce
 
 ---
 
-## Scope of the Journal
+## Scope of the Blog
 
 We will publish content designed to be applicable in real-world analysis and measurement environments, including:
 - Analysis methodologies (e.g., segmentation, parameterization, and quality control).
