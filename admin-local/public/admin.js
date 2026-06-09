@@ -302,6 +302,56 @@ const UI_PREFS = {
   lightTheme: "bccAdmin.lightTheme"
 };
 
+// ---- Bilingual section definitions
+// The canonical/stored value is always the ES label.
+// EN labels are shown in the editor when editing an EN post.
+const SECTION_PAIRS = [
+  { es: "Ensayos",                en: "Essays" },
+  { es: "Notas de Laboratorio",   en: "Lab Notes" },
+  { es: "Cultura BCC",            en: "BCC Culture" },
+  { es: "Anecdotas",              en: "Anecdotes" },
+  { es: "Divulgaci\u00f3n Cient\u00edfica",  en: "Science Communication" },
+  { es: "Otros",                  en: "Others" }
+];
+
+/**
+ * Returns the canonical (ES) value for any section label regardless of language.
+ */
+function canonicalSection(section) {
+  const s = String(section || "").trim();
+  const pair = SECTION_PAIRS.find(p => p.es === s || p.en === s);
+  return pair ? pair.es : s;
+}
+
+/**
+ * Translates a section label to the target language.
+ * Always works from/to the canonical ES value.
+ */
+function translateSection(section, toLang) {
+  const canonical = canonicalSection(section);
+  const pair = SECTION_PAIRS.find(p => p.es === canonical);
+  if (!pair) return section;
+  return toLang === "en" ? pair.en : pair.es;
+}
+
+/**
+ * Rebuilds the #postSection <select> options for the given lang.
+ * The stored/submitted VALUE is always the canonical ES label;
+ * only the visible text changes per language.
+ */
+function refreshSectionOptions(lang) {
+  const sel = $("#postSection");
+  if (!sel) return;
+  const currentCanonical = canonicalSection(sel.value);
+  const isEn = String(lang || "es").toLowerCase() === "en";
+  sel.innerHTML = SECTION_PAIRS.map(p =>
+    `<option value="${escapeAttr(p.es)}">${escapeHtml(isEn ? p.en : p.es)}</option>`
+  ).join("");
+  // Restore canonical value (falls back to first option if not found)
+  sel.value = currentCanonical;
+  if (!sel.value) sel.selectedIndex = 0;
+}
+
 function readBoolPref(key, fallback = false) {
   try {
     const raw = localStorage.getItem(key);
@@ -471,6 +521,7 @@ function setPostLanguage(lang) {
 
   const select = $("#postLang");
   if (select) select.value = targetLang;
+  refreshSectionOptions(targetLang);
   refreshPostHeader();
 }
 
@@ -876,7 +927,8 @@ function applyPostDraft(payload, hint = "Nueva entrada") {
   $("#postId").value = payload.id || "";
   $("#postTitle").value = payload.title || "";
   $("#postDate").value = payload.date || new Date().toISOString().slice(0, 10);
-  $("#postSection").value = payload.section || "Ensayos";
+  refreshSectionOptions(payload.lang || "es");
+  $("#postSection").value = canonicalSection(payload.section) || "Ensayos";
   $("#postLang").value = normalizeLang(payload.lang || "es");
   $("#postTranslationId").value = payload.translationId || "";
   $("#postTags").value = (payload.tags || []).join(", ");
@@ -1055,7 +1107,8 @@ async function loadPost(id) {
   $("#postId").value = p.id;
   $("#postTitle").value = p.title || "";
   $("#postDate").value = p.date || "";
-  $("#postSection").value = p.section || "Otros";
+  refreshSectionOptions(p.lang || "es");
+  $("#postSection").value = canonicalSection(p.section) || "Otros";
   $("#postLang").value = (p.lang || "es");
   $("#postTranslationId").value = (p.translationId || "");
   $("#postTags").value = (p.tags || []).join(", ");
@@ -1082,6 +1135,7 @@ function clearPostEditor() {
   $("#postId").value = "";
   $("#postTitle").value = "";
   $("#postDate").value = new Date().toISOString().slice(0, 10);
+  refreshSectionOptions("es");
   $("#postSection").value = "Ensayos";
   $("#postLang").value = "es";
   $("#postTranslationId").value = "";

@@ -185,12 +185,7 @@
                     <label class="field-block">
                       <span>Sección</span>
                       <select class="input" id="postSection">
-                        <option>Ensayos</option>
-                        <option>Notas de Laboratorio</option>
-                        <option>Cultura BCC</option>
-                        <option>Anecdotas</option>
-                        <option>Divulgación Científica</option>
-                        <option>Otros</option>
+                        <!-- options populated dynamically by refreshSectionOptions() in admin.js -->
                       </select>
                     </label>
                     <label class="field-block">
@@ -336,12 +331,12 @@
               <div class="entry-filter-grid">
                 <select class="input" id="postsSectionFilter" aria-label="Filtrar por sección" title="Sección">
                   <option value="">Todas</option>
-                  <option>Ensayos</option>
-                  <option>Notas de Laboratorio</option>
-                  <option>Cultura BCC</option>
-                  <option>Anecdotas</option>
-                  <option>Divulgación Científica</option>
-                  <option>Otros</option>
+                  <option value="Ensayos">Ensayos / Essays</option>
+                  <option value="Notas de Laboratorio">Notas de Laboratorio / Lab Notes</option>
+                  <option value="Cultura BCC">Cultura BCC / BCC Culture</option>
+                  <option value="Anecdotas">Anecdotas / Anecdotes</option>
+                  <option value="Divulgación Científica">Divulgación Científica / Science Communication</option>
+                  <option value="Otros">Otros / Others</option>
                 </select>
 
                 <select class="input" id="postsLangFilter" aria-label="Filtrar por idioma" title="Idioma">
