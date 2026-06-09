@@ -7,7 +7,9 @@
       "section": "Otros",
       "lang": "en",
       "translationId": "2026-06-09-un-blog-para-pensar-en-voz-alta",
-      "tags": [],
+      "tags": [
+        "manifest"
+      ],
       "authorIds": [
         "saulecast"
       ],
@@ -15,7 +17,7 @@
       "resourceIds": [
         "the-unfetterd-mind"
       ],
-      "excerpt": "",
+      "excerpt": "When we work too closely on a problem, we can stop truly seeing it. This blog exists as a space to regain perspective: to think out loud about research, development, and design.",
       "cover": "",
       "bodyUrl": "/content/posts/2026-06-09-a-blog-for-thinking-out-loud.md"
     },
@@ -26,7 +28,9 @@
       "section": "Otros",
       "lang": "es",
       "translationId": "",
-      "tags": [],
+      "tags": [
+        "manifiesto"
+      ],
       "authorIds": [
         "saulecast"
       ],
@@ -34,7 +38,7 @@
       "resourceIds": [
         "the-unfetterd-mind"
       ],
-      "excerpt": "",
+      "excerpt": "Cuando trabajamos demasiado cerca de un problema, podemos dejar de verlo. Este blog nace como un espacio para recuperar perspectiva: pensar en voz alta sobre investigación, desarrollo y diseño.",
       "cover": "",
       "bodyUrl": "/content/posts/2026-06-09-un-blog-para-pensar-en-voz-alta.md"
     },

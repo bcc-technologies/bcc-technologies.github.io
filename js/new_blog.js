@@ -55,14 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- Section definitions
   // Recomendación editorial:
   // En Shopify, ponle a cada post EXACTAMENTE 1 tag de sección:
-  // "Empresa" o "Investigación" o "Productos" o "Servicios".
+  // "Ensayos" o "Notas de Laboratorio" o "Cultura BCC" o "Anecdotas" o "Divulgación Científica".
   // (Si no tiene ninguno, cae en "Otros".)
   const SECTION_DEFS = [
-    { id: 'company',  label: 'Empresa',        tokens: ['empresa', 'company', 'news', 'press', 'pr'] },
-    { id: 'research', label: 'Investigación',  tokens: ['investigacion', 'investigación', 'research', 'paper', 'rd', 'r&d', 'i+d'] },
-    { id: 'products', label: 'Productos',      tokens: ['producto', 'productos', 'product', 'release', 'maps', 'aquaspecter'] },
-    { id: 'services', label: 'Servicios',      tokens: ['servicio', 'servicios', 'service', 'consulting', 'diagnostico', 'diagnóstico'] },
-    { id: 'other',    label: 'Otros',          tokens: [] }
+    { id: 'ensayos',         label: 'Ensayos',                 tokens: ['ensayo', 'ensayos', 'essay', 'essays'] },
+    { id: 'notas-de-lab',    label: 'Notas de Laboratorio',    tokens: ['notas de laboratorio', 'lab notes', 'laboratorio', 'lab'] },
+    { id: 'cultura-bcc',     label: 'Cultura BCC',             tokens: ['cultura bcc', 'cultura', 'bcc culture', 'culture'] },
+    { id: 'anecdotas',       label: 'Anecdotas',               tokens: ['anecdota', 'anecdotas', 'anécdota', 'anécdotas'] },
+    { id: 'divulgacion',     label: 'Divulgación Científica',  tokens: ['divulgacion', 'divulgación', 'divulgación científica', 'ciencia', 'science'] },
+    { id: 'other',           label: 'Otros',                   tokens: [] }
   ];
 
   const setAllSectionsActive = () => {
@@ -280,13 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     listEl.innerHTML = items.map((a, idx) => {
       // Mantén tu “tag” visible: si existe un tag de sección, úsalo como el principal
-      const tagsN = (a.tags || []).map(norm);
-      const sectionLabel =
-        tagsN.includes(norm('empresa')) ? 'EMPRESA' :
-        (tagsN.includes(norm('investigación')) || tagsN.includes(norm('investigacion'))) ? 'INVESTIGACIÓN' :
-        tagsN.includes(norm('productos')) ? 'PRODUCTOS' :
-        tagsN.includes(norm('servicios')) ? 'SERVICIOS' :
-        ((a.tags && a.tags.length) ? String(a.tags[0]).toUpperCase() : 'JOURNAL');
+      const secIds = articleSectionIds(a);
+      const matchedDef = SECTION_DEFS.find(s => s.id === secIds[0]);
+      const sectionLabel = matchedDef && matchedDef.id !== 'other' 
+        ? matchedDef.label.toUpperCase() 
+        : ((a.tags && a.tags.length) ? String(a.tags[0]).toUpperCase() : 'JOURNAL');
 
       const excerpt = stripHtml(a.excerptHtml).slice(0, 180);
       const date = fmtDate(a.publishedAt);

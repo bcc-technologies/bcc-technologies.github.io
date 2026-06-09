@@ -476,7 +476,7 @@ function setPostLanguage(lang) {
 
 function refreshPostHeader() {
   const lang = String($("#postLang")?.value || "es").toLowerCase();
-  const section = $("#postSection")?.value || "Empresa";
+  const section = $("#postSection")?.value || "Ensayos";
   const date = $("#postDate")?.value || "sin fecha";
   const id = ($("#postId")?.value || "").trim();
   const translationKey = getCurrentTranslationKey();
@@ -857,7 +857,7 @@ function collectPostDraftFromSource(source, overrides = {}) {
     id: overrides.id ?? "",
     title: overrides.title ?? source?.title ?? "",
     date: overrides.date ?? source?.date ?? new Date().toISOString().slice(0, 10),
-    section: overrides.section ?? source?.section ?? "Empresa",
+    section: overrides.section ?? source?.section ?? "Ensayos",
     lang: overrides.lang ?? normalizeLang(source?.lang || "es"),
     translationId: overrides.translationId ?? postGroupKey(source) ?? "",
     tags: overrides.tags ?? (source?.tags || []),
@@ -876,7 +876,7 @@ function applyPostDraft(payload, hint = "Nueva entrada") {
   $("#postId").value = payload.id || "";
   $("#postTitle").value = payload.title || "";
   $("#postDate").value = payload.date || new Date().toISOString().slice(0, 10);
-  $("#postSection").value = payload.section || "Empresa";
+  $("#postSection").value = payload.section || "Ensayos";
   $("#postLang").value = normalizeLang(payload.lang || "es");
   $("#postTranslationId").value = payload.translationId || "";
   $("#postTags").value = (payload.tags || []).join(", ");
@@ -1082,7 +1082,7 @@ function clearPostEditor() {
   $("#postId").value = "";
   $("#postTitle").value = "";
   $("#postDate").value = new Date().toISOString().slice(0, 10);
-  $("#postSection").value = "Empresa";
+  $("#postSection").value = "Ensayos";
   $("#postLang").value = "es";
   $("#postTranslationId").value = "";
   $("#postTags").value = "";
@@ -1936,7 +1936,7 @@ function collectPostPayload() {
     id: $("#postId")?.value.trim() || currentPostId || "",
     title: $("#postTitle")?.value.trim() || "",
     date: $("#postDate")?.value || "",
-    section: $("#postSection")?.value || "Empresa",
+    section: $("#postSection")?.value || "Ensayos",
     lang: $("#postLang")?.value || "es",
     translationId: $("#postTranslationId")?.value.trim() || "",
     tags: parseTags($("#postTags")?.value || ""),
@@ -1954,7 +1954,7 @@ function applyPostPayload(payload) {
   $("#postId").value = payload.id || "";
   $("#postTitle").value = payload.title || "";
   $("#postDate").value = payload.date || "";
-  $("#postSection").value = payload.section || "Empresa";
+  $("#postSection").value = payload.section || "Ensayos";
   $("#postLang").value = payload.lang || "es";
   $("#postTranslationId").value = payload.translationId || "";
   $("#postTags").value = (payload.tags || []).join(", ");
