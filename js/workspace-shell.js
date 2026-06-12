@@ -75,7 +75,7 @@
   }
 
   const workspaceSearch = document.querySelector("[data-workspace-search]");
-  const searchableRows = [...document.querySelectorAll(".resource-rows > a, .tool-rows > div")];
+  const searchableRows = [...document.querySelectorAll(".priority-card, .resource-rows > a, .tool-rows > div")];
   workspaceSearch?.addEventListener("input", () => {
     const query = workspaceSearch.value.trim().toLocaleLowerCase();
     searchableRows.forEach(row => {

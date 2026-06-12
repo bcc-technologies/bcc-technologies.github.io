@@ -93,16 +93,16 @@
     await loadForms();
   }
 
-  function isAdmin() {
-    return user?.permissions?.includes("admin:view");
+  function canManageForms() {
+    return user?.permissions?.includes("forms:manage");
   }
 
   function canManage() {
-    return isAdmin() && view === "admin";
+    return canManageForms();
   }
 
   function isPreview() {
-    return isAdmin() && !canManage();
+    return user?.permissions?.includes("admin:view") && !canManage();
   }
 
   function adminTemplate() {
@@ -110,7 +110,7 @@
       <div class="forms-head">
         <div>
           <h2>Formularios</h2>
-          <p>Crea instrumentos para clientes o personal y controla su publicacion.</p>
+          <p>Crea instrumentos para clientes o personal y controla su publicación.</p>
         </div>
       </div>
       <p class="forms-message" data-forms-message hidden></p>
@@ -118,7 +118,7 @@
         <form class="form-builder forms-surface" data-form-builder>
           <div class="forms-panel-head">
             <h3>Generar formulario</h3>
-            <span class="forms-badge">Administrador</span>
+            <span class="forms-badge">${user?.permissions?.includes("admin:view") ? "Administrador" : "Director"}</span>
           </div>
           <div class="form-builder-row">
             <label>Audiencia
@@ -131,7 +131,7 @@
               <select data-form-template></select>
             </label>
           </div>
-          <label>Titulo
+          <label>Título
             <input name="title" maxlength="120" required />
           </label>
           <label>Objetivo

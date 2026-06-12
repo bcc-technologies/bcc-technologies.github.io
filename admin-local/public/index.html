@@ -14,8 +14,10 @@
       }
     })();
   </script>
-  <title>BCC Admin Local</title>
+  <title>BCC Content Manager</title>
   <link rel="stylesheet" href="./admin.css" />
+  <script src="/js/supabase-config.js" defer></script>
+  <script src="/js/auth.js" defer></script>
   <script src="./admin.js" defer></script>
 </head>
 <body>
@@ -33,7 +35,7 @@
       </button>
 
       <div class="brand">
-        <div class="kicker">ADMIN LOCAL</div>
+        <div class="kicker" id="cmsRuntimeLabel">CMS</div>
         <div class="title">BCC Content Manager</div>
       </div>
     </div>
@@ -182,6 +184,14 @@
                       <span>Fecha</span>
                       <input class="input" id="postDate" type="date" />
                     </label>
+
+                    <div class="field-block">
+                      <span>Publicación</span>
+                      <label class="check-row">
+                        <input id="postPublished" type="checkbox" checked />
+                        <span>Publicar en la web oficial</span>
+                      </label>
+                    </div>
                     <label class="field-block">
                       <span>Sección</span>
                       <select class="input" id="postSection">
@@ -1472,4 +1482,3 @@
 
 </body>
 </html>
-

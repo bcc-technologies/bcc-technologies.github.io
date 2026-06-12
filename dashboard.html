@@ -25,7 +25,7 @@
     </a>
     <header class="workspace-header">
       <div class="workspace-title">
-        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegacion">
+        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegación">
           <i data-lucide="menu"></i>
         </button>
         <div>
@@ -54,7 +54,7 @@
             <a href="/dashboard.html" data-dashboard-link>Mi dashboard</a>
             <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
             <a href="/">Salir del dashboard</a>
-            <button type="button" data-logout>Cerrar sesion</button>
+            <button type="button" data-logout>Cerrar sesión</button>
           </div>
         </div>
       </div>
@@ -64,7 +64,6 @@
         <p class="workspace-nav-label">Cuenta</p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
-        <a href="#correos"><i data-lucide="mail"></i><span>Correos</span></a>
         <a href="#seguridad"><i data-lucide="shield-check"></i><span>Seguridad</span></a>
         <p class="workspace-nav-label">Operaciones</p>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
@@ -73,7 +72,7 @@
         <a href="/contactUs.html"><i data-lucide="life-buoy"></i><span>Soporte</span></a>
         <p class="workspace-nav-label">Recursos</p>
         <a href="/blog.html"><i data-lucide="book-open"></i><span>Recursos</span></a>
-        <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administracion</span></a>
+        <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
       </nav>
       <section class="workspace-help">
         <strong>Necesitas ayuda?</strong>
@@ -85,7 +84,7 @@
         <a href="/"><i data-lucide="arrow-left"></i><span>Volver al sitio</span></a>
       </div>
     </aside>
-    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegacion"></button>
+    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegación"></button>
 
     <div class="workspace-content">
       <main class="workspace-main">
@@ -93,21 +92,50 @@
           <section class="workspace-intro">
             <div>
               <h1>Hola, <span data-user-name>...</span></h1>
-              <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes y los datos de tu organizacion.</p>
+              <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes, formularios y datos clave de tu organización.</p>
             </div>
             <div class="dashboard-actions">
               <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
             </div>
           </section>
-          <section class="setup-progress module-surface" aria-label="Configuracion de cuenta">
+          <section class="workspace-priority-strip" aria-label="Siguientes pasos">
+            <article class="priority-card primary">
+              <i data-lucide="inbox"></i>
+              <div>
+                <span>Próximo paso</span>
+                <strong>Crear o dar seguimiento a una solicitud</strong>
+                <p>Centraliza consultas, soporte y requerimientos del equipo BCC.</p>
+              </div>
+              <a href="#solicitudes">Ver solicitudes</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="file-pen-line"></i>
+              <div>
+                <span>Formularios</span>
+                <strong>Responder pendientes</strong>
+                <p>Encuestas y retroalimentación publicadas para clientes.</p>
+              </div>
+              <a href="#formularios">Abrir</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="book-open"></i>
+              <div>
+                <span>Recursos</span>
+                <strong>Explorar documentación</strong>
+                <p>Materiales técnicos, productos y novedades de BCC.</p>
+              </div>
+              <a href="/blog.html">Leer</a>
+            </article>
+          </section>
+          <section class="setup-progress module-surface" aria-label="Configuración de cuenta">
             <div class="module-head compact">
-              <h2>Configuracion de cuenta</h2>
+              <h2>Configuración de cuenta</h2>
               <a href="#perfil">Ver detalles <i data-lucide="chevron-right"></i></a>
             </div>
             <div class="setup-steps">
-              <div class="complete"><i data-lucide="check"></i><strong>Informacion basica</strong><small data-profile-completion>-</small></div>
+              <div class="complete"><i data-lucide="check"></i><strong>Información básica</strong><small data-profile-completion>-</small></div>
               <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
-              <div class="complete"><i data-lucide="check"></i><strong>Organizacion</strong><small>Configurada</small></div>
+              <div class="complete"><i data-lucide="check"></i><strong>Organización</strong><small>Configurada</small></div>
               <div><span>4</span><strong>Primera solicitud</strong><small>Pendiente</small></div>
             </div>
           </section>
@@ -118,14 +146,14 @@
                 <div class="resource-rows">
                   <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
                   <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentacion</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentación</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
                 </div>
               </article>
               <article class="module-surface client-resources">
                 <h2>Recursos recomendados</h2>
                 <div class="resource-rows">
                   <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
-                  <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catalogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catálogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
                 </div>
               </article>
             </section>
@@ -133,7 +161,7 @@
               <article class="module-surface">
                 <h2>Resumen de cuenta</h2>
                 <dl class="account-details">
-                  <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+                  <div><dt>Organización</dt><dd data-user-company>...</dd></div>
                   <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
                   <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
                 </dl>
@@ -143,12 +171,12 @@
         </section>
 
         <section class="workspace-view" id="perfil" data-workspace-view data-view-title="Mi perfil" hidden>
-          <div class="profile-workspace">
+          <div class="profile-workspace profile-workspace-expanded">
             <article class="module-surface">
               <div class="module-head">
                 <div>
                   <h2>Datos de cuenta</h2>
-                  <p>Mantén actualizados tus datos para comunicaciones y solicitudes.</p>
+                  <p>Manten actualizados tus datos para comunicaciones y solicitudes.</p>
                 </div>
                 <span class="status-pill enabled"><i data-lucide="check-circle-2"></i>Cuenta activa</span>
               </div>
@@ -169,74 +197,70 @@
                 <button class="btn btn-primary" type="submit">Guardar cambios</button>
               </form>
             </article>
+            <article class="module-surface account-email-manager">
+              <div class="module-head">
+                <div>
+                  <h2>Correos de la cuenta</h2>
+                  <p>Agrega correos confirmados y elige cual sera el principal. El codigo se envia al buzon agregado y no se muestra en pantalla.</p>
+                </div>
+              </div>
+              <p class="auth-message" data-email-message hidden></p>
+              <div class="account-email-list" data-account-emails></div>
+              <form class="account-email-form" data-email-add-form>
+                <label>
+                  Correo adicional
+                  <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Agregar correo</button>
+              </form>
+              <form class="account-email-form confirm" data-email-confirm-form>
+                <label>
+                  Correo a confirmar
+                  <input type="email" name="email" autocomplete="email" required />
+                </label>
+                <label>
+                  Codigo de confirmacion
+                  <input type="text" name="token" autocomplete="one-time-code" required />
+                </label>
+                <button class="btn btn-ghost" type="submit">Confirmar correo</button>
+              </form>
+            </article>
             <article class="module-surface">
               <h2>Capacidades activas</h2>
               <ul class="permission-list permission-readable" data-permissions></ul>
             </article>
           </div>
         </section>
-
-        <section class="workspace-view" id="correos" data-workspace-view data-view-title="Correos" hidden>
-          <article class="module-surface account-email-manager">
-            <div class="module-head">
-              <div>
-                <h2>Correos de la cuenta</h2>
-                <p>Agrega correos confirmados y elige cual sera el principal.</p>
-              </div>
-            </div>
-            <p class="auth-message" data-email-message hidden></p>
-            <div class="account-email-list" data-account-emails></div>
-            <form class="account-email-form" data-email-add-form>
-              <label>
-                Correo adicional
-                <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
-              </label>
-              <button class="btn btn-primary" type="submit">Agregar correo</button>
-            </form>
-            <form class="account-email-form confirm" data-email-confirm-form>
-              <label>
-                Correo a confirmar
-                <input type="email" name="email" autocomplete="email" required />
-              </label>
-              <label>
-                Codigo de confirmacion
-                <input type="text" name="token" autocomplete="one-time-code" required />
-              </label>
-              <button class="btn btn-ghost" type="submit">Confirmar correo</button>
-            </form>
-          </article>
-        </section>
-
         <section class="workspace-view" id="seguridad" data-workspace-view data-view-title="Seguridad" hidden>
           <article class="module-surface security-view">
             <div class="module-head">
               <div>
                 <h2>Seguridad de la cuenta</h2>
-                <p>Estado de sesion, perfil y acceso autenticado.</p>
+                <p>Estado de sesión, perfil y acceso autenticado.</p>
               </div>
-              <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesion activa</span>
+              <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesión activa</span>
             </div>
             <dl class="account-details">
-              <div><dt>Organizacion</dt><dd data-user-company>...</dd></div>
+              <div><dt>Organización</dt><dd data-user-company>...</dd></div>
               <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
               <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
             </dl>
             <div class="security-summary">
-              <div><i data-lucide="check-circle-2"></i><strong>Sesion protegida</strong><span>Acceso autenticado activo</span></div>
-              <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periodicamente</span></div>
+              <div><i data-lucide="check-circle-2"></i><strong>Sesión protegida</strong><span>Acceso autenticado activo</span></div>
+              <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periódicamente</span></div>
             </div>
           </article>
         </section>
 
         <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
-          <section data-forms-workspace data-forms-view="client" aria-label="Formularios y retroalimentacion"></section>
+          <section data-forms-workspace data-forms-view="client" aria-label="Formularios y retroalimentación"></section>
         </section>
 
         <section class="workspace-view" id="solicitudes" data-workspace-view data-view-title="Solicitudes" hidden>
           <article class="module-surface request-empty">
             <div class="empty-icon"><i data-lucide="folder-open"></i></div>
-            <h2>Aun no tienes solicitudes</h2>
-            <p>Cuando crees una solicitud, podras darle seguimiento desde este panel.</p>
+            <h2>Aún no tienes solicitudes</h2>
+            <p>Cuando crees una solicitud, podrás darle seguimiento desde este panel.</p>
             <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
           </article>
         </section>

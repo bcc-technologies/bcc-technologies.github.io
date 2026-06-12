@@ -17,7 +17,7 @@ function hydrateUser(user) {
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compania registrada"; });
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
   const completed = [user.name, user.email, user.company, user.title].filter(Boolean).length;
   document.querySelectorAll("[data-profile-completion]").forEach(el => { el.textContent = `${completed}/4`; });
 }
@@ -57,7 +57,7 @@ async function bindEmailManager(user) {
       const meta = document.createElement("div");
       meta.innerHTML = `
         <strong>${escapeHtml(item.email)}</strong>
-        <span>${item.primary ? "Principal" : "Adicional"} · ${item.confirmed ? "Confirmado" : "Pendiente de confirmacion"}</span>
+        <span>${item.primary ? "Principal" : "Adicional"} · ${item.confirmed ? "Confirmado" : "Pendiente de confirmación"}</span>
       `;
 
       const actions = document.createElement("div");
@@ -123,7 +123,7 @@ async function bindEmailManager(user) {
       renderAccountEmails(emails);
       if (confirmForm?.elements.email) confirmForm.elements.email.value = addForm.elements.email.value;
       addForm.reset();
-      setMessage(data.confirmationToken ? `Correo agregado. Codigo de confirmacion: ${data.confirmationToken}` : "Correo agregado. Revisa tu correo para confirmarlo.");
+      setMessage("Correo agregado. Revisa ese buzón para obtener el código de confirmación.");
     } catch (error) {
       setMessage(error.message, "error");
     }
@@ -269,7 +269,8 @@ function permissionLabel(permission) {
     "profile:update": "Actualizar perfil",
     "downloads:view": "Descargas",
     "support:create": "Solicitar soporte",
-    "admin:view": "Administracion",
+    "forms:manage": "Gestionar formularios",
+    "admin:view": "Administración",
     "staff:view": "Vista personal",
     "cms:access": "CMS"
   }[permission] || "";

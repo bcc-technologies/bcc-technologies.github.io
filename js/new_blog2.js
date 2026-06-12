@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const CONTENT_INDEX_URL = '/content/content-index.json';
   const DEFAULT_POST_DIR = '/content/posts/';
+  const CMS_POST_COLUMNS = 'id,title,date,section,lang,translation_id,tags,excerpt,cover,body_markdown,is_published,published_at,updated_at';
 
   const listEl = document.getElementById('journal-list');
   const tagbarEl = document.getElementById('tagbar');
@@ -91,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const postLang = lang.toLowerCase().startsWith("en") ? "en" : "es";
     const excerpt = safeText(p?.excerpt || p?.summary || '');
     const cover = safeText(p?.cover || p?.image || '');
-    const file = safeText(p?.file || p?.path || p?.body || '');
+    const file = safeText(p?.file || p?.path || p?.body || p?.bodyUrl || '');
 
     const bodyPath = file ? file : (id ? `${DEFAULT_POST_DIR}${id}.md` : '');
     return { id, title, date, tags, section, excerpt, cover, bodyPath, lang: postLang };
@@ -102,12 +103,76 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${base}${encodeURIComponent(article.id)}.html`;
   }
 
+  async function loadSupabaseBrowserClient() {
+    if (!window.BCC_SUPABASE?.url || !window.BCC_SUPABASE?.anonKey) return null;
+    if (!window.supabase?.createClient) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('No se pudo cargar Supabase.'));
+        document.head.appendChild(script);
+      });
+    }
+    return window.supabase.createClient(window.BCC_SUPABASE.url, window.BCC_SUPABASE.anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+  }
+
+  function normalizeCmsPost(row) {
+    const post = normalizePost({
+      id: row.id,
+      title: row.title,
+      date: row.date || row.published_at || row.updated_at,
+      section: row.section,
+      lang: row.lang,
+      translationId: row.translation_id,
+      tags: row.tags,
+      excerpt: row.excerpt,
+      cover: row.cover
+    });
+    post.bodyMarkdown = safeText(row.body_markdown || '');
+    post.source = 'supabase';
+    return post;
+  }
+
+  async function fetchStaticIndex() {
+    try {
+      const res = await fetch(CONTENT_INDEX_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const posts = Array.isArray(json?.posts) ? json.posts : [];
+      return posts.map(normalizePost).filter(p => p.id && p.lang === pageLang);
+    } catch (error) {
+      console.warn(error);
+      return [];
+    }
+  }
+
+  async function fetchSupabaseIndex() {
+    try {
+      const supabaseClient = await loadSupabaseBrowserClient();
+      if (!supabaseClient) return [];
+      const { data, error } = await supabaseClient
+        .from('cms_posts')
+        .select(CMS_POST_COLUMNS)
+        .eq('is_published', true)
+        .eq('lang', pageLang)
+        .order('date', { ascending: false, nullsFirst: false })
+        .order('published_at', { ascending: false, nullsFirst: false });
+      if (error) throw error;
+      return (Array.isArray(data) ? data : []).map(normalizeCmsPost).filter(p => p.id);
+    } catch (error) {
+      console.warn('CMS Supabase no disponible; usando contenido estático.', error);
+      return [];
+    }
+  }
+
   async function fetchIndex() {
-    const res = await fetch(CONTENT_INDEX_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    const posts = Array.isArray(json?.posts) ? json.posts : [];
-    return posts.map(normalizePost).filter(p => p.id && p.lang === pageLang);
+    const [staticPosts, supabasePosts] = await Promise.all([fetchStaticIndex(), fetchSupabaseIndex()]);
+    const byId = new Map(staticPosts.map(post => [post.id, post]));
+    supabasePosts.forEach(post => byId.set(post.id, post));
+    return [...byId.values()].filter(p => p.id && p.lang === pageLang);
   }
 
   function buildTagbar(articles) {
@@ -165,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = postUrl(a);
 
       return `
-        <a class="journal-open" href="${escapeHtml(url)}" data-id="${escapeHtml(a.id)}" aria-label="${escapeHtml(a.title)}">
+        <a class="journal-open" href="${escapeHtml(url)}" data-id="${escapeHtml(a.id)}" data-source="${escapeHtml(a.source || 'static')}" aria-label="${escapeHtml(a.title)}">
           <div class="journal-row">
             <div class="journal-date">${escapeHtml(date)}</div>
             <div class="journal-content">
@@ -181,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadArticleRaw(article) {
+    if (article?.bodyMarkdown) return article.bodyMarkdown;
     if (!article?.bodyPath) return '';
     const res = await fetch(article.bodyPath, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

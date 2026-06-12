@@ -57,7 +57,11 @@ test("accounts server registers first admin and protects admin API", async () =>
     const addedEmail = await res.json();
     assert.equal(res.status, 201);
     assert.equal(addedEmail.email.confirmed, false);
-    assert.match(addedEmail.confirmationToken, /.+/);
+    assert.equal(Object.hasOwn(addedEmail, "confirmationToken"), false);
+    const storedUser = JSON.parse(fs.readFileSync(path.join(dataDir, "users.json"), "utf-8"))
+      .find(user => user.email === "admin-test@example.com");
+    const confirmationToken = storedUser.emails.find(item => item.email === "admin-alt@example.com").confirmationToken;
+    assert.match(confirmationToken, /.+/);
 
     res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
       method: "PATCH",
@@ -68,7 +72,7 @@ test("accounts server registers first admin and protects admin API", async () =>
     res = await fetch(`http://localhost:${port}/api/account/emails/confirm`, {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ email: "admin-alt@example.com", token: addedEmail.confirmationToken })
+      body: JSON.stringify({ email: "admin-alt@example.com", token: confirmationToken })
     });
     emailList = await res.json();
     assert.equal(res.status, 200);

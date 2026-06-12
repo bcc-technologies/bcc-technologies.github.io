@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const user = await window.BCCAuth.requireAuth({ roles: ["staff"] });
+  const user = await window.BCCAuth.requireAuth({ roles: ["staff", "admin"] });
   if (!user) return;
 
   hydrateUser(user);
@@ -21,11 +21,11 @@ function hydrateUser(user) {
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compania registrada"; });
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
   setText("[data-staff-role-count]", staffRoles.length);
-  setText("[data-staff-role-summary]", labelsFor(staffRoles, staffRoleOptions()) || "Sin asignacion");
+  setText("[data-staff-role-summary]", labelsFor(staffRoles, staffRoleOptions()) || "Sin asignación");
   setText("[data-department-count]", departments.length);
-  setText("[data-department-summary]", labelsFor(departments, departmentOptions()) || "Sin asignacion");
+  setText("[data-department-summary]", labelsFor(departments, departmentOptions()) || "Sin asignación");
   setText("[data-cms-status]", cmsEnabled ? "Activo" : "No");
   const cmsPill = document.querySelector("[data-cms-pill]");
   if (cmsPill) {
@@ -39,13 +39,12 @@ function hydrateAccountMenu(user) {
   const display = user.displayName || user.name || "Cuenta";
   const hasAdmin = user.permissions.includes("admin:view");
   const hasCms = user.permissions.includes("cms:access");
-  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
   document.querySelectorAll("[data-user-menu-name]").forEach(el => { el.textContent = display; });
   document.querySelectorAll("[data-user-menu-role]").forEach(el => { el.textContent = roleLabel(user.role); });
   document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = display.trim().charAt(0).toUpperCase() || "?"; });
   document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
   document.querySelectorAll("[data-admin-return]").forEach(el => { el.hidden = !hasAdmin; });
-  document.querySelectorAll("[data-cms-access]").forEach(el => { el.hidden = !isLocal || !hasCms; });
+  document.querySelectorAll("[data-cms-access]").forEach(el => { el.hidden = !hasCms; });
 }
 
 function bindWorkspaceMenu() {
@@ -131,7 +130,7 @@ async function bindEmailManager(user) {
       const meta = document.createElement("div");
       meta.innerHTML = `
         <strong>${escapeHtml(item.email)}</strong>
-        <span>${item.primary ? "Principal" : "Adicional"} · ${item.confirmed ? "Confirmado" : "Pendiente de confirmacion"}</span>
+        <span>${item.primary ? "Principal" : "Adicional"} · ${item.confirmed ? "Confirmado" : "Pendiente de confirmación"}</span>
       `;
 
       const actions = document.createElement("div");
@@ -197,7 +196,7 @@ async function bindEmailManager(user) {
       renderAccountEmails(emails);
       if (confirmForm?.elements.email) confirmForm.elements.email.value = addForm.elements.email.value;
       addForm.reset();
-      setMessage(data.confirmationToken ? `Correo agregado. Codigo de confirmacion: ${data.confirmationToken}` : "Correo agregado. Revisa tu correo para confirmarlo.");
+      setMessage("Correo agregado. Revisa ese buzón para obtener el código de confirmación.");
     } catch (error) {
       setMessage(error.message, "error");
     }
@@ -288,9 +287,10 @@ function permissionLabel(permission) {
     "content:view": "Ver contenido",
     "content:write": "Editar contenido",
     "cms:access": "Acceso CMS",
+    "forms:manage": "Gestionar formularios",
     "department:manage": "Gestion departamental",
     "strategy:view": "Estrategia",
-    "admin:view": "Administracion"
+    "admin:view": "Administración"
   }[permission] || "";
 }
 
@@ -304,7 +304,7 @@ function staffRoleOptions() {
 
 function departmentOptions() {
   return [
-    { value: "technology", label: "Tecnologia" },
+    { value: "technology", label: "Tecnología" },
     { value: "finance", label: "Finanzas" },
     { value: "operations", label: "Operaciones" },
     { value: "marketing", label: "Marketing" },

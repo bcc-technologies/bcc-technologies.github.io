@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administracion - BCC</title>
+  <title>Administración - BCC</title>
   <link rel="stylesheet" href="css/00-tokens.css">
   <link rel="stylesheet" href="css/01-base.css">
   <link rel="stylesheet" href="css/02-layout.css">
@@ -20,23 +20,23 @@
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined admin-workspace">
   <div class="workspace">
-    <a href="/" class="logo-link workspace-brand" aria-label="BCC Technologies">
+    <a href="/admin-dashboard.html" class="logo-link workspace-brand" aria-label="BCC Technologies">
       <span class="logo-text"><strong>BCC</strong></span>
       <span class="logo-symbol"><strong>&there4;</strong></span>
     </a>
     <header class="workspace-header">
       <div class="workspace-title">
-        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegacion">
+        <button class="workspace-mobile-menu" type="button" data-workspace-menu aria-label="Abrir navegación">
           <i data-lucide="menu"></i>
         </button>
         <div>
-          <strong>Administracion</strong>
+          <strong data-workspace-view-title>Administración</strong>
           <span>Panel interno</span>
         </div>
       </div>
       <label class="workspace-search">
         <i data-lucide="search"></i>
-        <input type="search" data-user-search placeholder="Buscar cuentas..." autocomplete="off" />
+        <input type="search" data-workspace-search data-user-search placeholder="Buscar cuentas o acciones..." autocomplete="off" aria-label="Buscar cuentas o acciones" />
       </label>
       <div class="workspace-tools">
         <button class="workspace-icon-button" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
@@ -53,66 +53,90 @@
           </button>
           <div class="account-dropdown" data-account-dropdown hidden>
             <a href="/admin-dashboard.html" data-dashboard-link>Panel administrador</a>
+            <a href="/cms.html">Content (CMS)</a>
             <a href="/staff-dashboard.html">Vista personal</a>
             <a href="/dashboard.html">Vista cliente</a>
-            <a href="/">Salir del dashboard</a>
-            <button type="button" data-logout>Cerrar sesion</button>
+            <button type="button" data-logout>Cerrar sesión</button>
           </div>
         </div>
       </div>
     </header>
     <aside class="workspace-sidebar">
-      <nav class="workspace-nav" aria-label="Secciones de administracion">
-        <p class="workspace-nav-label">Administracion</p>
+      <nav class="workspace-nav" aria-label="Secciones de administración">
+        <p class="workspace-nav-label">Administración</p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
-        <a href="#auditoria"><i data-lucide="history"></i><span>Auditoria</span></a>
-        <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Trabajo</span></a>
+        <a href="#auditoria"><i data-lucide="history"></i><span>Auditoría</span></a>
+        <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
-        <p class="workspace-nav-label">Vistas y contenido</p>
+        <a href="/cms.html"><i data-lucide="file-text"></i><span>Content (CMS)</span></a>
+        <p class="workspace-nav-label">Vistas</p>
         <a href="/staff-dashboard.html"><i data-lucide="briefcase-business"></i><span>Personal</span></a>
-        <a href="/blog.html"><i data-lucide="file-text"></i><span>Contenido</span></a>
-        <a href="http://localhost:3777/" data-local-cms-link hidden><i data-lucide="panels-top-left"></i><span>CMS local</span></a>
+        <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Cliente</span></a>
       </nav>
       <section class="workspace-help">
         <strong>Seguridad</strong>
-        <p>Cada cambio de acceso queda registrado en auditoria.</p>
+        <p>Cada cambio de acceso queda registrado en auditoría.</p>
       </section>
       <div class="workspace-sidebar-foot">
         <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
-        <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Vista cliente</span></a>
-        <a href="/"><i data-lucide="arrow-left"></i><span>Volver al sitio</span></a>
       </div>
     </aside>
-    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegacion"></button>
+    <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegación"></button>
 
     <div class="workspace-content">
       <main class="workspace-main">
-        <section class="workspace-intro" id="resumen">
-          <div>
-            <h1>Control de accesos</h1>
-            <p>Administra cuentas, permisos internos y acceso al CMS con historial verificable.</p>
-          </div>
-          <div class="dashboard-actions">
-            <a class="btn btn-primary" href="http://localhost:3777/" data-local-cms-link hidden>
-              <i data-lucide="panels-top-left"></i>Abrir CMS local
-            </a>
-            <a class="btn btn-ghost" href="#auditoria"><i data-lucide="history"></i>Ver auditoria</a>
-          </div>
+        <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
+          <section class="workspace-intro">
+            <div>
+              <h1>Control de accesos</h1>
+              <p>Administra cuentas, permisos internos y cambios sensibles con historial verificable.</p>
+            </div>
+            <div class="dashboard-actions">
+              <a class="btn btn-ghost" href="#auditoria"><i data-lucide="history"></i>Ver auditoría</a>
+            </div>
+          </section>
+
+          <section class="workspace-priority-strip admin-priority-strip" aria-label="Acciones administrativas">
+            <article class="priority-card primary">
+              <i data-lucide="users-round"></i>
+              <div>
+                <span>Usuarios</span>
+                <strong>Revisar cuentas y permisos</strong>
+                <p>Filtra por rol, departamento o acceso efectivo.</p>
+              </div>
+              <a href="#usuarios">Gestionar</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="history"></i>
+              <div>
+                <span>Auditoría</span>
+                <strong>Ver cambios sensibles</strong>
+                <p>Inspecciona los últimos ajustes de acceso registrados.</p>
+              </div>
+              <a href="#auditoria">Abrir</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="file-pen-line"></i>
+              <div>
+                <span>Formularios</span>
+                <strong>Publicar instrumentos</strong>
+                <p>Crea formularios para clientes o personal.</p>
+              </div>
+              <a href="#formularios">Crear</a>
+            </article>
+          </section>
+
+          <section class="workspace-metrics" aria-label="Resumen de accesos">
+            <div><span>Cuentas</span><strong data-metric-accounts>-</strong><small>Registradas</small></div>
+            <div><span>Personal activo</span><strong data-metric-staff>-</strong><small>Staff y admin</small></div>
+            <div><span>Con acceso CMS</span><strong data-metric-cms>-</strong><small>Permiso efectivo</small></div>
+            <div><span>Cambios recientes</span><strong data-metric-changes>-</strong><small>Auditoría visible</small></div>
+          </section>
         </section>
 
-        <section class="workspace-metrics" aria-label="Resumen de accesos">
-          <div><span>Cuentas</span><strong data-metric-accounts>-</strong><small>Registradas</small></div>
-          <div><span>Personal activo</span><strong data-metric-staff>-</strong><small>Staff y admin</small></div>
-          <div><span>Con acceso CMS</span><strong data-metric-cms>-</strong><small>Permiso efectivo</small></div>
-          <div><span>Cambios recientes</span><strong data-metric-changes>-</strong><small>Auditoria visible</small></div>
-        </section>
-
-        <section id="productividad" data-productivity-workspace aria-label="Trabajo y seguimiento"></section>
-        <section id="formularios" data-forms-workspace data-forms-view="admin" aria-label="Generador de formularios"></section>
-
-        <div class="workspace-grid">
-          <section class="users-surface" id="usuarios">
+        <section class="workspace-view" id="usuarios" data-workspace-view data-view-title="Usuarios" hidden>
+          <section class="users-surface">
             <div class="surface-toolbar">
               <div>
                 <h2>Usuarios</h2>
@@ -123,6 +147,11 @@
                   <i data-lucide="search"></i>
                   <input type="search" data-user-search-mobile placeholder="Buscar cuentas..." autocomplete="off" />
                 </label>
+                <div class="quick-filter-group" aria-label="Vistas rápidas">
+                  <button type="button" data-quick-filter="admins">Admins</button>
+                  <button type="button" data-quick-filter="cms">Con CMS</button>
+                  <button type="button" data-quick-filter="inactive">Sin actividad</button>
+                </div>
                 <select data-role-filter aria-label="Filtrar por rol">
                   <option value="">Todos los roles</option>
                   <option value="client">Clientes</option>
@@ -131,7 +160,7 @@
                 </select>
                 <select data-department-filter aria-label="Filtrar por departamento">
                   <option value="">Todos los departamentos</option>
-                  <option value="technology">Tecnologia</option>
+                  <option value="technology">Tecnología</option>
                   <option value="finance">Finanzas</option>
                   <option value="operations">Operaciones</option>
                   <option value="marketing">Marketing</option>
@@ -145,9 +174,9 @@
                 <thead>
                   <tr>
                     <th>Cuenta</th>
-                    <th>Rol y area</th>
+                    <th>Rol y área</th>
                     <th>Acceso</th>
-                    <th>Ultima actividad</th>
+                    <th>Última actividad</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -155,8 +184,10 @@
               </table>
             </div>
           </section>
+        </section>
 
-          <aside class="activity-surface" id="auditoria">
+        <section class="workspace-view" id="auditoria" data-workspace-view data-view-title="Auditoría" hidden>
+          <aside class="activity-surface audit-view">
             <div class="activity-head">
               <h2>Actividad reciente</h2>
               <span data-audit-count>-</span>
@@ -164,7 +195,15 @@
             <p class="muted-text" data-audit-message>Cargando...</p>
             <ol class="activity-feed" data-audit-feed></ol>
           </aside>
-        </div>
+        </section>
+
+        <section class="workspace-view" id="productividad" data-workspace-view data-view-title="Tareas y KPIs" hidden>
+          <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
+        </section>
+
+        <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
+          <section data-forms-workspace data-forms-view="admin" aria-label="Generador de formularios"></section>
+        </section>
       </main>
     </div>
   </div>
@@ -197,6 +236,12 @@
         <section class="access-preview" data-access-preview>
           <span>Acceso efectivo</span>
           <strong>Cliente</strong>
+        </section>
+        <section class="access-confirm-panel" data-access-confirm hidden>
+          <span>Confirmación requerida</span>
+          <strong data-access-confirm-title>Vas a cambiar permisos.</strong>
+          <ul data-access-confirm-list></ul>
+          <small>Revisa el impacto antes de guardar. Los cambios quedarán registrados en auditoría.</small>
         </section>
       </div>
       <p class="auth-message" data-access-modal-message hidden></p>

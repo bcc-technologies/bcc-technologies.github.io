@@ -21,13 +21,13 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view"]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
   author: ["content:write", "cms:access"],
   cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage"]
+  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
 };
 
 const DEPARTMENT_PERMISSIONS = {
@@ -466,9 +466,7 @@ async function handleApi(req, res, url) {
       const updated = users.map(item => item.id === user.id ? { ...item, emails: [...currentEmails, nextEmail], updatedAt: now } : item);
       writeJson(USERS_PATH, updated);
       const nextUser = updated.find(item => item.id === user.id);
-      const payload = { ok: true, email: publicEmails(nextUser).find(item => item.email === email), emails: publicEmails(nextUser) };
-      if (process.env.NODE_ENV !== "production") payload.confirmationToken = confirmationToken;
-      return sendJson(res, 201, payload);
+      return sendJson(res, 201, { ok: true, email: publicEmails(nextUser).find(item => item.email === email), emails: publicEmails(nextUser) });
     }
 
     if (req.method === "POST" && url.pathname === "/api/account/emails/confirm") {

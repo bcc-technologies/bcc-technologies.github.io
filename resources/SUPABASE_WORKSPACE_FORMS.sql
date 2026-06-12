@@ -47,6 +47,27 @@ $$;
 
 revoke all on function public.set_workspace_form_timestamps() from public, anon, authenticated;
 
+create or replace function private.can_manage_workspace_forms()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and (
+        role = 'admin'
+        or 'department_director' = any(staff_roles)
+      )
+  );
+$$;
+
+revoke all on function private.can_manage_workspace_forms() from public, anon;
+grant execute on function private.can_manage_workspace_forms() to authenticated, service_role;
+
 drop trigger if exists workspace_forms_set_timestamps on public.workspace_forms;
 create trigger workspace_forms_set_timestamps
 before update on public.workspace_forms
@@ -61,12 +82,13 @@ grant select, insert, update, delete on public.workspace_forms to authenticated;
 grant select, insert, update on public.workspace_form_responses to authenticated;
 
 drop policy if exists "Admins manage workspace forms" on public.workspace_forms;
-create policy "Admins manage workspace forms"
+drop policy if exists "Form managers manage workspace forms" on public.workspace_forms;
+create policy "Form managers manage workspace forms"
 on public.workspace_forms
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_workspace_forms())
+with check (private.can_manage_workspace_forms());
 
 drop policy if exists "Recipients read published workspace forms" on public.workspace_forms;
 create policy "Recipients read published workspace forms"
@@ -94,11 +116,12 @@ to authenticated
 using ((select auth.uid()) = respondent_id);
 
 drop policy if exists "Admins read form responses" on public.workspace_form_responses;
-create policy "Admins read form responses"
+drop policy if exists "Form managers read form responses" on public.workspace_form_responses;
+create policy "Form managers read form responses"
 on public.workspace_form_responses
 for select
 to authenticated
-using (private.is_admin());
+using (private.can_manage_workspace_forms());
 
 drop policy if exists "Recipients submit own published forms" on public.workspace_form_responses;
 create policy "Recipients submit own published forms"
@@ -142,7 +165,7 @@ with check (
 );
 
 comment on table public.workspace_forms is
-'Administrator-generated questionnaires published separately to client or staff audiences.';
+'Form-manager-generated questionnaires published separately to client or staff audiences.';
 
 comment on table public.workspace_form_responses is
-'Private responses readable by their respondent and administrators only.';
+'Private responses readable by their respondent and form managers only.';

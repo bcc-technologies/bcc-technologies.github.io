@@ -31,14 +31,14 @@
     return `
       <div class="productivity-head">
         <div>
-          <h2>Trabajo y seguimiento</h2>
+          <h2>Tareas y KPIs</h2>
           <p>Tareas privadas, avance visual y reportes basados en tu actividad.</p>
         </div>
         <button class="btn btn-primary productivity-new" type="button" data-task-new>
           <i data-lucide="plus"></i>Nueva tarea
         </button>
       </div>
-      <div class="productivity-tabs" role="tablist" aria-label="Vistas de trabajo">
+      <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas y KPIs">
         <button class="active" type="button" role="tab" aria-selected="true" data-productivity-tab="tasks">
           <i data-lucide="list-checks"></i>Tareas
         </button>

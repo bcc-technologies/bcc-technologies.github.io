@@ -1,0 +1,25 @@
+name: Generate Supabase blog pages
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Generate blog pages from Supabase
+        run: node scripts/generate-supabase-blog.mjs
+      - name: Commit generated pages
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Generate Supabase blog pages"
+          file_pattern: "blog/*.html en/blog/*.html sitemap.xml"

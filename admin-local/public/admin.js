@@ -1,6 +1,11 @@
 const $ = (sel) => document.querySelector(sel);
 
 const toastEl = $("#toast");
+let CMS_RUNTIME = "local";
+let WEB_USER = null;
+let WEB_INDEX_FALLBACK = null;
+let WEB_POST_BODY_CACHE = new Map();
+
 function toast(msg, ok = true) {
   toastEl.textContent = msg;
   toastEl.style.display = "block";
@@ -13,6 +18,7 @@ function roleLabel(role) {
 }
 
 async function api(path, opts = {}) {
+  if (CMS_RUNTIME === "web") return webApi(path, opts);
   const res = await fetch(path, {
     headers: opts.body instanceof FormData ? undefined : { "Content-Type": "application/json" },
     ...opts
@@ -20,6 +26,163 @@ async function api(path, opts = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+async function probeLocalCmsApi() {
+  try {
+    const res = await fetch("/api/index", { cache: "no-store" });
+    const data = await res.json().catch(() => null);
+    return Boolean(res.ok && data?.index);
+  } catch (_e) {
+    return false;
+  }
+}
+
+async function initCmsRuntime() {
+  const hasLocalApi = await probeLocalCmsApi();
+  CMS_RUNTIME = hasLocalApi ? "local" : "web";
+  document.body.dataset.cmsRuntime = CMS_RUNTIME;
+  const label = $("#cmsRuntimeLabel");
+  if (label) label.textContent = CMS_RUNTIME === "local" ? "CMS LOCAL" : "CMS WEB";
+
+  if (CMS_RUNTIME === "web") {
+    WEB_USER = await window.BCCAuth?.requireAuth({ permission: "cms:access" });
+    if (!WEB_USER) throw new Error("No autenticado.");
+    window.CMS_SUPABASE = await window.BCCAuth.loadSupabaseClient();
+    configureWebModeUi();
+  }
+}
+
+function configureWebModeUi() {
+  $("#gitStatus")?.querySelector(".status-text")?.replaceChildren(document.createTextNode("Supabase conectado"));
+  $("#commitMsg")?.setAttribute("placeholder", "Los cambios se guardan en Supabase");
+  $("#btnPublish")?.setAttribute("title", "Genera páginas con el workflow de GitHub");
+  document.querySelectorAll('[data-tab="products"], [data-tab="services"], [data-tab="templates"]').forEach(el => {
+    el.hidden = true;
+  });
+}
+
+async function loadStaticIndexFallback() {
+  if (WEB_INDEX_FALLBACK) return WEB_INDEX_FALLBACK;
+  try {
+    const res = await fetch("/content/content-index.json", { cache: "no-store" });
+    WEB_INDEX_FALLBACK = res.ok ? await res.json() : {};
+  } catch (_e) {
+    WEB_INDEX_FALLBACK = {};
+  }
+  return WEB_INDEX_FALLBACK;
+}
+
+function normalizeWebPost(row) {
+  WEB_POST_BODY_CACHE.set(row.id, row.body_markdown || "");
+  return {
+    id: row.id,
+    title: row.title || "",
+    date: row.date || "",
+    section: row.section || "",
+    lang: row.lang || "es",
+    translationId: row.translation_id || "",
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    authorIds: Array.isArray(row.author_ids) ? row.author_ids : [],
+    referenceIds: Array.isArray(row.reference_ids) ? row.reference_ids : [],
+    resourceIds: Array.isArray(row.resource_ids) ? row.resource_ids : [],
+    excerpt: row.excerpt || "",
+    cover: row.cover || "",
+    isPublished: Boolean(row.is_published),
+    bodyUrl: ""
+  };
+}
+
+function postPayloadForSupabase(payload) {
+  const id = String(payload.id || slugifyId(payload.title || "post")).trim();
+  return {
+    id,
+    title: String(payload.title || "").trim(),
+    date: payload.date || null,
+    section: String(payload.section || "").trim(),
+    lang: String(payload.lang || "es").toLowerCase() === "en" ? "en" : "es",
+    translation_id: String(payload.translationId || "").trim(),
+    tags: Array.isArray(payload.tags) ? payload.tags : [],
+    author_ids: Array.isArray(payload.authorIds) ? payload.authorIds : [],
+    reference_ids: Array.isArray(payload.referenceIds) ? payload.referenceIds : [],
+    resource_ids: Array.isArray(payload.resourceIds) ? payload.resourceIds : [],
+    excerpt: String(payload.excerpt || "").trim(),
+    cover: String(payload.cover || "").trim(),
+    body_markdown: String(payload.body || ""),
+    is_published: Boolean(payload.isPublished)
+  };
+}
+
+async function webApi(path, opts = {}) {
+  const supabase = window.CMS_SUPABASE;
+  if (!supabase) throw new Error("Supabase no inicializado.");
+
+  if (path === "/api/auth/me") {
+    return { ok: true, user: WEB_USER };
+  }
+
+  if (path === "/api/git/status") {
+    return { ok: true, dirty: false, mode: "web" };
+  }
+
+  if (path === "/api/git/publish") {
+    return { ok: true, message: "Guardado en Supabase. Ejecuta el workflow para regenerar HTML indexable." };
+  }
+
+  if (path === "/api/index") {
+    const fallback = await loadStaticIndexFallback();
+    const { data, error } = await supabase
+      .from("cms_posts")
+      .select("id,title,date,section,lang,translation_id,tags,author_ids,reference_ids,resource_ids,excerpt,cover,body_markdown,is_published,updated_at")
+      .order("date", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false });
+    if (error) throw error;
+    const webPosts = (Array.isArray(data) ? data : []).map(normalizeWebPost);
+    return {
+      ok: true,
+      index: normalizeIndex({
+        posts: webPosts,
+        products: [],
+        services: [],
+        authors: fallback.authors || [],
+        references: fallback.references || [],
+        resources: fallback.resources || [],
+        widgets: fallback.widgets || []
+      })
+    };
+  }
+
+  if (path.startsWith("/api/posts/body")) {
+    const id = new URL(path, window.location.origin).searchParams.get("id") || "";
+    if (WEB_POST_BODY_CACHE.has(id)) return { ok: true, body: WEB_POST_BODY_CACHE.get(id) };
+    const { data, error } = await supabase.from("cms_posts").select("body_markdown").eq("id", id).maybeSingle();
+    if (error) throw error;
+    return { ok: true, body: data?.body_markdown || "" };
+  }
+
+  if (path === "/api/posts/upsert") {
+    const payload = JSON.parse(String(opts.body || "{}"));
+    const row = postPayloadForSupabase(payload);
+    const { data, error } = await supabase.from("cms_posts").upsert(row, { onConflict: "id" }).select("id").single();
+    if (error) throw error;
+    WEB_POST_BODY_CACHE.set(row.id, row.body_markdown);
+    return { ok: true, id: data?.id || row.id };
+  }
+
+  if (path === "/api/posts/delete") {
+    const payload = JSON.parse(String(opts.body || "{}"));
+    const id = String(payload.id || "").trim();
+    const { error } = await supabase.from("cms_posts").delete().eq("id", id);
+    if (error) throw error;
+    WEB_POST_BODY_CACHE.delete(id);
+    return { ok: true };
+  }
+
+  if (path === "/api/uploads/image") {
+    throw new Error("Subidas no disponibles en modo web todavía. Usa una URL de imagen o /static/uploads existente.");
+  }
+
+  throw new Error(`Endpoint no disponible en modo web: ${path}`);
 }
 
 function parseTags(s) {
@@ -1118,6 +1281,7 @@ async function loadPost(id) {
   if ($("#postResources")) $("#postResources").value = (p.resourceIds || p.resources || []).join(", ");
   $("#postCover").value = p.cover || "";
   $("#postExcerpt").value = p.excerpt || "";
+  if ($("#postPublished")) $("#postPublished").checked = p.isPublished !== false;
 
   const bodyRes = await api(`/api/posts/body?id=${encodeURIComponent(p.id)}`);
   $("#postBody").value = bodyRes.body || "";
@@ -1146,6 +1310,7 @@ function clearPostEditor() {
   if ($("#postResources")) $("#postResources").value = "";
   $("#postCover").value = "";
   $("#postExcerpt").value = "";
+  if ($("#postPublished")) $("#postPublished").checked = true;
   $("#postBody").value = "";
   updateEditorDerivedViews();
   refreshActiveLanguage("");
@@ -1178,7 +1343,8 @@ $("#btnSavePost").addEventListener("click", async () => {
       resourceIds: parseTags($("#postResources")?.value || ""),
       excerpt: $("#postExcerpt").value.trim(),
       cover: $("#postCover").value.trim(),
-      body: $("#postBody").value
+      body: $("#postBody").value,
+      isPublished: $("#postPublished")?.checked !== false
     };
 
     const r = await api("/api/posts/upsert", {
@@ -4067,7 +4233,7 @@ $("#btnPublish").addEventListener("click", async () => {
   try {
     const msg = $("#commitMsg").value.trim() || "Update content";
     await api("/api/git/publish", { method: "POST", body: JSON.stringify({ message: msg }) });
-    toast("Publicado (push ok)");
+    toast(CMS_RUNTIME === "web" ? "Guardado en Supabase. Genera HTML con el workflow." : "Publicado (push ok)");
     $("#commitMsg").value = "";
     await refreshGitStatus();
   } catch (e) {
@@ -4087,6 +4253,7 @@ $("#btnRefresh").addEventListener("click", async () => {
 // ---- Boot
 (async () => {
   try {
+    await initCmsRuntime();
     initUiToggles();
     await hydrateAccountMenu();
     await refreshAll();

@@ -859,6 +859,33 @@
   flex-wrap: wrap;
 }
 
+.quick-filter-group{
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.quick-filter-group button{
+  min-height: 31px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 0 9px;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quick-filter-group button:hover{
+  background: var(--surface-solid);
+  color: var(--ink);
+}
+
 .surface-filters select{
   height: 38px;
   max-width: 160px;
@@ -985,6 +1012,10 @@
 
 .activity-surface{
   padding: 19px 18px;
+}
+
+.audit-view{
+  max-width: 880px;
 }
 
 .activity-head{
@@ -1126,6 +1157,46 @@
 .access-preview strong{
   color: var(--ink);
   font-size: .92rem;
+}
+
+.access-confirm-panel{
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--warning) 38%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning) 9%, var(--surface-solid));
+  padding: 13px;
+}
+
+.access-confirm-panel[hidden]{
+  display: none !important;
+}
+
+.access-confirm-panel span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-confirm-panel strong{
+  color: var(--ink);
+  font-size: .9rem;
+}
+
+.access-confirm-panel ul{
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.access-confirm-panel small{
+  color: var(--ink-muted);
+  font-size: .75rem;
 }
 
 .account-workspace-grid{
@@ -1461,6 +1532,70 @@
   max-width: 630px;
 }
 
+.workspace-priority-strip{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.priority-card{
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding: 16px;
+}
+
+.priority-card.primary{
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+}
+
+.priority-card > svg{
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border-radius: 8px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.priority-card span{
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-muted);
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.priority-card strong{
+  display: block;
+  color: var(--ink);
+  font-size: .92rem;
+  line-height: 1.25;
+}
+
+.priority-card p{
+  margin: 7px 0 0;
+  color: var(--ink-muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.priority-card a{
+  grid-column: 2;
+  width: fit-content;
+  color: var(--accent-strong);
+  font-size: .78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .setup-progress{
   margin-bottom: 22px;
   padding: 20px 22px 18px;
@@ -1654,6 +1789,14 @@
   align-items: start;
 }
 
+.profile-workspace-expanded{
+  grid-template-columns: minmax(360px, 1fr) minmax(320px, 1fr);
+}
+
+.profile-workspace-expanded .account-email-manager{
+  grid-row: span 2;
+}
+
 .profile-workspace .permission-readable{
   display: flex;
   flex-wrap: wrap;
@@ -1777,6 +1920,10 @@
 }
 
 @media (max-width: 1120px){
+  .workspace-priority-strip{
+    grid-template-columns: 1fr;
+  }
+
   .client-operation-grid{
     grid-template-columns: 1fr 1fr;
   }
@@ -1845,6 +1992,16 @@
   .client-operation-grid,
   .profile-workspace{
     grid-template-columns: 1fr;
+  }
+
+  .priority-card{
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .priority-card > svg{
+    width: 34px;
+    height: 34px;
+    padding: 8px;
   }
 
   .account-email-row,
@@ -2214,7 +2371,7 @@
   margin-bottom: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f6f7f8;
+  background: var(--surface-muted);
 }
 
 .productivity-tabs button{
@@ -2235,7 +2392,7 @@
 
 .productivity-tabs button.active{
   color: var(--ink);
-  background: #fff;
+  background: var(--surface-solid);
   box-shadow: 0 1px 3px rgb(15 25 31 / 9%);
 }
 
@@ -2250,20 +2407,20 @@
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--ink-muted);
-  background: #fff;
+  background: var(--surface-solid);
   font-size: .84rem;
 }
 
 .productivity-message[data-tone="error"]{
-  border-color: #efc9c5;
-  color: #9b3026;
-  background: #fff7f6;
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--line));
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-solid));
 }
 
 .productivity-message[data-tone="ok"]{
-  border-color: #bfdaca;
-  color: #12613d;
-  background: #f5fbf7;
+  border-color: color-mix(in srgb, var(--success) 34%, var(--line));
+  color: color-mix(in srgb, var(--success) 72%, var(--ink));
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-solid));
 }
 
 .productivity-overview{
@@ -2277,7 +2434,7 @@
 .report-stat{
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-solid);
 }
 
 .productivity-toolbar{
@@ -2304,7 +2461,7 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface-solid);
   font: inherit;
   font-size: .82rem;
 }
@@ -2338,7 +2495,7 @@
   width: 18px;
   height: 18px;
   margin: 0;
-  accent-color: var(--brand, #cf3f33);
+  accent-color: var(--accent);
   cursor: pointer;
 }
 
@@ -2366,24 +2523,24 @@
   padding: 0 8px;
   border-radius: 4px;
   color: var(--ink-muted);
-  background: #f4f5f6;
+  background: var(--surface-muted);
   font-size: .72rem;
   font-weight: 650;
 }
 
 .priority-high{
-  color: #ab382d;
-  background: #fff1f0;
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid));
 }
 
 .priority-medium{
-  color: #80631e;
-  background: #fff8e7;
+  color: color-mix(in srgb, var(--warning) 70%, var(--ink));
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface-solid));
 }
 
 .priority-low{
-  color: #166542;
-  background: #eef9f2;
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
+  background: color-mix(in srgb, var(--success) 11%, var(--surface-solid));
 }
 
 .task-date{
@@ -2417,7 +2574,7 @@
 .task-delete:hover,
 .kanban-actions button:not(:disabled):hover{
   color: var(--ink);
-  background: #f3f4f5;
+  background: var(--hover);
 }
 
 .task-delete svg,
@@ -2492,12 +2649,12 @@
 
 .kpi-progress progress::-webkit-progress-bar,
 .workload-bars progress::-webkit-progress-bar{
-  background: #edf0f1;
+  background: var(--surface-muted);
 }
 
 .kpi-progress progress::-webkit-progress-value,
 .workload-bars progress::-webkit-progress-value{
-  background: var(--brand, #cf3f33);
+  background: var(--accent);
 }
 
 .kanban-grid{
@@ -2509,7 +2666,7 @@
 .kanban-column{
   min-height: 328px;
   padding: 14px;
-  background: #f8f9fa;
+  background: var(--surface-muted);
 }
 
 .kanban-column-head{
@@ -2524,7 +2681,7 @@
   padding: 4px 7px;
   border-radius: 13px;
   color: var(--ink-muted);
-  background: #fff;
+  background: var(--surface-solid);
   text-align: center;
   font-size: .75rem;
   font-weight: 650;
@@ -2539,7 +2696,7 @@
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface-solid);
 }
 
 .kanban-card strong{
@@ -2680,7 +2837,7 @@
   border-radius: 6px;
   padding: 10px 11px;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface-solid);
   font: inherit;
   font-size: .86rem;
 }
@@ -2793,20 +2950,20 @@
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--ink-muted);
-  background: #fff;
+  background: var(--surface-solid);
   font-size: .84rem;
 }
 
 .forms-message[data-tone="ok"]{
-  color: #12613d;
-  border-color: #bfdaca;
-  background: #f5fbf7;
+  color: color-mix(in srgb, var(--success) 72%, var(--ink));
+  border-color: color-mix(in srgb, var(--success) 34%, var(--line));
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-solid));
 }
 
 .forms-message[data-tone="error"]{
-  color: #9b3026;
-  border-color: #efc9c5;
-  background: #fff7f6;
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--line));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-solid));
 }
 
 .forms-admin-layout{
@@ -2819,7 +2976,7 @@
 .forms-surface{
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-solid);
 }
 
 .forms-panel-head{
@@ -2846,7 +3003,7 @@
   padding: 0 9px;
   border-radius: 13px;
   color: var(--ink-muted);
-  background: #f3f5f6;
+  background: var(--surface-muted);
   font-size: .7rem;
   font-weight: 700;
 }
@@ -2881,7 +3038,7 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface-solid);
   font: inherit;
   font-size: .84rem;
 }
@@ -2937,7 +3094,7 @@
   padding: 9px;
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #f8f9fa;
+  background: var(--surface-muted);
 }
 
 .builder-question input:not([type="checkbox"]),
@@ -2960,7 +3117,7 @@
   height: 14px;
   min-height: auto;
   padding: 0;
-  accent-color: var(--brand, #cf3f33);
+  accent-color: var(--accent);
 }
 
 .form-builder-actions{
@@ -2989,8 +3146,8 @@
 
 .forms-status.published,
 .forms-status.answered{
-  color: #12613d;
-  background: #eef9f2;
+  color: color-mix(in srgb, var(--success) 72%, var(--ink));
+  background: color-mix(in srgb, var(--success) 11%, var(--surface-solid));
 }
 
 .library-form h4,
@@ -3142,9 +3299,9 @@
 }
 
 .response-scale input:checked + span{
-  border-color: var(--brand, #cf3f33);
-  color: var(--brand, #cf3f33);
-  background: #fff5f3;
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
 }
 
 .result-list{

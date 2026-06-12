@@ -1,13 +1,13 @@
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "admin:view"]
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view"]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
   author: ["content:write", "cms:access"],
   cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage"]
+  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
 };
 
 const DEPARTMENT_PERMISSIONS = {
@@ -362,7 +362,7 @@ async function addAccountEmail(payload) {
       confirmation_token: confirmationToken
     });
   if (error) throw error;
-  return { ok: true, emails: await listAccountEmails(), confirmationToken };
+  return { ok: true, emails: await listAccountEmails() };
 }
 
 async function confirmAccountEmail(payload) {
@@ -513,7 +513,7 @@ async function bccApi(path, options = {}) {
 
   if (path === "/api/workspace/forms" && options.method === "POST") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"), true);
     const { data, error } = await supabase
       .from("workspace_forms")
@@ -536,7 +536,7 @@ async function bccApi(path, options = {}) {
   const workspaceFormMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)$/);
   if (workspaceFormMatch && options.method === "PATCH") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_forms")
@@ -551,7 +551,7 @@ async function bccApi(path, options = {}) {
   const responseListMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)\/responses$/);
   if (responseListMatch) {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
     const formId = decodeURIComponent(responseListMatch[1]);
     const { data, error } = await supabase
       .from("workspace_form_responses")

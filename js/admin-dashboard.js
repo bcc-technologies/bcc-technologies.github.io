@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   hydrateLocalCmsLinks();
   bindWorkspaceControls();
+  bindWorkspaceViews();
   bindAccessModal();
     window.BCCWorkspaceProductivity?.init(user);
     window.BCCWorkspaceForms?.init(user);
@@ -75,7 +76,8 @@ function filteredUsers() {
   const department = document.querySelector("[data-department-filter]")?.value || "";
   const cmsOnly = Boolean(document.querySelector("[data-cms-filter]")?.checked);
   return adminUsers.filter(user => {
-    const searchable = [user.name, user.email, user.company, user.title].join(" ").toLowerCase();
+    const activity = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "sin acceso";
+    const searchable = [user.name, user.email, user.company, user.title, roleLabel(user.role), activity].join(" ").toLowerCase();
     if (query && !searchable.includes(query)) return false;
     if (role && user.role !== role) return false;
     if (department && !(user.departments || []).includes(department)) return false;
@@ -98,11 +100,11 @@ function userRow(user) {
     <td class="user-cell" data-label="Cuenta">
       <strong>${escapeHtml(user.name)}</strong>
       <span>${escapeHtml(user.email)}</span>
-      <small>${escapeHtml(user.company || "Sin compania")}</small>
+      <small>${escapeHtml(user.company || "Sin compañía")}</small>
     </td>
-    <td data-label="Rol y area">
+    <td data-label="Rol y área">
       <span class="role-badge role-${escapeHtml(user.role)}">${escapeHtml(roleLabel(user.role))}</span>
-      ${chipList(departments, departmentOptions(), "Sin area")}
+      ${chipList(departments, departmentOptions(), "Sin área")}
     </td>
     <td data-label="Acceso">
       <span class="access-state ${hasCmsAccess(user) ? "enabled" : ""}">
@@ -110,7 +112,7 @@ function userRow(user) {
       </span>
       ${chipList(user.staffRoles || [], staffRoleOptions(), "Sin rol interno")}
     </td>
-    <td class="activity-date" data-label="Ultima actividad">${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Sin acceso"}</td>
+    <td class="activity-date" data-label="Última actividad">${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Sin acceso"}</td>
     <td class="table-action">
       <button class="btn btn-ghost btn-compact" type="button" data-edit-access>
         <i data-lucide="sliders-horizontal"></i>Editar
@@ -141,11 +143,75 @@ function bindWorkspaceControls() {
     control.addEventListener("input", renderUsers);
     control.addEventListener("change", renderUsers);
   });
+  document.querySelectorAll("[data-quick-filter]").forEach(button => {
+    button.addEventListener("click", () => applyQuickFilter(button.dataset.quickFilter));
+  });
   const menuButton = document.querySelector("[data-workspace-menu]");
   menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
   document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
     link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
   });
+}
+
+function bindWorkspaceViews() {
+  const views = [...document.querySelectorAll("[data-workspace-view]")];
+  if (!views.length) return;
+
+  const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
+  const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
+  const title = document.querySelector("[data-workspace-view-title]");
+  const viewIds = new Set(views.map(view => view.id));
+
+  const showView = id => {
+    const nextId = viewIds.has(id) ? id : "resumen";
+    views.forEach(view => {
+      view.hidden = view.id !== nextId;
+    });
+    sidebarLinks.forEach(link => {
+      link.classList.toggle("active", link.getAttribute("href") === `#${nextId}`);
+    });
+    const activeView = views.find(view => view.id === nextId);
+    if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
+    document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
+  links.forEach(link => {
+    link.addEventListener("click", event => {
+      const id = link.getAttribute("href").slice(1);
+      if (!viewIds.has(id)) return;
+      event.preventDefault();
+      if (window.location.hash !== `#${id}`) {
+        window.history.pushState(null, "", `#${id}`);
+      }
+      showView(id);
+      document.body.classList.remove("workspace-nav-open");
+    });
+  });
+
+  window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
+  showView(window.location.hash.slice(1));
+}
+
+function applyQuickFilter(filter) {
+  const roleFilter = document.querySelector("[data-role-filter]");
+  const cmsFilter = document.querySelector("[data-cms-filter]");
+  const departmentFilter = document.querySelector("[data-department-filter]");
+  const userSearch = document.querySelector("[data-user-search]");
+  const mobileSearch = document.querySelector("[data-user-search-mobile]");
+  if (roleFilter) roleFilter.value = "";
+  if (departmentFilter) departmentFilter.value = "";
+  if (cmsFilter) cmsFilter.checked = false;
+  if (userSearch) userSearch.value = "";
+  if (mobileSearch) mobileSearch.value = "";
+
+  if (filter === "admins" && roleFilter) roleFilter.value = "admin";
+  if (filter === "cms" && cmsFilter) cmsFilter.checked = true;
+  if (filter === "inactive") {
+    if (userSearch) userSearch.value = "sin acceso";
+    if (mobileSearch) mobileSearch.value = "sin acceso";
+  }
+  renderUsers();
 }
 
 function bindAccessModal() {
@@ -163,12 +229,14 @@ function openAccessModal(user) {
   if (!modal) return;
   const isSelfAdmin = window.BCCAdminCurrentUser?.id === user.id && user.role === "admin";
   modal.dataset.userId = user.id;
+  modal.dataset.confirming = "false";
   const message = modal.querySelector("[data-access-modal-message]");
   if (message) {
     message.hidden = true;
     message.textContent = "";
   }
   modal.querySelector("[data-access-modal-user]").textContent = `${user.name} · ${user.email}`;
+  hideAccessConfirmation(modal);
   const roleSelect = modal.querySelector("[data-modal-role-select]");
   roleSelect.innerHTML = ["client", "staff", "admin"]
     .map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${roleLabel(role)}</option>`)
@@ -202,6 +270,8 @@ function updateAccessPreview() {
   const labels = [];
   labels.push(roleLabel(role));
   if (role === "admin" || staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item))) labels.push("CMS");
+  if (role === "admin" || staffRoles.includes("department_director")) labels.push("Formularios");
+  hideAccessConfirmation(modal);
   preview.textContent = labels.join(" · ");
 }
 
@@ -221,11 +291,10 @@ async function saveAccessFromModal() {
       showModalMessage(message, "No hay cambios de acceso para guardar.", "error");
       return;
     }
-    const intro = isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments)
-      ? "Este cambio afecta permisos sensibles."
-      : "Vas a cambiar los accesos de esta cuenta.";
-    const confirmed = window.confirm(`${intro}\n\nUsuario: ${user.name} <${user.email}>\n${changes.join("\n")}\n\n¿Confirmas este cambio?`);
-    if (!confirmed) return;
+    if (modal.dataset.confirming !== "true") {
+      showAccessConfirmation(modal, user, changes, isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments));
+      return;
+    }
     await window.BCCAuth.api(`/api/admin/users/${encodeURIComponent(user.id)}/role`, {
       method: "PATCH",
       body: JSON.stringify({ role, staffRoles: nextStaffRoles, departments: nextDepartments })
@@ -235,6 +304,35 @@ async function saveAccessFromModal() {
   } catch (error) {
     showModalMessage(message, error.message, "error");
   }
+}
+
+function showAccessConfirmation(modal, user, changes, sensitive) {
+  const panel = modal.querySelector("[data-access-confirm]");
+  const list = modal.querySelector("[data-access-confirm-list]");
+  const title = modal.querySelector("[data-access-confirm-title]");
+  const saveButton = modal.querySelector("[data-access-modal-save]");
+  if (!panel || !list || !title) return;
+  title.textContent = sensitive ? "Este cambio afecta permisos sensibles." : "Confirma los cambios de acceso.";
+  list.replaceChildren(...[
+    `Cuenta: ${user.name} <${user.email}>`,
+    ...changes
+  ].map(text => {
+    const item = document.createElement("li");
+    item.textContent = text;
+    return item;
+  }));
+  panel.hidden = false;
+  modal.dataset.confirming = "true";
+  if (saveButton) saveButton.textContent = "Confirmar y guardar";
+}
+
+function hideAccessConfirmation(modal = document.querySelector("[data-access-modal]")) {
+  if (!modal) return;
+  const panel = modal.querySelector("[data-access-confirm]");
+  const saveButton = modal.querySelector("[data-access-modal-save]");
+  if (panel) panel.hidden = true;
+  modal.dataset.confirming = "false";
+  if (saveButton) saveButton.textContent = "Guardar acceso";
 }
 
 function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments) {
@@ -293,7 +391,7 @@ function staffRoleOptions() {
 
 function departmentOptions() {
   return [
-    { value: "technology", label: "Tecnologia" },
+    { value: "technology", label: "Tecnología" },
     { value: "finance", label: "Finanzas" },
     { value: "operations", label: "Operaciones" },
     { value: "marketing", label: "Marketing" },
