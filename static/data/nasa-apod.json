@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-06-13T08:53:32.991Z",
+  "updatedAt": "2026-06-16T11:05:48.470Z",
   "item": {
-    "date": "2026-06-13",
-    "explanation": "In an interplanetary first, on July 19, 2013 Earth was photographed on the same day from two other worlds of the Solar System, innermost planet Mercury and ringed gas giant Saturn. Pictured on the left, Earth is the pale blue dot just below the rings of Saturn, as captured by the robotic Cassini spacecraft then orbiting the outermost gas giant. On that same day people across planet Earth snapped many of their own pictures of Saturn. On the right, the Earth-Moon system is seen against the dark background of space as captured by the sunward MESSENGER spacecraft, then in Mercury orbit. MESSENGER took its image as part of a search for small natural satellites of Mercury, moons that would be expected to be quite dim. In the MESSENGER image, the brighter Earth and Moon are both overexposed and shine brightly with reflected sunlight. Destined not to return to their home world, both Cassini and MESSENGER have since retired from their missions of Solar System exploration.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2606/earth_cassinimessenger_1799.jpg",
+    "date": "2026-06-16",
+    "explanation": "While cruising around Saturn, be on the lookout for picturesque arrangements of moons, rings, and shadows. One such striking sight occurred in 2005 and was captured by the then Saturn-orbiting Cassini spacecraft. In the featured image, moons Mimas (left) and Tethys (right) are visible on either side of Saturn's thin rings, which are seen nearly edge-on.  Across the top of Saturn are dark shadows of the wide rings, exhibiting their impressive complexity. The violet-light image brings up the texture of the backdrop: Saturn's clouds. Cassini orbited Saturn from 2004 until mid-2017, when the robotic spacecraft was directed to dive into Saturn to keep it from contaminating any moons.    Explore the Universe: Random APOD Generator",
+    "hdurl": "https://apod.nasa.gov/apod/image/2606/SaturnRingsMoons_Cassini_960.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Interplanetary Earth",
-    "url": "https://apod.nasa.gov/apod/image/2606/earth_cassinimessenger_1024c.jpg"
+    "title": "Moons, Rings, Shadows, Clouds: Saturn (Cassini)",
+    "url": "https://apod.nasa.gov/apod/image/2606/SaturnRingsMoons_Cassini_960.jpg"
   }
 }
