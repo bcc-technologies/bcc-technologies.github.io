@@ -1,31 +1,378 @@
-/* BCC Technologies — Global Layout Script
-   - Adds html.is-at-top when user is at top of page
-   - Keeps it lightweight and passive
-*/
-
+/* BCC Technologies — shared layout + frontend analytics bootstrap. */
 (() => {
   const root = document.documentElement;
-  // "Near top" threshold so the style snaps in a little before exact 0.
-  // Tweak this if you want the compact bar to kick in earlier/later.
   const THRESHOLD_PX = 20;
+  const ANALYTICS_CONFIG = {
+    enabled: true,
+    plausibleDomain: "bcctechnologies.com.do",
+    plausibleScript: "https://plausible.io/js/script.file-downloads.outbound-links.tagged-events.js",
+    supabaseConfigPath: "/js/supabase-config.js",
+    engagedVisitDelayMs: 30000
+  };
+  const CUSTOM_CONFIG = window.BCC_ANALYTICS || {};
+  const CONFIG = { ...ANALYTICS_CONFIG, ...CUSTOM_CONFIG };
+  const SESSION_ONCE_PREFIX = "bcc-analytics-once:";
   let ticking = false;
+  let supabaseConfigPromise = null;
 
-  function update() {
+  function updateTopState() {
     const atTop = (window.scrollY || window.pageYOffset || 0) <= THRESHOLD_PX;
-    root.classList.toggle('is-at-top', atTop);
+    root.classList.toggle("is-at-top", atTop);
   }
 
   function onScroll() {
     if (ticking) return;
     ticking = true;
     window.requestAnimationFrame(() => {
-      update();
+      updateTopState();
       ticking = false;
     });
   }
 
-  // Init
-  update();
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
+  function inStorage(storage, key) {
+    try {
+      return storage.getItem(key);
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function setStorage(storage, key, value) {
+    try {
+      storage.setItem(key, value);
+    } catch (_error) {
+      // Ignore storage failures in private browsing or restricted contexts.
+    }
+  }
+
+  function randomId(prefix) {
+    if (window.crypto?.randomUUID) return `${prefix}-${window.crypto.randomUUID()}`;
+    return `${prefix}-${Math.random().toString(36).slice(2, 11)}${Date.now().toString(36)}`;
+  }
+
+  function ensurePersistentId(key, storage, prefix) {
+    const existing = inStorage(storage, key);
+    if (existing) return existing;
+    const created = randomId(prefix);
+    setStorage(storage, key, created);
+    return created;
+  }
+
+  function safeTrim(value, max = 160) {
+    return String(value || "").trim().slice(0, max);
+  }
+
+  function normalizeMetadata(metadata = {}) {
+    const normalized = {};
+    Object.entries(metadata).forEach(([key, value]) => {
+      if (value == null) return;
+      if (typeof value === "number" || typeof value === "boolean") {
+        normalized[key] = value;
+        return;
+      }
+      const text = safeTrim(value, 240);
+      if (text) normalized[key] = text;
+    });
+    return normalized;
+  }
+
+  function pageTypeFor(pathname) {
+    if (pathname === "/" || pathname === "/index.html" || pathname === "/en/index.html") return "home";
+    if (/^\/(en\/)?blog\/[^/]+\.html$/i.test(pathname)) return "blog_post";
+    if (/^\/(en\/)?blog\.html$/i.test(pathname)) return "blog_index";
+    if (/^\/(en\/)?products\.html$/i.test(pathname)) return "products";
+    if (/^\/(en\/)?product_/i.test(pathname) || /^\/(en\/)?MAP\.html$/i.test(pathname)) return "product_detail";
+    if (/^\/(en\/)?services\.html$/i.test(pathname)) return "services";
+    if (/^\/(en\/)?science\.html$/i.test(pathname)) return "science";
+    if (/^\/(en\/)?contactUs\.html$/i.test(pathname)) return "contact";
+    if (/^\/(en\/)?cotizacion\.html$/i.test(pathname)) return "quote";
+    if (/^\/(login|signup|forgot-password|reset-password|auth-callback)\.html$/i.test(pathname)) return "auth";
+    if (/dashboard|cms\.html/i.test(pathname)) return "workspace";
+    return "content";
+  }
+
+  function currentLanguage() {
+    const lang = document.documentElement.lang || (location.pathname.startsWith("/en/") ? "en" : "es");
+    return safeTrim(lang.toLowerCase(), 10) || "es";
+  }
+
+  function currentContext() {
+    const path = location.pathname || "/";
+    const query = location.search || "";
+    const url = new URL(location.href);
+    return {
+      pagePath: `${path}${query}`,
+      pageUrl: location.href,
+      pageTitle: safeTrim(document.title, 200),
+      pageLang: currentLanguage(),
+      pageType: pageTypeFor(path),
+      referrerHost: safeTrim(document.referrer ? new URL(document.referrer).host : "", 160),
+      utmSource: safeTrim(url.searchParams.get("utm_source"), 120),
+      utmMedium: safeTrim(url.searchParams.get("utm_medium"), 120),
+      utmCampaign: safeTrim(url.searchParams.get("utm_campaign"), 120)
+    };
+  }
+
+  function sessionOnceKey(key) {
+    return `${SESSION_ONCE_PREFIX}${key}`;
+  }
+
+  function hasSessionFlag(key) {
+    return Boolean(inStorage(window.sessionStorage, sessionOnceKey(key)));
+  }
+
+  function markSessionFlag(key) {
+    setStorage(window.sessionStorage, sessionOnceKey(key), "1");
+  }
+
+  function ensurePlausible() {
+    if (!CONFIG.enabled || document.querySelector('script[data-bcc-plausible="true"]')) return;
+    window.plausible = window.plausible || function plausibleProxy() {
+      (window.plausible.q = window.plausible.q || []).push(arguments);
+    };
+    const script = document.createElement("script");
+    script.defer = true;
+    script.dataset.domain = CONFIG.plausibleDomain;
+    script.dataset.bccPlausible = "true";
+    script.src = CONFIG.plausibleScript;
+    document.head.appendChild(script);
+  }
+
+  function loadSupabaseConfig() {
+    if (window.BCC_SUPABASE?.url && window.BCC_SUPABASE?.anonKey) return Promise.resolve(window.BCC_SUPABASE);
+    if (supabaseConfigPromise) return supabaseConfigPromise;
+    supabaseConfigPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${CONFIG.supabaseConfigPath}"]`);
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.BCC_SUPABASE), { once: true });
+        existing.addEventListener("error", () => reject(new Error("No se pudo cargar la configuración de Supabase.")), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = CONFIG.supabaseConfigPath;
+      script.async = true;
+      script.onload = () => resolve(window.BCC_SUPABASE);
+      script.onerror = () => reject(new Error("No se pudo cargar la configuración de Supabase."));
+      document.head.appendChild(script);
+    });
+    return supabaseConfigPromise;
+  }
+
+  async function postSupabaseEvent(payload) {
+    try {
+      const config = await loadSupabaseConfig();
+      if (!config?.url || !config?.anonKey) return;
+      await fetch(`${config.url}/rest/v1/rpc/record_analytics_event`, {
+        method: "POST",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+          apikey: config.anonKey,
+          Authorization: `Bearer ${config.anonKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch (_error) {
+      // Analytics should never block page behavior.
+    }
+  }
+
+  function plausibleProps(metadata) {
+    const props = {};
+    ["page_type", "label", "section", "form_name", "target_path", "target_host"].forEach(key => {
+      const value = metadata[key];
+      if (typeof value === "string" && value) props[key] = value;
+    });
+    return props;
+  }
+
+  function track(eventName, metadata = {}, options = {}) {
+    if (!CONFIG.enabled) return;
+    const cleanEvent = safeTrim(eventName, 80).replace(/\s+/g, "_").toLowerCase();
+    if (!cleanEvent) return;
+    if (options.onceKey && hasSessionFlag(options.onceKey)) return;
+    if (options.onceKey) markSessionFlag(options.onceKey);
+
+    const context = currentContext();
+    const normalizedMetadata = normalizeMetadata({
+      page_type: context.pageType,
+      lang: context.pageLang,
+      ...metadata
+    });
+
+    if (typeof window.plausible === "function" && options.plausible !== false) {
+      const props = plausibleProps(normalizedMetadata);
+      window.plausible(cleanEvent, Object.keys(props).length ? { props } : undefined);
+    }
+
+    if (options.supabase === false) return;
+
+    const payload = {
+      event_name: cleanEvent,
+      event_source: "frontend",
+      session_id: ensurePersistentId("bcc-session-id", window.sessionStorage, "sess"),
+      visitor_id: ensurePersistentId("bcc-visitor-id", window.localStorage, "visitor"),
+      page_path: context.pagePath,
+      page_url: context.pageUrl,
+      page_title: context.pageTitle,
+      page_lang: context.pageLang,
+      referrer_host: context.referrerHost,
+      utm_source: context.utmSource,
+      utm_medium: context.utmMedium,
+      utm_campaign: context.utmCampaign,
+      metadata: normalizedMetadata
+    };
+    void postSupabaseEvent(payload);
+  }
+
+  function trackPageView() {
+    track("page_view", {}, { plausible: false });
+  }
+
+  function trackEngagedVisit() {
+    window.setTimeout(() => {
+      if (document.visibilityState !== "visible") return;
+      track("engaged_visit", { seconds: 30 }, { onceKey: `engaged:${location.pathname}` });
+    }, CONFIG.engagedVisitDelayMs);
+  }
+
+  function trackScrollDepth() {
+    const marks = [
+      { threshold: 0.5, event: "scroll_depth_50", key: `scroll50:${location.pathname}` },
+      { threshold: 0.9, event: "scroll_depth_90", key: `scroll90:${location.pathname}` }
+    ];
+    const onPageScroll = () => {
+      const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const ratio = (window.scrollY || window.pageYOffset || 0) / scrollable;
+      marks.forEach(mark => {
+        if (ratio >= mark.threshold) track(mark.event, { percent: Math.round(mark.threshold * 100) }, { onceKey: mark.key });
+      });
+    };
+    window.addEventListener("scroll", onPageScroll, { passive: true });
+  }
+
+  function trackLinkClicks() {
+    document.addEventListener("click", event => {
+      const link = event.target.closest("a[href]");
+      if (!link) return;
+      const rawHref = link.getAttribute("href") || "";
+      if (!rawHref || rawHref.startsWith("#")) return;
+      const label = safeTrim(link.dataset.analyticsLabel || link.getAttribute("aria-label") || link.textContent, 140);
+      let targetUrl = null;
+      try {
+        targetUrl = new URL(rawHref, location.href);
+      } catch (_error) {
+        targetUrl = null;
+      }
+
+      const meta = normalizeMetadata({
+        label,
+        href: targetUrl ? targetUrl.toString() : rawHref,
+        target_path: targetUrl?.pathname || "",
+        target_host: targetUrl?.host || ""
+      });
+
+      if (link.dataset.analyticsEvent) {
+        track(link.dataset.analyticsEvent, meta);
+        return;
+      }
+
+      if (rawHref.startsWith("mailto:")) {
+        track("email_click", meta);
+        return;
+      }
+      if (rawHref.startsWith("tel:")) {
+        track("phone_click", meta);
+        return;
+      }
+      if (/wa\.me|whatsapp|api\.whatsapp/i.test(rawHref)) {
+        track("whatsapp_click", meta);
+        return;
+      }
+      if (targetUrl && targetUrl.origin !== location.origin) {
+        track("outbound_click", meta);
+        return;
+      }
+      if (targetUrl && /\/contactUs\.html$/i.test(targetUrl.pathname)) {
+        track("contact_cta_click", meta);
+        return;
+      }
+      if (targetUrl && /\/cotizacion\.html$/i.test(targetUrl.pathname)) {
+        track("quote_cta_click", meta);
+        return;
+      }
+      if (link.classList.contains("btn") || link.dataset.trackCta != null) {
+        track("cta_click", meta);
+      }
+    });
+  }
+
+  function inferFormName(form) {
+    if (!(form instanceof HTMLFormElement)) return "";
+    return safeTrim(
+      form.dataset.analyticsForm ||
+      form.getAttribute("name") ||
+      form.getAttribute("id") ||
+      form.getAttribute("aria-label") ||
+      form.getAttribute("action") ||
+      "form",
+      120
+    );
+  }
+
+  function trackFormSubmits() {
+    document.addEventListener("submit", event => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      const action = safeTrim(form.getAttribute("action"), 200);
+      const fields = [...new Set([...new FormData(form).keys()].map(key => safeTrim(key, 80)).filter(Boolean))];
+      const meta = normalizeMetadata({
+        form_name: inferFormName(form),
+        action_host: action ? (() => {
+          try {
+            return new URL(action, location.href).host;
+          } catch (_error) {
+            return "";
+          }
+        })() : "",
+        field_count: fields.length
+      });
+      const eventName = /formspree\.io/i.test(action) || /\/(en\/)?contactUs\.html$/i.test(location.pathname)
+        ? "contact_submit"
+        : "form_submit";
+      track(eventName, meta);
+    });
+  }
+
+  function trackQuoteSelections() {
+    if (!/\/(en\/)?cotizacion\.html$/i.test(location.pathname)) return;
+    document.addEventListener("change", event => {
+      const checkbox = event.target;
+      if (!(checkbox instanceof HTMLInputElement) || checkbox.type !== "checkbox" || checkbox.name !== "product" || !checkbox.checked) return;
+      const section = safeTrim(checkbox.closest(".product-section")?.querySelector("h1")?.textContent, 120);
+      const label = safeTrim(checkbox.value, 160);
+      track("quote_option_select", {
+        label,
+        section,
+        price: safeTrim(checkbox.dataset.price, 40)
+      }, { onceKey: `quote:${section}:${label}` });
+    });
+  }
+
+  function initAnalytics() {
+    if (!CONFIG.enabled || document.body?.dataset.analytics === "off") return;
+    ensurePlausible();
+    trackPageView();
+    trackEngagedVisit();
+    trackScrollDepth();
+    trackLinkClicks();
+    trackFormSubmits();
+    trackQuoteSelections();
+    window.BCCAnalytics = { track };
+  }
+
+  updateTopState();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  initAnalytics();
 })();

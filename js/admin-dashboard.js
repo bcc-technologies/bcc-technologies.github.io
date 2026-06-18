@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceControls();
   bindWorkspaceViews();
   bindAccessModal();
+  window.BCCWorkspaceAnalytics?.init(user);
     window.BCCWorkspaceProductivity?.init(user);
     window.BCCWorkspaceForms?.init(user);
   refreshIcons();

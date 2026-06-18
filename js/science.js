@@ -199,6 +199,10 @@
   let traceRenderContextMemoValue = null;
 
   const safeText = (s) => (typeof s === 'string' ? s : '');
+  const trackAnalytics = (eventName, metadata = {}, options = {}) => {
+    window.BCCAnalytics?.track(eventName, metadata, options);
+  };
+  const analyticsText = (value, max = 160) => String(value || '').trim().slice(0, max);
   const FETCH_CACHE_MODE = {
     arxiv: 'default',
     journal: 'no-cache',
@@ -3523,8 +3527,21 @@
       let keywordTopMinCount = 1;
       let keywordTopSort = 'count';
       let keywordTopExclude = '';
+      let arxivSearchTrackTimer = 0;
+      let lastTrackedArxivSearch = '';
 
       const KEYWORD_TOP_ACRONYMS = new Set(['ai', 'ml', 'dl', 'llm', 'llms', 'rag', 'nlp', 'gnn', 'gnns', 'cnn', 'rnns', 'rl', 'gpt']);
+      const trackArxivInteraction = (action, extra = {}) => {
+        trackAnalytics('science_arxiv_filter', {
+          action: analyticsText(action, 80),
+          area: analyticsText(activeGroup === i18n.all ? 'all' : activeGroup, 80),
+          period: analyticsText(periodValue, 40),
+          view_mode: analyticsText(viewMode, 40),
+          search_query: analyticsText(keyword, 120),
+          active_groups: activeKeywordGroupIds.length,
+          ...extra
+        });
+      };
 
       const parseCommaTerms = (value) => {
         return Array.from(new Set(String(value || '')
@@ -3806,6 +3823,7 @@
             activeGroup = String(areaSelect.value || i18n.all);
             syncSelectWidth(areaSelect);
             renderList();
+            trackArxivInteraction('area_change');
           });
         }
 
@@ -3815,6 +3833,7 @@
             periodValue = String(periodSelect.value || 'all');
             syncSelectWidth(periodSelect);
             renderList();
+            trackArxivInteraction('period_change');
           });
         }
 
@@ -3827,6 +3846,18 @@
               clear.disabled = !hasTerm;
             }
             renderList();
+            window.clearTimeout(arxivSearchTrackTimer);
+            arxivSearchTrackTimer = window.setTimeout(() => {
+              const trimmed = analyticsText(keyword, 120);
+              if (!trimmed) {
+                lastTrackedArxivSearch = '';
+                return;
+              }
+              const signature = `${activeGroup}|${periodValue}|${viewMode}|${trimmed}`;
+              if (signature === lastTrackedArxivSearch) return;
+              lastTrackedArxivSearch = signature;
+              trackArxivInteraction('search');
+            }, 320);
           });
         }
 
@@ -3836,6 +3867,8 @@
             keyword = '';
             renderFilters();
             renderList();
+            lastTrackedArxivSearch = '';
+            trackArxivInteraction('clear_search');
           });
         }
 
@@ -3846,6 +3879,7 @@
             viewMode = nextMode === 'keywords' ? 'keywords' : 'papers';
             renderFilters();
             renderList();
+            trackArxivInteraction('view_mode_change');
           });
         });
 
@@ -3855,6 +3889,7 @@
             keywordTopMode = String(topModeSelect.value || 'all');
             syncSelectWidth(topModeSelect);
             renderList();
+            trackArxivInteraction('top_mode_change', { keyword_mode: analyticsText(keywordTopMode, 40) });
           });
         }
 
@@ -3865,6 +3900,7 @@
             keywordTopMinCount = Number.isFinite(parsed) ? Math.max(1, parsed) : 1;
             syncSelectWidth(topMinCountSelect);
             renderList();
+            trackArxivInteraction('top_min_count_change', { min_count: keywordTopMinCount });
           });
         }
 
@@ -3874,6 +3910,7 @@
             keywordTopSort = String(topSortSelect.value || 'count') === 'alpha' ? 'alpha' : 'count';
             syncSelectWidth(topSortSelect);
             renderList();
+            trackArxivInteraction('top_sort_change', { sort: analyticsText(keywordTopSort, 40) });
           });
         }
 
@@ -3881,6 +3918,7 @@
           topExcludeInput.addEventListener('input', () => {
             keywordTopExclude = String(topExcludeInput.value || '').slice(0, 140);
             renderList();
+            trackArxivInteraction('top_exclude_change', { exclude_terms: analyticsText(keywordTopExclude, 120) });
           });
         }
 
@@ -3888,6 +3926,7 @@
           groupToggleBtn.addEventListener('click', () => {
             isGroupPanelOpen = !isGroupPanelOpen;
             renderFilters();
+            trackArxivInteraction('group_panel_toggle', { panel_open: isGroupPanelOpen ? 'true' : 'false' });
           });
         }
 
@@ -3914,6 +3953,7 @@
             }
             renderFilters();
             renderList();
+            trackArxivInteraction('group_add', { group_id: analyticsText(pickedGroupId, 80) });
           });
         }
 
@@ -3922,6 +3962,7 @@
             activeKeywordGroupIds = [];
             renderFilters();
             renderList();
+            trackArxivInteraction('group_clear_active');
           });
         }
 
@@ -3941,6 +3982,7 @@
             isGroupPanelOpen = true;
             renderFilters();
             renderList();
+            trackArxivInteraction('group_save_current', { group_name: analyticsText(name, 120) });
           });
         }
 
@@ -3953,18 +3995,21 @@
             if (groupTermsInput) groupTermsInput.value = '';
             renderFilters();
             renderList();
+            trackArxivInteraction('group_save', { group_name: analyticsText(name, 120), term_count: terms.length });
           });
         }
 
         if (groupDeleteBtn) {
           groupDeleteBtn.addEventListener('click', () => {
             if (!pickedGroupId) return;
+            const removedId = pickedGroupId;
             keywordGroups = keywordGroups.filter((entry) => entry.id !== pickedGroupId);
             activeKeywordGroupIds = activeKeywordGroupIds.filter((id) => id !== pickedGroupId);
             pickedGroupId = keywordGroups[0]?.id || '';
             writeKeywordGroups(keywordGroups);
             renderFilters();
             renderList();
+            trackArxivInteraction('group_delete', { group_id: analyticsText(removedId, 80) });
           });
         }
 
@@ -3974,6 +4019,7 @@
             activeKeywordGroupIds = activeKeywordGroupIds.filter((id) => id !== removeId);
             renderFilters();
             renderList();
+            trackArxivInteraction('group_remove_chip', { group_id: analyticsText(removeId, 80) });
           });
         });
       };
@@ -4118,7 +4164,7 @@
 
           return `
             <article class="arxiv-item">
-              <a class="arxiv-title" href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>
+              <a class="arxiv-title" href="${link}" target="_blank" rel="noopener noreferrer" data-arxiv-open="true" data-arxiv-title="${escapeHtml(titleRaw)}" data-arxiv-group="${escapeHtml(groupLabel || group || '')}" data-arxiv-category="${escapeHtml(safeText(item.primaryCategory))}">${title}</a>
               <div class="arxiv-meta">${metaPrefix}${authors}</div>
               <div class="arxiv-summary">${summary}</div>
               <div class="arxiv-tags">
@@ -4128,6 +4174,20 @@
           `;
         }).join('');
       };
+
+      if (!elArxivList.dataset.analyticsBound) {
+        elArxivList.dataset.analyticsBound = 'true';
+        elArxivList.addEventListener('click', (event) => {
+          const link = event.target.closest('[data-arxiv-open]');
+          if (!link) return;
+          trackAnalytics('science_arxiv_paper_open', {
+            label: analyticsText(link.dataset.arxivTitle, 160),
+            group: analyticsText(link.dataset.arxivGroup, 120),
+            category: analyticsText(link.dataset.arxivCategory, 120),
+            href: analyticsText(link.getAttribute('href'), 220)
+          });
+        });
+      }
 
       renderFilters();
       renderList();
@@ -4168,12 +4228,25 @@
         const section = escapeHtml(safeText(post.section));
         const meta = escapeHtml(section ? `${date} - ` : date);
         return `
-          <a class="journal-item" href="${escapeHtml(safeHref(postUrl(post.id), pageLang === 'en' ? '/en/blog.html' : '/blog.html'))}">
+          <a class="journal-item" href="${escapeHtml(safeHref(postUrl(post.id), pageLang === 'en' ? '/en/blog.html' : '/blog.html'))}" data-science-journal-open="true" data-post-id="${escapeHtml(safeText(post.id))}" data-post-title="${title}" data-post-section="${section}">
             <div class="journal-title">${title}</div>
             <div class="journal-meta">${meta}${section}</div>
           </a>
         `;
       }).join('');
+      if (!elJournalList.dataset.analyticsBound) {
+        elJournalList.dataset.analyticsBound = 'true';
+        elJournalList.addEventListener('click', (event) => {
+          const link = event.target.closest('[data-science-journal-open]');
+          if (!link) return;
+          trackAnalytics('science_journal_open', {
+            post_id: analyticsText(link.dataset.postId, 120),
+            label: analyticsText(link.dataset.postTitle, 160),
+            section: analyticsText(link.dataset.postSection, 120),
+            href: analyticsText(link.getAttribute('href'), 220)
+          });
+        });
+      }
       syncWidgetDecksWithRealData(widgetBoardEls);
     } catch (err) {
       elJournalList.innerHTML = `<div class="science-loading">${i18n.journalError}</div>`;
@@ -10085,6 +10158,10 @@
     els.deckRail.addEventListener('click', (event) => {
       const button = event.target.closest('[data-deck-id]');
       if (!button) return;
+      trackAnalytics('science_widget_deck_open', {
+        deck_id: analyticsText(button.getAttribute('data-deck-id'), 80),
+        label: analyticsText(button.textContent, 140)
+      });
       openDeck(button.getAttribute('data-deck-id') || '', els);
     });
 
@@ -10099,6 +10176,7 @@
     if (els.templatesBtn) {
       els.templatesBtn.addEventListener('click', () => {
         setBoardActionsMenuOpen(false, els);
+        trackAnalytics('science_widget_template_catalog_open');
         renderTemplateCatalog(els);
       });
     }
@@ -10106,6 +10184,7 @@
     if (els.exportPngBtn) {
       els.exportPngBtn.addEventListener('click', async () => {
         setBoardActionsMenuOpen(false, els);
+        trackAnalytics('science_widget_export_png', { selected_nodes: getSelectedBoardNodeIds().length });
         await runBoardAction(els.exportPngBtn, () => exportWidgetBoardPng(els));
       });
     }
@@ -10113,6 +10192,7 @@
     if (els.exportCsvBtn) {
       els.exportCsvBtn.addEventListener('click', async () => {
         setBoardActionsMenuOpen(false, els);
+        trackAnalytics('science_widget_export_csv', { selected_nodes: getSelectedBoardNodeIds().length });
         await runBoardAction(els.exportCsvBtn, () => Promise.resolve(exportWidgetBoardCsv(els)));
       });
     }
@@ -10120,6 +10200,7 @@
     if (els.shareUrlBtn) {
       els.shareUrlBtn.addEventListener('click', async () => {
         setBoardActionsMenuOpen(false, els);
+        trackAnalytics('science_widget_share', { node_count: boardState.nodes.length });
         await runBoardAction(els.shareUrlBtn, () => copyWidgetBoardShareUrl(els));
       });
     }
@@ -10241,6 +10322,11 @@
         if (!template) return;
         const applied = await importBoardTemplate(templateId, els, { mode, triggerButton: applyTemplateButton });
         if (applied) {
+          trackAnalytics('science_widget_template_apply', {
+            template_id: analyticsText(templateId, 80),
+            label: analyticsText(template.name, 160),
+            mode: analyticsText(mode, 40)
+          });
           setCanvasMeta(els, boardText.templateApplied(template.name, mode));
         }
         return;
@@ -10502,6 +10588,7 @@
 
       els.clearBtn.addEventListener('click', () => {
         setBoardActionsMenuOpen(false, els);
+        trackAnalytics('science_widget_reset', { node_count: boardState.nodes.length });
         resetWidgetBoard(els);
       });
     }
@@ -10669,13 +10756,6 @@
     loadApod();
   });
 })();
-
-
-
-
-
-
-
 
 
 

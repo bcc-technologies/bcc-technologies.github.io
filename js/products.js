@@ -66,6 +66,14 @@
     ])
   };
 
+  const trackAnalytics = (eventName, metadata = {}, options = {}) => {
+    window.BCCAnalytics?.track(eventName, metadata, options);
+  };
+
+  function analyticsText(value = '', max = 140) {
+    return String(value || '').trim().slice(0, max);
+  }
+
   function onReady(callback) {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', callback, { once: true });
@@ -402,6 +410,11 @@
       shell.hidden = false;
       openId = product.id;
       document.body.classList.add('product-detail-open');
+      trackAnalytics('product_detail_open', {
+        product_id: analyticsText(product.id, 80),
+        label: analyticsText(product.title),
+        family: analyticsText(product.family, 80)
+      });
 
       shell.querySelectorAll('[data-product-detail-close]').forEach((element) => {
         element.addEventListener('click', closeDetail);
@@ -529,7 +542,13 @@
     };
 
     tabs.forEach((tab, index) => {
-      tab.addEventListener('click', () => activateTab(tab, false));
+      tab.addEventListener('click', () => {
+        activateTab(tab, false);
+        trackAnalytics('product_hero_tab_select', {
+          tab_id: analyticsText(tab.id, 80),
+          label: analyticsText(tab.textContent, 120)
+        });
+      });
       tab.addEventListener('keydown', (event) => {
         let nextIndex = null;
 
@@ -555,6 +574,10 @@
         if (nextIndex === null) return;
         event.preventDefault();
         activateTab(tabs[nextIndex], true);
+        trackAnalytics('product_hero_tab_select', {
+          tab_id: analyticsText(tabs[nextIndex].id, 80),
+          label: analyticsText(tabs[nextIndex].textContent, 120)
+        });
       });
     });
 
@@ -569,6 +592,10 @@
         const target = id ? document.getElementById(id) : null;
         if (!target) return;
         event.preventDefault();
+        trackAnalytics('product_scroll_jump', {
+          target_section: analyticsText(id, 80),
+          label: analyticsText(element.textContent, 120)
+        });
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
@@ -630,6 +657,8 @@
       use: canonicalizeList('use', (params.get('use') || '').split(',').filter(Boolean)),
       search: cleanSearch(params.get('q') || '')
     };
+    let hasTrackedInitialApply = false;
+    let lastApplySignature = '';
 
     const optionLabels = {
       family: new Map(Array.from(familySelect ? familySelect.options : []).map((option) => [option.value, option.textContent.trim()])),
@@ -846,6 +875,11 @@
         chip.append(label, remove);
         chip.addEventListener('click', () => {
           compareState.selected = compareState.selected.filter((entry) => entry !== product.id);
+          trackAnalytics('product_compare_remove', {
+            product_id: analyticsText(product.id, 80),
+            label: analyticsText(product.title),
+            compare_count: compareState.selected.length
+          });
           updateCompare();
         });
         compareSelection.appendChild(chip);
@@ -932,6 +966,25 @@
       renderChips();
       updateCompare();
       syncURL();
+
+      const signature = JSON.stringify({
+        family: state.family,
+        method: state.method,
+        use: state.use,
+        search: cleanSearch(state.search),
+        visible
+      });
+      if (hasTrackedInitialApply && signature !== lastApplySignature) {
+        trackAnalytics('product_filter_apply', {
+          family: analyticsText(state.family, 80),
+          methods: analyticsText(state.method.join(','), 160),
+          uses: analyticsText(state.use.join(','), 160),
+          search_query: analyticsText(cleanSearch(state.search), 120),
+          results: visible
+        });
+      }
+      hasTrackedInitialApply = true;
+      lastApplySignature = signature;
     }
 
     familySelect && familySelect.addEventListener('change', () => {
@@ -964,12 +1017,19 @@
     compareToggleButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const productId = String(button.getAttribute('data-compare-toggle') || '');
-        if (!productId || !productsById.has(productId)) return;
+        const product = productsById.get(productId);
+        if (!productId || !product) return;
+        const wasSelected = compareState.selected.includes(productId);
         if (compareState.selected.includes(productId)) {
           compareState.selected = compareState.selected.filter((entry) => entry !== productId);
         } else if (compareState.selected.length < compareLimit) {
           compareState.selected = [...compareState.selected, productId];
         }
+        trackAnalytics(wasSelected ? 'product_compare_remove' : 'product_compare_add', {
+          product_id: analyticsText(product.id, 80),
+          label: analyticsText(product.title),
+          compare_count: compareState.selected.length
+        });
         updateCompare();
       });
     });
@@ -1004,7 +1064,9 @@
     });
 
     clearCompare && clearCompare.addEventListener('click', () => {
+      const cleared = compareState.selected.length;
       compareState.selected = [];
+      trackAnalytics('product_compare_clear', { compare_count: cleared });
       updateCompare();
     });
 
@@ -1016,6 +1078,21 @@
     syncUIFromState();
     syncFiltersPanel();
     apply();
+
+    grid.addEventListener('click', (event) => {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+      const card = link.closest('.product-card');
+      if (!card) return;
+      const productId = analyticsText(card.dataset.productId, 80);
+      const product = productsById.get(productId);
+      trackAnalytics('product_cta_click', {
+        product_id: productId,
+        label: analyticsText(link.textContent, 120),
+        product_title: analyticsText(product?.title || card.querySelector('h3')?.textContent, 140),
+        href: analyticsText(link.getAttribute('href'), 200)
+      });
+    });
   }
 
   onReady(() => {

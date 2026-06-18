@@ -1,6 +1,11 @@
 // new_blog.js — Local Blog + filters + refined modal reader (NO Shopify)
 
 document.addEventListener('DOMContentLoaded', () => {
+  const trackAnalytics = (eventName, metadata = {}, options = {}) => {
+    window.BCCAnalytics?.track(eventName, metadata, options);
+  };
+
+  const analyticsText = (value, max = 140) => String(value || '').trim().slice(0, max);
   const isEn = (document.documentElement.lang || '').toLowerCase().startsWith('en');
   const pageLang = isEn ? "en" : "es";
   const i18n = isEn ? {
@@ -69,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let allArticles = [];
   let activeTag = i18n.allTag;
   let lastOpenedId = '';
+  let lastTrackedSearchSignature = '';
+  let searchTrackTimer = 0;
 
   const safeText = (s) => (typeof s === 'string' ? s : '');
 
@@ -197,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .forEach(b => b.classList.toggle('is-active', b.dataset.tag === activeTag));
 
       render();
+      trackAnalytics('blog_tag_filter', {
+        tag: analyticsText(activeTag, 120),
+        visible_results: filteredArticles().length,
+        total_posts: allArticles.length
+      });
     });
   }
 
@@ -351,7 +363,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal({ clearHash: true });
   });
 
-  searchEl.addEventListener('input', () => render());
+  searchEl.addEventListener('input', () => {
+    render();
+    window.clearTimeout(searchTrackTimer);
+    searchTrackTimer = window.setTimeout(() => {
+      const query = analyticsText(searchEl.value, 120);
+      if (!query) {
+        lastTrackedSearchSignature = '';
+        return;
+      }
+      const signature = `${activeTag}|${query}|${filteredArticles().length}`;
+      if (signature === lastTrackedSearchSignature) return;
+      lastTrackedSearchSignature = signature;
+      trackAnalytics('blog_search', {
+        search_query: query,
+        active_tag: analyticsText(activeTag, 120),
+        visible_results: filteredArticles().length,
+        total_posts: allArticles.length
+      });
+    }, 320);
+  });
+
+  listEl?.addEventListener('click', (event) => {
+    const link = event.target.closest('.journal-open');
+    if (!link) return;
+    const articleId = String(link.dataset.id || '').trim();
+    const article = allArticles.find(item => item.id === articleId);
+    trackAnalytics('blog_post_open', {
+      post_id: analyticsText(articleId, 120),
+      label: analyticsText(article?.title || link.getAttribute('aria-label'), 160),
+      post_source: analyticsText(link.dataset.source, 80),
+      section: analyticsText(article?.section, 120)
+    });
+  });
 
   function getHashPostId() {
     const raw = (location.hash || '').replace(/^#/, '').trim();
@@ -541,7 +585,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 });
-
 
 
 

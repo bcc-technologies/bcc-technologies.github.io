@@ -1099,6 +1099,209 @@
   font-size: .74rem;
 }
 
+.analytics-toolbar{
+  align-items: flex-end;
+}
+
+.analytics-controls{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.analytics-range-field{
+  display: grid;
+  gap: 6px;
+}
+
+.analytics-range-field span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.analytics-range-field select{
+  min-width: 120px;
+}
+
+.analytics-metrics{
+  margin-bottom: 18px;
+}
+
+.analytics-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analytics-card{
+  min-width: 0;
+}
+
+.analytics-card-wide{
+  grid-column: 1 / -1;
+}
+
+.analytics-table-wrap{
+  margin-top: 14px;
+}
+
+.analytics-table td strong{
+  display: block;
+}
+
+.analytics-trend{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.analytics-trend-row{
+  display: grid;
+  gap: 8px;
+}
+
+.analytics-trend-copy{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.analytics-trend-copy strong{
+  font-size: .84rem;
+}
+
+.analytics-trend-copy small{
+  color: var(--ink-muted);
+  font-size: .76rem;
+}
+
+.analytics-trend-bars{
+  display: grid;
+  gap: 6px;
+}
+
+.analytics-bar{
+  display: block;
+  height: 10px;
+  min-width: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.analytics-bar.pageviews{
+  background: color-mix(in srgb, var(--accent) 78%, white);
+}
+
+.analytics-bar.actions{
+  background: color-mix(in srgb, #ff8d57 78%, white);
+}
+
+.analytics-domain-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.analytics-domain-card{
+  min-width: 0;
+}
+
+.analytics-domain-metrics{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.analytics-domain-metric{
+  display: grid;
+  gap: 4px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.analytics-domain-metric span{
+  color: var(--ink-muted);
+  font-size: .73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.analytics-domain-metric strong{
+  color: var(--ink-strong);
+  font-size: 1.2rem;
+  line-height: 1.05;
+}
+
+.analytics-domain-columns{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.analytics-domain-columns section{
+  min-width: 0;
+}
+
+.analytics-domain-columns h4{
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font-size: .78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.analytics-domain-list{
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytics-domain-list li{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.analytics-domain-list li:last-child{
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.analytics-domain-list span{
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: .84rem;
+  line-height: 1.35;
+}
+
+.analytics-domain-list strong{
+  flex: 0 0 auto;
+  color: var(--ink-strong);
+  font-size: .86rem;
+}
+
+.analytics-domain-empty{
+  padding: 14px 0 6px;
+  color: var(--ink-muted);
+  font-size: .82rem;
+}
+
 .access-drawer{
   width: min(460px, 100%);
   height: 100vh;
@@ -1534,7 +1737,7 @@
 
 .workspace-priority-strip{
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 14px;
   margin-bottom: 22px;
 }
@@ -2189,6 +2392,14 @@
   .activity-feed{
     grid-template-columns: 1fr;
   }
+
+  .analytics-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-domain-grid{
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 580px){
@@ -2207,6 +2418,20 @@
   .surface-filters select{
     flex: 1 1 155px;
     max-width: none;
+  }
+
+  .analytics-controls{
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .analytics-range-field{
+    flex: 1 1 100%;
+  }
+
+  .analytics-domain-metrics,
+  .analytics-domain-columns{
+    grid-template-columns: 1fr;
   }
 
   .surface-mobile-search{

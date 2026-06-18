@@ -627,6 +627,16 @@ async function bccApi(path, options = {}) {
     };
   }
 
+  if (path.startsWith("/api/admin/analytics/overview")) {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const requestUrl = new URL(path, window.location.origin);
+    const days = normalizeAnalyticsRange(requestUrl.searchParams.get("days"));
+    const { data, error } = await supabase.rpc("get_admin_analytics_dashboard", { range_days: days });
+    if (error) throw error;
+    return { ok: true, dashboard: normalizeAnalyticsDashboard(data, days) };
+  }
+
   const roleMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
   if (roleMatch && options.method === "PATCH") {
     const body = JSON.parse(options.body || "{}");
@@ -649,6 +659,108 @@ function normalizeAccessPayload(value) {
     role: payload.role || "client",
     staffRoles: normalizeList(payload.staffRoles, STAFF_ROLES),
     departments: normalizeList(payload.departments, DEPARTMENTS)
+  };
+}
+
+function normalizeAnalyticsRange(value) {
+  const parsed = Number.parseInt(String(value || "30"), 10);
+  if (!Number.isFinite(parsed)) return 30;
+  return Math.max(1, Math.min(parsed, 365));
+}
+
+function normalizeAnalyticsDashboard(value, fallbackDays = 30) {
+  const payload = value && typeof value === "object" ? value : {};
+  const totals = payload.totals && typeof payload.totals === "object" ? payload.totals : {};
+  const normalizeListItems = list => Array.isArray(list) ? list : [];
+  const normalizeDomainBlock = (block, config = {}) => {
+    const source = block && typeof block === "object" ? block : {};
+    const sourceTotals = source.totals && typeof source.totals === "object" ? source.totals : {};
+    const totalsOut = {};
+    (config.totalKeys || []).forEach(key => {
+      totalsOut[key] = Number(sourceTotals[key] || 0);
+    });
+    const listsOut = {};
+    Object.entries(config.listKeys || {}).forEach(([key, itemShape]) => {
+      listsOut[key] = normalizeListItems(source[key]).map(item => itemShape(item));
+    });
+    return { totals: totalsOut, ...listsOut };
+  };
+  return {
+    rangeDays: normalizeAnalyticsRange(payload.rangeDays || fallbackDays),
+    totals: {
+      pageViews: Number(totals.pageViews || 0),
+      uniqueVisitors: Number(totals.uniqueVisitors || 0),
+      engagedVisits: Number(totals.engagedVisits || 0),
+      contactSubmits: Number(totals.contactSubmits || 0),
+      quoteSignals: Number(totals.quoteSignals || 0),
+      ctaClicks: Number(totals.ctaClicks || 0)
+    },
+    daily: normalizeListItems(payload.daily).map(item => ({
+      day: String(item?.day || ""),
+      pageViews: Number(item?.pageViews || 0),
+      keyActions: Number(item?.keyActions || 0)
+    })),
+    topPages: normalizeListItems(payload.topPages).map(item => ({
+      pagePath: String(item?.pagePath || ""),
+      pageTitle: String(item?.pageTitle || ""),
+      views: Number(item?.views || 0)
+    })),
+    topEvents: normalizeListItems(payload.topEvents).map(item => ({
+      eventName: String(item?.eventName || ""),
+      total: Number(item?.total || 0)
+    })),
+    topCtas: normalizeListItems(payload.topCtas).map(item => ({
+      label: String(item?.label || ""),
+      targetPath: String(item?.targetPath || ""),
+      total: Number(item?.total || 0)
+    })),
+    domainBreakdowns: {
+      products: normalizeDomainBlock(payload.domainBreakdowns?.products, {
+        totalKeys: ["filterApplies", "compareAdds", "detailOpens", "ctaClicks"],
+        listKeys: {
+          topProducts: item => ({
+            label: String(item?.label || ""),
+            total: Number(item?.total || 0)
+          }),
+          topEvents: item => ({
+            eventName: String(item?.eventName || ""),
+            total: Number(item?.total || 0)
+          })
+        }
+      }),
+      blog: normalizeDomainBlock(payload.domainBreakdowns?.blog, {
+        totalKeys: ["searches", "tagFilters", "postOpens"],
+        listKeys: {
+          topPosts: item => ({
+            label: String(item?.label || ""),
+            total: Number(item?.total || 0)
+          }),
+          topSearches: item => ({
+            label: String(item?.label || ""),
+            total: Number(item?.total || 0)
+          })
+        }
+      }),
+      science: normalizeDomainBlock(payload.domainBreakdowns?.science, {
+        totalKeys: ["arxivFilters", "paperOpens", "deckOpens", "templateApplies"],
+        listKeys: {
+          topActions: item => ({
+            label: String(item?.label || ""),
+            total: Number(item?.total || 0)
+          }),
+          topEvents: item => ({
+            eventName: String(item?.eventName || ""),
+            total: Number(item?.total || 0)
+          })
+        }
+      })
+    },
+    recentSignals: normalizeListItems(payload.recentSignals).map(item => ({
+      eventName: String(item?.eventName || ""),
+      pagePath: String(item?.pagePath || ""),
+      createdAt: String(item?.createdAt || ""),
+      label: String(item?.label || "")
+    }))
   };
 }
 
