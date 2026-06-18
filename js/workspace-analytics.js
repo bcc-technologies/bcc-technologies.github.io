@@ -74,6 +74,7 @@
 
   let root = null;
   let rangeDays = 30;
+  const ANALYTICS_TIMEOUT_MS = 12000;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -210,6 +211,16 @@
   function setMessage(text) {
     const message = root.querySelector("[data-analytics-message]");
     if (message) message.textContent = text;
+  }
+
+  function withTimeout(promise, timeoutMs, message) {
+    let timerId = 0;
+    const timeoutPromise = new Promise((_, reject) => {
+      timerId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+      window.clearTimeout(timerId);
+    });
   }
 
   function renderEmptyRows(target, colspan, message) {
@@ -388,7 +399,11 @@
   async function loadAnalytics() {
     setMessage("Cargando métricas...");
     try {
-      const { dashboard } = await window.BCCAuth.api(`/api/admin/analytics/overview?days=${encodeURIComponent(rangeDays)}`);
+      const { dashboard } = await withTimeout(
+        window.BCCAuth.api(`/api/admin/analytics/overview?days=${encodeURIComponent(rangeDays)}`),
+        ANALYTICS_TIMEOUT_MS,
+        "Supabase no respondio a tiempo al cargar analytics."
+      );
       renderMetrics(dashboard.totals || {});
       renderTrend(dashboard.daily || []);
       renderTopPages(dashboard.topPages || []);
@@ -403,6 +418,9 @@
   }
 
   function analyticsError(error) {
+    if (/no respondio a tiempo|timeout/i.test(error.message || "")) {
+      return "Analytics tardo demasiado en responder. Revisa Supabase o intenta de nuevo.";
+    }
     if (/analytics_events|record_analytics_event|get_admin_analytics_dashboard|relation .* does not exist/i.test(error.message || "")) {
       return "Falta activar el esquema analytics en Supabase.";
     }
