@@ -15,9 +15,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceControls();
   bindWorkspaceViews();
   bindAccessModal();
-  window.BCCWorkspaceAnalytics?.init(user);
-    window.BCCWorkspaceProductivity?.init(user);
-    window.BCCWorkspaceForms?.init(user);
+  initializeWorkspaceModule("analytics", user);
+  initializeWorkspaceModule("productividad", user);
+  initializeWorkspaceModule("formularios", user);
   refreshIcons();
   await Promise.all([loadUsers(), loadAuditLogs()]);
 });
@@ -173,6 +173,7 @@ function bindWorkspaceViews() {
     });
     const activeView = views.find(view => view.id === nextId);
     if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
+    initializeWorkspaceModule(nextId, window.BCCAdminCurrentUser);
     document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
     window.scrollTo({ top: 0, behavior: "auto" });
   };
@@ -192,6 +193,64 @@ function bindWorkspaceViews() {
 
   window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
   showView(window.location.hash.slice(1));
+}
+
+function initializeWorkspaceModule(viewId, user) {
+  if (!user) return;
+  if (viewId === "analytics") {
+    mountWorkspaceModule({
+      rootSelector: "[data-analytics-workspace]",
+      module: window.BCCWorkspaceAnalytics,
+      key: "analytics",
+      loadingText: "Cargando analytics...",
+      errorText: "No fue posible cargar el modulo de analytics. Recarga la pagina."
+    }, user);
+    return;
+  }
+
+  if (viewId === "productividad") {
+    mountWorkspaceModule({
+      rootSelector: "[data-productivity-workspace]",
+      module: window.BCCWorkspaceProductivity,
+      key: "productividad",
+      loadingText: "Cargando productividad...",
+      errorText: "No fue posible cargar el modulo de productividad. Recarga la pagina."
+    }, user);
+    return;
+  }
+
+  if (viewId === "formularios") {
+    mountWorkspaceModule({
+      rootSelector: "[data-forms-workspace]",
+      module: window.BCCWorkspaceForms,
+      key: "formularios",
+      loadingText: "Cargando formularios...",
+      errorText: "No fue posible cargar el modulo de formularios. Recarga la pagina."
+    }, user);
+  }
+}
+
+function mountWorkspaceModule(config, user) {
+  const root = document.querySelector(config.rootSelector);
+  if (!root) return;
+  if (root.dataset.workspaceModuleReady === "true") return;
+
+  if (!config.module?.init) {
+    root.innerHTML = `<p class="muted-text">${escapeHtml(config.errorText)}</p>`;
+    return;
+  }
+
+  if (!root.textContent.trim()) {
+    root.innerHTML = `<p class="muted-text">${escapeHtml(config.loadingText)}</p>`;
+  }
+
+  try {
+    config.module.init(user);
+    root.dataset.workspaceModuleReady = "true";
+  } catch (error) {
+    console.error(`Failed to initialize workspace module: ${config.key}`, error);
+    root.innerHTML = `<p class="muted-text">${escapeHtml(config.errorText)}</p>`;
+  }
 }
 
 function applyQuickFilter(filter) {
