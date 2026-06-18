@@ -652,6 +652,22 @@ select{ cursor: pointer; }
   box-shadow: 0 0 0 4px rgba(237,70,36,0.12), 0 0 18px rgba(237,70,36,0.25);
 }
 
+.status .status-action{
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.status .status-action:hover{
+  color: var(--accent2);
+}
+
 .toolbar{
   padding: 11px 12px;
   display: flex;
@@ -1211,6 +1227,19 @@ body.posts-library-collapsed .posts-layout{
   box-shadow: var(--shadow);
   color: var(--text);
   display: none;
+}
+
+.toast a{
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  color: var(--good);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.toast a:hover{
+  text-decoration: underline;
 }
 
 @media (max-width: 1260px){

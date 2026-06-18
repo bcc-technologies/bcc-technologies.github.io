@@ -13,6 +13,26 @@ function toast(msg, ok = true) {
   setTimeout(() => (toastEl.style.display = "none"), 2400);
 }
 
+function toastLink(msg, href, label = "Ver workflow", ok = true) {
+  toastEl.innerHTML = "";
+  const text = document.createElement("span");
+  text.textContent = msg;
+  toastEl.appendChild(text);
+
+  if (href) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = label;
+    toastEl.appendChild(link);
+  }
+
+  toastEl.style.display = "block";
+  toastEl.style.borderColor = ok ? "rgba(86,255,166,0.35)" : "rgba(237,70,36,0.35)";
+  setTimeout(() => (toastEl.style.display = "none"), 5200);
+}
+
 function roleLabel(role) {
   return { client: "Cliente", staff: "Personal", admin: "Administrador" }[role] || role || "Usuario";
 }
@@ -126,7 +146,19 @@ async function webApi(path, opts = {}) {
   }
 
   if (path === "/api/git/publish") {
-    return { ok: true, message: "Guardado en Supabase. Ejecuta el workflow para regenerar HTML indexable." };
+    const payload = JSON.parse(String(opts.body || "{}"));
+    const message = String(payload.message || "").trim() || "Generate Supabase blog pages";
+    const { data, error } = await supabase.functions.invoke("publish-blog-now", {
+      body: { message }
+    });
+    if (error) throw error;
+    if (data?.ok === false) throw new Error(data.error || "No fue posible disparar el workflow.");
+    return {
+      ok: true,
+      message: data?.message || "Workflow disparado. GitHub generará el HTML del blog en breve.",
+      runUrl: data?.runUrl || "",
+      requestId: data?.requestId || ""
+    };
   }
 
   if (path === "/api/index") {
@@ -1264,32 +1296,26 @@ async function loadPost(id) {
   const p = INDEX.posts.find(x => x.id === id);
   if (!p) return;
 
-  currentPostId = p.id;
-  $("#postEditorHint").textContent = `Editando ${String(p.lang || "es").toUpperCase()}: ${p.id}`;
-
-  $("#postId").value = p.id;
-  $("#postTitle").value = p.title || "";
-  $("#postDate").value = p.date || "";
-  refreshSectionOptions(p.lang || "es");
-  $("#postSection").value = canonicalSection(p.section) || "Otros";
-  $("#postLang").value = (p.lang || "es");
-  $("#postTranslationId").value = (p.translationId || "");
-  $("#postTags").value = (p.tags || []).join(", ");
-  if ($("#postAuthors")) $("#postAuthors").value = (p.authorIds || p.authors || []).join(", ");
-  renderPostAuthorPicker();
-  if ($("#postReferences")) $("#postReferences").value = (p.referenceIds || p.references || []).join(", ");
-  if ($("#postResources")) $("#postResources").value = (p.resourceIds || p.resources || []).join(", ");
-  $("#postCover").value = p.cover || "";
-  $("#postExcerpt").value = p.excerpt || "";
-  if ($("#postPublished")) $("#postPublished").checked = p.isPublished !== false;
-
   const bodyRes = await api(`/api/posts/body?id=${encodeURIComponent(p.id)}`);
-  $("#postBody").value = bodyRes.body || "";
-  updateEditorDerivedViews();
-  refreshActiveLanguage(p.id);
-  refreshPostHeader();
+  const basePayload = {
+    id: p.id,
+    title: p.title || "",
+    date: p.date || "",
+    section: canonicalSection(p.section) || "Otros",
+    lang: p.lang || "es",
+    translationId: p.translationId || "",
+    tags: p.tags || [],
+    authorIds: p.authorIds || p.authors || [],
+    referenceIds: p.referenceIds || p.references || [],
+    resourceIds: p.resourceIds || p.resources || [],
+    cover: p.cover || "",
+    excerpt: p.excerpt || "",
+    body: bodyRes.body || "",
+    isPublished: p.isPublished !== false
+  };
+  applyPostPayload(basePayload, { schedule: false, draftStorageKey: draftKey(p.id) });
   setAutosaveStatus("clean", "Autosave listo");
-  checkForNewerLocalDraft(p.id);
+  restoreNewerLocalDraft(p.id, basePayload);
   requestAnimationFrame(syncEditorPanelHeights);
 }
 
@@ -1316,6 +1342,8 @@ function clearPostEditor() {
   refreshActiveLanguage("");
   refreshPostHeader();
   setAutosaveStatus("clean", "Autosave listo");
+  clearAutosaveRevertAction();
+  clearEditorSession();
   requestAnimationFrame(syncEditorPanelHeights);
 }
 
@@ -1330,6 +1358,7 @@ $("#btnNewPost").addEventListener("click", clearPostEditor);
 
 $("#btnSavePost").addEventListener("click", async () => {
   try {
+    const session = readEditorSession();
     const payload = {
       id: $("#postId").value.trim() || undefined,
       title: $("#postTitle").value.trim(),
@@ -1353,7 +1382,9 @@ $("#btnSavePost").addEventListener("click", async () => {
     });
 
     saveLocalSnapshot("guardado manual", { force: true, payload: { ...payload, id: r.id } });
+    clearAutosaveDraft("", session?.draftStorageKey || "");
     clearAutosaveDraft(r.id);
+    clearAutosaveRevertAction();
     toast(`Guardado: ${r.id}`);
     await refreshAll();
     await loadPost(r.id);
@@ -1370,6 +1401,8 @@ $("#btnDeletePost").addEventListener("click", async () => {
 
     await api("/api/posts/delete", { method: "POST", body: JSON.stringify({ id }) });
     toast("Eliminado");
+    clearAutosaveDraft(id);
+    clearAutosaveRevertAction();
     clearPostEditor();
     await refreshAll();
   } catch (e) {
@@ -2111,7 +2144,8 @@ $("#btnCollapseLibrary")?.addEventListener("click", () => {
 const EDITOR_STORE = {
   draftPrefix: "bccAdmin.draft.",
   historyPrefix: "bccAdmin.history.",
-  assets: "bccAdmin.assets"
+  assets: "bccAdmin.assets",
+  session: "bccAdmin.editorSession"
 };
 
 let autosaveTimer = null;
@@ -2141,6 +2175,25 @@ function storageRemove(key) {
   try { localStorage.removeItem(key); } catch (_e) {}
 }
 
+function persistEditorSession(options = {}) {
+  const payload = options.payload || collectPostPayload();
+  const draftStorageKey = options.draftStorageKey || draftKey(payload.id);
+  storageSet(EDITOR_STORE.session, {
+    postId: String(payload.id || "").trim(),
+    payload: payload.id ? null : payload,
+    draftStorageKey,
+    ts: Date.now()
+  });
+}
+
+function readEditorSession() {
+  return storageGet(EDITOR_STORE.session, null);
+}
+
+function clearEditorSession() {
+  storageRemove(EDITOR_STORE.session);
+}
+
 function stablePostKey(id = null) {
   const explicit = String(id || currentPostId || $("#postId")?.value || "").trim();
   if (explicit) return explicit;
@@ -2165,17 +2218,23 @@ function collectPostPayload() {
     resourceIds: parseTags($("#postResources")?.value || ""),
     excerpt: $("#postExcerpt")?.value.trim() || "",
     cover: $("#postCover")?.value.trim() || "",
-    body: $("#postBody")?.value || ""
+    body: $("#postBody")?.value || "",
+    isPublished: $("#postPublished")?.checked !== false
   };
 }
 
-function applyPostPayload(payload) {
+function applyPostPayload(payload, options = {}) {
   if (!payload) return;
+  currentPostId = payload.id || "";
+  $("#postEditorHint").textContent = currentPostId
+    ? `Editando ${String(payload.lang || "es").toUpperCase()}: ${currentPostId}`
+    : "Nueva entrada";
   $("#postId").value = payload.id || "";
   $("#postTitle").value = payload.title || "";
   $("#postDate").value = payload.date || "";
-  $("#postSection").value = payload.section || "Ensayos";
   $("#postLang").value = payload.lang || "es";
+  refreshSectionOptions(payload.lang || "es");
+  $("#postSection").value = canonicalSection(payload.section) || "Ensayos";
   $("#postTranslationId").value = payload.translationId || "";
   $("#postTags").value = (payload.tags || []).join(", ");
   if ($("#postAuthors")) $("#postAuthors").value = (payload.authorIds || payload.authors || []).join(", ");
@@ -2184,10 +2243,18 @@ function applyPostPayload(payload) {
   if ($("#postResources")) $("#postResources").value = (payload.resourceIds || payload.resources || []).join(", ");
   $("#postCover").value = payload.cover || "";
   $("#postExcerpt").value = payload.excerpt || "";
+  if ($("#postPublished")) $("#postPublished").checked = payload.isPublished !== false;
   $("#postBody").value = payload.body || "";
   updateEditorDerivedViews();
+  refreshActiveLanguage(currentPostId);
   refreshPostHeader();
-  scheduleAutosave({ immediate: true, reason: "restaurado" });
+  persistEditorSession({ payload, draftStorageKey: options.draftStorageKey });
+  if (options.schedule === false) {
+    lastAutosaveSignature = signatureForPayload(payload);
+    autosaveDirty = false;
+    return;
+  }
+  scheduleAutosave({ immediate: true, reason: options.reason || "restaurado" });
 }
 
 function signatureForPayload(payload) {
@@ -2212,9 +2279,11 @@ function saveLocalDraft(reason = "autosave") {
   }
   const now = Date.now();
   const record = { ts: now, reason, payload };
+  const storageKey = draftKey(payload.id);
   setAutosaveStatus("saving", "Guardando local…");
-  const ok = storageSet(draftKey(payload.id), record);
+  const ok = storageSet(storageKey, record);
   if (ok) {
+    persistEditorSession({ payload, draftStorageKey: storageKey });
     lastAutosaveSignature = sig;
     autosaveDirty = false;
     setAutosaveStatus("clean", `Autosave ${formatShortTime(now)}`);
@@ -2227,8 +2296,8 @@ function saveLocalDraft(reason = "autosave") {
   }
 }
 
-function clearAutosaveDraft(id = null) {
-  storageRemove(draftKey(id));
+function clearAutosaveDraft(id = null, explicitKey = "") {
+  storageRemove(explicitKey || draftKey(id));
 }
 
 function scheduleAutosave(opts = {}) {
@@ -2272,6 +2341,27 @@ function getLocalHistory(id = null) {
   return list;
 }
 
+function clearAutosaveRevertAction() {
+  $("#autosaveRevertAction")?.remove();
+}
+
+function setAutosaveRevertAction(label, handler) {
+  const status = $("#autosaveStatus");
+  if (!status) return;
+  clearAutosaveRevertAction();
+  const button = document.createElement("button");
+  button.className = "status-action";
+  button.id = "autosaveRevertAction";
+  button.type = "button";
+  button.textContent = label;
+  button.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    handler();
+  });
+  status.appendChild(button);
+}
+
 function formatShortTime(ts) {
   try { return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
   catch (_e) { return "ahora"; }
@@ -2289,15 +2379,60 @@ function textStats(text) {
   return { chars: s.length, words, headings, lines: s.split("\n").length };
 }
 
-function checkForNewerLocalDraft(id) {
+function restoreNewerLocalDraft(id, basePayload) {
   const draft = storageGet(draftKey(id), null);
-  if (!draft?.payload) return;
-  const currentSig = signatureForPayload(collectPostPayload());
+  if (!draft?.payload) {
+    clearAutosaveRevertAction();
+    return false;
+  }
+  const currentSig = signatureForPayload(basePayload || collectPostPayload());
   const draftSig = signatureForPayload(draft.payload);
   if (draftSig !== currentSig) {
-    setAutosaveStatus("dirty", "Draft local disponible");
-    toast("Hay un autosave local para esta entrada. Ábrelo en ↺ Historial.");
+    saveLocalSnapshot("snapshot servidor", { payload: basePayload, force: true });
+    applyPostPayload(draft.payload, { schedule: false, draftStorageKey: draftKey(id) });
+    setAutosaveStatus("dirty", "Draft local restaurado");
+    setAutosaveRevertAction("Revertir", () => {
+      saveLocalSnapshot("snapshot antes de revertir", { force: true });
+      clearAutosaveDraft(id, draftKey(id));
+      applyPostPayload(basePayload, { schedule: false });
+      setAutosaveStatus("clean", "Revertido al servidor");
+      clearAutosaveRevertAction();
+      toast("Se descartó el draft local y se restauró la versión guardada.");
+    });
+    toast("Se restauró automáticamente tu draft local.");
+    return true;
   }
+  clearAutosaveRevertAction();
+  return false;
+}
+
+async function restoreEditorSession() {
+  const session = readEditorSession();
+  if (!session) return false;
+
+  const persistedPostId = String(session.postId || "").trim();
+  if (persistedPostId && INDEX.posts.some(post => post.id === persistedPostId)) {
+    await loadPost(persistedPostId);
+    return true;
+  }
+
+  if (session.payload) {
+    applyPostPayload(session.payload, {
+      schedule: false,
+      draftStorageKey: session.draftStorageKey || draftKey(session.payload.id)
+    });
+    setAutosaveStatus("dirty", "Draft local restaurado");
+    setAutosaveRevertAction("Revertir", () => {
+      clearAutosaveDraft("", session.draftStorageKey || "");
+      clearEditorSession();
+      clearPostEditor();
+      toast("Se descartó el draft local.");
+    });
+    toast("Se restauró automáticamente tu borrador local.");
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -4232,8 +4367,12 @@ $("#btnDeleteService").addEventListener("click", async () => {
 $("#btnPublish").addEventListener("click", async () => {
   try {
     const msg = $("#commitMsg").value.trim() || "Update content";
-    await api("/api/git/publish", { method: "POST", body: JSON.stringify({ message: msg }) });
-    toast(CMS_RUNTIME === "web" ? "Guardado en Supabase. Genera HTML con el workflow." : "Publicado (push ok)");
+    const result = await api("/api/git/publish", { method: "POST", body: JSON.stringify({ message: msg }) });
+    if (CMS_RUNTIME === "web" && result?.runUrl) {
+      toastLink(result.message || "Workflow disparado para regenerar HTML.", result.runUrl);
+    } else {
+      toast(CMS_RUNTIME === "web" ? (result.message || "Workflow disparado para regenerar HTML.") : "Publicado (push ok)");
+    }
     $("#commitMsg").value = "";
     await refreshGitStatus();
   } catch (e) {
@@ -4257,7 +4396,6 @@ $("#btnRefresh").addEventListener("click", async () => {
     initUiToggles();
     await hydrateAccountMenu();
     await refreshAll();
-    clearPostEditor();
     clearProductEditor();
     clearServiceEditor();
     clearAuthorEditor();
@@ -4270,6 +4408,8 @@ $("#btnRefresh").addEventListener("click", async () => {
     initEditorialSuite();
     initTemplateTools();
     initHealthDashboard();
+    const restoredSession = await restoreEditorSession();
+    if (!restoredSession) clearPostEditor();
     renderHealthDashboard();
   } catch (e) {
     toast(`Error cargando: ${e.message}`, false);

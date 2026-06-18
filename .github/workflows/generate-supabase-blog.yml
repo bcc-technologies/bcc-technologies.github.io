@@ -2,6 +2,11 @@ name: Generate Supabase blog pages
 
 on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: "Motivo del disparo manual desde CMS"
+        required: false
+        type: string
   schedule:
     - cron: "17 * * * *"
 
