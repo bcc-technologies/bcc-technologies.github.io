@@ -111,7 +111,7 @@ set search_path = public, private
 as $$
 declare
   days integer := greatest(1, least(coalesce(range_days, 30), 365));
-  payload jsonb;
+  result_payload jsonb;
 begin
   if not private.is_admin() then
     raise exception 'Permiso insuficiente.';
@@ -223,7 +223,7 @@ begin
           limit 6
         ) ranked
       ), '[]'::jsonb)
-    ) as payload
+    ) as summary_payload
     from domain_events
     where domain = 'products'
   ),
@@ -268,7 +268,7 @@ begin
           limit 6
         ) ranked
       ), '[]'::jsonb)
-    ) as payload
+    ) as summary_payload
     from domain_events
     where domain = 'blog'
   ),
@@ -310,7 +310,7 @@ begin
           limit 6
         ) ranked
       ), '[]'::jsonb)
-    ) as payload
+    ) as summary_payload
     from domain_events
     where domain = 'science'
   ),
@@ -367,9 +367,9 @@ begin
       from top_ctas
     ), '[]'::jsonb),
     'domainBreakdowns', jsonb_build_object(
-      'products', coalesce((select payload from product_summary), jsonb_build_object('totals', jsonb_build_object(), 'topProducts', '[]'::jsonb, 'topEvents', '[]'::jsonb)),
-      'blog', coalesce((select payload from blog_summary), jsonb_build_object('totals', jsonb_build_object(), 'topPosts', '[]'::jsonb, 'topSearches', '[]'::jsonb)),
-      'science', coalesce((select payload from science_summary), jsonb_build_object('totals', jsonb_build_object(), 'topActions', '[]'::jsonb, 'topEvents', '[]'::jsonb))
+      'products', coalesce((select summary_payload from product_summary), jsonb_build_object('totals', jsonb_build_object(), 'topProducts', '[]'::jsonb, 'topEvents', '[]'::jsonb)),
+      'blog', coalesce((select summary_payload from blog_summary), jsonb_build_object('totals', jsonb_build_object(), 'topPosts', '[]'::jsonb, 'topSearches', '[]'::jsonb)),
+      'science', coalesce((select summary_payload from science_summary), jsonb_build_object('totals', jsonb_build_object(), 'topActions', '[]'::jsonb, 'topEvents', '[]'::jsonb))
     ),
     'recentSignals', coalesce((
       select jsonb_agg(jsonb_build_object(
@@ -381,9 +381,9 @@ begin
       from recent_signals
     ), '[]'::jsonb)
   )
-  into payload;
+  into result_payload;
 
-  return coalesce(payload, '{}'::jsonb);
+  return coalesce(result_payload, '{}'::jsonb);
 end;
 $$;
 
