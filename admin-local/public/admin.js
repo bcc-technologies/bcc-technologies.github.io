@@ -980,6 +980,28 @@ function renderPosts() {
   const langFilter = ($("#postsLangFilter")?.value || "").trim();
   const completenessFilter = ($("#postsCompletenessFilter")?.value || "").trim();
   const sort = ($("#postsSort")?.value || "date-desc").trim();
+  const allLocalDrafts = getLocalDraftEntries();
+  const visibleLocalDrafts = allLocalDrafts.filter(entry => {
+    const payload = entry.payload || {};
+    const hay = [
+      payload.title,
+      payload.translationId,
+      payload.section,
+      payload.date,
+      normalizeLang(payload.lang),
+      (payload.tags || []).join(" "),
+      payload.excerpt || "",
+      entry.localDraftId
+    ].join(" ").toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    if (sec && payload.section !== sec) return false;
+    const payloadLang = normalizeLang(payload.lang);
+    if (langFilter === "es" && payloadLang !== "es") return false;
+    if (langFilter === "en" && payloadLang !== "en") return false;
+    if (langFilter === "missing-es" || langFilter === "missing-en") return false;
+    if (completenessFilter === "complete") return false;
+    return true;
+  });
 
   let groups = allGroups.filter(([key, posts]) => {
     const completeness = postGroupCompleteness(posts);
@@ -999,8 +1021,41 @@ function renderPosts() {
   const count = $("#postsCount");
   if (count) {
     const visibleVersions = groups.reduce((acc, [, posts]) => acc + posts.length, 0);
-    count.textContent = `${groups.length}/${totalGroups} grupo(s) · ${visibleVersions}/${totalVersions} versión(es)`;
+    count.textContent = `${groups.length}/${totalGroups} grupo(s) · ${visibleVersions}/${totalVersions} versión(es) · ${visibleLocalDrafts.length}/${allLocalDrafts.length} borrador(es) locales`;
   }
+
+  const localDraftItems = visibleLocalDrafts.map(entry => {
+    const payload = entry.payload || {};
+    const isCurrent = !currentPostId && currentLocalDraftId === entry.localDraftId;
+    const title = String(payload.title || "").trim() || "(sin título)";
+    const excerpt = String(payload.excerpt || payload.body || "").trim();
+    return `
+      <div class="item entry-card post-group is-incomplete ${isCurrent ? "is-current" : ""}" data-local-draft="${escapeAttr(entry.localDraftId)}">
+        <div class="entry-card-main">
+          <div class="entry-title-row">
+            <div class="item-title" title="${escapeAttr(title)}">${escapeHtml(title)}</div>
+            <span class="entry-state is-warn">Draft local</span>
+          </div>
+          <div class="entry-meta-line">
+            <span>${escapeHtml(payload.section || "Ensayos")}</span>
+            <span>·</span>
+            <span>${escapeHtml(normalizeLang(payload.lang || "es").toUpperCase())}</span>
+            <span>·</span>
+            <span>${escapeHtml(formatShortTime(entry.ts))}</span>
+            <span>·</span>
+            <span class="entry-id" title="Borrador local">${escapeHtml(entry.localDraftId)}</span>
+          </div>
+          ${excerpt ? `<div class="entry-excerpt">${escapeHtml(excerpt.slice(0, 180))}</div>` : ""}
+          <div class="entry-lang-row">
+            <button class="entry-lang-chip is-active-lang" data-open-local-draft="${escapeAttr(entry.localDraftId)}" type="button" aria-label="Abrir borrador local" title="Abrir borrador local">DRAFT</button>
+          </div>
+        </div>
+        <div class="entry-quick-actions" aria-label="Acciones rápidas">
+          <button class="entry-mini-action" data-action="discard-draft" data-local-draft="${escapeAttr(entry.localDraftId)}" type="button" aria-label="Descartar borrador local" title="Descartar borrador local">✕</button>
+        </div>
+      </div>
+    `;
+  });
 
   const groupedItems = groups.map(([key, posts]) => {
     const main = postGroupMain(posts);
@@ -1059,7 +1114,7 @@ function renderPosts() {
   });
 
   const list = $("#postsList");
-  list.innerHTML = groupedItems.join("") || `<div class="entry-empty muted">No hay entradas con esos filtros.</div>`;
+  list.innerHTML = [...localDraftItems, ...groupedItems].join("") || `<div class="entry-empty muted">No hay entradas con esos filtros.</div>`;
 
   list.querySelectorAll(".lang-badge").forEach(btn => {
     btn.addEventListener("click", (ev) => {
@@ -1080,13 +1135,31 @@ function renderPosts() {
       ev.stopPropagation();
       const action = btn.dataset.action;
       const key = btn.dataset.group;
+      const localDraftId = btn.dataset.localDraft;
+      if (action === "discard-draft") {
+        if (!localDraftId || !window.confirm("¿Descartar este borrador local?")) return;
+        removeLocalDraftEntry(localDraftId);
+        if (!currentPostId && currentLocalDraftId === localDraftId) clearPostEditor();
+        renderPosts();
+        toast("Borrador local descartado.");
+        return;
+      }
       if (action === "copy-key") return copyTextToClipboard(key, "Grupo copiado");
       if (action === "duplicate") return duplicatePostDraftFromGroup(key);
     });
   });
 
+  list.querySelectorAll("[data-open-local-draft]").forEach(btn => {
+    btn.addEventListener("click", ev => {
+      ev.stopPropagation();
+      openLocalDraft(btn.dataset.openLocalDraft);
+    });
+  });
+
   list.querySelectorAll(".post-group").forEach(el => {
     el.addEventListener("click", () => {
+      const localDraftId = el.dataset.localDraft;
+      if (localDraftId) return openLocalDraft(localDraftId);
       const key = el.dataset.group;
       const posts = getPostGroup(key);
       const current = posts.find(p => p.id === currentPostId);
@@ -1117,7 +1190,9 @@ function collectPostDraftFromSource(source, overrides = {}) {
 }
 
 function applyPostDraft(payload, hint = "Nueva entrada") {
+  flushActiveEditorDraft("cambio de borrador");
   currentPostId = "";
+  currentLocalDraftId = String(payload.localDraftId || "").trim() || createLocalDraftId();
   $("#postEditorHint").textContent = hint;
   $("#postId").value = payload.id || "";
   $("#postTitle").value = payload.title || "";
@@ -1138,7 +1213,9 @@ function applyPostDraft(payload, hint = "Nueva entrada") {
   refreshActiveLanguage("");
   refreshPostHeader();
   setAutosaveStatus("dirty", "Borrador local");
+  persistEditorSession({ payload: collectPostPayload(), draftStorageKey: draftKey(currentLocalDraftId) });
   scheduleAutosave({ immediate: true, reason: "borrador preparado" });
+  renderPosts();
   requestAnimationFrame(syncEditorPanelHeights);
 }
 
@@ -1293,6 +1370,7 @@ function renderArticleAuthorshipPreview() {
 }
 
 async function loadPost(id) {
+  if (id !== currentPostId) flushActiveEditorDraft("cambio de entrada");
   const p = INDEX.posts.find(x => x.id === id);
   if (!p) return;
 
@@ -1320,6 +1398,7 @@ async function loadPost(id) {
 }
 
 function clearPostEditor() {
+  currentLocalDraftId = createLocalDraftId();
   currentPostId = "";
   $("#postEditorHint").textContent = "Nueva entrada";
   $("#postId").value = "";
@@ -1341,9 +1420,12 @@ function clearPostEditor() {
   updateEditorDerivedViews();
   refreshActiveLanguage("");
   refreshPostHeader();
+  lastAutosaveSignature = signatureForPayload(collectPostPayload());
+  autosaveDirty = false;
   setAutosaveStatus("clean", "Autosave listo");
   clearAutosaveRevertAction();
   clearEditorSession();
+  renderPosts();
   requestAnimationFrame(syncEditorPanelHeights);
 }
 
@@ -1354,7 +1436,10 @@ $("#postBody").addEventListener("input", handlePostBodyInput);
   $(sel)?.addEventListener("change", renderPosts);
 });
 
-$("#btnNewPost").addEventListener("click", clearPostEditor);
+$("#btnNewPost").addEventListener("click", () => {
+  flushActiveEditorDraft("nuevo borrador");
+  clearPostEditor();
+});
 
 $("#btnSavePost").addEventListener("click", async () => {
   try {
@@ -2155,6 +2240,7 @@ let lastSnapshotAt = 0;
 let selectedHistoryIndex = 0;
 let commandPaletteIndex = 0;
 let commandPaletteItems = [];
+let currentLocalDraftId = "";
 
 function safeJsonParse(raw, fallback) {
   try { return raw ? JSON.parse(raw) : fallback; }
@@ -2194,9 +2280,14 @@ function clearEditorSession() {
   storageRemove(EDITOR_STORE.session);
 }
 
+function createLocalDraftId() {
+  return `draft-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function stablePostKey(id = null) {
   const explicit = String(id || currentPostId || $("#postId")?.value || "").trim();
   if (explicit) return explicit;
+  if (currentLocalDraftId) return currentLocalDraftId;
   const title = String($("#postTitle")?.value || "untitled").trim().toLowerCase().replace(/\s+/g, "-").slice(0, 64) || "untitled";
   return `new-${title}`;
 }
@@ -2204,9 +2295,92 @@ function stablePostKey(id = null) {
 function draftKey(id = null) { return EDITOR_STORE.draftPrefix + stablePostKey(id); }
 function historyKey(id = null) { return EDITOR_STORE.historyPrefix + stablePostKey(id); }
 
+function hasMeaningfulPostContent(payload = collectPostPayload()) {
+  return Boolean(
+    String(payload.title || "").trim() ||
+    String(payload.excerpt || "").trim() ||
+    String(payload.body || "").trim() ||
+    String(payload.cover || "").trim() ||
+    (Array.isArray(payload.tags) && payload.tags.length) ||
+    (Array.isArray(payload.authorIds) && payload.authorIds.length) ||
+    (Array.isArray(payload.referenceIds) && payload.referenceIds.length) ||
+    (Array.isArray(payload.resourceIds) && payload.resourceIds.length)
+  );
+}
+
+function flushActiveEditorDraft(reason = "cambio de entrada") {
+  const payload = collectPostPayload();
+  const changed = autosaveDirty || signatureForPayload(payload) !== lastAutosaveSignature;
+  if (!hasMeaningfulPostContent(payload) || !changed) return false;
+  saveLocalDraft(reason);
+  return true;
+}
+
+function getLocalDraftEntries() {
+  const entries = [];
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(EDITOR_STORE.draftPrefix)) continue;
+      const record = storageGet(key, null);
+      if (!record?.payload || record.payload.id) continue;
+      const localDraftId = String(record.payload.localDraftId || key.slice(EDITOR_STORE.draftPrefix.length)).trim();
+      if (!localDraftId) continue;
+      entries.push({
+        key,
+        localDraftId,
+        ts: Number(record.ts || Date.now()),
+        reason: String(record.reason || "autosave local"),
+        payload: { ...record.payload, localDraftId }
+      });
+    }
+  } catch (_e) {
+    return [];
+  }
+  const deduped = new Map();
+  entries
+    .sort((left, right) => Number(right.ts || 0) - Number(left.ts || 0))
+    .forEach(entry => {
+      if (!deduped.has(entry.localDraftId)) deduped.set(entry.localDraftId, entry);
+    });
+  return [...deduped.values()];
+}
+
+function removeLocalDraftEntry(localDraftId) {
+  const cleanId = String(localDraftId || "").trim();
+  if (!cleanId) return;
+  clearAutosaveDraft("", draftKey(cleanId));
+  storageRemove(historyKey(cleanId));
+  const session = readEditorSession();
+  if (session?.draftStorageKey === draftKey(cleanId)) clearEditorSession();
+}
+
+function openLocalDraft(localDraftId) {
+  const cleanId = String(localDraftId || "").trim();
+  if (!cleanId) return;
+  flushActiveEditorDraft("cambio de borrador");
+  const record = storageGet(draftKey(cleanId), null);
+  if (!record?.payload) return toast("No encontré ese borrador local.", false);
+  applyPostPayload({ ...record.payload, localDraftId: cleanId }, {
+    schedule: false,
+    draftStorageKey: draftKey(cleanId)
+  });
+  setAutosaveStatus("dirty", "Borrador local restaurado");
+  setAutosaveRevertAction("Descartar", () => {
+    removeLocalDraftEntry(cleanId);
+    clearPostEditor();
+    renderPosts();
+    toast("Se descartó el borrador local.");
+  });
+  renderPosts();
+  toast("Borrador local cargado.");
+}
+
 function collectPostPayload() {
+  const savedId = $("#postId")?.value.trim() || currentPostId || "";
   return {
-    id: $("#postId")?.value.trim() || currentPostId || "",
+    id: savedId,
+    localDraftId: savedId ? "" : currentLocalDraftId,
     title: $("#postTitle")?.value.trim() || "",
     date: $("#postDate")?.value || "",
     section: $("#postSection")?.value || "Ensayos",
@@ -2226,6 +2400,7 @@ function collectPostPayload() {
 function applyPostPayload(payload, options = {}) {
   if (!payload) return;
   currentPostId = payload.id || "";
+  currentLocalDraftId = currentPostId ? "" : String(payload.localDraftId || "").trim() || createLocalDraftId();
   $("#postEditorHint").textContent = currentPostId
     ? `Editando ${String(payload.lang || "es").toUpperCase()}: ${currentPostId}`
     : "Nueva entrada";

@@ -28,12 +28,12 @@ on public.analytics_events (event_name, created_at desc);
 create index if not exists analytics_events_page_created_idx
 on public.analytics_events (page_path, created_at desc);
 
-create index if not exists analytics_events_internal_created_idx
-on public.analytics_events (is_internal, created_at desc);
-
 alter table public.analytics_events add column if not exists user_id uuid references auth.users(id) on delete set null;
 alter table public.analytics_events add column if not exists actor_role text not null default '';
 alter table public.analytics_events add column if not exists is_internal boolean not null default false;
+
+create index if not exists analytics_events_internal_created_idx
+on public.analytics_events (is_internal, created_at desc);
 
 do $$
 begin
