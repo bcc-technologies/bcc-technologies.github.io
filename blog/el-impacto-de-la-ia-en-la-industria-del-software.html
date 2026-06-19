@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem('bcc-theme');
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <title>El impacto de la IA en la industria del software | BCC Blog</title>
+  <meta name="description" content="Una cita popular de Henry Ford reza de este modo: El verdadero progreso ocurre cuando las ventajas de una nueva tecnología se convierten para todos en algo accesible En la industri" />
+  <meta name="bcc-lang-targets" content="es" />
+  <meta name="bcc-generated" content="blog-post" />
+  <!-- BCC-GENERATED: supabase-cms-post -->
+
+  <link rel="icon" type="image/png" href="/static/Favi2.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS system -->
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="/css/pages/new_blog.css">
+  <link rel="stylesheet" href="/css/pages/blog_post.css">
+
+  <link rel="canonical" href="https://bcctechnologies.com.do/blog/el-impacto-de-la-ia-en-la-industria-del-software.html">\n  <link rel="alternate" hreflang="es" href="https://bcctechnologies.com.do/blog/el-impacto-de-la-ia-en-la-industria-del-software.html">\n  
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="El impacto de la IA en la industria del software" />
+  <meta property="og:description" content="Una cita popular de Henry Ford reza de este modo: El verdadero progreso ocurre cuando las ventajas de una nueva tecnología se convierten para todos en algo accesible En la industri" />
+  <meta property="og:url" content="https://bcctechnologies.com.do/blog/el-impacto-de-la-ia-en-la-industria-del-software.html" />
+  
+  <meta property="article:published_time" content="2026-06-19T00:00:00.000Z" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"El impacto de la IA en la industria del software","description":"Una cita popular de Henry Ford reza de este modo: El verdadero progreso ocurre cuando las ventajas de una nueva tecnología se convierten para todos en algo accesible En la industri","datePublished":"2026-06-19T00:00:00.000Z","mainEntityOfPage":"https://bcctechnologies.com.do/blog/el-impacto-de-la-ia-en-la-industria-del-software.html","author":[{"@type":"Organization","name":"BCC Technologies"}]}</script>
+
+  <!-- Shared layout behavior -->
+  <script src="/js/layout.js" defer></script>
+  <script src="/js/nav.js" defer></script>
+  <script src="/js/prefs.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-container glass-panel-header">
+      <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primary-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+
+      <nav>
+        <a href="/" class="logo-link">
+          <span class="logo-text"><strong>BCC</strong></span>
+          <span class="logo-symbol"><strong>&there4;</strong></span>
+        </a>
+
+        <ul class="nav-links" id="primary-nav">
+          <li><a href="/aboutUs.html">Nosotros</a></li>
+          <li><a href="/products.html">Tecnología</a></li>
+          <li><a href="/science.html">Ciencia</a></li>
+          <li><a href="/services.html">Servicios</a></li>
+          <li><a href="/blog.html">Blog</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="/login.html" style="border-radius: 10%;">Ingresar</a>
+          <div class="nav-tools">
+            <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
+            <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+              </svg>
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="with-header-offset">
+    <section class="journal-hero post-hero">
+      <div class="container post-hero-inner">
+        <a class="post-back-minimal" href="/blog.html">← Volver al blog</a>
+
+        <h1 class="hero-title post-hero-title">El impacto de la IA en la industria del software</h1>
+        <p class="post-dek">Una cita popular de Henry Ford reza de este modo: El verdadero progreso ocurre cuando las ventajas de una nueva tecnología se convierten para todos en algo accesible En la industri</p>
+
+        <div class="post-hero-meta">
+          <span class="post-date">19 JUN 2026</span>
+          <span class="post-dot">&bull;</span>
+          <span class="post-readtime">3 min</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="journal-section">
+      <div class="container post-shell">
+        <article class="post-card glass">
+          
+
+          <div class="modal-article">
+          <div class="post-reader-layout">
+            <div class="modal-content"><p>Una cita popular de Henry Ford reza de este modo:</p><blockquote>El verdadero progreso ocurre cuando las ventajas de una nueva tecnología se convierten para todos en algo accesible</blockquote><p>En la industria del software, industria que en BCC consideramos una de las cosas más mágicas a la que un hombre puede dedicarse, esta frase podría servirnos para visualizar con nuevos ojos algo que llevamos ya un par de años vigilando con incertidumbre: la desaparición del código ahora llamado "artesanal" en pro de la programación con IA.</p><p>El gran aporte de Ford en su época fué la implementación de una cadena de producción que permitió eficientizar muchísimo la producción de automóviles reduciendo considerablemente el tiempo requerido y el grado de conocimiento que necesitaba cada empleado encargado de la producción del producto entonces artesanal (observe cuan directa resulta esta analogía).</p><p>Ahora tomemos los zapatos no de Ford sino del más gruñon de ingenieros y artesanos que se dedicaban a hacer completo un auto cada vez en su trabajo. ¿Qué pensamientos llegan a tu cabeza? Quizas alguno de los siguientes:</p><ol><li>Esta industria se caera en pedazos, maldito Ford, maldito sistema y maldita máquina, ahora un grupo de niños con menos de la mitad de mi experiencia se juntan para hacer cosas con menos calidad que lo que yo hacía pero en mucho menos tiempo ¡Eso no valdrá la pena!</li><li>Ya no me necesitan, los maestros como yo ya no son necesarios para esto, ahora solo contrataran niños y esa maldita máquina nos quitará nuestros empleos.</li><li>Con este ritmo la demanda se cubrirá dentro de nada y llenaremos a nuestros clientes con basura barata que hará innecesario seguir produciendo por un tiempo, toda la industria está condenada, las fabricas están condenadas.</li></ol><p>Ahora, miren a su alrededor y diganme si estas predicciones se cumplieron.</p><p>¿Por qué no murió la industria luego de eso?</p><p>Tiempo luego de haber implementado esta innovación más y más ingenieros eran contratados y tanto nuestro amigo gruñon como sus compañeros no perdieron sus empleos ¿Por qué?</p><p>Recuerden la frase del inicio de este artículo, la tecnología automovilistica se hizo disponible ahora para muchísimas más personas y por eso una explosión en demanda hizo crecer en lugar de caer la industria.</p><p>Es probable que usted sea uno de los beneficiarios de esta revolución, en cuyo caso me gustaría preguntarle: ¿Arma usted sus propio autos? O incluso ¿Cambia usted su propio aceite? O (y es dificil usar un ejemplo más sencillo que este) ¿Lo lava usted mismo?</p><p>Quizas su respuesta a alguna de las preguntas anteriores sera "sí" (o si es muy dedicado a esto como hobbie, o es parte de su trabajo, es posible que haya respondido "sí" a todas) pero ¿Cree usted que la mayoría de las personas que conoce pasaría todas esas preguntas sin al menos dos "no"? ¿Acaso la mayoría de sus conocidos respondería "sí" a al menos una de estas preguntas?</p><p>Que la mayoría de personas pueda ahora desarrollar software directamente con IA no quiere decir que lo harán, pero este sí se ha hecho mucho más accesible, barato y rápido de producir, por lo que ahora está más al alcance de la mayoría pedir software hecho a su medida.</p><p>Esto no es una catastrofe o colapso industrial, sino lo contrario, estamos en medio de uno de esos procesos que Ford bautizó como "verdadero progreso".</p><h2>Lo negativo</h2><p>No es, sin embargo, pertinente pecar de optimista ignorarando el martillo que acompaña a la miel de este "verdadero progreso".</p><p>La cadena de montaje sí degradó el trabajo artesanal y desplazó habilidades, ademas, hizo tareas repetitivas.</p><p>En un <a href="https://www.thehenryford.org/collections/explore/articles/fords-five-dollar-day" target="_blank" rel="noopener noreferrer">articulo</a> de la organización "The Henry Ford" se señala que el objetivo de la línea móvil fue tomar trabajo relativamente calificado y reducirlo a tareas simples y repetitivas; también menciona aburrimiento, ausentismo, renuncias y una rotación laboral de hasta 370%.</p></div>
+
+            <aside class="post-resource-rail" id="postResourceRail" aria-label="Recursos recomendados" data-open="false" hidden>
+              <button class="resource-rail-strip" id="resourceRailToggle" type="button" aria-expanded="false" aria-controls="resourceRailPanel">
+                <span class="resource-rail-dots" aria-hidden="true">⋯</span>
+                <span class="resource-rail-icon" aria-hidden="true">✦</span>
+                <span class="resource-rail-label">Profundizar</span>
+              </button>
+
+              <div class="resource-rail-panel glass" id="resourceRailPanel">
+                <div class="resource-panel-head">
+                  <div>
+                    <div class="resource-kicker">Recursos</div>
+                    <div class="resource-title">Para profundizar</div>
+                  </div>
+                  <button class="resource-panel-close" type="button" data-action="close-resources" aria-label="Cerrar recursos">×</button>
+                </div>
+                <div class="resource-list" id="resourceRailList"></div>
+              </div>
+            </aside>
+          </div>
+
+          
+          <section class="post-tags"><h2>Temas</h2><div class="tagrow"><span class="tagchip">Ensayos</span></div></section>
+          
+
+          <section class="post-resources-mobile" id="postResourcesMobile" aria-labelledby="postResourcesMobileTitle" hidden>
+            <div class="resource-kicker">Recursos</div>
+            <h2 class="resource-title" id="postResourcesMobileTitle">Para profundizar</h2>
+            <div class="resource-list" id="postResourcesMobileList"></div>
+          </section>
+
+          <script type="application/json" id="postResourcesData">[]</script>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/contactUs.html">Contacto</a>
+        <a class="pref-btn lang-switch" href="/en/blog.html" aria-label="Switch to English">EN</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+  <script data-bcc-resource-rail-core>
+    function initResourceRail(labels) {
+      var dataEl = document.getElementById("postResourcesData");
+      var rail = document.getElementById("postResourceRail");
+      var toggle = document.getElementById("resourceRailToggle");
+      var panel = document.getElementById("resourceRailPanel");
+      var railList = document.getElementById("resourceRailList");
+      var mobile = document.getElementById("postResourcesMobile");
+      var mobileList = document.getElementById("postResourcesMobileList");
+
+      if (!dataEl || !rail || !toggle || !panel || !railList || !mobile || !mobileList) return;
+
+      var raw = (dataEl.textContent || "").trim();
+      if (!raw || raw.indexOf("{{") === 0) return;
+
+      var payload;
+      try { payload = JSON.parse(raw); } catch (e) { return; }
+
+      var resources = Array.isArray(payload) ? payload : (payload.resources || []);
+      resources = resources.filter(function(r) { return r && (r.title || r.name); });
+      if (!resources.length) return;
+
+      function esc(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function normType(type) {
+        return String(type || "web").toLowerCase().trim();
+      }
+
+      function typeLabel(type) {
+        type = normType(type);
+        return labels.types[type] || labels.fallbackType;
+      }
+
+      function typeIcon(type) {
+        type = normType(type);
+        if (type === "music") return "♪";
+        if (type === "book") return "⌘";
+        if (type === "paper" || type === "article" || type === "thesis") return "§";
+        if (type === "tool" || type === "software") return "◇";
+        if (type === "service" || type === "product") return "∴";
+        if (type === "video") return "▶";
+        if (type === "podcast") return "◌";
+        if (type === "dataset") return "▦";
+        return "✦";
+      }
+
+      function resourceLinks(r) {
+        var links = [];
+        if (Array.isArray(r.links)) links = links.concat(r.links);
+        if (r.url) links.push({ label: r.linkLabel || labels.defaultLink, url: r.url });
+        if (r.spotify) links.push({ label: "Spotify", url: r.spotify });
+        if (r.youtube) links.push({ label: "YouTube", url: r.youtube });
+        if (r.doi) links.push({ label: "DOI", url: String(r.doi).startsWith("http") ? r.doi : "https://doi.org/" + r.doi });
+
+        return links.filter(function(l) { return l && l.url; }).map(function(l) {
+          return '<a class="resource-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label || labels.defaultLink) + '</a>';
+        }).join("");
+      }
+
+      function resourceHtml(r) {
+        var type = normType(r.type);
+        var title = r.title || r.name || labels.fallbackTitle;
+        var creator = r.creator || r.author || r.artist || r.source || r.publisher || "";
+        var year = r.year ? " · " + r.year : "";
+        var note = r.note || r.description || r.summary || "";
+        var links = resourceLinks(r);
+
+        return '' +
+          '<article class="resource-card resource-card-' + esc(type) + '">' +
+            '<div class="resource-card-icon" aria-hidden="true">' + esc(typeIcon(type)) + '</div>' +
+            '<div class="resource-card-main">' +
+              '<div class="resource-card-type">' + esc(typeLabel(type)) + '</div>' +
+              '<h3 class="resource-card-title">' + esc(title) + '</h3>' +
+              (creator ? '<div class="resource-card-sub">' + esc(creator + year) + '</div>' : '') +
+              (note ? '<p class="resource-card-note">' + esc(note) + '</p>' : '') +
+              (links ? '<div class="resource-card-links">' + links + '</div>' : '') +
+            '</div>' +
+          '</article>';
+      }
+
+      var html = resources.map(resourceHtml).join("");
+      railList.innerHTML = html;
+      mobileList.innerHTML = html;
+      rail.hidden = false;
+      mobile.hidden = false;
+      toggle.setAttribute("aria-label", labels.open);
+      toggle.setAttribute("aria-expanded", "false");
+
+      function setOpen(open) {
+        rail.dataset.open = open ? "true" : "false";
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      toggle.addEventListener("click", function() {
+        setOpen(rail.dataset.open !== "true");
+      });
+
+      rail.querySelectorAll('[data-action="close-resources"]').forEach(function(btn) {
+        btn.setAttribute("aria-label", labels.close);
+        btn.addEventListener("click", function() { setOpen(false); });
+      });
+
+      document.addEventListener("keydown", function(ev) {
+        if (ev.key === "Escape") setOpen(false);
+      });
+    }
+  </script>
+  <script data-bcc-resource-rail>
+    (function() {
+      var labels = {
+        fallbackTitle: "Recurso recomendado",
+        fallbackType: "Recurso",
+        open: "Abrir recursos recomendados",
+        close: "Cerrar recursos",
+        defaultLink: "Abrir",
+        types: {
+          book: "Lectura",
+          article: "Artículo",
+          paper: "Paper",
+          thesis: "Tesis",
+          report: "Reporte",
+          dataset: "Dataset",
+          tool: "Herramienta",
+          software: "Software",
+          service: "Servicio",
+          product: "Producto",
+          music: "Resonancia",
+          video: "Video",
+          podcast: "Podcast",
+          web: "Web"
+        }
+      };
+      initResourceRail(labels);
+    })();
+  </script>
+  <script data-bcc-post-hero>
+    (function initPostHeroDek(){
+      var btn = document.querySelector("[data-post-title-toggle]");
+      if (!btn) return;
+      var panel = document.getElementById(btn.getAttribute("aria-controls"));
+      if (!panel) return;
+
+      btn.addEventListener("click", function(){
+        var open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", String(!open));
+        panel.dataset.open = String(!open);
+      });
+    })();
+  </script>
+
+</body>
+</html>
+
+
+
