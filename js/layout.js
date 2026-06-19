@@ -14,6 +14,9 @@
   const SESSION_ONCE_PREFIX = "bcc-analytics-once:";
   let ticking = false;
   let supabaseConfigPromise = null;
+  let supabaseJsPromise = null;
+  let analyticsSupabaseClientPromise = null;
+  let analyticsIdentityPromise = null;
 
   function updateTopState() {
     const atTop = (window.scrollY || window.pageYOffset || 0) <= THRESHOLD_PX;
@@ -125,11 +128,13 @@
     setStorage(window.sessionStorage, sessionOnceKey(key), "1");
   }
 
-  function ensurePlausible() {
+  async function ensurePlausible() {
     if (!CONFIG.enabled || document.querySelector('script[data-bcc-plausible="true"]')) return;
     window.plausible = window.plausible || function plausibleProxy() {
       (window.plausible.q = window.plausible.q || []).push(arguments);
     };
+    const identity = await resolveAnalyticsIdentity();
+    if (identity.isInternal) return;
     const script = document.createElement("script");
     script.defer = true;
     script.dataset.domain = CONFIG.plausibleDomain;
@@ -158,17 +163,91 @@
     return supabaseConfigPromise;
   }
 
+  function loadSupabaseJs() {
+    if (window.supabase?.createClient) return Promise.resolve(window.supabase);
+    if (supabaseJsPromise) return supabaseJsPromise;
+    supabaseJsPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-bcc-supabase-js="true"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.supabase), { once: true });
+        existing.addEventListener("error", () => reject(new Error("No se pudo cargar Supabase JS.")), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.async = true;
+      script.dataset.bccSupabaseJs = "true";
+      script.onload = () => resolve(window.supabase);
+      script.onerror = () => reject(new Error("No se pudo cargar Supabase JS."));
+      document.head.appendChild(script);
+    });
+    return supabaseJsPromise;
+  }
+
+  async function loadAnalyticsSupabaseClient() {
+    if (window.BCCAuth?.loadSupabaseClient) {
+      return window.BCCAuth.loadSupabaseClient();
+    }
+    if (window.BCCAnalyticsSupabaseClient) return window.BCCAnalyticsSupabaseClient;
+    if (analyticsSupabaseClientPromise) return analyticsSupabaseClientPromise;
+    analyticsSupabaseClientPromise = Promise.all([loadSupabaseConfig(), loadSupabaseJs()]).then(([config]) => {
+      if (!config?.url || !config?.anonKey || !window.supabase?.createClient) {
+        throw new Error("No fue posible inicializar Supabase para analytics.");
+      }
+      window.BCCAnalyticsSupabaseClient = window.supabase.createClient(
+        config.url,
+        config.anonKey,
+        { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+      );
+      return window.BCCAnalyticsSupabaseClient;
+    });
+    return analyticsSupabaseClientPromise;
+  }
+
+  async function resolveAnalyticsIdentity() {
+    if (analyticsIdentityPromise) return analyticsIdentityPromise;
+    analyticsIdentityPromise = (async () => {
+      try {
+        const supabase = await loadAnalyticsSupabaseClient();
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData?.session || null;
+        const accessToken = safeTrim(session?.access_token, 4096);
+        const userId = safeTrim(session?.user?.id, 80);
+        if (!accessToken || !userId) {
+          return { accessToken: "", userId: "", role: "", isInternal: false };
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userId)
+          .maybeSingle();
+        const role = safeTrim(profile?.role || "client", 20).toLowerCase();
+        return {
+          accessToken,
+          userId,
+          role,
+          isInternal: role === "staff" || role === "admin"
+        };
+      } catch (_error) {
+        return { accessToken: "", userId: "", role: "", isInternal: false };
+      }
+    })();
+    return analyticsIdentityPromise;
+  }
+
   async function postSupabaseEvent(payload) {
     try {
       const config = await loadSupabaseConfig();
       if (!config?.url || !config?.anonKey) return;
+      const identity = await resolveAnalyticsIdentity();
+      const authToken = identity.accessToken || config.anonKey;
       await fetch(`${config.url}/rest/v1/rpc/record_analytics_event`, {
         method: "POST",
         keepalive: true,
         headers: {
           "Content-Type": "application/json",
           apikey: config.anonKey,
-          Authorization: `Bearer ${config.anonKey}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify(payload)
       });
@@ -186,6 +265,14 @@
     return props;
   }
 
+  function sendPlausibleEvent(eventName, metadata = {}) {
+    void resolveAnalyticsIdentity().then(identity => {
+      if (identity.isInternal || typeof window.plausible !== "function") return;
+      const props = plausibleProps(metadata);
+      window.plausible(eventName, Object.keys(props).length ? { props } : undefined);
+    });
+  }
+
   function track(eventName, metadata = {}, options = {}) {
     if (!CONFIG.enabled) return;
     const cleanEvent = safeTrim(eventName, 80).replace(/\s+/g, "_").toLowerCase();
@@ -200,9 +287,8 @@
       ...metadata
     });
 
-    if (typeof window.plausible === "function" && options.plausible !== false) {
-      const props = plausibleProps(normalizedMetadata);
-      window.plausible(cleanEvent, Object.keys(props).length ? { props } : undefined);
+    if (options.plausible !== false) {
+      sendPlausibleEvent(cleanEvent, normalizedMetadata);
     }
 
     if (options.supabase === false) return;
@@ -361,7 +447,7 @@
 
   function initAnalytics() {
     if (!CONFIG.enabled || document.body?.dataset.analytics === "off") return;
-    ensurePlausible();
+    void ensurePlausible();
     trackPageView();
     trackEngagedVisit();
     trackScrollDepth();

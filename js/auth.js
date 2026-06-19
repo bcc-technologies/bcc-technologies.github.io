@@ -944,7 +944,32 @@ function normalizeAnalyticsDashboard(value, fallbackDays = 30) {
       pagePath: String(item?.pagePath || ""),
       createdAt: String(item?.createdAt || ""),
       label: String(item?.label || "")
-    }))
+    })),
+    internalActivity: {
+      totals: {
+        events: Number(payload.internalActivity?.totals?.events || 0),
+        activeUsers: Number(payload.internalActivity?.totals?.activeUsers || 0),
+        adminEvents: Number(payload.internalActivity?.totals?.adminEvents || 0),
+        staffEvents: Number(payload.internalActivity?.totals?.staffEvents || 0)
+      },
+      topPages: normalizeListItems(payload.internalActivity?.topPages).map(item => ({
+        pagePath: String(item?.pagePath || ""),
+        pageTitle: String(item?.pageTitle || ""),
+        views: Number(item?.views || 0)
+      })),
+      topEvents: normalizeListItems(payload.internalActivity?.topEvents).map(item => ({
+        eventName: String(item?.eventName || ""),
+        total: Number(item?.total || 0)
+      })),
+      recentActivity: normalizeListItems(payload.internalActivity?.recentActivity).map(item => ({
+        eventName: String(item?.eventName || ""),
+        actorRole: String(item?.actorRole || ""),
+        pagePath: String(item?.pagePath || ""),
+        pageTitle: String(item?.pageTitle || ""),
+        createdAt: String(item?.createdAt || ""),
+        label: String(item?.label || "")
+      }))
+    }
   };
 }
 

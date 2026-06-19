@@ -109,6 +109,13 @@
     });
   }
 
+  function actorRoleLabel(role) {
+    if (role === "admin") return "Admin";
+    if (role === "staff") return "Staff";
+    if (role === "client") return "Cliente";
+    return "Interno";
+  }
+
   function renderShell() {
     root.innerHTML = `
       <section class="users-surface analytics-surface">
@@ -196,6 +203,52 @@
               <span data-analytics-recent-count>0</span>
             </div>
             <ol class="activity-feed" data-analytics-recent></ol>
+          </article>
+        </section>
+        <section class="analytics-grid">
+          <article class="activity-surface analytics-card analytics-card-wide">
+            <div class="activity-head">
+              <h3>Actividad interna</h3>
+              <span data-analytics-internal-count>0</span>
+            </div>
+            <div class="analytics-domain-metrics" data-analytics-internal-metrics></div>
+          </article>
+          <article class="activity-surface analytics-card">
+            <div class="activity-head">
+              <h3>Páginas internas</h3>
+              <span data-analytics-internal-pages-count>0</span>
+            </div>
+            <div class="table-scroll analytics-table-wrap">
+              <table class="account-table analytics-table">
+                <thead>
+                  <tr><th>Página</th><th>Views</th></tr>
+                </thead>
+                <tbody data-analytics-internal-pages></tbody>
+              </table>
+            </div>
+          </article>
+          <article class="activity-surface analytics-card">
+            <div class="activity-head">
+              <h3>Eventos internos</h3>
+              <span data-analytics-internal-events-count>0</span>
+            </div>
+            <div class="table-scroll analytics-table-wrap">
+              <table class="account-table analytics-table">
+                <thead>
+                  <tr><th>Evento</th><th>Total</th></tr>
+                </thead>
+                <tbody data-analytics-internal-events></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+        <section class="analytics-grid">
+          <article class="activity-surface analytics-card analytics-card-wide">
+            <div class="activity-head">
+              <h3>Recientes internos</h3>
+              <span data-analytics-internal-recent-count>0</span>
+            </div>
+            <ol class="activity-feed" data-analytics-internal-recent></ol>
           </article>
         </section>
       </section>
@@ -396,6 +449,82 @@
     }).join("");
   }
 
+  function renderInternalActivity(internalActivity) {
+    const metricsTarget = root.querySelector("[data-analytics-internal-metrics]");
+    const metricsBadge = root.querySelector("[data-analytics-internal-count]");
+    const pagesTarget = root.querySelector("[data-analytics-internal-pages]");
+    const pagesBadge = root.querySelector("[data-analytics-internal-pages-count]");
+    const eventsTarget = root.querySelector("[data-analytics-internal-events]");
+    const eventsBadge = root.querySelector("[data-analytics-internal-events-count]");
+    const recentTarget = root.querySelector("[data-analytics-internal-recent]");
+    const recentBadge = root.querySelector("[data-analytics-internal-recent-count]");
+    if (!metricsTarget || !pagesTarget || !eventsTarget || !recentTarget) return;
+
+    const totals = internalActivity?.totals || {};
+    const topPages = Array.isArray(internalActivity?.topPages) ? internalActivity.topPages : [];
+    const topEvents = Array.isArray(internalActivity?.topEvents) ? internalActivity.topEvents : [];
+    const recentActivity = Array.isArray(internalActivity?.recentActivity) ? internalActivity.recentActivity : [];
+
+    if (metricsBadge) metricsBadge.textContent = number(totals.events || 0);
+    metricsTarget.innerHTML = [
+      { label: "Eventos internos", value: number(totals.events || 0) },
+      { label: "Usuarios activos", value: number(totals.activeUsers || 0) },
+      { label: "Eventos admin", value: number(totals.adminEvents || 0) },
+      { label: "Eventos staff", value: number(totals.staffEvents || 0) }
+    ].map(item => `
+      <div class="analytics-domain-metric">
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(item.value)}</strong>
+      </div>
+    `).join("");
+
+    if (pagesBadge) pagesBadge.textContent = String(topPages.length);
+    if (!topPages.length) {
+      renderEmptyRows(pagesTarget, 2, "Sin navegación interna registrada.");
+    } else {
+      pagesTarget.innerHTML = topPages.map(item => `
+        <tr>
+          <td data-label="Página">
+            <strong>${escapeHtml(item.pageTitle || compactPath(item.pagePath))}</strong>
+            <span>${escapeHtml(compactPath(item.pagePath))}</span>
+          </td>
+          <td data-label="Views">${number(item.views)}</td>
+        </tr>
+      `).join("");
+    }
+
+    if (eventsBadge) eventsBadge.textContent = String(topEvents.length);
+    if (!topEvents.length) {
+      renderEmptyRows(eventsTarget, 2, "Sin eventos internos todavía.");
+    } else {
+      eventsTarget.innerHTML = topEvents.map(item => `
+        <tr>
+          <td data-label="Evento">
+            <strong>${escapeHtml(eventLabel(item.eventName))}</strong>
+            <span>${escapeHtml(item.eventName)}</span>
+          </td>
+          <td data-label="Total">${number(item.total)}</td>
+        </tr>
+      `).join("");
+    }
+
+    if (recentBadge) recentBadge.textContent = String(recentActivity.length);
+    if (!recentActivity.length) {
+      recentTarget.innerHTML = `<li><div><p class="muted-text">Todavía no hay actividad interna reciente.</p></div></li>`;
+      return;
+    }
+    recentTarget.innerHTML = recentActivity.map(item => `
+      <li>
+        <span class="activity-dot"></span>
+        <div>
+          <strong>${escapeHtml(eventLabel(item.eventName))}</strong>
+          <p>${escapeHtml(item.label || item.pageTitle || compactPath(item.pagePath))}</p>
+          <small>${escapeHtml(actorRoleLabel(item.actorRole))} · ${escapeHtml(compactPath(item.pagePath))} · ${escapeHtml(formatDate(item.createdAt))}</small>
+        </div>
+      </li>
+    `).join("");
+  }
+
   async function loadAnalytics() {
     setMessage("Cargando métricas...");
     try {
@@ -411,6 +540,7 @@
       renderTopCtas(dashboard.topCtas || []);
       renderDomainBreakdowns(dashboard.domainBreakdowns || {});
       renderRecent(dashboard.recentSignals || []);
+      renderInternalActivity(dashboard.internalActivity || {});
       setMessage(`Mostrando ${dashboard.rangeDays} día(s) de señales web y eventos frontend.`);
     } catch (error) {
       setMessage(analyticsError(error));

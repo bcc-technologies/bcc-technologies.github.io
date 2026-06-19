@@ -3,6 +3,9 @@ create table if not exists public.analytics_events (
   created_at timestamptz not null default now(),
   event_name text not null check (char_length(btrim(event_name)) between 1 and 80),
   event_source text not null default 'frontend' check (event_source in ('frontend', 'plausible', 'system')),
+  user_id uuid references auth.users(id) on delete set null,
+  actor_role text not null default '' check (actor_role in ('', 'client', 'staff', 'admin')),
+  is_internal boolean not null default false,
   session_id text not null check (char_length(session_id) between 8 and 120),
   visitor_id text not null check (char_length(visitor_id) between 8 and 120),
   page_path text not null default '/' check (char_length(page_path) <= 240 and left(page_path, 1) = '/'),
@@ -24,6 +27,27 @@ on public.analytics_events (event_name, created_at desc);
 
 create index if not exists analytics_events_page_created_idx
 on public.analytics_events (page_path, created_at desc);
+
+create index if not exists analytics_events_internal_created_idx
+on public.analytics_events (is_internal, created_at desc);
+
+alter table public.analytics_events add column if not exists user_id uuid references auth.users(id) on delete set null;
+alter table public.analytics_events add column if not exists actor_role text not null default '';
+alter table public.analytics_events add column if not exists is_internal boolean not null default false;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'analytics_events_actor_role_check'
+  ) then
+    alter table public.analytics_events
+      add constraint analytics_events_actor_role_check
+      check (actor_role in ('', 'client', 'staff', 'admin'));
+  end if;
+end;
+$$;
 
 alter table public.analytics_events enable row level security;
 
@@ -57,10 +81,28 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  actor_user_id uuid := auth.uid();
+  actor_role_value text := '';
+  actor_is_internal boolean := false;
 begin
+  if actor_user_id is not null then
+    select coalesce(nullif(lower(trim(role)), ''), 'client')
+      into actor_role_value
+    from public.profiles
+    where id = actor_user_id
+    limit 1;
+
+    actor_role_value := coalesce(actor_role_value, 'client');
+    actor_is_internal := actor_role_value in ('staff', 'admin');
+  end if;
+
   insert into public.analytics_events (
     event_name,
     event_source,
+    user_id,
+    actor_role,
+    is_internal,
     session_id,
     visitor_id,
     page_path,
@@ -79,6 +121,9 @@ begin
       when event_source in ('frontend', 'plausible', 'system') then event_source
       else 'frontend'
     end,
+    actor_user_id,
+    actor_role_value,
+    actor_is_internal,
     left(trim(coalesce(session_id, 'session-missing')), 120),
     left(trim(coalesce(visitor_id, 'visitor-missing')), 120),
     case
@@ -121,6 +166,13 @@ begin
     select *
     from public.analytics_events
     where created_at >= now() - make_interval(days => days)
+      and coalesce(is_internal, false) = false
+  ),
+  recent_internal as (
+    select *
+    from public.analytics_events
+    where created_at >= now() - make_interval(days => days)
+      and coalesce(is_internal, false) = true
   ),
   daily_days as (
     select generate_series(
@@ -324,6 +376,39 @@ begin
     where event_name in ('contact_submit', 'quote_cta_click', 'quote_option_select', 'contact_cta_click', 'cta_click', 'email_click', 'phone_click', 'whatsapp_click', 'form_submit', 'outbound_click')
     order by created_at desc
     limit 12
+  ),
+  internal_top_pages as (
+    select
+      page_path,
+      max(nullif(page_title, '')) as page_title,
+      count(*)::integer as views
+    from recent_internal
+    where event_name = 'page_view'
+    group by page_path
+    order by views desc, page_path asc
+    limit 8
+  ),
+  internal_top_events as (
+    select
+      event_name,
+      count(*)::integer as total
+    from recent_internal
+    where event_name <> 'page_view'
+    group by event_name
+    order by total desc, event_name asc
+    limit 8
+  ),
+  internal_recent_activity as (
+    select
+      event_name,
+      actor_role,
+      page_path,
+      page_title,
+      created_at,
+      coalesce(nullif(metadata->>'label', ''), nullif(metadata->>'form_name', ''), nullif(metadata->>'section', ''), page_path) as label
+    from recent_internal
+    order by created_at desc
+    limit 12
   )
   select jsonb_build_object(
     'rangeDays', days,
@@ -379,7 +464,41 @@ begin
         'label', label
       ) order by created_at desc)
       from recent_signals
-    ), '[]'::jsonb)
+    ), '[]'::jsonb),
+    'internalActivity', jsonb_build_object(
+      'totals', jsonb_build_object(
+        'events', coalesce((select count(*) from recent_internal), 0),
+        'activeUsers', coalesce((select count(distinct user_id) from recent_internal where user_id is not null), 0),
+        'adminEvents', coalesce((select count(*) from recent_internal where actor_role = 'admin'), 0),
+        'staffEvents', coalesce((select count(*) from recent_internal where actor_role = 'staff'), 0)
+      ),
+      'topPages', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'pagePath', page_path,
+          'pageTitle', coalesce(page_title, ''),
+          'views', views
+        ) order by views desc, page_path asc)
+        from internal_top_pages
+      ), '[]'::jsonb),
+      'topEvents', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'eventName', event_name,
+          'total', total
+        ) order by total desc, event_name asc)
+        from internal_top_events
+      ), '[]'::jsonb),
+      'recentActivity', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'eventName', event_name,
+          'actorRole', actor_role,
+          'pagePath', page_path,
+          'pageTitle', coalesce(page_title, ''),
+          'createdAt', created_at,
+          'label', label
+        ) order by created_at desc)
+        from internal_recent_activity
+      ), '[]'::jsonb)
+    )
   )
   into result_payload;
 
