@@ -847,6 +847,7 @@ function initEditorResizeSync() {
 
 // ---- Load
 async function refreshAll() {
+  pruneLegacyLocalDrafts();
   const { index } = await api("/api/index");
   INDEX = normalizeIndex(index);
 
@@ -2324,8 +2325,9 @@ function getLocalDraftEntries() {
       if (!key || !key.startsWith(EDITOR_STORE.draftPrefix)) continue;
       const record = storageGet(key, null);
       if (!record?.payload || record.payload.id) continue;
-      const localDraftId = String(record.payload.localDraftId || key.slice(EDITOR_STORE.draftPrefix.length)).trim();
+      const localDraftId = String(record.payload.localDraftId || "").trim();
       if (!localDraftId) continue;
+      if (!hasMeaningfulPostContent(record.payload)) continue;
       entries.push({
         key,
         localDraftId,
@@ -2344,6 +2346,26 @@ function getLocalDraftEntries() {
       if (!deduped.has(entry.localDraftId)) deduped.set(entry.localDraftId, entry);
     });
   return [...deduped.values()];
+}
+
+function pruneLegacyLocalDrafts() {
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(EDITOR_STORE.draftPrefix)) continue;
+      const record = storageGet(key, null);
+      const payload = record?.payload;
+      if (!payload || payload.id) continue;
+      const localDraftId = String(payload.localDraftId || "").trim();
+      if (!localDraftId || !hasMeaningfulPostContent(payload)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(storageRemove);
+  } catch (_e) {
+    // Ignore localStorage cleanup failures.
+  }
 }
 
 function removeLocalDraftEntry(localDraftId) {
