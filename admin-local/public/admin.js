@@ -114,10 +114,13 @@ function normalizeWebPost(row) {
 }
 
 function postPayloadForSupabase(payload) {
-  const id = String(payload.id || slugifyId(payload.title || "post")).trim();
+  const explicitId = String(payload.id || "").trim();
+  const title = String(payload.title || "").trim();
+  const localDraftId = String(payload.localDraftId || "").trim();
+  const id = explicitId || slugifyId(title || localDraftId || "post");
   return {
     id,
-    title: String(payload.title || "").trim(),
+    title,
     date: payload.date || null,
     section: String(payload.section || "").trim(),
     lang: String(payload.lang || "es").toLowerCase() === "en" ? "en" : "es",
@@ -725,15 +728,31 @@ function refreshPostHeader() {
   const section = $("#postSection")?.value || "Ensayos";
   const date = $("#postDate")?.value || "sin fecha";
   const id = ($("#postId")?.value || "").trim();
+  const identity = currentEditorIdentity();
   const translationKey = getCurrentTranslationKey();
   const group = getCurrentTranslationGroup();
   const availableLangs = new Set(group.map(p => String(p.lang || "es").toLowerCase()));
+  const chips = $("#postMetaChips");
 
   const summary = $("#postMetaSummary");
   if (summary) {
     const idPart = id ? ` · ${id}` : "";
     const translationPart = translationKey && translationKey !== id ? ` · grupo ${translationKey}` : "";
     summary.textContent = `${section} · ${lang.toUpperCase()} · ${date}${idPart}${translationPart}`;
+  }
+
+  if (chips) {
+    const payload = collectPostPayload();
+    const hasSavedId = Boolean(id);
+    const isPublished = $("#postPublished")?.checked !== false;
+    const stateChip = hasSavedId
+      ? `<span class="doc-meta-chip ${isPublished ? "is-published" : "is-saved"}">${isPublished ? "Estado" : "Guardado"}<strong>${isPublished ? "Publicado" : "Guardado"}</strong></span>`
+      : `<span class="doc-meta-chip is-draft">Estado<strong>Draft local</strong></span>`;
+    const idChip = `<span class="doc-meta-chip ${hasSavedId ? "is-saved" : "is-draft"}">${hasSavedId ? "ID" : "ID provisional"}<strong>${escapeHtml(identity || "pendiente")}</strong></span>`;
+    const dirtyChip = autosaveDirty || signatureForPayload(payload) !== lastAutosaveSignature
+      ? `<span class="doc-meta-chip is-dirty">Cambios<strong>Locales pendientes</strong></span>`
+      : "";
+    chips.innerHTML = `${stateChip}${idChip}${dirtyChip}`;
   }
 
   document.querySelectorAll(".lang-chip[data-lang]").forEach(btn => {
@@ -1062,6 +1081,7 @@ function renderPosts() {
     const main = postGroupMain(posts);
     const completeness = postGroupCompleteness(posts);
     const isCurrent = posts.some(p => p.id === currentPostId);
+    const hasLocalChanges = posts.some(postHasLocalChanges);
     const date = postGroupDate(posts) || main.date || "sin fecha";
     const section = main.section || posts.find(p => p.section)?.section || "Otros";
     const excerpt = String(main.excerpt || posts.find(p => p.excerpt)?.excerpt || "").trim();
@@ -1088,7 +1108,10 @@ function renderPosts() {
         <div class="entry-card-main">
           <div class="entry-title-row">
             <div class="item-title" title="${escapeAttr(main.title || "(sin título)")}">${escapeHtml(main.title || "(sin título)")}</div>
-            <span class="entry-state ${completeness.complete ? "is-ok" : "is-warn"}">${escapeHtml(stateLabel)}</span>
+            <div class="entry-state-row">
+              <span class="entry-state ${completeness.complete ? "is-ok" : "is-warn"}">${escapeHtml(stateLabel)}</span>
+              ${hasLocalChanges ? `<span class="entry-state is-dirty">Cambios locales</span>` : ""}
+            </div>
           </div>
 
           <div class="entry-meta-line">
@@ -1115,7 +1138,24 @@ function renderPosts() {
   });
 
   const list = $("#postsList");
-  list.innerHTML = [...localDraftItems, ...groupedItems].join("") || `<div class="entry-empty muted">No hay entradas con esos filtros.</div>`;
+  const sections = [];
+  if (localDraftItems.length) {
+    sections.push(`
+      <div class="entry-section-block">
+        <div class="entry-section-label"><span>Borradores locales</span><span>${visibleLocalDrafts.length}</span></div>
+        ${localDraftItems.join("")}
+      </div>
+    `);
+  }
+  if (groupedItems.length) {
+    sections.push(`
+      <div class="entry-section-block">
+        <div class="entry-section-label"><span>Entradas guardadas</span><span>${groups.length}</span></div>
+        ${groupedItems.join("")}
+      </div>
+    `);
+  }
+  list.innerHTML = sections.join("") || `<div class="entry-empty muted">No hay entradas con esos filtros.</div>`;
 
   list.querySelectorAll(".lang-badge").forEach(btn => {
     btn.addEventListener("click", (ev) => {
@@ -1447,6 +1487,7 @@ $("#btnSavePost").addEventListener("click", async () => {
     const session = readEditorSession();
     const payload = {
       id: $("#postId").value.trim() || undefined,
+      localDraftId: currentLocalDraftId || undefined,
       title: $("#postTitle").value.trim(),
       date: $("#postDate").value,
       section: $("#postSection").value,
@@ -2296,6 +2337,15 @@ function stablePostKey(id = null) {
 function draftKey(id = null) { return EDITOR_STORE.draftPrefix + stablePostKey(id); }
 function historyKey(id = null) { return EDITOR_STORE.historyPrefix + stablePostKey(id); }
 
+function currentEditorIdentity() {
+  const savedId = String($("#postId")?.value || currentPostId || "").trim();
+  return savedId || currentLocalDraftId || "";
+}
+
+function readDraftRecord(id = null) {
+  return storageGet(draftKey(id), null);
+}
+
 function hasMeaningfulPostContent(payload = collectPostPayload()) {
   return Boolean(
     String(payload.title || "").trim() ||
@@ -2398,6 +2448,32 @@ function openLocalDraft(localDraftId) {
   toast("Borrador local cargado.");
 }
 
+function localDraftDiffersFromPost(post, draftPayload) {
+  if (!post || !draftPayload) return false;
+  const metaDiffers = [
+    ["title", draftPayload.title, post.title],
+    ["date", draftPayload.date, post.date],
+    ["section", canonicalSection(draftPayload.section), canonicalSection(post.section)],
+    ["lang", normalizeLang(draftPayload.lang), normalizeLang(post.lang)],
+    ["translationId", draftPayload.translationId || "", post.translationId || ""],
+    ["excerpt", draftPayload.excerpt || "", post.excerpt || ""],
+    ["cover", draftPayload.cover || "", post.cover || ""]
+  ].some(([, left, right]) => String(left || "") !== String(right || ""));
+  const tagDiffers = JSON.stringify(draftPayload.tags || []) !== JSON.stringify(post.tags || []);
+  const authorDiffers = JSON.stringify(draftPayload.authorIds || []) !== JSON.stringify(post.authorIds || post.authors || []);
+  const refDiffers = JSON.stringify(draftPayload.referenceIds || []) !== JSON.stringify(post.referenceIds || post.references || []);
+  const resourceDiffers = JSON.stringify(draftPayload.resourceIds || []) !== JSON.stringify(post.resourceIds || post.resources || []);
+  const bodyPresent = Boolean(String(draftPayload.body || "").trim());
+  return metaDiffers || tagDiffers || authorDiffers || refDiffers || resourceDiffers || bodyPresent;
+}
+
+function postHasLocalChanges(post) {
+  if (!post?.id) return false;
+  const draft = readDraftRecord(post.id);
+  if (!draft?.payload) return false;
+  return localDraftDiffersFromPost(post, draft.payload);
+}
+
 function collectPostPayload() {
   const savedId = $("#postId")?.value.trim() || currentPostId || "";
   return {
@@ -2465,6 +2541,7 @@ function setAutosaveStatus(kind, label) {
   el.classList.add(kind);
   const text = el.querySelector(".status-text");
   if (text) text.textContent = label;
+  if ($("#postMetaChips")) requestAnimationFrame(refreshPostHeader);
 }
 
 function saveLocalDraft(reason = "autosave") {
