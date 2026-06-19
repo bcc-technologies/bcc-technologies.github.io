@@ -24,6 +24,8 @@
     "{{phase}}"
   ];
 
+  const PROSPECTS_TIMEOUT_MS = 12000;
+
   let root = null;
   let user = null;
   let prospects = [];
@@ -64,6 +66,7 @@
               <option value="">Todas las fases</option>
               ${PHASES.map(phase => `<option value="${escapeHtml(phase.id)}">${escapeHtml(phase.label)}</option>`).join("")}
             </select>
+            <button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh>Actualizar</button>
             <button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button>
           </div>
         </div>
@@ -149,6 +152,9 @@
       phaseFilter = String(event.target.value || "");
       renderBoard();
     });
+    root.querySelector("[data-prospects-refresh]")?.addEventListener("click", () => {
+      void loadDashboard();
+    });
     root.querySelector("[data-prospect-new]")?.addEventListener("click", () => {
       selectedProspectId = "";
       selectedEmailId = "";
@@ -169,7 +175,11 @@
   async function loadDashboard() {
     setMessage("Cargando prospectos...", "neutral");
     try {
-      const data = await window.BCCAuth.api("/api/admin/prospects/dashboard");
+      const data = await withTimeout(
+        window.BCCAuth.api("/api/admin/prospects/dashboard"),
+        PROSPECTS_TIMEOUT_MS,
+        "Supabase no respondio a tiempo al cargar prospectos."
+      );
       prospects = Array.isArray(data.prospects) ? data.prospects : [];
       templates = Array.isArray(data.templates) ? data.templates : [];
       emails = Array.isArray(data.emails) ? data.emails : [];
@@ -179,7 +189,7 @@
       setMessage("");
       renderAll();
     } catch (error) {
-      setMessage(error.message || "No fue posible cargar prospectos.", "error");
+      setMessage(prospectsError(error), "error");
       renderAll();
     }
   }
@@ -1017,6 +1027,27 @@
 
   function number(value) {
     return new Intl.NumberFormat("es-DO").format(Number(value || 0));
+  }
+
+  function withTimeout(promise, timeoutMs, message) {
+    let timerId = 0;
+    const timeoutPromise = new Promise((_, reject) => {
+      timerId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+      window.clearTimeout(timerId);
+    });
+  }
+
+  function prospectsError(error) {
+    const message = String(error?.message || "");
+    if (/no respondio a tiempo|timeout/i.test(message)) {
+      return "Prospectos tardo demasiado en responder. Revisa Supabase o intenta de nuevo.";
+    }
+    if (/workspace_prospect_|relation .* does not exist|column .* does not exist/i.test(message)) {
+      return "Falta aplicar la ultima actualizacion del esquema de Prospectos en Supabase.";
+    }
+    return message || "No fue posible cargar prospectos.";
   }
 
   async function edgeFunctionError(error, fallback) {
