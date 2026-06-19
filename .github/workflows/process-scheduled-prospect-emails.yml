@@ -1,0 +1,33 @@
+name: Process scheduled prospect emails
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Motivo del disparo manual"
+        required: false
+        type: string
+  schedule:
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: process-scheduled-prospect-emails
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+      RESEND_FROM_NAME: ${{ secrets.RESEND_FROM_NAME }}
+      RESEND_REPLY_TO_EMAIL: ${{ secrets.RESEND_REPLY_TO_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Send scheduled prospect emails
+        run: node scripts/process-scheduled-prospect-emails.mjs

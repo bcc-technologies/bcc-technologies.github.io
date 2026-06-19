@@ -14,6 +14,7 @@
   <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/workspace-analytics.js" defer></script>
+  <script src="js/workspace-prospects.js" defer></script>
   <script src="js/workspace-productivity.js" defer></script>
   <script src="js/workspace-forms.js" defer></script>
   <script src="js/admin-dashboard.js" defer></script>
@@ -67,6 +68,7 @@
         <p class="workspace-nav-label">Administración</p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
+        <a href="#prospectos"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
         <a href="#analytics"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
         <a href="#auditoria"><i data-lucide="history"></i><span>Auditoría</span></a>
         <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
@@ -117,6 +119,15 @@
                 <p>Inspecciona los últimos ajustes de acceso registrados.</p>
               </div>
               <a href="#auditoria">Abrir</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="mail-plus"></i>
+              <div>
+                <span>Prospectos</span>
+                <strong>Gestionar adquisición</strong>
+                <p>Organiza prospectos por fase, seguimiento y plantillas de correo.</p>
+              </div>
+              <a href="#prospectos">Abrir</a>
             </article>
             <article class="priority-card">
               <i data-lucide="chart-no-axes-column-increasing"></i>
@@ -200,6 +211,12 @@
         <section class="workspace-view" id="analytics" data-workspace-view data-view-title="Analytics" hidden>
           <section data-analytics-workspace aria-label="Analytics del sitio">
             <p class="muted-text">Cargando analytics...</p>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="prospectos" data-workspace-view data-view-title="Prospectos" hidden>
+          <section data-prospects-workspace aria-label="Gestor de prospectos">
+            <p class="muted-text">Cargando prospectos...</p>
           </section>
         </section>
 

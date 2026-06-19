@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceControls();
   bindWorkspaceViews();
   bindAccessModal();
+  initializeWorkspaceModule("prospectos", user);
   initializeWorkspaceModule("analytics", user);
   initializeWorkspaceModule("productividad", user);
   initializeWorkspaceModule("formularios", user);
@@ -197,6 +198,17 @@ function bindWorkspaceViews() {
 
 function initializeWorkspaceModule(viewId, user) {
   if (!user) return;
+  if (viewId === "prospectos") {
+    mountWorkspaceModule({
+      rootSelector: "[data-prospects-workspace]",
+      module: window.BCCWorkspaceProspects,
+      key: "prospectos",
+      loadingText: "Cargando prospectos...",
+      errorText: "No fue posible cargar el modulo de prospectos. Recarga la pagina."
+    }, user);
+    return;
+  }
+
   if (viewId === "analytics") {
     mountWorkspaceModule({
       rootSelector: "[data-analytics-workspace]",

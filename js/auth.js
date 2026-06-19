@@ -597,6 +597,190 @@ async function bccApi(path, options = {}) {
     return { ok: true, response: publicWorkspaceResponse(data) };
   }
 
+  if (path === "/api/admin/prospects/dashboard" && (!options.method || options.method === "GET")) {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const [{ data: prospects, error: prospectsError }, { data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
+      supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_COLUMNS).order("updated_at", { ascending: false }),
+      supabase.from("workspace_prospect_templates").select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS).order("updated_at", { ascending: false }),
+      supabase.from("workspace_prospect_emails").select(WORKSPACE_PROSPECT_EMAIL_COLUMNS).order("created_at", { ascending: false }).limit(200),
+      supabase.from("workspace_prospect_activities").select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400)
+    ]);
+    if (prospectsError) throw prospectsError;
+    if (templatesError) throw templatesError;
+    if (emailsError) throw emailsError;
+    if (activitiesError) throw activitiesError;
+    return {
+      ok: true,
+      prospects: (prospects || []).map(publicWorkspaceProspect),
+      templates: (templates || []).map(publicWorkspaceProspectTemplate),
+      emails: (emails || []).map(publicWorkspaceProspectEmail),
+      activities: (activities || []).map(publicWorkspaceProspectActivity)
+    };
+  }
+
+  if (path === "/api/admin/prospects" && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("workspace_prospects")
+      .insert(body)
+      .select(WORKSPACE_PROSPECT_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, prospect: publicWorkspaceProspect(data) };
+  }
+
+  const adminProspectMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)$/);
+  if (adminProspectMatch && options.method === "PATCH") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_prospects")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(adminProspectMatch[1]))
+      .select(WORKSPACE_PROSPECT_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, prospect: publicWorkspaceProspect(data) };
+  }
+
+  if (adminProspectMatch && options.method === "DELETE") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const { error } = await supabase
+      .from("workspace_prospects")
+      .delete()
+      .eq("id", decodeURIComponent(adminProspectMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
+  if (path === "/api/admin/prospect-templates" && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("workspace_prospect_templates")
+      .insert(body)
+      .select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, template: publicWorkspaceProspectTemplate(data) };
+  }
+
+  const templateMatch = path.match(/^\/api\/admin\/prospect-templates\/([^/]+)$/);
+  if (templateMatch && options.method === "PATCH") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_prospect_templates")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(templateMatch[1]))
+      .select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, template: publicWorkspaceProspectTemplate(data) };
+  }
+
+  if (templateMatch && options.method === "DELETE") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const { error } = await supabase
+      .from("workspace_prospect_templates")
+      .delete()
+      .eq("id", decodeURIComponent(templateMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
+  const createEmailMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/emails$/);
+  if (createEmailMatch && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const prospectId = decodeURIComponent(createEmailMatch[1]);
+    const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"), true);
+    body.prospect_id = prospectId;
+    const { data, error } = await supabase
+      .from("workspace_prospect_emails")
+      .insert(body)
+      .select(WORKSPACE_PROSPECT_EMAIL_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, email: publicWorkspaceProspectEmail(data) };
+  }
+
+  const prospectEmailMatch = path.match(/^\/api\/admin\/prospect-emails\/([^/]+)$/);
+  if (prospectEmailMatch && options.method === "PATCH") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_prospect_emails")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(prospectEmailMatch[1]))
+      .select(WORKSPACE_PROSPECT_EMAIL_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, email: publicWorkspaceProspectEmail(data) };
+  }
+
+  if (prospectEmailMatch && options.method === "DELETE") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const { error } = await supabase
+      .from("workspace_prospect_emails")
+      .delete()
+      .eq("id", decodeURIComponent(prospectEmailMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
+  const createActivityMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/activities$/);
+  if (createActivityMatch && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const prospectId = decodeURIComponent(createActivityMatch[1]);
+    const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"), true);
+    body.prospect_id = prospectId;
+    const { data, error } = await supabase
+      .from("workspace_prospect_activities")
+      .insert(body)
+      .select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, activity: publicWorkspaceProspectActivity(data) };
+  }
+
+  const prospectActivityMatch = path.match(/^\/api\/admin\/prospect-activities\/([^/]+)$/);
+  if (prospectActivityMatch && options.method === "PATCH") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_prospect_activities")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(prospectActivityMatch[1]))
+      .select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, activity: publicWorkspaceProspectActivity(data) };
+  }
+
+  if (prospectActivityMatch && options.method === "DELETE") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    const { error } = await supabase
+      .from("workspace_prospect_activities")
+      .delete()
+      .eq("id", decodeURIComponent(prospectActivityMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
   if (path === "/api/admin/users") {
     const me = await authorizedUser();
     if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
@@ -772,6 +956,34 @@ const WORKSPACE_RESPONSE_COLUMNS = "id, form_id, respondent_id, answers, submitt
 const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
 const WORKSPACE_FORM_STATUSES = ["draft", "published"];
 const WORKSPACE_QUESTION_TYPES = ["short_text", "long_text", "scale", "choice"];
+const WORKSPACE_PROSPECT_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, created_at, updated_at";
+const WORKSPACE_PROSPECT_TEMPLATE_COLUMNS = "id, name, category, tags, subject, body, is_active, created_at, updated_at";
+const WORKSPACE_PROSPECT_EMAIL_COLUMNS = "id, prospect_id, template_id, recipient_email, subject, body, attachments, status, scheduled_for, sent_at, provider_message_id, created_at, updated_at";
+const WORKSPACE_PROSPECT_ACTIVITY_COLUMNS = "id, prospect_id, activity_type, title, details, due_at, occurred_at, meta, created_at, updated_at";
+const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal", "negotiation", "won", "lost"];
+const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
+const WORKSPACE_PROSPECT_ACTIVITY_TYPES = ["note", "call", "meeting", "email", "follow_up"];
+
+function normalizeWorkspaceTagList(value, maxItems = 12) {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || "").split(",");
+  return [...new Set(source.map(item => String(item || "").trim()).filter(Boolean))].slice(0, maxItems);
+}
+
+function normalizeWorkspaceAttachments(value) {
+  const source = Array.isArray(value)
+    ? value
+    : [];
+  return source.map(item => {
+    const payload = item && typeof item === "object" ? item : {};
+    const path = String(payload.path || "").trim();
+    const filename = String(payload.filename || "").trim();
+    if (!path || !/^https?:\/\//i.test(path)) throw new Error("Cada adjunto necesita una URL valida.");
+    if (!filename || filename.length > 180) throw new Error("Cada adjunto necesita un nombre valido.");
+    return { filename, path };
+  }).slice(0, 10);
+}
 
 function normalizeWorkspaceTaskInput(value, requireTitle = false) {
   const payload = value && typeof value === "object" ? value : {};
@@ -891,6 +1103,245 @@ function publicWorkspaceResponse(response) {
     formId: response.form_id,
     answers: response.answers || {},
     submittedAt: response.submitted_at
+  };
+}
+
+function normalizeWorkspaceProspectInput(value, requireContent = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const prospect = {};
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "fullName")) {
+    const fullName = String(payload.fullName || "").trim();
+    if (!fullName || fullName.length > 120) throw new Error("Escribe un nombre valido para el prospecto.");
+    prospect.full_name = fullName;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "company")) {
+    const company = String(payload.company || "").trim();
+    if (company.length > 120) throw new Error("La empresa es demasiado larga.");
+    prospect.company = company;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "email")) {
+    const email = String(payload.email || "").trim().toLowerCase();
+    if (!email || email.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Escribe un correo valido para el prospecto.");
+    prospect.email = email;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "phone")) {
+    const phone = String(payload.phone || "").trim();
+    if (phone.length > 60) throw new Error("El telefono es demasiado largo.");
+    prospect.phone = phone;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "phase")) {
+    if (!WORKSPACE_PROSPECT_PHASES.includes(payload.phase)) throw new Error("Fase invalida.");
+    prospect.phase = payload.phase;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "tags")) {
+    prospect.tags = normalizeWorkspaceTagList(payload.tags);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "source")) {
+    const source = String(payload.source || "").trim();
+    if (source.length > 80) throw new Error("La fuente es demasiado larga.");
+    prospect.source = source;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "notes")) {
+    const notes = String(payload.notes || "").trim();
+    if (notes.length > 4000) throw new Error("Las notas del prospecto son demasiado largas.");
+    prospect.notes = notes;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "valueEstimate")) {
+    if (payload.valueEstimate === "" || payload.valueEstimate === null || typeof payload.valueEstimate === "undefined") {
+      prospect.value_estimate = null;
+    } else {
+      const amount = Number(payload.valueEstimate);
+      if (!Number.isFinite(amount) || amount < 0 || amount > 1000000000) throw new Error("Monto estimado invalido.");
+      prospect.value_estimate = amount;
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "nextFollowUpOn")) {
+    const nextFollowUpOn = payload.nextFollowUpOn ? String(payload.nextFollowUpOn) : null;
+    if (nextFollowUpOn && !/^\d{4}-\d{2}-\d{2}$/.test(nextFollowUpOn)) throw new Error("Fecha de seguimiento invalida.");
+    prospect.next_follow_up_on = nextFollowUpOn;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "lastContactAt")) {
+    const lastContactAt = payload.lastContactAt ? new Date(payload.lastContactAt) : null;
+    if (lastContactAt && Number.isNaN(lastContactAt.getTime())) throw new Error("Fecha de ultimo contacto invalida.");
+    prospect.last_contact_at = lastContactAt ? lastContactAt.toISOString() : null;
+  }
+  return prospect;
+}
+
+function publicWorkspaceProspect(prospect) {
+  return {
+    id: prospect.id,
+    fullName: prospect.full_name,
+    company: prospect.company || "",
+    email: prospect.email,
+    phone: prospect.phone || "",
+    phase: prospect.phase,
+    tags: Array.isArray(prospect.tags) ? prospect.tags : [],
+    source: prospect.source || "",
+    notes: prospect.notes || "",
+    valueEstimate: prospect.value_estimate ?? null,
+    nextFollowUpOn: prospect.next_follow_up_on || null,
+    lastContactAt: prospect.last_contact_at || null,
+    createdAt: prospect.created_at,
+    updatedAt: prospect.updated_at
+  };
+}
+
+function normalizeWorkspaceProspectTemplateInput(value, requireContent = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const template = {};
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "name")) {
+    const name = String(payload.name || "").trim();
+    if (!name || name.length > 120) throw new Error("Escribe un nombre valido para la plantilla.");
+    template.name = name;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "category")) {
+    const category = String(payload.category || "").trim();
+    if (category.length > 80) throw new Error("La categoria es demasiado larga.");
+    template.category = category;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "tags")) {
+    template.tags = normalizeWorkspaceTagList(payload.tags);
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "subject")) {
+    const subject = String(payload.subject || "").trim();
+    if (!subject || subject.length > 180) throw new Error("El asunto de la plantilla no es valido.");
+    template.subject = subject;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "body")) {
+    const body = String(payload.body || "").trim();
+    if (!body || body.length > 12000) throw new Error("El cuerpo de la plantilla es demasiado largo.");
+    template.body = body;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "isActive")) {
+    template.is_active = Boolean(payload.isActive);
+  }
+  return template;
+}
+
+function publicWorkspaceProspectTemplate(template) {
+  return {
+    id: template.id,
+    name: template.name,
+    category: template.category || "",
+    tags: Array.isArray(template.tags) ? template.tags : [],
+    subject: template.subject,
+    body: template.body,
+    isActive: Boolean(template.is_active),
+    createdAt: template.created_at,
+    updatedAt: template.updated_at
+  };
+}
+
+function normalizeWorkspaceProspectEmailInput(value, requireContent = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const email = {};
+  if (Object.prototype.hasOwnProperty.call(payload, "templateId")) {
+    email.template_id = payload.templateId ? String(payload.templateId).trim() : null;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "recipientEmail")) {
+    const recipientEmail = String(payload.recipientEmail || "").trim().toLowerCase();
+    if (!recipientEmail || recipientEmail.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) throw new Error("Escribe un correo destinatario valido.");
+    email.recipient_email = recipientEmail;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "subject")) {
+    const subject = String(payload.subject || "").trim();
+    if (!subject || subject.length > 180) throw new Error("El asunto del correo no es valido.");
+    email.subject = subject;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "body")) {
+    const body = String(payload.body || "").trim();
+    if (!body || body.length > 12000) throw new Error("El cuerpo del correo es demasiado largo.");
+    email.body = body;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "attachments")) {
+    email.attachments = normalizeWorkspaceAttachments(payload.attachments);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    if (!WORKSPACE_PROSPECT_EMAIL_STATUSES.includes(payload.status)) throw new Error("Estado de correo invalido.");
+    email.status = payload.status;
+    email.sent_at = payload.status === "sent" ? new Date().toISOString() : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "scheduledFor")) {
+    const scheduledFor = payload.scheduledFor ? new Date(payload.scheduledFor) : null;
+    if (scheduledFor && Number.isNaN(scheduledFor.getTime())) throw new Error("Fecha programada invalida.");
+    email.scheduled_for = scheduledFor ? scheduledFor.toISOString() : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "sentAt") && payload.sentAt) {
+    const sentAt = new Date(payload.sentAt);
+    if (Number.isNaN(sentAt.getTime())) throw new Error("Fecha de envio invalida.");
+    email.sent_at = sentAt.toISOString();
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "providerMessageId")) {
+    email.provider_message_id = String(payload.providerMessageId || "").trim().slice(0, 200);
+  }
+  return email;
+}
+
+function publicWorkspaceProspectEmail(email) {
+  return {
+    id: email.id,
+    prospectId: email.prospect_id,
+    templateId: email.template_id || "",
+    recipientEmail: email.recipient_email,
+    subject: email.subject,
+    body: email.body,
+    attachments: Array.isArray(email.attachments) ? email.attachments : [],
+    status: email.status,
+    scheduledFor: email.scheduled_for || null,
+    sentAt: email.sent_at || null,
+    providerMessageId: email.provider_message_id || "",
+    createdAt: email.created_at,
+    updatedAt: email.updated_at
+  };
+}
+
+function normalizeWorkspaceProspectActivityInput(value, requireContent = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const activity = {};
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "activityType")) {
+    if (!WORKSPACE_PROSPECT_ACTIVITY_TYPES.includes(payload.activityType)) throw new Error("Tipo de actividad invalido.");
+    activity.activity_type = payload.activityType;
+  }
+  if (requireContent || Object.prototype.hasOwnProperty.call(payload, "title")) {
+    const title = String(payload.title || "").trim();
+    if (!title || title.length > 160) throw new Error("Escribe un titulo valido para la actividad.");
+    activity.title = title;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "details")) {
+    const details = String(payload.details || "").trim();
+    if (details.length > 4000) throw new Error("El detalle de la actividad es demasiado largo.");
+    activity.details = details;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "dueAt")) {
+    const dueAt = payload.dueAt ? new Date(payload.dueAt) : null;
+    if (dueAt && Number.isNaN(dueAt.getTime())) throw new Error("Fecha de seguimiento invalida.");
+    activity.due_at = dueAt ? dueAt.toISOString() : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "occurredAt")) {
+    const occurredAt = payload.occurredAt ? new Date(payload.occurredAt) : null;
+    if (occurredAt && Number.isNaN(occurredAt.getTime())) throw new Error("Fecha de actividad invalida.");
+    activity.occurred_at = occurredAt ? occurredAt.toISOString() : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "meta")) {
+    const meta = payload.meta && typeof payload.meta === "object" ? payload.meta : {};
+    activity.meta = meta;
+  }
+  return activity;
+}
+
+function publicWorkspaceProspectActivity(activity) {
+  return {
+    id: activity.id,
+    prospectId: activity.prospect_id,
+    activityType: activity.activity_type,
+    title: activity.title,
+    details: activity.details || "",
+    dueAt: activity.due_at || null,
+    occurredAt: activity.occurred_at || null,
+    meta: activity.meta && typeof activity.meta === "object" ? activity.meta : {},
+    createdAt: activity.created_at,
+    updatedAt: activity.updated_at
   };
 }
 
