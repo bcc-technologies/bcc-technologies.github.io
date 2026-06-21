@@ -4,6 +4,7 @@
   "scripts": {
     "accounts:dev": "node accounts-server.mjs",
     "cms:dev": "npm --prefix admin-local run dev",
+    "intelligence:sync": "node scripts/sync-intelligence.mjs",
     "render:products": "node scripts/render-products-pages.mjs",
     "check:products": "node scripts/render-products-pages.mjs --check",
     "test": "node --test tests/*.mjs",

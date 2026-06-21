@@ -14,6 +14,7 @@
   <script src="js/workspace-icons.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/workspace-analytics.js" defer></script>
+  <script src="js/workspace-intelligence.js" defer></script>
   <script src="js/workspace-prospects.js" defer></script>
   <script src="js/workspace-productivity.js" defer></script>
   <script src="js/workspace-forms.js" defer></script>
@@ -70,6 +71,7 @@
         <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
         <a href="#prospectos"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
         <a href="#analytics"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
+        <a href="#intelligence"><i data-lucide="radar"></i><span>Intelligence</span></a>
         <a href="#auditoria"><i data-lucide="history"></i><span>Auditoría</span></a>
         <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
@@ -137,6 +139,15 @@
                 <p>Inspecciona tráfico, CTAs y formularios desde el panel.</p>
               </div>
               <a href="#analytics">Explorar</a>
+            </article>
+            <article class="priority-card">
+              <i data-lucide="radar"></i>
+              <div>
+                <span>Intelligence</span>
+                <strong>Monitorear señales tecnológicas</strong>
+                <p>Prioriza papers, grants, patentes e instituciones por impacto estratégico.</p>
+              </div>
+              <a href="#intelligence">Abrir</a>
             </article>
             <article class="priority-card">
               <i data-lucide="file-pen-line"></i>
@@ -211,6 +222,12 @@
         <section class="workspace-view" id="analytics" data-workspace-view data-view-title="Analytics" hidden>
           <section data-analytics-workspace aria-label="Analytics del sitio">
             <p class="muted-text">Cargando analytics...</p>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="intelligence" data-workspace-view data-view-title="Intelligence" hidden>
+          <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
+            <p class="muted-text">Cargando intelligence...</p>
           </section>
         </section>
 

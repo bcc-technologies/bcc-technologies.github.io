@@ -1,0 +1,98 @@
+name: Run Intelligence Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Accion del radar"
+        required: false
+        type: string
+      reason:
+        description: "Motivo del disparo manual"
+        required: false
+        type: string
+      source_types:
+        description: "Fuentes separadas por coma"
+        required: false
+        type: string
+      query_text:
+        description: "Consulta libre opcional"
+        required: false
+        type: string
+      keywords:
+        description: "Keywords separadas por coma"
+        required: false
+        type: string
+      limit:
+        description: "Maximo de resultados por fuente"
+        required: false
+        type: string
+      dry_run:
+        description: "Ejecutar en modo dry run"
+        required: false
+        type: string
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENALEX_EMAIL: ${{ secrets.OPENALEX_EMAIL }}
+      SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
+      NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+      NIH_REPORTER_API_KEY: ${{ secrets.NIH_REPORTER_API_KEY }}
+      ACTION_TYPE: ${{ inputs.action }}
+      SOURCE_TYPES: ${{ inputs.source_types }}
+      QUERY_TEXT: ${{ inputs.query_text }}
+      KEYWORDS: ${{ inputs.keywords }}
+      LIMIT: ${{ inputs.limit }}
+      DRY_RUN: ${{ inputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run intelligence sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=()
+
+          if [ -n "${ACTION_TYPE}" ]; then
+            ARGS+=(--action "${ACTION_TYPE}")
+          fi
+
+          if [ -n "${SOURCE_TYPES}" ]; then
+            ARGS+=(--source "${SOURCE_TYPES}")
+          fi
+
+          if [ -n "${QUERY_TEXT}" ]; then
+            ARGS+=(--query "${QUERY_TEXT}")
+          fi
+
+          if [ -n "${KEYWORDS}" ]; then
+            IFS=',' read -ra PARTS <<< "${KEYWORDS}"
+            for keyword in "${PARTS[@]}"; do
+              keyword="$(echo "${keyword}" | xargs)"
+              if [ -n "${keyword}" ]; then
+                ARGS+=(--keyword "${keyword}")
+              fi
+            done
+          fi
+
+          if [ -n "${LIMIT}" ]; then
+            ARGS+=(--limit "${LIMIT}")
+          fi
+
+          if [ "${DRY_RUN}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+
+          echo "Running intelligence sync with ${#ARGS[@]} CLI args"
+          node scripts/sync-intelligence.mjs "${ARGS[@]}"

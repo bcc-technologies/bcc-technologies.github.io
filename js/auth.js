@@ -811,6 +811,322 @@ async function bccApi(path, options = {}) {
     };
   }
 
+  const intelligenceRequestUrl = path.startsWith("/api/admin/intelligence")
+    ? new URL(path, window.location.origin)
+    : null;
+  const intelligencePath = intelligenceRequestUrl?.pathname || "";
+
+  if (intelligencePath === "/api/admin/intelligence/overview" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const dashboard = await loadIntelligenceDashboardData(supabase);
+    return { ok: true, overview: dashboard.overview };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/dashboard" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    return { ok: true, dashboard: await loadIntelligenceDashboardData(supabase) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/signals" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const status = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("status"), INTELLIGENCE_SIGNAL_STATUSES, "Estado de señal");
+    const signalType = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("signalType"), INTELLIGENCE_SIGNAL_TYPES, "Tipo de señal");
+    const relatedLine = normalizeIntelligenceLine(intelligenceRequestUrl.searchParams.get("relatedLine"));
+    let query = supabase
+      .from("intelligence_signals")
+      .select(INTELLIGENCE_SIGNAL_COLUMNS)
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (status) query = query.eq("status", status);
+    if (signalType) query = query.eq("signal_type", signalType);
+    if (relatedLine) query = query.eq("related_line", relatedLine);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, signals: (data || []).map(publicIntelligenceSignal) };
+  }
+
+  const intelligenceSignalMatch = intelligencePath.match(/^\/api\/admin\/intelligence\/signals\/([^/]+)$/);
+  if (intelligenceSignalMatch && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const { data, error } = await supabase
+      .from("intelligence_signals")
+      .select(INTELLIGENCE_SIGNAL_COLUMNS)
+      .eq("id", decodeURIComponent(intelligenceSignalMatch[1]))
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Señal no encontrada.");
+    return { ok: true, signal: publicIntelligenceSignal(data) };
+  }
+
+  if (intelligenceSignalMatch && options.method === "PATCH") {
+    await requireAdminViewUser();
+    const body = normalizeIntelligenceSignalInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("intelligence_signals")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(intelligenceSignalMatch[1]))
+      .select(INTELLIGENCE_SIGNAL_COLUMNS)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Señal no encontrada.");
+    return { ok: true, signal: publicIntelligenceSignal(data) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/papers" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
+    const source = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("source"), 120, "Source");
+    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
+    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
+    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
+    let query = supabase
+      .from("intelligence_papers")
+      .select(INTELLIGENCE_PAPER_COLUMNS)
+      .order("publication_date", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (topic) query = query.contains("topics", [topic]);
+    if (source) query = query.eq("source_name", source);
+    if (dateFrom) query = query.gte("publication_date", dateFrom);
+    if (dateTo) query = query.lte("publication_date", dateTo);
+    if (keyword) query = query.ilike("title", `%${keyword}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, papers: (data || []).map(publicIntelligencePaper) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/grants" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
+    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
+    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
+    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
+    let query = supabase
+      .from("intelligence_grants")
+      .select(INTELLIGENCE_GRANT_COLUMNS)
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (topic) query = query.contains("topics", [topic]);
+    if (dateFrom) query = query.gte("start_date", dateFrom);
+    if (dateTo) query = query.lte("end_date", dateTo);
+    if (keyword) query = query.ilike("title", `%${keyword}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, grants: (data || []).map(publicIntelligenceGrant) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/patents" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
+    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
+    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
+    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
+    let query = supabase
+      .from("intelligence_patents")
+      .select(INTELLIGENCE_PATENT_COLUMNS)
+      .order("publication_date", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (topic) query = query.contains("topics", [topic]);
+    if (dateFrom) query = query.gte("publication_date", dateFrom);
+    if (dateTo) query = query.lte("publication_date", dateTo);
+    if (keyword) query = query.ilike("title", `%${keyword}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, patents: (data || []).map(publicIntelligencePatent) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/institutions" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
+    const type = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("type"), 80, "Tipo");
+    const country = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("country"), 120, "Pais");
+    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
+    let query = supabase
+      .from("intelligence_institutions")
+      .select(INTELLIGENCE_INSTITUTION_COLUMNS)
+      .order("related_papers_count", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (topic) query = query.contains("topics", [topic]);
+    if (type) query = query.eq("type", type);
+    if (country) query = query.eq("country", country);
+    if (keyword) query = query.ilike("name", `%${keyword}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, institutions: (data || []).map(publicIntelligenceInstitution) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/topics" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 100, 500);
+    const category = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("category"), INTELLIGENCE_TOPIC_CATEGORIES, "Categoria de topic");
+    const enabled = normalizeIntelligenceBooleanQuery(intelligenceRequestUrl.searchParams.get("enabled"));
+    let query = supabase
+      .from("intelligence_topics")
+      .select(INTELLIGENCE_TOPIC_COLUMNS)
+      .order("enabled", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (category) query = query.eq("category", category);
+    if (enabled !== null) query = query.eq("enabled", enabled);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, topics: (data || []).map(publicIntelligenceTopic) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/topics" && options.method === "POST") {
+    await requireAdminViewUser();
+    const body = normalizeIntelligenceTopicInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("intelligence_topics")
+      .insert(body)
+      .select(INTELLIGENCE_TOPIC_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, topic: publicIntelligenceTopic(data) };
+  }
+
+  const intelligenceTopicMatch = intelligencePath.match(/^\/api\/admin\/intelligence\/topics\/([^/]+)$/);
+  if (intelligenceTopicMatch && options.method === "PATCH") {
+    await requireAdminViewUser();
+    const body = normalizeIntelligenceTopicInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("intelligence_topics")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(intelligenceTopicMatch[1]))
+      .select(INTELLIGENCE_TOPIC_COLUMNS)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Topic no encontrado.");
+    return { ok: true, topic: publicIntelligenceTopic(data) };
+  }
+
+  if (intelligenceTopicMatch && options.method === "DELETE") {
+    await requireAdminViewUser();
+    const { data, error } = await supabase
+      .from("intelligence_topics")
+      .delete()
+      .eq("id", decodeURIComponent(intelligenceTopicMatch[1]))
+      .select(INTELLIGENCE_TOPIC_COLUMNS)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Topic no encontrado.");
+    return { ok: true, topic: publicIntelligenceTopic(data) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/sources" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 50, 200);
+    const type = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("type"), INTELLIGENCE_SOURCE_TYPES, "Tipo de fuente");
+    const enabled = normalizeIntelligenceBooleanQuery(intelligenceRequestUrl.searchParams.get("enabled"));
+    let query = supabase
+      .from("intelligence_sources")
+      .select(INTELLIGENCE_SOURCE_COLUMNS)
+      .order("enabled", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (type) query = query.eq("type", type);
+    if (enabled !== null) query = query.eq("enabled", enabled);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, sources: (data || []).map(publicIntelligenceSource) };
+  }
+
+  const intelligenceSourceMatch = intelligencePath.match(/^\/api\/admin\/intelligence\/sources\/([^/]+)$/);
+  if (intelligenceSourceMatch && options.method === "PATCH") {
+    await requireAdminViewUser();
+    const body = normalizeIntelligenceSourceInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("intelligence_sources")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(intelligenceSourceMatch[1]))
+      .select(INTELLIGENCE_SOURCE_COLUMNS)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Fuente no encontrada.");
+    return { ok: true, source: publicIntelligenceSource(data) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/sync" && options.method === "POST") {
+    await requireAdminViewUser();
+    const supabaseClient = await loadSupabaseClient();
+    const body = JSON.parse(options.body || "{}");
+    const action = normalizeIntelligenceEnumQuery(body.action || "sync_papers", INTELLIGENCE_RUN_ACTIONS, "Accion de intelligence");
+    const payload = {
+      action: action || "sync_papers",
+      dryRun: Boolean(body.dryRun),
+      reason: normalizeIntelligenceTextQuery(body.reason || "Manual intelligence sync from dashboard", 180, "Motivo"),
+      sourceTypes: Array.isArray(body.sourceTypes)
+        ? body.sourceTypes.map(item => normalizeIntelligenceEnumQuery(item, INTELLIGENCE_SOURCE_TYPES, "Tipo de fuente")).filter(Boolean).slice(0, 8)
+        : [],
+      queryText: normalizeIntelligenceTextQuery(body.queryText || "", 400, "Query de sync"),
+      keywords: Array.isArray(body.keywords)
+        ? body.keywords.map(item => normalizeIntelligenceTextQuery(item, 120, "Keyword")).filter(Boolean).slice(0, 24)
+        : [],
+      limit: normalizeIntelligenceLimit(body.limit, 20, 100)
+    };
+    const { data, error } = await supabaseClient.functions.invoke("run-intelligence-sync", {
+      body: payload
+    });
+    if (error) throw new Error(error.message || "No fue posible disparar la sincronizacion.");
+    if (!data?.ok) throw new Error(data?.error || "No fue posible disparar la sincronizacion.");
+    return data;
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/runs" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 50, 200);
+    const status = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("status"), INTELLIGENCE_RUN_STATUSES, "Estado de run");
+    const actionType = normalizeIntelligenceEnumQuery(intelligenceRequestUrl.searchParams.get("actionType"), INTELLIGENCE_RUN_ACTIONS, "Accion de run");
+    const dryRun = normalizeIntelligenceBooleanQuery(intelligenceRequestUrl.searchParams.get("dryRun"));
+    let query = supabase
+      .from("intelligence_runs")
+      .select(INTELLIGENCE_RUN_COLUMNS)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (status) query = query.eq("status", status);
+    if (actionType) query = query.eq("action_type", actionType);
+    if (dryRun !== null) query = query.eq("dry_run", dryRun);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, runs: (data || []).map(publicIntelligenceRun) };
+  }
+
+  if (intelligencePath === "/api/admin/intelligence/settings" && options.method === "PATCH") {
+    await requireAdminViewUser();
+    const body = normalizeIntelligenceSettingsInput(JSON.parse(options.body || "{}"));
+    const { data: existingRows, error: existingError } = await supabase
+      .from("intelligence_settings")
+      .select(INTELLIGENCE_SETTINGS_COLUMNS)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (existingError) throw existingError;
+    const existing = Array.isArray(existingRows) ? existingRows[0] : null;
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from("intelligence_settings")
+        .update({ ...body, updated_at: new Date().toISOString() })
+        .eq("id", existing.id)
+        .select(INTELLIGENCE_SETTINGS_COLUMNS)
+        .single();
+      if (error) throw error;
+      return { ok: true, settings: publicIntelligenceSettings(data) };
+    }
+    const { data, error } = await supabase
+      .from("intelligence_settings")
+      .insert(body)
+      .select(INTELLIGENCE_SETTINGS_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, settings: publicIntelligenceSettings(data) };
+  }
+
   if (path.startsWith("/api/admin/analytics/overview")) {
     const me = await authorizedUser();
     if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
@@ -988,6 +1304,22 @@ const WORKSPACE_PROSPECT_ACTIVITY_COLUMNS = "id, prospect_id, activity_type, tit
 const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal", "negotiation", "won", "lost"];
 const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
 const WORKSPACE_PROSPECT_ACTIVITY_TYPES = ["note", "call", "meeting", "email", "follow_up"];
+const INTELLIGENCE_TOPIC_CATEGORIES = ["nano", "bio", "med", "ing", "general"];
+const INTELLIGENCE_SOURCE_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "cordis", "uspto", "custom"];
+const INTELLIGENCE_SIGNAL_TYPES = ["product_opportunity", "market_trend", "research_trend", "partnership", "content_idea", "competitive_risk", "grant_opportunity"];
+const INTELLIGENCE_SIGNAL_STATUSES = ["new", "reviewing", "accepted", "rejected", "archived"];
+const INTELLIGENCE_RUN_ACTIONS = ["sync_papers", "fetch_papers", "fetch_grants", "fetch_patents", "generate_signals"];
+const INTELLIGENCE_RUN_STATUSES = ["pending", "running", "completed", "failed"];
+const INTELLIGENCE_SETTINGS_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
+const INTELLIGENCE_SOURCE_COLUMNS = "id, name, type, base_url, enabled, requires_api_key, rate_limit_notes, last_sync_at, created_at, updated_at";
+const INTELLIGENCE_PAPER_COLUMNS = "id, external_id, doi, arxiv_id, normalized_title, title, abstract, authors, institutions, publication_date, source_name, source_url, journal_or_venue, topics, keywords, citations_count, open_access_url, possible_duplicate, duplicate_candidates, raw_data, created_at, updated_at";
+const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, raw_data, created_at, updated_at";
+const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, raw_data, created_at, updated_at";
+const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
+const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
+const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, recommended_action, status, created_at, updated_at";
+const INTELLIGENCE_RUN_COLUMNS = "id, status, action_type, dry_run, started_at, finished_at, sources_used, items_fetched, items_created, items_updated, signals_generated, error_message, created_at, updated_at";
+const INTELLIGENCE_SETTINGS_COLUMNS = "id, max_results_per_source, default_date_range_days, suggested_frequency, default_dry_run, scoring_thresholds, monitored_lines, created_at, updated_at";
 
 function normalizeWorkspaceTagList(value, maxItems = 12) {
   const source = Array.isArray(value)
@@ -1052,6 +1384,461 @@ function publicWorkspaceTask(task) {
     completedAt: task.completed_at || null,
     createdAt: task.created_at,
     updatedAt: task.updated_at
+  };
+}
+
+function publicIntelligenceSource(source) {
+  return {
+    id: source.id,
+    name: source.name,
+    type: source.type,
+    baseUrl: source.base_url || "",
+    enabled: Boolean(source.enabled),
+    requiresApiKey: Boolean(source.requires_api_key),
+    rateLimitNotes: source.rate_limit_notes || "",
+    lastSyncAt: source.last_sync_at || "",
+    createdAt: source.created_at,
+    updatedAt: source.updated_at
+  };
+}
+
+function publicIntelligencePaper(paper) {
+  return {
+    id: paper.id,
+    externalId: paper.external_id || "",
+    doi: paper.doi || "",
+    arxivId: paper.arxiv_id || "",
+    normalizedTitle: paper.normalized_title || "",
+    title: paper.title,
+    abstract: paper.abstract || "",
+    authors: Array.isArray(paper.authors) ? paper.authors : [],
+    institutions: Array.isArray(paper.institutions) ? paper.institutions : [],
+    publicationDate: paper.publication_date || "",
+    sourceName: paper.source_name || "",
+    sourceUrl: paper.source_url || "",
+    journalOrVenue: paper.journal_or_venue || "",
+    topics: Array.isArray(paper.topics) ? paper.topics : [],
+    keywords: Array.isArray(paper.keywords) ? paper.keywords : [],
+    citationsCount: Number(paper.citations_count || 0),
+    openAccessUrl: paper.open_access_url || "",
+    possibleDuplicate: Boolean(paper.possible_duplicate),
+    duplicateCandidates: Array.isArray(paper.duplicate_candidates) ? paper.duplicate_candidates : [],
+    rawData: paper.raw_data && typeof paper.raw_data === "object" ? paper.raw_data : {},
+    createdAt: paper.created_at,
+    updatedAt: paper.updated_at
+  };
+}
+
+function publicIntelligenceGrant(grant) {
+  return {
+    id: grant.id,
+    externalId: grant.external_id || "",
+    title: grant.title,
+    abstract: grant.abstract || "",
+    agency: grant.agency || "",
+    program: grant.program || "",
+    amount: grant.amount === null || typeof grant.amount === "undefined" ? null : Number(grant.amount),
+    currency: grant.currency || "",
+    startDate: grant.start_date || "",
+    endDate: grant.end_date || "",
+    principalInvestigators: Array.isArray(grant.principal_investigators) ? grant.principal_investigators : [],
+    institutions: Array.isArray(grant.institutions) ? grant.institutions : [],
+    country: grant.country || "",
+    sourceUrl: grant.source_url || "",
+    topics: Array.isArray(grant.topics) ? grant.topics : [],
+    rawData: grant.raw_data && typeof grant.raw_data === "object" ? grant.raw_data : {},
+    createdAt: grant.created_at,
+    updatedAt: grant.updated_at
+  };
+}
+
+function publicIntelligencePatent(patent) {
+  return {
+    id: patent.id,
+    externalId: patent.external_id || "",
+    title: patent.title,
+    abstract: patent.abstract || "",
+    inventors: Array.isArray(patent.inventors) ? patent.inventors : [],
+    assignees: Array.isArray(patent.assignees) ? patent.assignees : [],
+    publicationDate: patent.publication_date || "",
+    filingDate: patent.filing_date || "",
+    jurisdiction: patent.jurisdiction || "",
+    status: patent.status || "unknown",
+    sourceUrl: patent.source_url || "",
+    topics: Array.isArray(patent.topics) ? patent.topics : [],
+    rawData: patent.raw_data && typeof patent.raw_data === "object" ? patent.raw_data : {},
+    createdAt: patent.created_at,
+    updatedAt: patent.updated_at
+  };
+}
+
+function publicIntelligenceInstitution(institution) {
+  return {
+    id: institution.id,
+    name: institution.name,
+    rorId: institution.ror_id || "",
+    country: institution.country || "",
+    city: institution.city || "",
+    type: institution.type || "other",
+    website: institution.website || "",
+    sourceUrl: institution.source_url || "",
+    relatedPapersCount: Number(institution.related_papers_count || 0),
+    relatedGrantsCount: Number(institution.related_grants_count || 0),
+    relatedPatentsCount: Number(institution.related_patents_count || 0),
+    topics: Array.isArray(institution.topics) ? institution.topics : [],
+    createdAt: institution.created_at,
+    updatedAt: institution.updated_at
+  };
+}
+
+function publicIntelligenceTopic(topic) {
+  return {
+    id: topic.id,
+    name: topic.name,
+    description: topic.description || "",
+    category: topic.category || "general",
+    keywords: Array.isArray(topic.keywords) ? topic.keywords : [],
+    enabled: Boolean(topic.enabled),
+    createdAt: topic.created_at,
+    updatedAt: topic.updated_at
+  };
+}
+
+function publicIntelligenceSignal(signal) {
+  return {
+    id: signal.id,
+    title: signal.title,
+    summary: signal.summary || "",
+    signalType: signal.signal_type,
+    relatedLine: signal.related_line || "General",
+    confidenceScore: Number(signal.confidence_score || 0),
+    opportunityScore: Number(signal.opportunity_score || 0),
+    actionabilityScore: Number(signal.actionability_score || 0),
+    evidenceCount: Number(signal.evidence_count || 0),
+    evidenceRefs: Array.isArray(signal.evidence_refs) ? signal.evidence_refs : [],
+    recommendedAction: signal.recommended_action || "",
+    status: signal.status || "new",
+    createdAt: signal.created_at,
+    updatedAt: signal.updated_at
+  };
+}
+
+function publicIntelligenceRun(run) {
+  return {
+    id: run.id,
+    status: run.status || "pending",
+    actionType: run.action_type || "sync_papers",
+    dryRun: Boolean(run.dry_run),
+    startedAt: run.started_at || "",
+    finishedAt: run.finished_at || "",
+    sourcesUsed: Array.isArray(run.sources_used) ? run.sources_used : [],
+    itemsFetched: Number(run.items_fetched || 0),
+    itemsCreated: Number(run.items_created || 0),
+    itemsUpdated: Number(run.items_updated || 0),
+    signalsGenerated: Number(run.signals_generated || 0),
+    errorMessage: run.error_message || "",
+    createdAt: run.created_at,
+    updatedAt: run.updated_at
+  };
+}
+
+function publicIntelligenceSettings(settings) {
+  return {
+    id: settings.id,
+    maxResultsPerSource: Number(settings.max_results_per_source || 20),
+    defaultDateRangeDays: Number(settings.default_date_range_days || 90),
+    suggestedFrequency: settings.suggested_frequency || "daily",
+    defaultDryRun: Boolean(settings.default_dry_run),
+    scoringThresholds: settings.scoring_thresholds && typeof settings.scoring_thresholds === "object"
+      ? settings.scoring_thresholds
+      : { opportunity: 60, actionability: 50, confidence: 50 },
+    monitoredLines: Array.isArray(settings.monitored_lines) ? settings.monitored_lines : ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"],
+    createdAt: settings.created_at,
+    updatedAt: settings.updated_at
+  };
+}
+
+function normalizeIntelligenceKeywords(value) {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || "").split(",");
+  return [...new Set(source.map(item => String(item || "").trim()).filter(Boolean))].slice(0, 64);
+}
+
+function normalizeIntelligenceTopicInput(value, requireName = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const topic = {};
+
+  if (requireName || Object.prototype.hasOwnProperty.call(payload, "name")) {
+    const name = String(payload.name || "").trim();
+    if (!name || name.length > 160) throw new Error("Escribe un nombre valido para el topic.");
+    topic.name = name;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, "description")) {
+    const description = String(payload.description || "").trim();
+    if (description.length > 2000) throw new Error("La descripcion del topic es demasiado larga.");
+    topic.description = description;
+  }
+
+  if (requireName || Object.prototype.hasOwnProperty.call(payload, "category")) {
+    const category = String(payload.category || "general").trim().toLowerCase();
+    if (!INTELLIGENCE_TOPIC_CATEGORIES.includes(category)) throw new Error("Categoria de topic invalida.");
+    topic.category = category;
+  }
+
+  if (requireName || Object.prototype.hasOwnProperty.call(payload, "keywords")) {
+    topic.keywords = normalizeIntelligenceKeywords(payload.keywords);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, "enabled")) {
+    topic.enabled = Boolean(payload.enabled);
+  }
+
+  return topic;
+}
+
+function normalizeIntelligenceSignalInput(value) {
+  const payload = value && typeof value === "object" ? value : {};
+  const signal = {};
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    const status = String(payload.status || "").trim().toLowerCase();
+    if (!INTELLIGENCE_SIGNAL_STATUSES.includes(status)) throw new Error("Estado de señal invalido.");
+    signal.status = status;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "summary")) {
+    const summary = String(payload.summary || "").trim();
+    if (summary.length > 6000) throw new Error("El resumen de la señal es demasiado largo.");
+    signal.summary = summary;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "recommendedAction")) {
+    const recommendedAction = String(payload.recommendedAction || "").trim();
+    if (recommendedAction.length > 6000) throw new Error("La recomendacion es demasiado larga.");
+    signal.recommended_action = recommendedAction;
+  }
+  return signal;
+}
+
+function normalizeIntelligenceSourceInput(value) {
+  const payload = value && typeof value === "object" ? value : {};
+  const source = {};
+  if (Object.prototype.hasOwnProperty.call(payload, "enabled")) {
+    source.enabled = Boolean(payload.enabled);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "rateLimitNotes")) {
+    const notes = String(payload.rateLimitNotes || "").trim();
+    if (notes.length > 2000) throw new Error("Las notas de la fuente son demasiado largas.");
+    source.rate_limit_notes = notes;
+  }
+  return source;
+}
+
+function normalizeIntelligenceSettingsInput(value) {
+  const payload = value && typeof value === "object" ? value : {};
+  const settings = {};
+  if (Object.prototype.hasOwnProperty.call(payload, "maxResultsPerSource")) {
+    const maxResults = Number(payload.maxResultsPerSource);
+    if (!Number.isFinite(maxResults) || maxResults < 1 || maxResults > 200) throw new Error("Maximo de resultados por fuente invalido.");
+    settings.max_results_per_source = Math.round(maxResults);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "defaultDateRangeDays")) {
+    const range = Number(payload.defaultDateRangeDays);
+    if (!Number.isFinite(range) || range < 1 || range > 3650) throw new Error("Rango temporal por defecto invalido.");
+    settings.default_date_range_days = Math.round(range);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "suggestedFrequency")) {
+    const frequency = String(payload.suggestedFrequency || "").trim().toLowerCase();
+    if (!INTELLIGENCE_SETTINGS_FREQUENCIES.includes(frequency)) throw new Error("Frecuencia sugerida invalida.");
+    settings.suggested_frequency = frequency;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "defaultDryRun")) {
+    settings.default_dry_run = Boolean(payload.defaultDryRun);
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "scoringThresholds")) {
+    const thresholds = payload.scoringThresholds && typeof payload.scoringThresholds === "object" ? payload.scoringThresholds : {};
+    const normalized = {
+      opportunity: Math.max(0, Math.min(100, Number(thresholds.opportunity) || 0)),
+      actionability: Math.max(0, Math.min(100, Number(thresholds.actionability) || 0)),
+      confidence: Math.max(0, Math.min(100, Number(thresholds.confidence) || 0))
+    };
+    settings.scoring_thresholds = normalized;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "monitoredLines")) {
+    const lines = Array.isArray(payload.monitoredLines) ? payload.monitoredLines : String(payload.monitoredLines || "").split(",");
+    settings.monitored_lines = [...new Set(lines.map(item => String(item || "").trim()).filter(Boolean))].slice(0, 16);
+  }
+  return settings;
+}
+
+async function requireAdminViewUser() {
+  const me = await authorizedUser();
+  if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+  return me;
+}
+
+function normalizeIntelligenceLimit(value, fallback = 50, max = 200) {
+  if (value === null || typeof value === "undefined" || value === "") return fallback;
+  const limit = Number(value);
+  if (!Number.isFinite(limit) || limit < 1 || limit > max) throw new Error("Limite de intelligence invalido.");
+  return Math.round(limit);
+}
+
+function normalizeIntelligenceDateQuery(value, label = "Fecha") {
+  if (value === null || typeof value === "undefined" || value === "") return "";
+  const normalized = String(value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) throw new Error(`${label} invalida.`);
+  return normalized;
+}
+
+function normalizeIntelligenceEnumQuery(value, allowed, label) {
+  if (value === null || typeof value === "undefined" || value === "") return "";
+  const normalized = String(value).trim().toLowerCase();
+  if (!allowed.includes(normalized)) throw new Error(`${label} invalido.`);
+  return normalized;
+}
+
+function normalizeIntelligenceTextQuery(value, max = 200, label = "Filtro") {
+  if (value === null || typeof value === "undefined") return "";
+  const normalized = String(value).trim();
+  if (normalized.length > max) throw new Error(`${label} demasiado largo.`);
+  return normalized;
+}
+
+function normalizeIntelligenceBooleanQuery(value) {
+  if (value === null || typeof value === "undefined" || value === "") return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "si"].includes(normalized)) return true;
+  if (["false", "0", "no"].includes(normalized)) return false;
+  throw new Error("Valor booleano invalido.");
+}
+
+function normalizeIntelligenceLine(value) {
+  if (value === null || typeof value === "undefined" || value === "") return "";
+  const normalized = String(value).trim();
+  const allowed = ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"];
+  if (!allowed.includes(normalized)) throw new Error("Linea relacionada invalida.");
+  return normalized;
+}
+
+function mapTopicCategoryToLine(category) {
+  return {
+    nano: "MAP-Nano",
+    bio: "MAP-Bio",
+    med: "MAP-Med",
+    ing: "MAP-Ing",
+    general: "General"
+  }[String(category || "").trim().toLowerCase()] || "General";
+}
+
+function inferIntelligenceLineFromTopics(topics, knownTopics = []) {
+  const topicNames = Array.isArray(topics) ? topics : [];
+  for (const topicName of topicNames) {
+    const normalized = String(topicName || "").trim();
+    if (["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"].includes(normalized)) return normalized;
+    const topic = knownTopics.find(item => String(item?.name || "").trim().toLowerCase() === normalized.toLowerCase());
+    if (topic?.category) return mapTopicCategoryToLine(topic.category);
+  }
+  return "General";
+}
+
+function buildIntelligenceOverviewPayload({ sources = [], papers = [], grants = [], patents = [], topics = [], signals = [], runs = [] } = {}) {
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const activeTopics = topics.filter(item => item.enabled);
+  const openSignals = signals.filter(item => ["new", "reviewing"].includes(item.status));
+  const lineCounts = new Map([["MAP-Nano", 0], ["MAP-Bio", 0], ["MAP-Med", 0], ["MAP-Ing", 0], ["MAPs", 0], ["General", 0]]);
+
+  signals.forEach(signal => {
+    const line = ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"].includes(signal.relatedLine) ? signal.relatedLine : "General";
+    lineCounts.set(line, (lineCounts.get(line) || 0) + 1);
+  });
+  if (![...lineCounts.values()].some(Boolean)) {
+    [...papers, ...grants, ...patents].forEach(item => {
+      const line = inferIntelligenceLineFromTopics(item.topics, topics);
+      lineCounts.set(line, (lineCounts.get(line) || 0) + 1);
+    });
+  }
+
+  return {
+    openSignals: openSignals.length,
+    trackedSources: sources.filter(item => item.enabled).length,
+    priorityTopics: activeTopics.length,
+    newThisWeek: papers.filter(item => {
+      const publicationDate = item.publicationDate ? new Date(item.publicationDate) : null;
+      return publicationDate && !Number.isNaN(publicationDate.getTime()) && publicationDate >= weekAgo;
+    }).length,
+    papersTracked: papers.length,
+    totalGrants: grants.length,
+    totalPatents: patents.length,
+    newSignals: openSignals.length,
+    lastSync: runs[0] || null,
+    recentErrors: runs.filter(item => item.status === "failed" && item.errorMessage).slice(0, 5),
+    topRelatedLine: [...lineCounts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] || "General"
+  };
+}
+
+async function loadIntelligenceDashboardData(supabase) {
+  const [
+    { data: sources, error: sourcesError },
+    { data: papers, error: papersError },
+    { data: grants, error: grantsError },
+    { data: patents, error: patentsError },
+    { data: institutions, error: institutionsError },
+    { data: topics, error: topicsError },
+    { data: signals, error: signalsError },
+    { data: runs, error: runsError },
+    { data: settingsRows, error: settingsError }
+  ] = await Promise.all([
+    supabase.from("intelligence_sources").select(INTELLIGENCE_SOURCE_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(50),
+    supabase.from("intelligence_papers").select(INTELLIGENCE_PAPER_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_grants").select(INTELLIGENCE_GRANT_COLUMNS).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_patents").select(INTELLIGENCE_PATENT_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_institutions").select(INTELLIGENCE_INSTITUTION_COLUMNS).order("related_papers_count", { ascending: false }).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_topics").select(INTELLIGENCE_TOPIC_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(100),
+    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_runs").select(INTELLIGENCE_RUN_COLUMNS).order("created_at", { ascending: false }).limit(50),
+    supabase.from("intelligence_settings").select(INTELLIGENCE_SETTINGS_COLUMNS).order("updated_at", { ascending: false }).limit(1)
+  ]);
+
+  if (sourcesError) throw sourcesError;
+  if (papersError) throw papersError;
+  if (grantsError) throw grantsError;
+  if (patentsError) throw patentsError;
+  if (institutionsError) throw institutionsError;
+  if (topicsError) throw topicsError;
+  if (signalsError) throw signalsError;
+  if (runsError) throw runsError;
+  if (settingsError) throw settingsError;
+
+  const publicSources = (sources || []).map(publicIntelligenceSource);
+  const publicPapers = (papers || []).map(publicIntelligencePaper);
+  const publicGrants = (grants || []).map(publicIntelligenceGrant);
+  const publicPatents = (patents || []).map(publicIntelligencePatent);
+  const publicInstitutions = (institutions || []).map(publicIntelligenceInstitution);
+  const publicTopics = (topics || []).map(publicIntelligenceTopic);
+  const publicSignals = (signals || []).map(publicIntelligenceSignal);
+  const publicRuns = (runs || []).map(publicIntelligenceRun);
+  const publicSettings = settingsRows?.[0] ? publicIntelligenceSettings(settingsRows[0]) : publicIntelligenceSettings({});
+
+  return {
+    overview: buildIntelligenceOverviewPayload({
+      sources: publicSources,
+      papers: publicPapers,
+      grants: publicGrants,
+      patents: publicPatents,
+      topics: publicTopics,
+      signals: publicSignals,
+      runs: publicRuns
+    }),
+    sources: publicSources,
+    papers: publicPapers,
+    grants: publicGrants,
+    patents: publicPatents,
+    institutions: publicInstitutions,
+    topics: publicTopics,
+    signals: publicSignals,
+    runs: publicRuns,
+    settings: publicSettings
   };
 }
 

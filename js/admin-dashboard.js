@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceControls();
   bindWorkspaceViews();
   bindAccessModal();
+  initializeWorkspaceModule("intelligence", user);
   initializeWorkspaceModule("prospectos", user);
   initializeWorkspaceModule("analytics", user);
   initializeWorkspaceModule("productividad", user);
@@ -216,6 +217,17 @@ function initializeWorkspaceModule(viewId, user) {
       key: "analytics",
       loadingText: "Cargando analytics...",
       errorText: "No fue posible cargar el modulo de analytics. Recarga la pagina."
+    }, user);
+    return;
+  }
+
+  if (viewId === "intelligence") {
+    mountWorkspaceModule({
+      rootSelector: "[data-intelligence-workspace]",
+      module: window.BCCWorkspaceIntelligence,
+      key: "intelligence",
+      loadingText: "Cargando intelligence...",
+      errorText: "No fue posible cargar el modulo de intelligence. Recarga la pagina."
     }, user);
     return;
   }
