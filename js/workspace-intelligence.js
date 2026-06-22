@@ -114,7 +114,7 @@
 
   function defaultFilters(dateRange = "90") {
     return {
-      papers: { topic: "", source: "", line: "", dateRange, keyword: "" },
+      papers: { topic: "", source: "", line: "", dateRange, keyword: "", sort: "latest", openAccessOnly: false, withAbstractOnly: false, duplicatesOnly: false },
       grants: { topic: "", line: "", dateRange, keyword: "" },
       patents: { topic: "", line: "", dateRange, keyword: "" },
       trials: { topic: "", line: "", dateRange, keyword: "" }
@@ -231,12 +231,29 @@
   function applyDashboardState(nextDashboard, options = {}) {
     dashboard = normalizeDashboard(nextDashboard);
     syncDryRun = dashboard.settings.defaultDryRun;
-    filters = Object.keys(filters).length ? filters : defaultFilters(String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
+    filters = normalizeFiltersState(filters, String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
     currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
     selectedSignalId = existingOrFirst(selectedSignalId, dashboard.signals);
     selectedTopicId = existingOrFirst(selectedTopicId, dashboard.topics);
     selectedSourceId = existingOrFirst(selectedSourceId, dashboard.sources);
     if (options.persist !== false) writeDashboardCache(dashboard);
+  }
+
+  function normalizeFiltersState(nextFilters, dateRange = "90") {
+    const defaults = defaultFilters(dateRange);
+    const incoming = nextFilters && typeof nextFilters === "object" ? nextFilters : {};
+    return {
+      papers: {
+        ...defaults.papers,
+        ...(incoming.papers || {}),
+        openAccessOnly: Boolean(incoming?.papers?.openAccessOnly),
+        withAbstractOnly: Boolean(incoming?.papers?.withAbstractOnly),
+        duplicatesOnly: Boolean(incoming?.papers?.duplicatesOnly)
+      },
+      grants: { ...defaults.grants, ...(incoming.grants || {}) },
+      patents: { ...defaults.patents, ...(incoming.patents || {}) },
+      trials: { ...defaults.trials, ...(incoming.trials || {}) }
+    };
   }
 
   function cacheStorageKey() {
@@ -568,24 +585,113 @@
   }
 
   function renderPapers() {
-    renderResearchTable("papers", {
-      title: "Papers",
-      items: filteredPapers(),
-      filters: filters.papers,
-      sourceOptions: uniqueSourcesFromPapers(),
-      rows: item => `
-        <tr>
-          <td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.abstract || "Sin abstract")}</small></td>
-          <td>${escapeHtml(formatDate(item.publicationDate))}</td>
-          <td>${escapeHtml(item.sourceName || sourceHost(item.sourceUrl))}</td>
-          <td>${escapeHtml(joinList(item.authors, 3))}</td>
-          <td>${escapeHtml(joinList(item.institutions, 2))}</td>
-          <td>${topicPills(item.topics)}</td>
-          <td>${number(item.citationsCount || 0)}</td>
-          <td><a href="${escapeAttr(safeExternalUrl(item.sourceUrl || item.openAccessUrl || "#"))}" target="_blank" rel="noopener noreferrer">Abrir</a></td>
-        </tr>
-      `
-    });
+    const target = panelRoot("papers");
+    if (!target) return;
+    const items = filteredPapers();
+    const state = filters.papers;
+    const stats = paperInsights(items);
+    const sourceOptions = uniqueSourcesFromPapers();
+    target.innerHTML = `
+      <article class="activity-surface intelligence-card intelligence-card-wide">
+        <div class="activity-head intelligence-head-split">
+          <div>
+            <h3>Papers</h3>
+            <p class="muted-text">Explora la producción científica del radar con mejor contexto, filtros más finos y lectura más rápida.</p>
+          </div>
+          <div class="intelligence-head-actions">
+            <span>${number(items.length)} visibles / ${number(dashboard.papers.length)} rastreados</span>
+            ${paperFiltersActive(state) ? `<button class="btn btn-ghost btn-compact" type="button" data-papers-reset>Limpiar filtros</button>` : ""}
+          </div>
+        </div>
+        <div class="intelligence-summary-strip intelligence-summary-strip-papers">
+          <article class="intelligence-summary-chip">
+            <span>Visible now</span>
+            <strong>${number(items.length)}</strong>
+            <small>${paperFiltersActive(state) ? "Resultados después de filtros activos" : "Cobertura actual del radar de papers"}</small>
+          </article>
+          <article class="intelligence-summary-chip">
+            <span>Open access</span>
+            <strong>${number(stats.openAccessCount)}</strong>
+            <small>${stats.openAccessRatio}% de esta vista tiene acceso abierto utilizable</small>
+          </article>
+          <article class="intelligence-summary-chip">
+            <span>Duplicates watch</span>
+            <strong>${number(stats.duplicateCount)}</strong>
+            <small>${stats.duplicateCount ? "Papers marcados para revisión de duplicados" : "Sin alertas de duplicados en esta vista"}</small>
+          </article>
+          <article class="intelligence-summary-chip">
+            <span>Signal density</span>
+            <strong>${number(stats.avgCitations)}</strong>
+            <small>${stats.topSource ? `Fuente dominante: ${stats.topSource}` : "Aún no hay una fuente dominante clara"}</small>
+          </article>
+        </div>
+        <div class="intelligence-paper-filter-deck">
+          <div class="intelligence-filter-grid intelligence-filter-grid-papers">
+            <label class="intelligence-field intelligence-field-wide">
+              <span>Keyword</span>
+              <input type="search" data-intelligence-filter-panel="papers" data-filter-field="keyword" value="${escapeAttr(state.keyword)}" placeholder="Título, abstract, autores, instituciones, tags..." />
+            </label>
+            <label class="intelligence-field">
+              <span>Topic</span>
+              <select data-intelligence-filter-panel="papers" data-filter-field="topic">
+                <option value="">Todos</option>
+                ${topicOptions().map(topic => `<option value="${escapeHtml(topic.name)}"${topic.name === state.topic ? " selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="intelligence-field">
+              <span>Line</span>
+              <select data-intelligence-filter-panel="papers" data-filter-field="line">
+                <option value="">Todas</option>
+                ${monitoredLines().map(line => `<option value="${escapeHtml(line)}"${line === state.line ? " selected" : ""}>${escapeHtml(line)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="intelligence-field">
+              <span>Source</span>
+              <select data-intelligence-filter-panel="papers" data-filter-field="source">
+                <option value="">Todas</option>
+                ${sourceOptions.map(source => `<option value="${escapeHtml(source)}"${source === state.source ? " selected" : ""}>${escapeHtml(source)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="intelligence-field">
+              <span>Date range</span>
+              <select data-intelligence-filter-panel="papers" data-filter-field="dateRange">
+                ${DATE_RANGE_OPTIONS.map(option => `<option value="${escapeHtml(option.value)}"${option.value === state.dateRange ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="intelligence-field">
+              <span>Sort</span>
+              <select data-intelligence-filter-panel="papers" data-filter-field="sort">
+                ${paperSortOptions().map(option => `<option value="${escapeHtml(option.value)}"${option.value === state.sort ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <div class="intelligence-paper-filter-rail">
+            <label class="intelligence-toggle">
+              <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="openAccessOnly"${state.openAccessOnly ? " checked" : ""} />
+              <span>Only open access</span>
+            </label>
+            <label class="intelligence-toggle">
+              <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="withAbstractOnly"${state.withAbstractOnly ? " checked" : ""} />
+              <span>With abstract</span>
+            </label>
+            <label class="intelligence-toggle">
+              <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="duplicatesOnly"${state.duplicatesOnly ? " checked" : ""} />
+              <span>Duplicates watch</span>
+            </label>
+          </div>
+          <div class="intelligence-paper-source-row">
+            <span class="intelligence-source-row-label">Quick sources</span>
+            <div class="intelligence-source-chip-list">
+              ${paperSourceChips(state.source).join("")}
+            </div>
+          </div>
+        </div>
+        <div class="intelligence-paper-results">
+          ${items.length ? items.map(renderPaperCard).join("") : ""}
+        </div>
+        ${items.length ? "" : researchEmptyStateMarkup("papers", state)}
+      </article>
+    `;
   }
 
   function renderGrants() {
@@ -1157,6 +1263,20 @@
       return;
     }
 
+    if (event.target.closest("[data-papers-reset]")) {
+      filters.papers = defaultFilters(String(pickDateRange(dashboard.settings.defaultDateRangeDays))).papers;
+      renderPapers();
+      return;
+    }
+
+    const paperSourceChip = event.target.closest("[data-paper-source-chip]");
+    if (paperSourceChip) {
+      const nextSource = paperSourceChip.dataset.paperSourceChip || "";
+      filters.papers.source = filters.papers.source === nextSource ? "" : nextSource;
+      renderPapers();
+      return;
+    }
+
     const sourceSelect = event.target.closest("[data-source-select]");
     if (sourceSelect) {
       selectedSourceId = sourceSelect.dataset.sourceSelect || "";
@@ -1186,7 +1306,9 @@
       const panel = String(event.target.dataset.intelligenceFilterPanel || "");
       const field = String(event.target.dataset.filterField || "");
       if (!filters[panel] || !field) return;
-      filters[panel][field] = String(event.target.value || "");
+      filters[panel][field] = event.target.type === "checkbox"
+        ? Boolean(event.target.checked)
+        : String(event.target.value || "");
       if (panel === "papers") renderPapers();
       if (panel === "grants") renderGrants();
       if (panel === "patents") renderPatents();
@@ -1844,11 +1966,16 @@
   }
 
   function filteredPapers() {
-    return applyResearchFilters(dashboard.papers, filters.papers, {
+    const items = applyResearchFilters(dashboard.papers, filters.papers, {
       dateField: "publicationDate",
       sourceField: "sourceName",
+      sourceResolver: item => String(item.sourceName || sourceHost(item.sourceUrl) || "").trim(),
       searchFields: ["title", "abstract", "authors", "institutions", "topics", "keywords"]
     });
+    return sortPapers(
+      filters.papers.openAccessOnly ? items.filter(item => item.openAccessUrl) : items,
+      filters.papers.sort
+    );
   }
 
   function filteredGrants() {
@@ -1877,7 +2004,12 @@
     const cutoff = cutoffDate(state.dateRange);
     return [...items].filter(item => {
       if (state.topic && !itemMatchesTopic(item, state.topic, config.searchFields)) return false;
-      if (state.source && String(item[config.sourceField] || "") !== state.source) return false;
+      if (state.source) {
+        const sourceValue = typeof config.sourceResolver === "function"
+          ? config.sourceResolver(item)
+          : String(item[config.sourceField] || "");
+        if (sourceValue !== state.source) return false;
+      }
       if (state.line && deriveLine(item) !== state.line) return false;
       if (cutoff) {
         const dateValue = item[config.dateField] ? new Date(item[config.dateField]) : null;
@@ -1887,8 +2019,24 @@
         const searchable = config.searchFields.map(field => normalizeSearchValue(item[field])).join(" ").toLowerCase();
         if (!searchable.includes(normalizedKeyword)) return false;
       }
+      if (state.withAbstractOnly && !String(item.abstract || item.summary || "").trim()) return false;
+      if (state.duplicatesOnly && !item.possibleDuplicate) return false;
       return true;
     });
+  }
+
+  function sortPapers(items, mode = "latest") {
+    const list = [...items];
+    if (mode === "citations") {
+      return list.sort((left, right) => (right.citationsCount || 0) - (left.citationsCount || 0) || Date.parse(right.publicationDate || 0) - Date.parse(left.publicationDate || 0));
+    }
+    if (mode === "updated") {
+      return list.sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
+    }
+    if (mode === "source") {
+      return list.sort((left, right) => String(left.sourceName || sourceHost(left.sourceUrl)).localeCompare(String(right.sourceName || sourceHost(right.sourceUrl))) || Date.parse(right.publicationDate || 0) - Date.parse(left.publicationDate || 0));
+    }
+    return list.sort((left, right) => Date.parse(right.publicationDate || right.updatedAt || 0) - Date.parse(left.publicationDate || left.updatedAt || 0));
   }
 
   function selectedSignal() {
@@ -1974,7 +2122,122 @@
   }
 
   function uniqueSourcesFromPapers() {
-    return [...new Set(dashboard.papers.map(item => String(item.sourceName || "").trim()).filter(Boolean))].sort((left, right) => left.localeCompare(right));
+    return [...new Set(dashboard.papers.map(item => String(item.sourceName || sourceHost(item.sourceUrl) || "").trim()).filter(Boolean))].sort((left, right) => left.localeCompare(right));
+  }
+
+  function paperInsights(items) {
+    const list = Array.isArray(items) ? items : [];
+    const openAccessCount = list.filter(item => item.openAccessUrl).length;
+    const duplicateCount = list.filter(item => item.possibleDuplicate).length;
+    const sourceCounts = new Map();
+    let citations = 0;
+    list.forEach(item => {
+      const source = String(item.sourceName || sourceHost(item.sourceUrl) || "").trim();
+      if (source) sourceCounts.set(source, (sourceCounts.get(source) || 0) + 1);
+      citations += Number(item.citationsCount || 0);
+    });
+    const topSource = [...sourceCounts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] || "";
+    return {
+      openAccessCount,
+      duplicateCount,
+      avgCitations: list.length ? Math.round(citations / list.length) : 0,
+      openAccessRatio: list.length ? Math.round((openAccessCount / list.length) * 100) : 0,
+      topSource
+    };
+  }
+
+  function paperSortOptions() {
+    return [
+      { value: "latest", label: "Latest first" },
+      { value: "citations", label: "Most cited" },
+      { value: "updated", label: "Recently updated" },
+      { value: "source", label: "Source A-Z" }
+    ];
+  }
+
+  function paperFiltersActive(state) {
+    return Boolean(
+      state?.topic ||
+      state?.source ||
+      state?.line ||
+      state?.keyword ||
+      state?.openAccessOnly ||
+      state?.withAbstractOnly ||
+      state?.duplicatesOnly ||
+      (state?.sort && state.sort !== "latest") ||
+      (state?.dateRange && state.dateRange !== "90")
+    );
+  }
+
+  function paperSourceChips(activeSource) {
+    return paperTopSources().map(source => `
+      <button class="intelligence-source-chip${source === activeSource ? " is-active" : ""}" type="button" data-paper-source-chip="${escapeAttr(source)}">
+        ${escapeHtml(source)}
+      </button>
+    `);
+  }
+
+  function paperTopSources(limit = 6) {
+    const counts = new Map();
+    dashboard.papers.forEach(item => {
+      const source = String(item.sourceName || sourceHost(item.sourceUrl) || "").trim();
+      if (source) counts.set(source, (counts.get(source) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .slice(0, limit)
+      .map(entry => entry[0]);
+  }
+
+  function renderPaperCard(item) {
+    const sourceUrl = safeExternalUrl(item.sourceUrl || "#");
+    const openAccessUrl = safeExternalUrl(item.openAccessUrl || "#");
+    const line = deriveLine(item);
+    const tags = [
+      line ? `<span class="intelligence-meta-pill intelligence-meta-pill-line">${escapeHtml(line)}</span>` : "",
+      item.sourceName ? `<span class="intelligence-meta-pill">${escapeHtml(item.sourceName)}</span>` : "",
+      item.possibleDuplicate ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Duplicate watch</span>` : "",
+      item.openAccessUrl ? `<span class="intelligence-meta-pill intelligence-meta-pill-ok">Open access</span>` : ""
+    ].filter(Boolean).join("");
+    const abstract = trimText(item.abstract || "Sin abstract disponible.", 360);
+    return `
+      <article class="intelligence-paper-card">
+        <div class="intelligence-paper-card-head">
+          <div class="intelligence-paper-card-title">
+            <h4>${escapeHtml(item.title)}</h4>
+            <div class="intelligence-paper-card-tags">${tags}</div>
+          </div>
+          <div class="intelligence-paper-card-side">
+            <strong>${number(item.citationsCount || 0)}</strong>
+            <span>Citas</span>
+          </div>
+        </div>
+        <div class="intelligence-paper-card-meta">
+          <span>${escapeHtml(formatDate(item.publicationDate))}</span>
+          <span>${escapeHtml(item.journalOrVenue || sourceHost(item.sourceUrl) || "Fuente sin venue")}</span>
+          ${item.doi ? `<span>DOI: ${escapeHtml(item.doi)}</span>` : ""}
+          ${item.arxivId ? `<span>arXiv: ${escapeHtml(item.arxivId)}</span>` : ""}
+        </div>
+        <p class="intelligence-paper-card-abstract">${escapeHtml(abstract)}</p>
+        <div class="intelligence-paper-card-grid">
+          <div>
+            <span class="intelligence-paper-card-label">Authors</span>
+            <strong>${escapeHtml(joinList(item.authors, 5))}</strong>
+          </div>
+          <div>
+            <span class="intelligence-paper-card-label">Institutions</span>
+            <strong>${escapeHtml(joinList(item.institutions, 4))}</strong>
+          </div>
+        </div>
+        <div class="intelligence-paper-card-footer">
+          <div class="intelligence-paper-card-topics">${topicPills(item.topics)}</div>
+          <div class="intelligence-paper-card-actions">
+            <a class="btn btn-ghost btn-compact" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source</a>
+            ${item.openAccessUrl ? `<a class="btn btn-primary btn-compact" href="${escapeAttr(openAccessUrl)}" target="_blank" rel="noopener noreferrer">Open PDF</a>` : ""}
+          </div>
+        </div>
+      </article>
+    `;
   }
 
   function topicOptions() {
@@ -2343,6 +2606,12 @@
     return date.toLocaleDateString("es-DO", { year: "numeric", month: "short", day: "2-digit" });
   }
 
+  function trimText(value, maxLength = 0) {
+    const text = String(value || "").replace(/\s+/g, " ").trim();
+    if (!maxLength || text.length <= maxLength) return text;
+    return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+  }
+
   function formatDateTime(value) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return "-";
@@ -2384,7 +2653,7 @@
   }
 
   function researchEmptyMessage(panelName, filterState) {
-    const hasFilters = Boolean(filterState?.topic || filterState?.source || filterState?.line || filterState?.keyword || (filterState?.dateRange && filterState.dateRange !== "90"));
+    const hasFilters = hasResearchFilters(panelName, filterState);
     if (hasFilters) return "No hay resultados para esos filtros.";
     if (panelName === "papers") return "No papers synced yet.";
     if (panelName === "grants") return "No grants synced yet.";
@@ -2394,7 +2663,7 @@
   }
 
   function researchEmptyStateMarkup(panelName, filterState) {
-    const hasFilters = Boolean(filterState?.topic || filterState?.source || filterState?.line || filterState?.keyword || (filterState?.dateRange && filterState.dateRange !== "90"));
+    const hasFilters = hasResearchFilters(panelName, filterState);
     if (hasFilters) {
       return emptyMarkup("No matching results.", "Adjust filters or clear the keyword range to expand the current view.");
     }
@@ -2415,6 +2684,11 @@
       ]);
     }
     return "";
+  }
+
+  function hasResearchFilters(panelName, filterState) {
+    if (panelName === "papers") return paperFiltersActive(filterState);
+    return Boolean(filterState?.topic || filterState?.source || filterState?.line || filterState?.keyword || (filterState?.dateRange && filterState.dateRange !== "90"));
   }
 
   function sourcesEmptyStateMarkup() {
