@@ -208,8 +208,34 @@
   function setMessage(text, tone = "neutral") {
     const message = root.querySelector("[data-prospects-message]");
     if (!message) return;
-    message.textContent = text || "Gestiona prospectos, seguimiento y plantillas.";
-    message.dataset.tone = tone;
+    renderMessageBlock(
+      message,
+      text || "Gestiona prospectos, seguimiento y plantillas.",
+      tone
+    );
+  }
+
+  function renderMessageBlock(target, text, tone = "neutral") {
+    const content = String(text || "").trim();
+    target.dataset.tone = tone;
+    target.replaceChildren(document.createTextNode(content));
+    if (content.length < 170) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "workspace-message-copy";
+    button.textContent = "Copiar detalle";
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(content);
+        button.textContent = "Copiado";
+        window.setTimeout(() => {
+          button.textContent = "Copiar detalle";
+        }, 1400);
+      } catch {
+        button.textContent = "No se pudo copiar";
+      }
+    });
+    target.append(button);
   }
 
   function renderMetrics() {

@@ -261,9 +261,33 @@
     root.querySelector("[data-analytics-refresh]")?.addEventListener("click", () => void loadAnalytics());
   }
 
-  function setMessage(text) {
+  function setMessage(text, tone = "neutral") {
     const message = root.querySelector("[data-analytics-message]");
-    if (message) message.textContent = text;
+    if (!message) return;
+    renderMessageBlock(message, text, tone);
+  }
+
+  function renderMessageBlock(target, text, tone = "neutral") {
+    const content = String(text || "").trim();
+    target.dataset.tone = tone;
+    target.replaceChildren(document.createTextNode(content));
+    if (content.length < 170) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "workspace-message-copy";
+    button.textContent = "Copiar detalle";
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(content);
+        button.textContent = "Copiado";
+        window.setTimeout(() => {
+          button.textContent = "Copiar detalle";
+        }, 1400);
+      } catch {
+        button.textContent = "No se pudo copiar";
+      }
+    });
+    target.append(button);
   }
 
   function withTimeout(promise, timeoutMs, message) {
@@ -543,7 +567,7 @@
       renderInternalActivity(dashboard.internalActivity || {});
       setMessage(`Mostrando ${dashboard.rangeDays} día(s) de señales web y eventos frontend.`);
     } catch (error) {
-      setMessage(analyticsError(error));
+      setMessage(analyticsError(error), "error");
     }
   }
 

@@ -32,7 +32,7 @@ async function loadUsers() {
     renderUsers();
     renderMetrics();
   } catch (error) {
-    if (message) message.textContent = error.message;
+    if (message) renderWorkspaceMessage(message, error.message, "error");
   }
 }
 
@@ -45,13 +45,13 @@ async function loadAuditLogs() {
     adminAuditLogs = logs;
     feed.replaceChildren(...logs.slice(0, 10).map(auditItem));
     if (message) {
-      message.textContent = logs.length ? "Cambios de permisos registrados." : "Todavia no hay cambios registrados.";
+      renderWorkspaceMessage(message, logs.length ? "Cambios de permisos registrados." : "Todavia no hay cambios registrados.");
     }
     const count = document.querySelector("[data-audit-count]");
     if (count) count.textContent = String(logs.length);
     renderMetrics();
   } catch (error) {
-    if (message) message.textContent = error.message;
+    if (message) renderWorkspaceMessage(message, error.message, "error");
   }
 }
 
@@ -67,8 +67,31 @@ function renderUsers() {
   } else {
     table.replaceChildren(...users.map(userRow));
   }
-  if (message) message.textContent = `${users.length} de ${adminUsers.length} cuenta(s).`;
+  if (message) renderWorkspaceMessage(message, `${users.length} de ${adminUsers.length} cuenta(s).`);
   refreshIcons();
+}
+
+function renderWorkspaceMessage(target, text, tone = "neutral") {
+  const content = String(text || "").trim();
+  target.dataset.tone = tone;
+  target.replaceChildren(document.createTextNode(content));
+  if (content.length < 170) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "workspace-message-copy";
+  button.textContent = "Copiar detalle";
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      button.textContent = "Copiado";
+      window.setTimeout(() => {
+        button.textContent = "Copiar detalle";
+      }, 1400);
+    } catch {
+      button.textContent = "No se pudo copiar";
+    }
+  });
+  target.append(button);
 }
 
 function filteredUsers() {

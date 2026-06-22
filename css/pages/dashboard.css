@@ -840,6 +840,10 @@
   border-bottom: 1px solid var(--line);
 }
 
+.surface-toolbar > *{
+  min-width: 0;
+}
+
 .surface-toolbar h2,
 .activity-head h2{
   margin: 0 0 5px;
@@ -849,6 +853,66 @@
 .surface-toolbar p{
   margin: 0;
   font-size: .84rem;
+}
+
+[data-admin-message],
+[data-analytics-message],
+[data-intelligence-message],
+[data-prospects-message],
+[data-audit-message]{
+  display: grid;
+  gap: 8px;
+  max-inline-size: min(100%, 76ch);
+  max-block-size: 8.2rem;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding-right: 4px;
+}
+
+.workspace-message-copy{
+  justify-self: start;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-solid) 88%, transparent);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.workspace-message-copy:hover{
+  color: var(--ink);
+  background: var(--surface-muted);
+}
+
+[data-admin-message][data-tone="error"],
+[data-analytics-message][data-tone="error"],
+[data-intelligence-message][data-tone="error"],
+[data-prospects-message][data-tone="error"],
+[data-audit-message][data-tone="error"]{
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--line));
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-solid));
+}
+
+[data-admin-message][data-tone="ok"],
+[data-analytics-message][data-tone="ok"],
+[data-intelligence-message][data-tone="ok"],
+[data-prospects-message][data-tone="ok"],
+[data-audit-message][data-tone="ok"]{
+  border-color: color-mix(in srgb, var(--success) 34%, var(--line));
+  color: color-mix(in srgb, var(--success) 72%, var(--ink));
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-solid));
 }
 
 .surface-filters{
