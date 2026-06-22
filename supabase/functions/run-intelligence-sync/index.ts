@@ -6,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
 
-const ALLOWED_ACTIONS = new Set(["sync_papers", "fetch_papers", "fetch_grants", "fetch_patents", "generate_signals"]);
-const ALLOWED_SOURCE_TYPES = new Set(["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "cordis", "uspto", "custom"]);
+const ALLOWED_ACTIONS = new Set(["sync_papers", "fetch_papers", "fetch_grants", "fetch_patents", "fetch_trials", "generate_signals"]);
+const ALLOWED_SOURCE_TYPES = new Set(["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "clinicaltrials", "epo_ops", "cordis", "uspto", "custom"]);
 const MANUAL_SYNC_MIN_INTERVAL_MS = 3 * 60 * 1000;
 const GITHUB_TIMEOUT_MS = 15000;
 const GITHUB_RETRY_LIMIT = 2;
