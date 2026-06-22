@@ -62,11 +62,11 @@ Implemented now:
 - `arXiv`
 - `OpenAlex`
 - `Crossref`
+- `Semantic Scholar`
+- `PubMed / NCBI`
 
 Prepared but not fully implemented yet:
 
-- `Semantic Scholar`
-- `PubMed / NCBI`
 - `NIH RePORTER`
 - `NSF Awards`
 - `USPTO`
@@ -104,7 +104,9 @@ NIH_REPORTER_API_KEY=
 - `SUPABASE_SERVICE_ROLE_KEY` is backend-only. Never expose it to the frontend.
 - `OPENALEX_API_KEY` should be treated as required for real OpenAlex sync usage.
 - `OPENALEX_EMAIL` is optional and useful as a contact identifier.
-- `SEMANTIC_SCHOLAR_API_KEY`, `NCBI_API_KEY`, and `NIH_REPORTER_API_KEY` are only needed when those connectors are activated.
+- `SEMANTIC_SCHOLAR_API_KEY` is optional but recommended for steadier rate limits.
+- `NCBI_API_KEY` is optional but recommended for smoother PubMed sync volume.
+- `NIH_REPORTER_API_KEY` is only needed when that connector is activated.
 - Secrets are not stored in the `Intelligence` tables.
 
 More operational detail:

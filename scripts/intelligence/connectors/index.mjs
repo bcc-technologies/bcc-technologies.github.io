@@ -18,7 +18,7 @@ export const CONNECTORS = [
   uspto
 ];
 
-export const ACTIVE_CONNECTOR_TYPES = ["arxiv", "openalex", "crossref"];
+export const ACTIVE_CONNECTOR_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"];
 
 export function getConnector(sourceType) {
   const key = String(sourceType || "").trim().toLowerCase();

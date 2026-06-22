@@ -7,11 +7,11 @@ Stage 3 adds a modular sync layer for BCC's `Intelligence` workspace.
 - `arXiv`
 - `OpenAlex`
 - `Crossref`
+- `Semantic Scholar`
+- `PubMed`
 
 Prepared but not implemented yet:
 
-- `Semantic Scholar`
-- `PubMed`
 - `NIH RePORTER`
 - `NSF Awards`
 - `USPTO`
@@ -46,6 +46,10 @@ No secrets are stored in code.
 
 `OpenAlex` now expects an API key for normal usage. Treat `OPENALEX_API_KEY` as required for real sync runs. `OPENALEX_EMAIL` remains optional as a contact identifier.
 
+`Semantic Scholar` can run without `SEMANTIC_SCHOLAR_API_KEY`, but the key is recommended for steadier rate limits and less friction during broader manual sync runs.
+
+`PubMed` can run without `NCBI_API_KEY`, but the key is recommended for smoother sync volume because NCBI rate limits are tighter without it.
+
 ## Usage
 
 Dry run with explicit keywords:
@@ -61,7 +65,8 @@ SUPABASE_URL=... \
 SUPABASE_SERVICE_ROLE_KEY=... \
 OPENALEX_API_KEY=... \
 OPENALEX_EMAIL=you@example.com \
-npm run intelligence:sync -- --source arxiv,openalex,crossref --query "nanomaterials drug delivery" --limit 15
+NCBI_API_KEY=... \
+npm run intelligence:sync -- --source arxiv,openalex,crossref,pubmed,semantic_scholar --query "nanomaterials drug delivery" --limit 15
 ```
 
 If you omit `--query` and `--keyword`, the script will read keywords from enabled rows in `public.intelligence_topics`.
@@ -75,6 +80,12 @@ To stay inside the free OpenAlex allowance:
 3. Use `dry-run` for exploratory testing.
 4. Prefer topic-specific queries over generic searches.
 5. The connector already uses a conservative interval and `select` fields to reduce unnecessary payload size.
+
+## Semantic Scholar and PubMed notes
+
+1. `Semantic Scholar` uses the Graph API search endpoint and stores normalized paper payloads only.
+2. `PubMed` uses a two-step `esearch` plus `efetch` flow so abstracts, authors, affiliations, DOI, PMID and PMC links can be normalized into the paper model.
+3. On the next real sync, the runner will auto-register newly implemented active connectors into `intelligence_sources` if they do not exist yet.
 
 ## Deduplication strategy
 

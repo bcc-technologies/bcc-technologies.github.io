@@ -257,6 +257,10 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   let enabledTopics = [];
 
   if (PAPER_ACTIONS.has(action)) {
+    if (store && !options.dryRun && !deps.connectors) {
+      const registryConnectors = getConnectors();
+      await Promise.all(registryConnectors.map(connector => store.ensureSourceRecord(connector)));
+    }
     const sourceTypes = await resolveSourceTypes(store, options);
     connectors = deps.connectors || getConnectors(sourceTypes);
     if (!connectors.length) {

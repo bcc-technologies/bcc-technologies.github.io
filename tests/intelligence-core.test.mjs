@@ -231,3 +231,142 @@ test("OpenAlex connector uses api_key, mailto, and select fields for quota-aware
     process.env.OPENALEX_EMAIL = originalEmail;
   }
 });
+
+test("Semantic Scholar connector works without API key and uses x-api-key when present", async () => {
+  const originalFetch = global.fetch;
+  const originalApiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
+  const requests = [];
+
+  process.env.SEMANTIC_SCHOLAR_API_KEY = "test-semantic-key";
+
+  global.fetch = async (url, options = {}) => {
+    requests.push({ url: String(url), headers: options.headers || {} });
+    return {
+      ok: true,
+      async json() {
+        return { data: [] };
+      }
+    };
+  };
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/semantic-scholar.mjs")).href}?test=${Date.now()}`);
+    const { default: semanticScholar } = await import(moduleUrl.href);
+
+    assert.equal(semanticScholar.requiresApiKey, false);
+    await semanticScholar.search({
+      keywords: ["cell morphology analysis", "biological image analysis"],
+      limit: 5
+    });
+
+    assert.equal(requests.length, 1);
+    const requestUrl = new URL(requests[0].url);
+    assert.equal(requestUrl.searchParams.get("limit"), "5");
+    assert.match(requestUrl.searchParams.get("fields") || "", /paperId/);
+    assert.equal(requests[0].headers["x-api-key"], "test-semantic-key");
+  } finally {
+    global.fetch = originalFetch;
+    process.env.SEMANTIC_SCHOLAR_API_KEY = originalApiKey;
+  }
+});
+
+test("PubMed connector uses NCBI api_key and normalizes fetched XML", async () => {
+  const originalFetch = global.fetch;
+  const originalApiKey = process.env.NCBI_API_KEY;
+  const requests = [];
+
+  process.env.NCBI_API_KEY = "test-ncbi-key";
+
+  global.fetch = async (url) => {
+    requests.push(String(url));
+    if (String(url).includes("esearch.fcgi")) {
+      return {
+        ok: true,
+        async json() {
+          return {
+            esearchresult: {
+              idlist: ["12345678"]
+            }
+          };
+        }
+      };
+    }
+
+    return {
+      ok: true,
+      async text() {
+        return `<?xml version="1.0"?>
+<PubmedArticleSet>
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>12345678</PMID>
+      <Article>
+        <Journal>
+          <Title>Microscopy Journal</Title>
+          <JournalIssue>
+            <PubDate>
+              <Year>2026</Year>
+              <Month>Jun</Month>
+              <Day>18</Day>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <ArticleTitle>Automated microscopy pipeline for cell counting</ArticleTitle>
+        <Abstract>
+          <AbstractText>Brightfield microscopy workflow for biological image analysis.</AbstractText>
+        </Abstract>
+        <AuthorList>
+          <Author>
+            <ForeName>Jane</ForeName>
+            <LastName>Doe</LastName>
+            <AffiliationInfo>
+              <Affiliation>Department of Biology, University X</Affiliation>
+            </AffiliationInfo>
+          </Author>
+        </AuthorList>
+      </Article>
+      <KeywordList>
+        <Keyword>cell counting</Keyword>
+      </KeywordList>
+      <MeshHeadingList>
+        <MeshHeading>
+          <DescriptorName>microscopy</DescriptorName>
+        </MeshHeading>
+      </MeshHeadingList>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="doi">10.1000/pubmed-1</ArticleId>
+        <ArticleId IdType="pmc">PMC123456</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+</PubmedArticleSet>`;
+      }
+    };
+  };
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/pubmed.mjs")).href}?test=${Date.now()}`);
+    const { default: pubmed } = await import(moduleUrl.href);
+
+    assert.equal(pubmed.requiresApiKey, false);
+    const items = await pubmed.search({
+      keywords: ["cell counting"],
+      limit: 3
+    });
+
+    assert.equal(requests.length, 2);
+    assert.equal(new URL(requests[0]).searchParams.get("api_key"), "test-ncbi-key");
+    assert.equal(new URL(requests[1]).searchParams.get("api_key"), "test-ncbi-key");
+    assert.equal(items.length, 1);
+    assert.equal(items[0].externalId, "12345678");
+    assert.equal(items[0].doi, "10.1000/pubmed-1");
+    assert.equal(items[0].publicationDate, "2026-06-18");
+    assert.deepEqual(items[0].authors, ["Jane Doe"]);
+    assert.ok(items[0].keywords.includes("cell counting"));
+  } finally {
+    global.fetch = originalFetch;
+    process.env.NCBI_API_KEY = originalApiKey;
+  }
+});
