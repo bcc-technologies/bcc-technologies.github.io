@@ -1457,6 +1457,13 @@
   align-items: start;
 }
 
+.intelligence-signal-stage{
+  display: grid;
+  grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+
 .intelligence-card{
   min-width: 0;
 }
@@ -1467,6 +1474,107 @@
 
 .intelligence-card-wide{
   grid-column: 1 / -1;
+}
+
+.intelligence-briefing-card{
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 10%, var(--surface-solid)), var(--surface)),
+    var(--surface);
+}
+
+.intelligence-briefing-head{
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+}
+
+.intelligence-briefing-head h3{
+  margin: 8px 0 10px;
+  color: var(--ink-strong);
+  font-size: 1.55rem;
+  line-height: 1.02;
+  letter-spacing: -.03em;
+}
+
+.intelligence-briefing-head p{
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ink-soft);
+  font-size: .94rem;
+  line-height: 1.6;
+}
+
+.intelligence-briefing-metrics{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.intelligence-briefing-metrics div{
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 85%, transparent);
+}
+
+.intelligence-briefing-metrics span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.intelligence-briefing-metrics strong{
+  color: var(--ink-strong);
+  font-size: 1.22rem;
+}
+
+.intelligence-briefing-metrics small{
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.intelligence-priority-list{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intelligence-priority-item{
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+}
+
+.intelligence-priority-item span{
+  color: var(--accent-strong);
+  font-size: .71rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.intelligence-priority-item strong{
+  color: var(--ink-strong);
+  font-size: .95rem;
+}
+
+.intelligence-priority-item p{
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: .84rem;
+  line-height: 1.5;
 }
 
 .intelligence-focus-list,
@@ -1499,6 +1607,21 @@
   color: var(--ink-soft);
   font-size: .84rem;
   line-height: 1.5;
+}
+
+.intelligence-error-block{
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.intelligence-error-copy{
+  max-block-size: 8.8rem;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  padding-right: 4px;
 }
 
 .intelligence-focus-item span{
@@ -1559,6 +1682,14 @@
   font-size: .94rem;
 }
 
+.intelligence-mini-metrics-tight{
+  gap: 10px;
+}
+
+.intelligence-mini-metrics-tight div{
+  padding: 10px 12px;
+}
+
 .intelligence-action-list{
   display: grid;
   gap: 10px;
@@ -1575,6 +1706,362 @@
   margin: 14px 0 0;
   color: var(--danger);
   font-size: .83rem;
+}
+
+.intelligence-queue-list,
+.intelligence-signal-showcase{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.intelligence-queue-item,
+.intelligence-signal-showcase-item,
+.intelligence-signal-card{
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.intelligence-queue-item,
+.intelligence-signal-card{
+  cursor: pointer;
+}
+
+.intelligence-queue-item:hover,
+.intelligence-signal-card:hover{
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface-solid));
+}
+
+.intelligence-queue-item h4,
+.intelligence-signal-showcase-item h4,
+.intelligence-signal-card h4{
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: .97rem;
+}
+
+.intelligence-queue-item p,
+.intelligence-signal-showcase-item p,
+.intelligence-signal-card p{
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: .84rem;
+  line-height: 1.52;
+}
+
+.intelligence-queue-meters{
+  display: grid;
+  gap: 8px;
+}
+
+.intelligence-meter{
+  display: grid;
+  gap: 6px;
+}
+
+.intelligence-meter div{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.intelligence-meter span{
+  color: var(--ink-muted);
+  font-size: .73rem;
+  font-weight: 700;
+}
+
+.intelligence-meter strong{
+  color: var(--ink-strong);
+  font-size: .79rem;
+}
+
+.intelligence-meter b{
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 78%, white), var(--accent));
+}
+
+.intelligence-signal-summary{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.intelligence-signal-summary div{
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.intelligence-signal-summary span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.intelligence-signal-summary strong{
+  color: var(--ink-strong);
+  font-size: 1rem;
+}
+
+.intelligence-signal-queue{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.intelligence-signal-card.is-selected{
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 58%, var(--line));
+}
+
+.intelligence-signal-card-meta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.intelligence-signal-card-meta small{
+  color: var(--ink-muted);
+  font-size: .75rem;
+}
+
+.intelligence-signal-rail,
+.intelligence-signal-detail{
+  min-width: 0;
+}
+
+.intelligence-chart-card{
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.intelligence-chart-head{
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+  flex-wrap: wrap;
+}
+
+.intelligence-chart-head p{
+  margin: 0;
+  max-width: 58ch;
+  color: var(--ink-soft);
+  font-size: .84rem;
+  line-height: 1.55;
+}
+
+.intelligence-chart-legend{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.intelligence-chart-legend span{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-muted);
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.intelligence-dot,
+.intelligence-bar{
+  display: inline-block;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 999px;
+}
+
+.intelligence-dot-new{
+  background: rgb(255, 193, 122);
+}
+
+.intelligence-dot-reviewing{
+  background: rgba(255, 226, 139, .96);
+}
+
+.intelligence-dot-accepted{
+  background: rgba(122,255,184,.95);
+}
+
+.intelligence-dot-archived{
+  background: rgba(176,212,255,.96);
+}
+
+.intelligence-chart-svg{
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+
+.intelligence-chart-grid{
+  stroke: color-mix(in srgb, var(--line) 85%, transparent);
+  stroke-dasharray: 5 7;
+}
+
+.intelligence-chart-axis{
+  stroke: color-mix(in srgb, var(--ink-muted) 40%, transparent);
+  stroke-width: 1.15;
+}
+
+.intelligence-chart-caption,
+.intelligence-chart-axis-label,
+.intelligence-point-label{
+  fill: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.intelligence-chart-caption-vertical{
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+.intelligence-point{
+  cursor: pointer;
+  transition: transform 140ms ease, opacity 140ms ease;
+  opacity: .92;
+}
+
+.intelligence-point:hover{
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.intelligence-point-label{
+  fill: var(--surface-solid);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.intelligence-point-new{
+  fill: rgba(255, 184, 96, .9);
+}
+
+.intelligence-point-reviewing{
+  fill: rgba(255, 226, 139, .88);
+}
+
+.intelligence-point-accepted{
+  fill: rgba(86,255,166,.84);
+}
+
+.intelligence-point-archived{
+  fill: rgba(114,177,255,.84);
+}
+
+.intelligence-heatmap{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.intelligence-heatmap-cell{
+  appearance: none;
+  display: grid;
+  gap: 3px;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) var(--heat), transparent), transparent 78%),
+    color-mix(in srgb, var(--surface-solid) 92%, transparent);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.intelligence-heatmap-cell strong{
+  color: var(--ink-strong);
+  font-size: .88rem;
+}
+
+.intelligence-heatmap-cell span,
+.intelligence-heatmap-cell small{
+  color: var(--ink-soft);
+  font-size: .77rem;
+}
+
+.intelligence-runtrend{
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.intelligence-runtrend-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.intelligence-runtrend-item{
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.intelligence-runtrend-item strong{
+  color: var(--ink-strong);
+  font-size: .8rem;
+}
+
+.intelligence-runtrend-item small{
+  color: var(--ink-muted);
+  font-size: .72rem;
+}
+
+.intelligence-runtrend-bars{
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 6px;
+  min-block-size: 124px;
+  inline-size: 100%;
+  padding: 10px 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+}
+
+.intelligence-runtrend-bar{
+  inline-size: 16px;
+  min-block-size: 10px;
+  border-radius: 999px 999px 4px 4px;
+}
+
+.intelligence-bar-fetched{
+  background: rgba(114,177,255,.9);
+}
+
+.intelligence-bar-saved{
+  background: rgba(86,255,166,.84);
+}
+
+.intelligence-bar-signals{
+  background: rgba(255, 193, 122, .9);
 }
 
 .intelligence-topic-pill{
@@ -1841,6 +2328,40 @@
   margin-top: 16px;
 }
 
+.intelligence-summary-strip{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.intelligence-summary-chip{
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 90%, transparent);
+}
+
+.intelligence-summary-chip span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.intelligence-summary-chip strong{
+  color: var(--ink-strong);
+  font-size: 1.16rem;
+}
+
+.intelligence-summary-chip small{
+  color: var(--ink-soft);
+  font-size: .8rem;
+}
+
 .intelligence-topic-item{
   display: grid;
   gap: 8px;
@@ -1866,6 +2387,61 @@
   color: var(--ink-soft);
   font-size: .84rem;
   line-height: 1.5;
+}
+
+.intelligence-topic-topline{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.intelligence-topic-focus-card{
+  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+}
+
+.intelligence-topic-metrics,
+.intelligence-topic-coverage,
+.intelligence-source-detail-summary{
+  margin-top: 14px;
+}
+
+.intelligence-health-pill.intelligence-status-pill{
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+
+.intelligence-health-pill,
+.intelligence-status-pill.intelligence-health-hot{
+  background: rgba(255, 162, 79, .12);
+  color: rgb(255, 193, 122);
+}
+
+.intelligence-health-active,
+.intelligence-status-pill.intelligence-health-active{
+  background: rgba(86,255,166,.09);
+  color: rgba(122,255,184,.95);
+}
+
+.intelligence-health-cold,
+.intelligence-status-pill.intelligence-health-cold{
+  background: rgba(114,177,255,.09);
+  color: rgba(176,212,255,.96);
+}
+
+.intelligence-health-watch,
+.intelligence-status-pill.intelligence-health-watch{
+  background: rgba(255, 210, 92, .11);
+  color: rgba(255, 226, 139, .96);
+}
+
+.intelligence-health-paused,
+.intelligence-status-pill.intelligence-health-paused{
+  background: rgba(255,255,255,.06);
+  color: var(--ink-soft);
+}
+
+.intelligence-source-watchlist{
+  margin-top: 14px;
 }
 
 .intelligence-item-actions{
@@ -3217,6 +3793,16 @@
     padding: 24px 16px 32px;
   }
 
+  .intelligence-briefing-head{
+    display: grid;
+  }
+
+  .intelligence-briefing-metrics,
+  .intelligence-priority-list,
+  .intelligence-signal-summary{
+    grid-template-columns: 1fr;
+  }
+
   .workspace-refined .workspace-intro{
     gap: 17px;
     margin-bottom: 20px;
@@ -3383,7 +3969,8 @@
     grid-template-columns: 1fr;
   }
 
-  .intelligence-grid-overview{
+  .intelligence-grid-overview,
+  .intelligence-signal-stage{
     grid-template-columns: 1fr;
   }
 
@@ -3391,8 +3978,13 @@
     justify-content: flex-start;
   }
 
+  .intelligence-summary-strip,
   .intelligence-filter-grid,
   .intelligence-detail-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-heatmap{
     grid-template-columns: 1fr;
   }
 
@@ -3415,6 +4007,14 @@
 }
 
 @media (max-width: 580px){
+  .intelligence-chart-head{
+    display: grid;
+  }
+
+  .intelligence-topic-topline{
+    display: grid;
+  }
+
   .workspace-header .account-copy{
     display: none;
   }

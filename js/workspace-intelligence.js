@@ -241,9 +241,16 @@
     const target = panelRoot("overview");
     if (!target) return;
     const latestRun = lastRun();
-    const recentSignals = sortedSignals().slice(0, 5);
+    const prioritizedSignals = signalReviewQueue();
+    const recentSignals = prioritizedSignals.slice(0, 5);
     const recentErrors = failedRuns().slice(0, 5);
+    const reviewSignals = signalsNeedingReview();
+    const sourceWatch = sourceWatchItems().slice(0, 4);
+    const hotTopics = topicHeatmap();
+    const heatTopicsPreview = hotTopics.slice(0, 4);
+    const runTrend = recentRunTrend();
     const stats = overviewStats();
+    const briefing = overviewBriefing({ latestRun, reviewSignals, recentErrors, sourceWatch, hotTopics: heatTopicsPreview });
 
     target.innerHTML = `
       <section class="workspace-metrics intelligence-metrics" aria-label="Resumen de intelligence">
@@ -256,80 +263,151 @@
         <div><span>Top related line</span><strong>${escapeHtml(stats.topLine)}</strong><small>Mayor densidad actual</small></div>
       </section>
       <section class="intelligence-grid intelligence-grid-overview">
-        <article class="activity-surface intelligence-card intelligence-card-hero">
-          <div class="activity-head">
-            <h3>Run sync</h3>
+        <article class="activity-surface intelligence-card intelligence-card-hero intelligence-briefing-card">
+          <div class="intelligence-briefing-head">
+            <div>
+              <span class="intelligence-kicker">Radar briefing</span>
+              <h3>${escapeHtml(briefing.title)}</h3>
+              <p>${escapeHtml(briefing.summary)}</p>
+            </div>
             <span class="intelligence-status-pill">${escapeHtml(runStatusLabel(latestRun?.status || "idle"))}</span>
           </div>
-          <div class="intelligence-mini-metrics">
+          <div class="intelligence-briefing-metrics">
+            <div><span>Needs review</span><strong>${number(reviewSignals.length)}</strong><small>New + reviewing</small></div>
+            <div><span>Source watch</span><strong>${number(sourceWatch.length)}</strong><small>Fuentes con atención</small></div>
+            <div><span>Recent failures</span><strong>${number(recentErrors.length)}</strong><small>Runs fallidos recientes</small></div>
+            <div><span>Hot topics</span><strong>${number(hotTopics.length)}</strong><small>Temas con mayor tracción</small></div>
+          </div>
+          <ol class="intelligence-priority-list">
+            ${briefing.items.map(item => `
+              <li class="intelligence-priority-item">
+                <span>${escapeHtml(item.label)}</span>
+                <strong>${escapeHtml(item.title)}</strong>
+                <p>${escapeHtml(item.note)}</p>
+              </li>
+            `).join("")}
+          </ol>
+        </article>
+        <article class="activity-surface intelligence-card intelligence-card-wide">
+          <div class="activity-head">
+            <h3>Signal map</h3>
+            <span>${number(prioritizedSignals.length)}</span>
+          </div>
+          ${signalsMatrixMarkup(prioritizedSignals)}
+        </article>
+        <article class="activity-surface intelligence-card">
+          <div class="activity-head">
+            <h3>Sync state</h3>
+            <span>${escapeHtml(latestRun ? runStatusLabel(latestRun.status) : "Sin runs")}</span>
+          </div>
+          <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
             <div><span>Action</span><strong>${escapeHtml(actionLabel(latestRun?.actionType || currentAction))}</strong></div>
             <div><span>Items found</span><strong>${number(latestRun?.itemsFetched || 0)}</strong></div>
             <div><span>Items saved</span><strong>${number((latestRun?.itemsCreated || 0) + (latestRun?.itemsUpdated || 0))}</strong></div>
             <div><span>Signals generated</span><strong>${number(latestRun?.signalsGenerated || 0)}</strong></div>
           </div>
-          <div class="intelligence-stack-meta">
-            <span>${escapeHtml(latestRun ? formatDateTime(latestRun.finishedAt || latestRun.startedAt || latestRun.createdAt) : "Sin ejecuciones todavía")}</span>
-            <strong>${latestRun?.dryRun ? "Dry-run" : "Persistente"}</strong>
-          </div>
-          <ol class="intelligence-action-list">
-            <li>Sync principal usa fuentes habilitadas y topics habilitados.</li>
-            <li>Los grants y patents siguen visibles como acciones aunque su fetch dedicado aun no este implementado.</li>
-            <li>El botón superior dispara el workflow sin salir del dashboard.</li>
-          </ol>
-        </article>
-        <article class="activity-surface intelligence-card">
-          <div class="activity-head">
-            <h3>Execution state</h3>
-            <span>${escapeHtml(latestRun ? runStatusLabel(latestRun.status) : "Sin runs")}</span>
-          </div>
           ${latestRun ? `
             <div class="intelligence-focus-list">
               <div class="intelligence-focus-item">
                 <span>${escapeHtml(latestRun.dryRun ? "Dry-run" : "Run")}</span>
-                <strong>${escapeHtml(actionLabel(latestRun.actionType))}</strong>
-                <p>Started ${escapeHtml(formatDateTime(latestRun.startedAt || latestRun.createdAt))}</p>
+                <strong>${escapeHtml(formatDateTime(latestRun.finishedAt || latestRun.startedAt || latestRun.createdAt))}</strong>
+                <p>${escapeHtml(latestRun.errorMessage ? "La última ejecución terminó con error." : "La última ejecución ya quedó registrada en el radar.")}</p>
               </div>
             </div>
           ` : emptyMarkup("Todavía no hay runs", "Usa Run sync para lanzar el radar y empezar a llenar el log.")}
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Últimos errores</h3>
-            <span>${number(recentErrors.length)}</span>
+            <h3>Runs trend</h3>
+            <span>${number(runTrend.length)}</span>
           </div>
-          ${recentErrors.length ? `
-            <div class="intelligence-stack-list">
-              ${recentErrors.map(run => `
-                <article class="intelligence-stack-card">
-                  <div class="intelligence-stack-meta">
-                    <span>${escapeHtml(actionLabel(run.actionType))}</span>
-                    <strong>${escapeHtml(formatDateTime(run.finishedAt || run.createdAt))}</strong>
-                  </div>
-                  <p>${escapeHtml(run.errorMessage || "Run fallido sin detalle adicional.")}</p>
-                </article>
-              `).join("")}
-            </div>
-          ` : emptyMarkup("Sin errores recientes", "Las ultimas ejecuciones no registran fallos visibles.")}
+          ${runsTrendMarkup(runTrend)}
         </article>
-        <article class="activity-surface intelligence-card intelligence-card-wide">
+        <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Top 5 señales recientes</h3>
-            <span>${number(recentSignals.length)}</span>
+            <h3>Review queue</h3>
+            <span>${number(reviewSignals.length)}</span>
           </div>
-          ${recentSignals.length ? `
-            <div class="intelligence-stack-list">
-              ${recentSignals.map(signal => `
-                <article class="intelligence-stack-card">
+          ${reviewSignals.length ? `
+            <div class="intelligence-queue-list">
+              ${reviewSignals.slice(0, 4).map(signal => `
+                <article class="intelligence-queue-item" data-signal-select="${escapeAttr(signal.id)}">
                   <div class="intelligence-stack-meta">
                     <span>${escapeHtml(signalTypeLabel(signal.signalType))}</span>
                     <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
                   </div>
                   <h4>${escapeHtml(signal.title)}</h4>
                   <p>${escapeHtml(signal.summary || signal.recommendedAction || "Sin resumen todavía.")}</p>
-                  <div class="intelligence-mini-metrics">
-                    <div><span>Opportunity</span><strong>${score(signal.opportunityScore)}</strong></div>
-                    <div><span>Actionability</span><strong>${score(signal.actionabilityScore)}</strong></div>
-                    <div><span>Confidence</span><strong>${score(signal.confidenceScore)}</strong></div>
+                  <div class="intelligence-queue-meters">
+                    ${metricBar("Opportunity", signal.opportunityScore)}
+                    ${metricBar("Actionability", signal.actionabilityScore)}
+                    ${metricBar("Confidence", signal.confidenceScore)}
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+          ` : emptyMarkup("No signals waiting for review", "Cuando haya señales nuevas o en revisión, aparecerán aquí como cola de trabajo.")}
+        </article>
+        <article class="activity-surface intelligence-card">
+          <div class="activity-head">
+            <h3>Source watch</h3>
+            <span>${number(sourceWatch.length)}</span>
+          </div>
+          ${sourceWatch.length ? `
+            <div class="intelligence-stack-list">
+              ${sourceWatch.map(item => `
+                <article class="intelligence-stack-card">
+                  <div class="intelligence-stack-meta">
+                    <span>${escapeHtml(item.label)}</span>
+                    <strong>${escapeHtml(item.state)}</strong>
+                  </div>
+                  <h4>${escapeHtml(item.title)}</h4>
+                  <p>${escapeHtml(item.note)}</p>
+                </article>
+              `).join("")}
+            </div>
+          ` : emptyMarkup("Fuentes estables", "No hay fuentes deshabilitadas o sin sync visible en este momento.")}
+        </article>
+        <article class="activity-surface intelligence-card">
+          <div class="activity-head">
+            <h3>Hot topics</h3>
+            <span>${number(heatTopicsPreview.length)}</span>
+          </div>
+          ${hotTopics.length ? `
+            ${topicHeatmapMarkup(hotTopics.slice(0, 8))}
+            <div class="intelligence-stack-list">
+              ${heatTopicsPreview.map(topic => `
+                <article class="intelligence-stack-card">
+                  <div class="intelligence-stack-meta">
+                    <span>${escapeHtml(topic.line)}</span>
+                    <strong>${number(topic.score)}</strong>
+                  </div>
+                  <h4>${escapeHtml(topic.name)}</h4>
+                  <p>${escapeHtml(topic.note)}</p>
+                </article>
+              `).join("")}
+            </div>
+          ` : emptyMarkup("No topics heating up yet", "Cuando papers y señales empiecen a concentrarse, aparecerán aquí para orientar prioridad.")}
+        </article>
+        <article class="activity-surface intelligence-card intelligence-card-wide">
+          <div class="activity-head">
+            <h3>Recent strategic signals</h3>
+            <span>${number(recentSignals.length)}</span>
+          </div>
+          ${recentSignals.length ? `
+            <div class="intelligence-signal-showcase">
+              ${recentSignals.map(signal => `
+                <article class="intelligence-signal-showcase-item" data-signal-select="${escapeAttr(signal.id)}">
+                  <div class="intelligence-stack-meta">
+                    <span>${escapeHtml(signalTypeLabel(signal.signalType))}</span>
+                    <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
+                  </div>
+                  <h4>${escapeHtml(signal.title)}</h4>
+                  <p>${escapeHtml(signal.summary || signal.recommendedAction || "Sin resumen todavía.")}</p>
+                  <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
+                    <div><span>Opp.</span><strong>${score(signal.opportunityScore)}</strong></div>
+                    <div><span>Act.</span><strong>${score(signal.actionabilityScore)}</strong></div>
+                    <div><span>Conf.</span><strong>${score(signal.confidenceScore)}</strong></div>
                     <div><span>Status</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
                   </div>
                 </article>
@@ -349,50 +427,42 @@
     const signals = sortedSignals();
     const selected = selectedSignal();
     target.innerHTML = `
-      <section class="intelligence-grid intelligence-grid-overview intelligence-detail-layout">
-        <article class="activity-surface intelligence-card intelligence-card-wide">
+      <section class="intelligence-signal-stage">
+        <article class="activity-surface intelligence-card intelligence-signal-rail">
           <div class="activity-head">
-            <h3>Signals</h3>
+            <h3>Signal queue</h3>
             <span>${number(signals.length)}</span>
           </div>
-          <div class="table-scroll intelligence-table-wrap">
-            <table class="account-table intelligence-table intelligence-table-selectable">
-              <thead>
-                <tr>
-                  <th>Título</th>
-                  <th>Tipo</th>
-                  <th>Línea</th>
-                  <th>Opportunity</th>
-                  <th>Actionability</th>
-                  <th>Confidence</th>
-                  <th>Status</th>
-                  <th>Fecha</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${signals.length ? signals.map(signal => `
-                  <tr class="${signal.id === selectedSignalId ? "is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
-                    <td><strong>${escapeHtml(signal.title)}</strong><small>${escapeHtml(signal.summary || "Sin resumen")}</small></td>
-                    <td>${escapeHtml(signalTypeLabel(signal.signalType))}</td>
-                    <td>${escapeHtml(signal.relatedLine || "General")}</td>
-                    <td>${score(signal.opportunityScore)}</td>
-                    <td>${score(signal.actionabilityScore)}</td>
-                    <td>${score(signal.confidenceScore)}</td>
-                    <td><span class="intelligence-status-pill">${escapeHtml(signalStatusLabel(signal.status))}</span></td>
-                    <td>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</td>
-                    <td>
-                      <button class="btn btn-ghost btn-compact" type="button" data-signal-select="${escapeAttr(signal.id)}">Ver</button>
-                    </td>
-                  </tr>
-                `).join("") : `
-                  <tr><td colspan="9">${emptyCell("No strategic signals generated yet.")}</td></tr>
-                `}
-              </tbody>
-            </table>
+          <div class="intelligence-signal-summary">
+            <div><span>Need review</span><strong>${number(signalsNeedingReview().length)}</strong></div>
+            <div><span>Accepted</span><strong>${number(signals.filter(item => item.status === "accepted").length)}</strong></div>
+            <div><span>Avg opp.</span><strong>${averageScore(signals, "opportunityScore")}</strong></div>
           </div>
+          ${signals.length ? `
+            <div class="intelligence-signal-queue">
+              ${signals.map(signal => `
+                <article class="intelligence-signal-card${signal.id === selectedSignalId ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
+                  <div class="intelligence-stack-meta">
+                    <span>${escapeHtml(signalTypeLabel(signal.signalType))}</span>
+                    <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
+                  </div>
+                  <h4>${escapeHtml(signal.title)}</h4>
+                  <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
+                  <div class="intelligence-signal-card-meta">
+                    <span class="intelligence-status-pill">${escapeHtml(signalStatusLabel(signal.status))}</span>
+                    <small>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</small>
+                  </div>
+                  <div class="intelligence-queue-meters">
+                    ${metricBar("Opportunity", signal.opportunityScore)}
+                    ${metricBar("Actionability", signal.actionabilityScore)}
+                    ${metricBar("Confidence", signal.confidenceScore)}
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+          ` : emptyMarkup("No strategic signals generated yet.", "Run the first sync or execute Generate signals to produce strategic opportunities.")}
         </article>
-        <article class="activity-surface intelligence-card intelligence-card-wide">
+        <article class="activity-surface intelligence-card intelligence-signal-detail">
           <div class="activity-head">
             <h3>Detalle de señal</h3>
             <span>${escapeHtml(selected ? signalStatusLabel(selected.status) : "Sin selección")}</span>
@@ -579,6 +649,8 @@
     const target = panelRoot("topics");
     if (!target) return;
     const topic = selectedTopic();
+    const portfolio = topicPortfolio();
+    const selectedInsight = topic ? topicInsight(topic) : null;
     target.innerHTML = `
       <section class="intelligence-grid intelligence-grid-overview intelligence-detail-layout">
         <article class="activity-surface intelligence-card">
@@ -586,14 +658,64 @@
             <h3>Topics</h3>
             <span>${number(dashboard.topics.length)}</span>
           </div>
+          <div class="intelligence-summary-strip">
+            <div class="intelligence-summary-chip">
+              <span>Active</span>
+              <strong>${number(portfolio.activeCount)}</strong>
+              <small>${number(portfolio.disabledCount)} paused</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Hot</span>
+              <strong>${number(portfolio.hotCount)}</strong>
+              <small>${number(portfolio.coldCount)} cold</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Coverage</span>
+              <strong>${number(portfolio.coveredCount)}</strong>
+              <small>${number(portfolio.uncoveredCount)} without hits</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Keywords avg</span>
+              <strong>${number(portfolio.averageKeywords)}</strong>
+              <small>per topic</small>
+            </div>
+          </div>
+          ${portfolio.focus.length ? `
+            <div class="intelligence-stack-list">
+              ${portfolio.focus.map(item => `
+                <article class="intelligence-stack-card intelligence-topic-focus-card">
+                  <div class="intelligence-topic-topline">
+                    <div>
+                      <h4>${escapeHtml(item.name)}</h4>
+                      <p>${escapeHtml(item.note)}</p>
+                    </div>
+                    <span class="intelligence-health-pill intelligence-health-${escapeAttr(item.health)}">${escapeHtml(item.healthLabel)}</span>
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+          ` : ""}
           <div class="intelligence-topic-list">
             ${dashboard.topics.length ? dashboard.topics.map(item => `
+              ${(() => {
+                const insight = topicInsight(item);
+                return `
               <article class="intelligence-topic-item${item.id === selectedTopicId ? " is-active" : ""}">
-                <h4>${escapeHtml(item.name)}</h4>
-                <p>${escapeHtml(item.description || "Sin descripción")}</p>
+                <div class="intelligence-topic-topline">
+                  <div>
+                    <h4>${escapeHtml(item.name)}</h4>
+                    <p>${escapeHtml(item.description || "Sin descripción")}</p>
+                  </div>
+                  <span class="intelligence-health-pill intelligence-health-${escapeAttr(insight.health)}">${escapeHtml(insight.healthLabel)}</span>
+                </div>
                 <div class="intelligence-stack-meta">
-                  <span>${escapeHtml(topicCategoryLabel(item.category))}</span>
+                  <span>${escapeHtml(topicCategoryLabel(item.category))} · ${escapeHtml(insight.line)}</span>
                   <strong>${item.enabled ? "Enabled" : "Disabled"}</strong>
+                </div>
+                <div class="intelligence-mini-metrics intelligence-mini-metrics-tight intelligence-topic-metrics">
+                  <div><span>Papers</span><strong>${number(insight.paperHits)}</strong></div>
+                  <div><span>Signals</span><strong>${number(insight.signalHits)}</strong></div>
+                  <div><span>Assets</span><strong>${number(insight.totalHits)}</strong></div>
                 </div>
                 <div>${topicPills(item.keywords.slice(0, 8))}</div>
                 <div class="intelligence-item-actions">
@@ -603,6 +725,8 @@
                   </button>
                 </div>
               </article>
+                `;
+              })()}
             `).join("") : emptyMarkup("No topics configured.", "Add the monitored topics that should drive the radar before running the first sync.", [
               { label: "Add topic", cta: "add-topic" }
             ])}
@@ -613,6 +737,14 @@
             <h3>${topic ? "Editar topic" : "Nuevo topic"}</h3>
             <span>${escapeHtml(topic ? topic.name : "Draft")}</span>
           </div>
+          ${selectedInsight ? `
+            <div class="intelligence-mini-metrics intelligence-topic-coverage">
+              <div><span>Line</span><strong>${escapeHtml(selectedInsight.line)}</strong></div>
+              <div><span>Heat</span><strong>${escapeHtml(selectedInsight.healthLabel)}</strong></div>
+              <div><span>Keywords</span><strong>${number(selectedInsight.keywordCount)}</strong></div>
+              <div><span>Assets</span><strong>${number(selectedInsight.totalHits)}</strong></div>
+            </div>
+          ` : ""}
           <form class="intelligence-form" data-intelligence-topic-form>
             <input type="hidden" name="id" value="${escapeAttr(topic?.id || "")}" />
             <label class="intelligence-field">
@@ -653,6 +785,8 @@
     const target = panelRoot("sources");
     if (!target) return;
     const source = selectedSource();
+    const health = sourcePortfolio();
+    const selectedHealth = source ? sourceInsight(source) : null;
     target.innerHTML = `
       <section class="intelligence-grid intelligence-grid-overview intelligence-detail-layout">
         <article class="activity-surface intelligence-card intelligence-card-wide">
@@ -660,6 +794,39 @@
             <h3>Sources</h3>
             <span>${number(dashboard.sources.length)}</span>
           </div>
+          <div class="intelligence-summary-strip">
+            <div class="intelligence-summary-chip">
+              <span>Enabled</span>
+              <strong>${number(health.enabledCount)}</strong>
+              <small>${number(health.pausedCount)} paused</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Protected</span>
+              <strong>${number(health.protectedCount)}</strong>
+              <small>quota-sensitive</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Never synced</span>
+              <strong>${number(health.neverSyncedCount)}</strong>
+              <small>need first success</small>
+            </div>
+            <div class="intelligence-summary-chip">
+              <span>Stable</span>
+              <strong>${number(health.stableCount)}</strong>
+              <small>${number(health.watchCount)} on watch</small>
+            </div>
+          </div>
+          ${health.watch.length ? `
+            <div class="intelligence-focus-list">
+              ${health.watch.map(item => `
+                <article class="intelligence-focus-item">
+                  <span>${escapeHtml(item.label)}</span>
+                  <strong>${escapeHtml(item.title)}</strong>
+                  <p>${escapeHtml(item.note)}</p>
+                </article>
+              `).join("")}
+            </div>
+          ` : ""}
           <div class="table-scroll intelligence-table-wrap">
             <table class="account-table intelligence-table intelligence-table-selectable">
               <thead>
@@ -674,14 +841,19 @@
               </thead>
               <tbody>
                 ${dashboard.sources.length ? dashboard.sources.map(item => `
+                  ${(() => {
+                    const insight = sourceInsight(item);
+                    return `
                   <tr class="${item.id === selectedSourceId ? "is-selected" : ""}" data-source-select="${escapeAttr(item.id)}">
                     <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.type)} · ${escapeHtml(item.baseUrl || "-")}</small></td>
                     <td>${item.enabled ? "Yes" : "No"}</td>
                     <td>${escapeHtml(formatDateTime(item.lastSyncAt))}</td>
                     <td>${item.requiresApiKey ? "Yes" : "No"}</td>
-                    <td><span class="intelligence-status-pill">${escapeHtml(sourceStatus(item))}</span></td>
-                    <td>${escapeHtml(item.rateLimitNotes || "-")}</td>
+                    <td><span class="intelligence-status-pill intelligence-health-${escapeAttr(insight.health)}">${escapeHtml(insight.status)}</span></td>
+                    <td>${escapeHtml(insight.note)}</td>
                   </tr>
+                    `;
+                  })()}
                 `).join("") : `<tr><td colspan="6">${emptyCell("No intelligence sources configured.")}</td></tr>`}
               </tbody>
             </table>
@@ -694,6 +866,20 @@
             <span>${escapeHtml(source ? source.name : "Sin selección")}</span>
           </div>
           ${source ? `
+            <div class="intelligence-mini-metrics intelligence-source-detail-summary">
+              <div><span>Status</span><strong>${escapeHtml(selectedHealth.status)}</strong></div>
+              <div><span>API mode</span><strong>${selectedHealth.requiresApiKey ? "Protected" : "Open"}</strong></div>
+              <div><span>Last sync</span><strong>${escapeHtml(selectedHealth.lastSyncLabel)}</strong></div>
+              <div><span>Sync age</span><strong>${escapeHtml(selectedHealth.syncAgeLabel)}</strong></div>
+            </div>
+            <div class="intelligence-stack-list intelligence-source-watchlist">
+              ${selectedHealth.watchReasons.map(reason => `
+                <article class="intelligence-stack-card">
+                  <h4>${escapeHtml(reason.label)}</h4>
+                  <p>${escapeHtml(reason.note)}</p>
+                </article>
+              `).join("")}
+            </div>
             <form class="intelligence-form" data-intelligence-source-form>
               <input type="hidden" name="id" value="${escapeAttr(source.id)}" />
               <label class="intelligence-field">
@@ -809,11 +995,25 @@
       return;
     }
 
+    const copyErrorButton = event.target.closest("[data-intelligence-copy-error]");
+    if (copyErrorButton) {
+      const run = dashboard.runs.find(item => item.id === (copyErrorButton.dataset.intelligenceCopyError || ""));
+      if (run?.errorMessage) {
+        void copyErrorDetail(copyErrorButton, run.errorMessage);
+      }
+      return;
+    }
+
     const signalSelect = event.target.closest("[data-signal-select]");
     if (signalSelect) {
       selectedSignalId = signalSelect.dataset.signalSelect || "";
-      renderSignals();
-      refreshIcons();
+      if (currentPanel !== "signals") {
+        currentPanel = "signals";
+        renderPanels();
+      } else {
+        renderSignals();
+        refreshIcons();
+      }
       return;
     }
 
@@ -1084,6 +1284,330 @@
     };
   }
 
+  function signalsNeedingReview() {
+    return sortedSignals().filter(item => ["new", "reviewing"].includes(item.status));
+  }
+
+  function signalReviewQueue() {
+    return sortedSignals().sort((left, right) => prioritySignalScore(right) - prioritySignalScore(left));
+  }
+
+  function prioritySignalScore(signal) {
+    const reviewBoost = signal.status === "new" ? 18 : signal.status === "reviewing" ? 10 : 0;
+    return (
+      Number(signal.opportunityScore || 0) * 0.45
+      + Number(signal.actionabilityScore || 0) * 0.3
+      + Number(signal.confidenceScore || 0) * 0.25
+      + reviewBoost
+    );
+  }
+
+  function averageScore(items, field) {
+    if (!items.length) return "0%";
+    const total = items.reduce((sum, item) => sum + (Number(item?.[field]) || 0), 0);
+    return `${Math.round(total / items.length)}%`;
+  }
+
+  function overviewBriefing({ latestRun, reviewSignals, recentErrors, sourceWatch, hotTopics }) {
+    const items = [];
+    if (reviewSignals.length) {
+      const lead = reviewSignals[0];
+      items.push({
+        label: "Review now",
+        title: lead.title || "Signal pendiente",
+        note: `${signalTypeLabel(lead.signalType)} · ${lead.relatedLine || "General"} · ${score(lead.opportunityScore)} opportunity`
+      });
+    }
+    if (recentErrors.length) {
+      const errorRun = recentErrors[0];
+      items.push({
+        label: "Failure watch",
+        title: actionLabel(errorRun.actionType),
+        note: `Último fallo ${formatDateTime(errorRun.finishedAt || errorRun.createdAt)}`
+      });
+    }
+    if (sourceWatch.length) {
+      const source = sourceWatch[0];
+      items.push({
+        label: source.label,
+        title: source.title,
+        note: source.note
+      });
+    }
+    if (!items.length && hotTopics.length) {
+      const topic = hotTopics[0];
+      items.push({
+        label: "Topic heat",
+        title: topic.name,
+        note: topic.note
+      });
+    }
+    if (!items.length) {
+      items.push({
+        label: "Ready",
+        title: "Radar estable",
+        note: "No hay señales nuevas ni fallos recientes. El siguiente paso es correr sync o revisar Topics."
+      });
+    }
+    return {
+      title: reviewSignals.length
+        ? `${number(reviewSignals.length)} signal(s) requieren criterio humano`
+        : latestRun?.status === "failed"
+          ? "El radar necesita atención operativa"
+          : "El radar está listo para el próximo ciclo",
+      summary: recentErrors.length
+        ? "Hay fallos recientes o fuentes que merecen revisión antes de confiar en el siguiente sync."
+        : reviewSignals.length
+          ? "La cola actual ya tiene señales con suficiente densidad como para decidir si se aceptan, archivan o rechazan."
+          : "El panel está en estado limpio. Puedes correr sync, revisar señales aceptadas o ajustar topics y sources.",
+      items: items.slice(0, 3)
+    };
+  }
+
+  function sourceWatchItems() {
+    const failed = failedRuns();
+    const enabledSources = dashboard.sources.filter(item => item.enabled);
+    const items = [];
+    if (failed.length) {
+      items.push({
+        label: "Run failure",
+        title: actionLabel(failed[0].actionType),
+        state: runStatusLabel(failed[0].status),
+        note: failed[0].errorMessage || "Run fallido sin detalle adicional."
+      });
+    }
+    enabledSources
+      .filter(item => !item.lastSyncAt)
+      .slice(0, 2)
+      .forEach(item => {
+        items.push({
+          label: "No sync yet",
+          title: item.name,
+          state: item.requiresApiKey ? "Check credentials" : "Pending first success",
+          note: item.rateLimitNotes || "La fuente sigue habilitada pero todavía no registra un sync exitoso."
+        });
+      });
+    enabledSources
+      .filter(item => item.requiresApiKey)
+      .slice(0, 2)
+      .forEach(item => {
+        items.push({
+          label: "Quota-sensitive",
+          title: item.name,
+          state: "Watch limits",
+          note: item.rateLimitNotes || "Conviene mantener límites bajos y runs específicos para esta fuente."
+        });
+      });
+    return dedupeWatchItems(items).slice(0, 4);
+  }
+
+  function dedupeWatchItems(items) {
+    const seen = new Set();
+    return items.filter(item => {
+      const key = `${item.label}|${item.title}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function topicHeatmap() {
+    const entries = dashboard.topics
+      .filter(item => item.enabled)
+      .map(topic => {
+        const paperHits = dashboard.papers.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+        const grantHits = dashboard.grants.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+        const patentHits = dashboard.patents.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+        const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === mapTopicLine(topic)).length;
+        const scoreValue = paperHits * 3 + grantHits * 2 + patentHits * 2 + signalHits * 4;
+        return {
+          name: topic.name,
+          line: mapTopicLine(topic),
+          score: scoreValue,
+          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patents · ${signalHits} signals`
+        };
+      })
+      .filter(item => item.score > 0)
+      .sort((left, right) => right.score - left.score);
+    return entries;
+  }
+
+  function mapTopicLine(topic) {
+    const category = String(topic?.category || "general");
+    if (category === "nano") return "MAP-Nano";
+    if (category === "bio") return "MAP-Bio";
+    if (category === "med") return "MAP-Med";
+    if (category === "ing") return "MAP-Ing";
+    return "General";
+  }
+
+  function metricBar(label, value) {
+    const width = Math.max(6, Math.min(100, Math.round(Number(value) || 0)));
+    return `
+      <div class="intelligence-meter">
+        <div><span>${escapeHtml(label)}</span><strong>${score(value)}</strong></div>
+        <b style="width:${width}%"></b>
+      </div>
+    `;
+  }
+
+  function signalsMatrixMarkup(signals) {
+    const items = Array.isArray(signals) ? signals.slice(0, 14) : [];
+    if (!items.length) {
+      return emptyMarkup("No strategic signals generated yet.", "Cuando el radar produzca señales, aparecerán aquí en un mapa de oportunidad vs actionability.", [
+        { label: "Run first sync", cta: "run-sync" }
+      ]);
+    }
+    const width = 640;
+    const height = 292;
+    const paddingX = 46;
+    const paddingTop = 16;
+    const paddingBottom = 34;
+    const plotWidth = width - paddingX - 18;
+    const plotHeight = height - paddingTop - paddingBottom;
+    const toneCounts = { new: 0, reviewing: 0, accepted: 0, archived: 0, rejected: 0 };
+    const points = items.map((signal, index) => {
+      const opportunity = clampScore(signal.opportunityScore);
+      const actionability = clampScore(signal.actionabilityScore);
+      const confidence = clampScore(signal.confidenceScore);
+      const cx = paddingX + (opportunity / 100) * plotWidth;
+      const cy = paddingTop + ((100 - actionability) / 100) * plotHeight;
+      const r = 7 + Math.round((confidence / 100) * 8);
+      const tone = signalStatusTone(signal.status);
+      toneCounts[tone] = (toneCounts[tone] || 0) + 1;
+      return {
+        id: signal.id,
+        title: signal.title,
+        tone,
+        label: shortLineLabel(signal.relatedLine || "General"),
+        cx,
+        cy,
+        r,
+        confidence,
+        opportunity,
+        actionability,
+        index
+      };
+    });
+    const legend = [
+      { tone: "new", label: "New" },
+      { tone: "reviewing", label: "Reviewing" },
+      { tone: "accepted", label: "Accepted" },
+      { tone: "archived", label: "Archived / rejected" }
+    ];
+    return `
+      <div class="intelligence-chart-card">
+        <div class="intelligence-chart-head">
+          <p>Opportunity on X, actionability on Y. Bigger marks mean higher confidence.</p>
+          <div class="intelligence-chart-legend">
+            ${legend.map(item => `
+              <span><i class="intelligence-dot intelligence-dot-${escapeAttr(item.tone)}"></i>${escapeHtml(item.label)}${toneCounts[item.tone] ? ` · ${number(toneCounts[item.tone])}` : ""}</span>
+            `).join("")}
+          </div>
+        </div>
+        <svg class="intelligence-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Signal map">
+          <defs>
+            <linearGradient id="intelligenceMatrixBg" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(86,255,166,.08)"></stop>
+              <stop offset="100%" stop-color="rgba(114,177,255,.04)"></stop>
+            </linearGradient>
+          </defs>
+          <rect x="${paddingX}" y="${paddingTop}" width="${plotWidth}" height="${plotHeight}" rx="14" fill="url(#intelligenceMatrixBg)"></rect>
+          <line x1="${paddingX}" y1="${paddingTop + plotHeight / 2}" x2="${paddingX + plotWidth}" y2="${paddingTop + plotHeight / 2}" class="intelligence-chart-grid"></line>
+          <line x1="${paddingX + plotWidth / 2}" y1="${paddingTop}" x2="${paddingX + plotWidth / 2}" y2="${paddingTop + plotHeight}" class="intelligence-chart-grid"></line>
+          <line x1="${paddingX}" y1="${paddingTop}" x2="${paddingX}" y2="${paddingTop + plotHeight}" class="intelligence-chart-axis"></line>
+          <line x1="${paddingX}" y1="${paddingTop + plotHeight}" x2="${paddingX + plotWidth}" y2="${paddingTop + plotHeight}" class="intelligence-chart-axis"></line>
+          <text x="${paddingX + 10}" y="${paddingTop + 18}" class="intelligence-chart-caption">High actionability</text>
+          <text x="${paddingX + plotWidth - 122}" y="${paddingTop + 18}" class="intelligence-chart-caption">Fast decisions</text>
+          <text x="${paddingX + plotWidth - 88}" y="${paddingTop + plotHeight - 12}" class="intelligence-chart-caption">Opportunity</text>
+          <text x="18" y="${paddingTop + 18}" class="intelligence-chart-caption intelligence-chart-caption-vertical">Actionability</text>
+          ${points.map(point => `
+            <g>
+              <circle
+                cx="${point.cx}"
+                cy="${point.cy}"
+                r="${point.r}"
+                class="intelligence-point intelligence-point-${escapeAttr(point.tone)}"
+                data-signal-select="${escapeAttr(point.id)}"
+              ></circle>
+              <text x="${point.cx}" y="${point.cy + 3}" class="intelligence-point-label" data-signal-select="${escapeAttr(point.id)}">${escapeHtml(point.label)}</text>
+            </g>
+          `).join("")}
+          <text x="${paddingX}" y="${height - 8}" class="intelligence-chart-axis-label">0</text>
+          <text x="${paddingX + plotWidth / 2 - 8}" y="${height - 8}" class="intelligence-chart-axis-label">50</text>
+          <text x="${paddingX + plotWidth - 18}" y="${height - 8}" class="intelligence-chart-axis-label">100</text>
+          <text x="${paddingX - 22}" y="${paddingTop + plotHeight}" class="intelligence-chart-axis-label">0</text>
+          <text x="${paddingX - 30}" y="${paddingTop + plotHeight / 2 + 4}" class="intelligence-chart-axis-label">50</text>
+          <text x="${paddingX - 38}" y="${paddingTop + 4}" class="intelligence-chart-axis-label">100</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  function topicHeatmapMarkup(entries) {
+    const items = Array.isArray(entries) ? entries.slice(0, 8) : [];
+    if (!items.length) return "";
+    const maxScore = Math.max(...items.map(item => item.score || 0), 1);
+    return `
+      <div class="intelligence-heatmap">
+        ${items.map(item => {
+          const intensity = Math.max(14, Math.round((Number(item.score || 0) / maxScore) * 100));
+          return `
+            <button class="intelligence-heatmap-cell" type="button" data-panel-target="topics" style="--heat:${intensity}%;">
+              <strong>${escapeHtml(item.name)}</strong>
+              <span>${escapeHtml(item.line)}</span>
+              <small>${number(item.score)} pts</small>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function recentRunTrend() {
+    return [...dashboard.runs]
+      .sort((left, right) => Date.parse(left.createdAt || 0) - Date.parse(right.createdAt || 0))
+      .slice(-6)
+      .map(run => ({
+        id: run.id,
+        label: compactDateLabel(run.finishedAt || run.startedAt || run.createdAt),
+        fetched: Number(run.itemsFetched || 0),
+        saved: Number(run.itemsCreated || 0) + Number(run.itemsUpdated || 0),
+        signals: Number(run.signalsGenerated || 0),
+        status: run.status || "pending"
+      }));
+  }
+
+  function runsTrendMarkup(entries) {
+    const items = Array.isArray(entries) ? entries : [];
+    if (!items.length) {
+      return emptyMarkup("No runs yet", "Cuando el radar ejecute syncs, aquí verás si está trayendo datos o solo generando actividad vacía.");
+    }
+    const maxValue = Math.max(...items.flatMap(item => [item.fetched, item.saved, item.signals]), 1);
+    return `
+      <div class="intelligence-runtrend">
+        <div class="intelligence-chart-legend">
+          <span><i class="intelligence-bar intelligence-bar-fetched"></i>Fetched</span>
+          <span><i class="intelligence-bar intelligence-bar-saved"></i>Saved</span>
+          <span><i class="intelligence-bar intelligence-bar-signals"></i>Signals</span>
+        </div>
+        <div class="intelligence-runtrend-grid">
+          ${items.map(item => `
+            <article class="intelligence-runtrend-item">
+              <div class="intelligence-runtrend-bars">
+                <b class="intelligence-runtrend-bar intelligence-bar-fetched" style="height:${Math.max(10, Math.round((item.fetched / maxValue) * 100))}%"></b>
+                <b class="intelligence-runtrend-bar intelligence-bar-saved" style="height:${Math.max(10, Math.round((item.saved / maxValue) * 100))}%"></b>
+                <b class="intelligence-runtrend-bar intelligence-bar-signals" style="height:${Math.max(10, Math.round((item.signals / maxValue) * 100))}%"></b>
+              </div>
+              <strong>${escapeHtml(item.label)}</strong>
+              <small>${escapeHtml(runStatusLabel(item.status))}</small>
+            </article>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function filteredPapers() {
     return applyResearchFilters(dashboard.papers, filters.papers, {
       dateField: "publicationDate",
@@ -1251,10 +1775,177 @@
     }[status] || status || "Idle";
   }
 
+  function signalStatusTone(status) {
+    if (status === "new") return "new";
+    if (status === "reviewing") return "reviewing";
+    if (status === "accepted") return "accepted";
+    return "archived";
+  }
+
+  function shortLineLabel(value) {
+    const line = String(value || "General");
+    if (line === "MAP-Nano") return "N";
+    if (line === "MAP-Bio") return "B";
+    if (line === "MAP-Med") return "M";
+    if (line === "MAP-Ing") return "I";
+    if (line === "MAPs") return "S";
+    return "G";
+  }
+
   function sourceStatus(source) {
-    if (!source.enabled) return "Paused";
-    if (source.requiresApiKey) return "Needs config";
-    return "Active";
+    return sourceInsight(source).status;
+  }
+
+  function topicPortfolio() {
+    const insights = dashboard.topics.map(topicInsight);
+    return {
+      activeCount: insights.filter(item => item.enabled).length,
+      disabledCount: insights.filter(item => !item.enabled).length,
+      hotCount: insights.filter(item => item.health === "hot").length,
+      coldCount: insights.filter(item => item.health === "cold").length,
+      coveredCount: insights.filter(item => item.totalHits > 0).length,
+      uncoveredCount: insights.filter(item => item.totalHits === 0).length,
+      averageKeywords: insights.length
+        ? Math.round(insights.reduce((sum, item) => sum + item.keywordCount, 0) / insights.length)
+        : 0,
+      focus: insights
+        .filter(item => item.enabled)
+        .sort((left, right) => right.totalHits - left.totalHits)
+        .slice(0, 3)
+    };
+  }
+
+  function topicInsight(topic) {
+    const line = mapTopicLine(topic);
+    const paperHits = dashboard.papers.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+    const grantHits = dashboard.grants.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+    const patentHits = dashboard.patents.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+    const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === line).length;
+    const totalHits = paperHits + grantHits + patentHits + signalHits;
+    const keywordCount = Array.isArray(topic?.keywords) ? topic.keywords.length : 0;
+    const health = !topic.enabled ? "paused" : totalHits >= 12 ? "hot" : totalHits >= 4 ? "active" : "cold";
+    const healthLabel = {
+      paused: "Paused",
+      hot: "Hot",
+      active: "Active",
+      cold: "Cold"
+    }[health] || "Cold";
+    return {
+      id: topic.id,
+      name: topic.name,
+      enabled: Boolean(topic.enabled),
+      line,
+      paperHits,
+      grantHits,
+      patentHits,
+      signalHits,
+      totalHits,
+      keywordCount,
+      health,
+      healthLabel,
+      note: `${paperHits} papers · ${signalHits} signals · ${keywordCount} keywords`
+    };
+  }
+
+  function sourcePortfolio() {
+    const insights = dashboard.sources.map(sourceInsight);
+    return {
+      enabledCount: insights.filter(item => item.enabled).length,
+      pausedCount: insights.filter(item => !item.enabled).length,
+      protectedCount: insights.filter(item => item.requiresApiKey).length,
+      neverSyncedCount: insights.filter(item => item.health === "cold").length,
+      stableCount: insights.filter(item => item.health === "active").length,
+      watchCount: insights.filter(item => item.health !== "active").length,
+      watch: insights
+        .filter(item => item.health !== "active")
+        .slice(0, 4)
+        .map(item => ({
+          label: item.healthLabel,
+          title: item.name,
+          note: item.note
+        }))
+    };
+  }
+
+  function sourceInsight(source) {
+    const lastSyncDate = source?.lastSyncAt ? new Date(source.lastSyncAt) : null;
+    const hasLastSync = Boolean(lastSyncDate && !Number.isNaN(lastSyncDate.getTime()));
+    const daysSinceSync = hasLastSync ? Math.floor((Date.now() - lastSyncDate.getTime()) / 86400000) : null;
+    let health = "active";
+    if (!source.enabled) {
+      health = "paused";
+    } else if (!hasLastSync) {
+      health = "cold";
+    } else if (daysSinceSync > 14) {
+      health = "watch";
+    }
+    const status = !source.enabled
+      ? "Paused"
+      : !hasLastSync
+        ? source.requiresApiKey ? "Awaiting first sync" : "Never synced"
+        : daysSinceSync > 14
+          ? "Stale"
+          : source.requiresApiKey
+            ? "Protected"
+            : "Active";
+    const note = !source.enabled
+      ? "Disabled from the radar."
+      : !hasLastSync
+        ? source.rateLimitNotes || "Still waiting for the first successful sync."
+        : daysSinceSync > 14
+          ? `Last sync was ${daysSinceSync} days ago.`
+          : source.rateLimitNotes || "Healthy source configuration.";
+    const watchReasons = [];
+    if (!source.enabled) {
+      watchReasons.push({
+        label: "Paused",
+        note: "Esta fuente no participará en el próximo sync hasta volver a activarla."
+      });
+    }
+    if (!hasLastSync) {
+      watchReasons.push({
+        label: "First sync pending",
+        note: source.requiresApiKey
+          ? "Conviene validar credenciales y lanzar un sync específico antes de confiar en esta fuente."
+          : "Todavía no hay evidencia de una primera sincronización exitosa."
+      });
+    }
+    if (source.requiresApiKey) {
+      watchReasons.push({
+        label: "Quota-sensitive",
+        note: source.rateLimitNotes || "Mantén queries compactas y límites moderados para no gastar cuota sin señal útil."
+      });
+    }
+    if (hasLastSync && daysSinceSync > 14) {
+      watchReasons.push({
+        label: "Stale source",
+        note: `Pasaron ${daysSinceSync} días desde el último sync. Puede haber cobertura desactualizada.`
+      });
+    }
+    if (!watchReasons.length) {
+      watchReasons.push({
+        label: "Healthy",
+        note: "La fuente está utilizable para el próximo ciclo y no muestra alertas básicas."
+      });
+    }
+    return {
+      id: source.id,
+      name: source.name,
+      enabled: Boolean(source.enabled),
+      requiresApiKey: Boolean(source.requiresApiKey),
+      health,
+      healthLabel: {
+        paused: "Paused",
+        cold: "Needs first sync",
+        watch: "Watch",
+        active: "Stable"
+      }[health] || "Stable",
+      status,
+      note,
+      lastSyncLabel: formatDateTime(source.lastSyncAt),
+      syncAgeLabel: !hasLastSync ? "Never" : daysSinceSync <= 0 ? "Today" : `${daysSinceSync}d`,
+      watchReasons
+    };
   }
 
   function emptyMarkup(title, text) {
@@ -1341,6 +2032,10 @@
     return [...new Set(String(value || "").split(",").map(item => item.trim()).filter(Boolean))];
   }
 
+  function clampScore(value) {
+    return Math.max(0, Math.min(100, Number(value || 0)));
+  }
+
   function number(value) {
     return new Intl.NumberFormat("es-DO").format(Number(value || 0));
   }
@@ -1359,6 +2054,12 @@
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return "-";
     return date.toLocaleString("es-DO", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function compactDateLabel(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("es-DO", { month: "short", day: "2-digit" });
   }
 
   function cutoffDate(range) {
@@ -1513,6 +2214,18 @@
       }
     });
     target.append(button);
+  }
+
+  async function copyErrorDetail(button, text) {
+    try {
+      await navigator.clipboard.writeText(String(text || ""));
+      button.textContent = "Copiado";
+      window.setTimeout(() => {
+        button.textContent = "Copiar detalle";
+      }, 1400);
+    } catch {
+      button.textContent = "No se pudo copiar";
+    }
   }
 
   function intelligenceError(error) {
