@@ -6,6 +6,8 @@ import { generateStrategicSignals } from "./intelligence/signals.mjs";
 import { createIntelligenceStoreFromEnv } from "./intelligence/store.mjs";
 
 const PAPER_ACTIONS = new Set(["sync_papers", "fetch_papers"]);
+const GRANT_ACTIONS = new Set(["fetch_grants"]);
+const PATENT_ACTIONS = new Set(["fetch_patents"]);
 
 function redactSensitiveText(value) {
   return String(value || "")
@@ -152,7 +154,7 @@ function topicMatchTerms(topic) {
     .filter(Boolean);
 }
 
-function paperTopicHaystack(item) {
+function itemTopicHaystack(item) {
   return [
     item?.title,
     item?.abstract,
@@ -160,6 +162,11 @@ function paperTopicHaystack(item) {
     ...(Array.isArray(item?.keywords) ? item.keywords : []),
     ...(Array.isArray(item?.institutions) ? item.institutions : []),
     ...(Array.isArray(item?.authors) ? item.authors : []),
+    ...(Array.isArray(item?.principalInvestigators) ? item.principalInvestigators : []),
+    ...(Array.isArray(item?.assignees) ? item.assignees : []),
+    item?.agency,
+    item?.program,
+    item?.country,
     item?.journalOrVenue,
     item?.sourceName
   ]
@@ -167,11 +174,11 @@ function paperTopicHaystack(item) {
     .join(" ");
 }
 
-function enrichPaperTopics(item, topics = []) {
+function enrichItemTopics(item, topics = []) {
   if (!topics.length) return item;
   const explicitTopics = Array.isArray(item?.topics) ? item.topics : [];
   const explicitNormalized = explicitTopics.map(normalizeTopicMatchValue);
-  const haystack = paperTopicHaystack(item);
+  const haystack = itemTopicHaystack(item);
   const matchedTopicNames = topics
     .filter(topic => topic?.enabled !== false)
     .filter(topic => {
@@ -185,7 +192,7 @@ function enrichPaperTopics(item, topics = []) {
   const topicsOut = cleanArray([...explicitTopics, ...matchedTopicNames], 64, 120);
   return {
     ...item,
-    topics: topicsOut
+      topics: topicsOut
   };
 }
 
@@ -208,7 +215,7 @@ async function runTopicDiagnostics(store, topics, logger) {
   let candidates = 0;
 
   for (const paper of existingPapers) {
-    const enriched = enrichPaperTopics(paper, topics);
+    const enriched = enrichItemTopics(paper, topics);
     if (sameTopicSet(paper.topics, enriched.topics)) continue;
     candidates += 1;
     await store.savePaper(enriched, paper.sourceId || "");
@@ -244,6 +251,19 @@ function dryRunSignalContext(store, topics, dedupedItems) {
   });
 }
 
+function dedupeGrantItems(items = []) {
+  const seen = new Map();
+  for (const item of Array.isArray(items) ? items : []) {
+    const externalId = cleanText(item?.externalId || "", 200).toLowerCase();
+    const title = cleanText(item?.title || "", 600).toLowerCase();
+    const sourceType = cleanText(item?.sourceType || "", 80).toLowerCase();
+    const key = externalId ? `${sourceType}:${externalId}` : `${sourceType}:title:${title}`;
+    if (!key || seen.has(key)) continue;
+    seen.set(key, item);
+  }
+  return [...seen.values()].filter(item => cleanText(item?.title || "", 600));
+}
+
 export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   const options = normalizeOptions(rawOptions);
   const logger = deps.logger || console;
@@ -256,17 +276,17 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   let run = null;
   let enabledTopics = [];
 
-  if (PAPER_ACTIONS.has(action)) {
+  if (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action)) {
     if (store && !options.dryRun && !deps.connectors) {
-      const registryConnectors = getConnectors();
+      const registryConnectors = getConnectors([], action);
       await Promise.all(registryConnectors.map(connector => store.ensureSourceRecord(connector)));
     }
     const sourceTypes = await resolveSourceTypes(store, options);
-    connectors = deps.connectors || getConnectors(sourceTypes);
+    connectors = deps.connectors || getConnectors(sourceTypes, action);
     if (!connectors.length) {
       throw new Error("No intelligence connectors selected.");
     }
-    if (store) {
+    if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action))) {
       enabledTopics = await store.listEnabledTopics();
     }
   }
@@ -323,6 +343,66 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       return result;
     }
 
+    if (GRANT_ACTIONS.has(action)) {
+      const keywords = await resolveKeywords(store, options);
+      const query = {
+        text: cleanText(options.queryText, 400),
+        keywords,
+        limit: options.limit,
+        fromDate: options.fromDate,
+        toDate: options.toDate
+      };
+
+      const fetchedBySource = [];
+      for (const connector of connectors) {
+        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+        fetchedBySource.push({ connector, items });
+        logger.log(`[source:${connector.sourceType}] fetched ${items.length} grants`);
+      }
+
+      const combinedItems = fetchedBySource.flatMap(entry => entry.items);
+      const dedupedItems = dedupeGrantItems(combinedItems);
+      let itemsCreated = 0;
+      let itemsUpdated = 0;
+
+      if (store && !options.dryRun) {
+        for (const entry of fetchedBySource) {
+          const sourceRecord = sourceRecords.find(record => record.type === entry.connector.sourceType);
+          if (!sourceRecord?.id) continue;
+          for (const item of dedupeGrantItems(entry.items)) {
+            const result = await store.saveGrant(item, sourceRecord.id);
+            if (result.action === "created") itemsCreated += 1;
+            if (result.action === "updated") itemsUpdated += 1;
+          }
+          await store.touchSourceSync(sourceRecord.id);
+        }
+      }
+
+      if (run && store) {
+        await store.completeRun(run.id, {
+          itemsFetched: combinedItems.length,
+          itemsCreated,
+          itemsUpdated,
+          signalsGenerated: 0
+        });
+      }
+
+      const result = {
+        action,
+        dryRun: options.dryRun,
+        connectors: connectors.map(connector => connector.sourceType),
+        sourceRecords,
+        itemsFetched: combinedItems.length,
+        itemsDeduped: dedupedItems.length,
+        itemsCreated,
+        itemsUpdated,
+        signalsGenerated: 0,
+        runId: run?.id || ""
+      };
+      logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+      return result;
+    }
+
     if (!PAPER_ACTIONS.has(action)) {
       throw new Error(`${actionLabel(action)} is not implemented yet.`);
     }
@@ -339,7 +419,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     const fetchedBySource = [];
 
     for (const connector of connectors) {
-      const items = (await connector.search(query)).map(item => enrichPaperTopics(item, enabledTopics));
+      const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
       fetchedBySource.push({
         connector,
         items

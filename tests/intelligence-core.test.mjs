@@ -370,3 +370,76 @@ test("PubMed connector uses NCBI api_key and normalizes fetched XML", async () =
     process.env.NCBI_API_KEY = originalApiKey;
   }
 });
+
+test("NIH RePORTER connector normalizes grant results from the official project search payload", async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (url, options = {}) => {
+    requests.push({
+      url: String(url),
+      method: options.method || "GET",
+      body: options.body || ""
+    });
+    return {
+      ok: true,
+      async json() {
+        return {
+          results: [
+            {
+              appl_id: 11364092,
+              project_title: "Automated image analysis for biomedical microscopy",
+              abstract_text: "Cell counting workflow for biological image analysis.",
+              agency_ic_admin: {
+                abbreviation: "NIBIB",
+                name: "National Institute of Biomedical Imaging and Bioengineering"
+              },
+              funding_mechanism: "Research Projects",
+              award_amount: 692085,
+              budget_start: "2025-07-01T00:00:00",
+              budget_end: "2029-03-31T00:00:00",
+              principal_investigators: [
+                { full_name: "Georges El Fakhri" }
+              ],
+              organization: {
+                org_name: "YALE UNIVERSITY",
+                org_country: "UNITED STATES"
+              },
+              project_detail_url: "https://reporter.nih.gov/search/example/project-details/11364092",
+              terms: "<Cell Counting><Microscopy><Image Analysis>",
+              pref_terms: "<Biomedical Imaging>",
+              opportunity_number: "PA-20-185",
+              fiscal_year: 2026
+            }
+          ]
+        };
+      }
+    };
+  };
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/nih-reporter.mjs")).href}?test=${Date.now()}`);
+    const { default: nihReporter } = await import(moduleUrl.href);
+
+    assert.equal(nihReporter.requiresApiKey, false);
+    const items = await nihReporter.search({
+      keywords: ["cell counting"],
+      limit: 2
+    });
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].method, "POST");
+    const body = JSON.parse(requests[0].body);
+    assert.equal(body.limit, 2);
+    assert.equal(body.criteria.include_active_projects, true);
+    assert.equal(items.length, 1);
+    assert.equal(items[0].kind, "grant");
+    assert.equal(items[0].externalId, "11364092");
+    assert.equal(items[0].agency, "NIBIB");
+    assert.equal(items[0].currency, "USD");
+    assert.deepEqual(items[0].principalInvestigators, ["Georges El Fakhri"]);
+    assert.ok(items[0].topics.includes("Cell Counting"));
+  } finally {
+    global.fetch = originalFetch;
+  }
+});

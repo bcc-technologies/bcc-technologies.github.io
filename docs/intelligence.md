@@ -64,6 +64,7 @@ Implemented now:
 - `Crossref`
 - `Semantic Scholar`
 - `PubMed / NCBI`
+- `NIH RePORTER`
 
 Prepared but not fully implemented yet:
 
@@ -106,7 +107,7 @@ NIH_REPORTER_API_KEY=
 - `OPENALEX_EMAIL` is optional and useful as a contact identifier.
 - `SEMANTIC_SCHOLAR_API_KEY` is optional but recommended for steadier rate limits.
 - `NCBI_API_KEY` is optional but recommended for smoother PubMed sync volume.
-- `NIH_REPORTER_API_KEY` is only needed when that connector is activated.
+- `NIH_REPORTER_API_KEY` is not needed for the currently implemented NIH RePORTER connector.
 - Secrets are not stored in the `Intelligence` tables.
 
 More operational detail:

@@ -55,6 +55,7 @@ Solo `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son obligatorios para que el p
 `OPENALEX_EMAIL` sigue siendo opcional y sirve como identificación de contacto adicional.
 `SEMANTIC_SCHOLAR_API_KEY` es opcional pero recomendable.
 `NCBI_API_KEY` es opcional, pero muy recomendable si vas a usar `PubMed` de forma habitual.
+`NIH_REPORTER_API_KEY` no es necesaria para la implementación actual de `NIH RePORTER`.
 Las demás quedan preparadas para conectores futuros.
 
 ### 4. Qué hace el flujo
@@ -78,7 +79,8 @@ En esta primera versión:
 - `Run Intelligence Sync` sincroniza papers usando `enabled sources` y `enabled topics`, y luego genera señales por reglas heurísticas.
 - `Fetch latest papers` sincroniza papers sin forzar generación posterior de señales.
 - `Generate signals` usa `papers`, `grants`, `patents`, `institutions` y `topics` ya guardados en Supabase.
-- `Fetch grants` y `Fetch patents` siguen respondiendo `not implemented yet`.
+- `Fetch grants` ya funciona con `NIH RePORTER`.
+- `Fetch patents` sigue respondiendo `not implemented yet`.
 
 En la capa de `papers`, las fuentes activas actuales ya incluyen:
 - `arXiv`
@@ -86,6 +88,9 @@ En la capa de `papers`, las fuentes activas actuales ya incluyen:
 - `Crossref`
 - `Semantic Scholar`
 - `PubMed`
+
+En la capa de `grants`, la fuente activa actual es:
+- `NIH RePORTER`
 
 ### 6. Programación
 

@@ -18,19 +18,34 @@ export const CONNECTORS = [
   uspto
 ];
 
-export const ACTIVE_CONNECTOR_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"];
+const DEFAULT_ACTION_CONNECTOR_TYPES = {
+  sync_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
+  fetch_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
+  fetch_grants: ["nih_reporter"],
+  fetch_patents: [],
+  generate_signals: []
+};
 
 export function getConnector(sourceType) {
   const key = String(sourceType || "").trim().toLowerCase();
   return CONNECTORS.find(connector => connector.sourceType === key) || null;
 }
 
-export function getConnectors(sourceTypes = []) {
+export function getConnectors(sourceTypes = [], action = "fetch_papers") {
   const requested = Array.isArray(sourceTypes) ? sourceTypes : [];
+  const allowedActions = new Set([String(action || "").trim().toLowerCase()]);
   if (!requested.length) {
-    return CONNECTORS.filter(connector => ACTIVE_CONNECTOR_TYPES.includes(connector.sourceType));
+    return CONNECTORS.filter(connector => {
+      const supported = Array.isArray(connector.supportsActions) ? connector.supportsActions : ["fetch_papers"];
+      return (DEFAULT_ACTION_CONNECTOR_TYPES[action] || []).includes(connector.sourceType)
+        && supported.some(item => allowedActions.has(String(item || "").trim().toLowerCase()));
+    });
   }
   return requested
     .map(type => getConnector(type))
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(connector => {
+      const supported = Array.isArray(connector.supportsActions) ? connector.supportsActions : ["fetch_papers"];
+      return supported.some(item => allowedActions.has(String(item || "").trim().toLowerCase()));
+    });
 }

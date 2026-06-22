@@ -395,12 +395,12 @@
             <li><code>arXiv</code></li>
             <li><code>OpenAlex</code></li>
             <li><code>Crossref</code></li>
-          </ul>
-          <p>Prepared but not fully implemented yet:</p>
-          <ul>
             <li><code>Semantic Scholar</code></li>
             <li><code>PubMed / NCBI</code></li>
             <li><code>NIH RePORTER</code></li>
+          </ul>
+          <p>Prepared but not fully implemented yet:</p>
+          <ul>
             <li><code>NSF Awards</code></li>
             <li><code>USPTO</code></li>
           </ul>
@@ -424,7 +424,7 @@ NCBI_API_KEY=
 NIH_REPORTER_API_KEY=</code></pre>
           <div class="docs-callout">
             <strong>Important</strong>
-            <p><code>SUPABASE_SERVICE_ROLE_KEY</code> is backend-only. Do not expose it to the frontend or store secrets in the Intelligence tables. For real OpenAlex sync usage, treat <code>OPENALEX_API_KEY</code> as required.</p>
+            <p><code>SUPABASE_SERVICE_ROLE_KEY</code> is backend-only. Do not expose it to the frontend or store secrets in the Intelligence tables. For real OpenAlex sync usage, treat <code>OPENALEX_API_KEY</code> as required. <code>SEMANTIC_SCHOLAR_API_KEY</code> and <code>NCBI_API_KEY</code> are recommended but optional, and <code>NIH_REPORTER_API_KEY</code> is not required for the currently implemented NIH RePORTER flow.</p>
           </div>
         </section>
 

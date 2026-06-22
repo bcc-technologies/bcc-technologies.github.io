@@ -171,6 +171,31 @@ export function normalizePaperItem(item = {}) {
   };
 }
 
+export function normalizeGrantItem(item = {}) {
+  return {
+    kind: "grant",
+    sourceName: cleanText(item.sourceName, 120),
+    sourceType: cleanText(item.sourceType, 80),
+    externalId: cleanText(item.externalId, 200),
+    title: normalizeTitle(item.title, 600),
+    abstract: cleanText(item.abstract, 40000),
+    agency: cleanText(item.agency, 180),
+    program: cleanText(item.program, 220),
+    amount: item.amount === null || typeof item.amount === "undefined"
+      ? null
+      : Math.max(0, Number(item.amount) || 0),
+    currency: cleanText(item.currency || "", 8).toUpperCase(),
+    startDate: normalizeDate(item.startDate),
+    endDate: normalizeDate(item.endDate),
+    principalInvestigators: cleanArray((Array.isArray(item.principalInvestigators) ? item.principalInvestigators : []).map(pi => normalizePersonName(pi, 200)), 128, 200),
+    institutions: cleanArray((Array.isArray(item.institutions) ? item.institutions : []).map(institution => normalizeInstitutionName(institution, 200)), 128, 200),
+    country: cleanText(item.country, 120),
+    sourceUrl: safeUrl(item.sourceUrl, 500),
+    topics: cleanArray((Array.isArray(item.topics) ? item.topics : []).map(topic => normalizeTag(topic, 120)), 64, 120),
+    rawData: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+  };
+}
+
 export function createNotImplementedConnector(sourceName, sourceType) {
   return {
     sourceName,

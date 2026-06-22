@@ -5,6 +5,7 @@ const SOURCE_COLUMNS = "id,name,type,enabled,last_sync_at";
 const TOPIC_COLUMNS = "id,name,keywords,enabled";
 const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source_id,citations_count,possible_duplicate,duplicate_candidates";
 const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url,raw_data";
+const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount";
 const SIGNAL_COLUMNS = "id,title,signal_type,related_line,confidence_score,opportunity_score,actionability_score,evidence_count,evidence_refs,score_breakdown,recommended_action,status";
 const RUN_COLUMNS = "id,status,action_type,dry_run,started_at,finished_at,items_fetched,items_created,items_updated,signals_generated,error_message";
 
@@ -84,6 +85,29 @@ function mapPaperRecord(item, sourceId) {
     open_access_url: cleanText(item.openAccessUrl || "", 500),
     possible_duplicate: Boolean(item.possibleDuplicate),
     duplicate_candidates: Array.isArray(item.duplicateCandidates) ? item.duplicateCandidates.slice(0, 8) : [],
+    raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+  };
+}
+
+function mapGrantRecord(item, sourceId) {
+  return {
+    source_id: sourceId,
+    external_id: cleanText(item.externalId || "", 200),
+    title: cleanText(item.title || "", 600),
+    abstract: cleanText(item.abstract || "", 40000),
+    agency: cleanText(item.agency || "", 180),
+    program: cleanText(item.program || "", 220),
+    amount: item.amount === null || typeof item.amount === "undefined"
+      ? null
+      : Math.max(0, Number(item.amount) || 0),
+    currency: cleanText(item.currency || "USD", 8).toUpperCase(),
+    start_date: item.startDate || null,
+    end_date: item.endDate || null,
+    principal_investigators: Array.isArray(item.principalInvestigators) ? item.principalInvestigators : [],
+    institutions: Array.isArray(item.institutions) ? item.institutions : [],
+    country: cleanText(item.country || "", 120),
+    source_url: cleanText(item.sourceUrl || "", 500),
+    topics: Array.isArray(item.topics) ? item.topics : [],
     raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
   };
 }
@@ -473,6 +497,65 @@ export function createIntelligenceStoreFromEnv() {
       });
       const created = Array.isArray(rows) ? rows[0] : rows;
       return { action: "created", record: created };
+    },
+
+    async findExistingGrant(item, sourceId) {
+      const externalId = cleanText(item?.externalId || "", 200);
+      if (sourceId && externalId) {
+        const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
+          params: {
+            select: GRANT_COLUMNS,
+            source_id: `eq.${sourceId}`,
+            external_id: `eq.${externalId}`,
+            limit: 1
+          }
+        });
+        const found = Array.isArray(rows) ? rows[0] : rows;
+        if (found?.id) return found;
+      }
+
+      const title = cleanText(item?.title || "", 600);
+      if (!title) return null;
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
+        params: {
+          select: GRANT_COLUMNS,
+          title: `eq.${title}`,
+          limit: 5
+        }
+      });
+      const matches = Array.isArray(rows) ? rows : [];
+      return matches.find(row =>
+        cleanText(row?.agency || "", 180).toLowerCase() === cleanText(item?.agency || "", 180).toLowerCase()
+        && cleanText(row?.program || "", 220).toLowerCase() === cleanText(item?.program || "", 220).toLowerCase()
+      ) || matches[0] || null;
+    },
+
+    async saveGrant(item, sourceId) {
+      const existing = await this.findExistingGrant(item, sourceId);
+      const payload = mapGrantRecord(item, sourceId);
+      if (existing?.id) {
+        const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
+          method: "PATCH",
+          prefer: "return=representation",
+          params: {
+            id: `eq.${existing.id}`
+          },
+          body: {
+            ...payload,
+            amount: payload.amount === null
+              ? existing.amount
+              : Math.max(Number(payload.amount) || 0, Number(existing.amount) || 0)
+          }
+        });
+        return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
+      }
+
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
+        method: "POST",
+        prefer: "return=representation",
+        body: payload
+      });
+      return { action: "created", record: Array.isArray(rows) ? rows[0] : rows };
     },
 
     async findExistingSignal(signal) {

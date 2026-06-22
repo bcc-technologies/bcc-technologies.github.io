@@ -316,3 +316,93 @@ test("sync diagnostics repair existing papers with missing topic names", async (
   assert.equal(result.itemsUpdated, 1);
   assert.deepEqual(savedPapers[1].topics, ["MAP-Nano"]);
 });
+
+test("fetch_grants persists normalized grants and updates run metrics", async () => {
+  const savedGrants = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-2",
+          name: "MAP-Bio",
+          category: "bio",
+          keywords: ["cell counting", "biological image analysis"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async listEnabledSources() {
+      return [{ id: "source-nih", type: "nih_reporter", enabled: true }];
+    },
+    async startRun(meta) {
+      assert.equal(meta.actionType, "fetch_grants");
+      return { id: "run-grants-1" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-grants-1");
+      assert.equal(metrics.itemsFetched, 1);
+      assert.equal(metrics.itemsCreated, 1);
+      assert.equal(metrics.itemsUpdated, 0);
+    },
+    async failRun() {
+      throw new Error("failRun should not execute in successful fetch_grants test");
+    },
+    async saveGrant(item) {
+      savedGrants.push(item);
+      return { action: "created", record: { id: "grant-1" } };
+    },
+    async touchSourceSync() {}
+  };
+
+  const connector = {
+    sourceType: "nih_reporter",
+    async search() {
+      return [
+        {
+          kind: "grant",
+          sourceName: "NIH RePORTER",
+          sourceType: "nih_reporter",
+          externalId: "11364092",
+          title: "Automated image analysis for biomedical microscopy",
+          abstract: "Cell counting workflow for biological image analysis.",
+          agency: "NIBIB",
+          program: "Research Projects",
+          amount: 692085,
+          currency: "USD",
+          startDate: "2025-07-01",
+          endDate: "2029-03-31",
+          principalInvestigators: ["Georges El Fakhri"],
+          institutions: ["YALE UNIVERSITY"],
+          country: "UNITED STATES",
+          sourceUrl: "https://reporter.nih.gov/project-details/11364092",
+          topics: [],
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_grants",
+      dryRun: false,
+      sourceTypes: ["nih_reporter"],
+      keywords: ["cell counting"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.action, "fetch_grants");
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(result.itemsCreated, 1);
+  assert.equal(savedGrants.length, 1);
+  assert.deepEqual(savedGrants[0].topics, ["MAP-Bio"]);
+});
