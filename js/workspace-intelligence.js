@@ -519,6 +519,11 @@
             <div><span>Avg opp.</span><strong>${averageScore(signals, "opportunityScore")}</strong></div>
           </div>
           ${signals.length ? `
+            <div class="intelligence-signal-rail-note">
+              <p>La cola está ordenada para revisión humana. Empieza por señales con mejor combinación de oportunidad, actionability y confidence.</p>
+            </div>
+          ` : ""}
+          ${signals.length ? `
             <div class="intelligence-signal-queue">
               ${signals.map(signal => `
                 <article class="intelligence-signal-card${signal.id === selectedSignalId ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
@@ -543,8 +548,8 @@
           ` : emptyMarkup("No strategic signals generated yet.", "Run the first sync or execute Generate signals to produce strategic opportunities.")}
         </article>
         <article class="activity-surface intelligence-card intelligence-signal-detail">
-          <div class="activity-head">
-            <h3>Detalle de señal</h3>
+          <div class="activity-head intelligence-detail-head">
+            <h3>Signal detail</h3>
             <span>${escapeHtml(selected ? signalStatusLabel(selected.status) : "Sin selección")}</span>
           </div>
           ${selected ? signalDetailMarkup(selected) : emptyMarkup("Selecciona una señal", "Elige una fila para revisar evidencia, scores y acciones sugeridas.")}
@@ -1298,42 +1303,67 @@
   function signalDetailMarkup(signal) {
     const evidence = Array.isArray(signal.evidenceRefs) ? signal.evidenceRefs : [];
     const breakdown = signal.scoreBreakdown && typeof signal.scoreBreakdown === "object" ? signal.scoreBreakdown : {};
+    const highlights = signalBreakdownHighlights(breakdown);
     const grouped = {
       paper: evidence.filter(item => item?.type === "paper"),
       grant: evidence.filter(item => item?.type === "grant"),
       patent: evidence.filter(item => item?.type === "patent")
     };
     return `
-      <div class="intelligence-detail-grid">
-        <div class="intelligence-detail-stack">
-          <div class="intelligence-detail-block">
-            <h4>${escapeHtml(signal.title)}</h4>
-            <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
+      <div class="intelligence-signal-detail-hero">
+        <div class="intelligence-signal-hero-copy">
+          <div class="intelligence-stack-meta">
+            <span>${escapeHtml(signalTypeLabel(signal.signalType))}</span>
+            <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
           </div>
+          <h4>${escapeHtml(signal.title)}</h4>
+          <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
+        </div>
+        <div class="intelligence-mini-metrics intelligence-signal-hero-metrics">
+          <div><span>Opportunity</span><strong>${score(signal.opportunityScore)}</strong></div>
+          <div><span>Actionability</span><strong>${score(signal.actionabilityScore)}</strong></div>
+          <div><span>Confidence</span><strong>${score(signal.confidenceScore)}</strong></div>
+          <div><span>Evidence</span><strong>${number(signal.evidenceCount || evidence.length)}</strong></div>
+        </div>
+      </div>
+      <div class="intelligence-detail-grid intelligence-detail-grid-signals">
+        <div class="intelligence-detail-stack">
           <div class="intelligence-detail-block">
             <h4>Recommendation</h4>
             <p>${escapeHtml(signal.recommendedAction || "Sin recomendación todavía.")}</p>
           </div>
           <div class="intelligence-detail-block">
+            <h4>Why this matters now</h4>
+            <ul class="intelligence-related-list">
+              ${highlights.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+            </ul>
+          </div>
+          <div class="intelligence-detail-block">
             <h4>Evidence</h4>
             ${evidence.length ? `
-              <div class="intelligence-evidence-list">
-                ${evidence.map(item => `
-                  <a class="intelligence-evidence-item" href="${escapeAttr(safeExternalUrl(item.sourceUrl || "#"))}" target="_blank" rel="noopener noreferrer">
-                    <strong>${escapeHtml(item.type || "item")}</strong>
-                    <span>${escapeHtml(item.title || item.id || "Referencia sin título")}</span>
-                  </a>
-                `).join("")}
+              <div class="intelligence-evidence-groups">
+                ${renderEvidenceGroup("Papers", grouped.paper)}
+                ${renderEvidenceGroup("Grants", grouped.grant)}
+                ${renderEvidenceGroup("Patents", grouped.patent)}
               </div>
             ` : emptyMarkup("Sin evidencia", "Esta señal no debería existir sin evidencia, así que conviene revisarla.")}
           </div>
         </div>
-        <div class="intelligence-detail-stack">
-          <div class="intelligence-mini-metrics">
-            <div><span>Opportunity</span><strong>${score(signal.opportunityScore)}</strong></div>
-            <div><span>Actionability</span><strong>${score(signal.actionabilityScore)}</strong></div>
-            <div><span>Confidence</span><strong>${score(signal.confidenceScore)}</strong></div>
-            <div><span>Status</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
+        <div class="intelligence-detail-stack intelligence-detail-stack-side">
+          <div class="intelligence-detail-block intelligence-detail-block-sticky">
+            <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
+              <div><span>Status</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
+              <div><span>Updated</span><strong>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</strong></div>
+              <div><span>Type</span><strong>${escapeHtml(signalTypeLabel(signal.signalType))}</strong></div>
+              <div><span>Line</span><strong>${escapeHtml(signal.relatedLine || "General")}</strong></div>
+            </div>
+            <div class="intelligence-form-actions">
+              ${SIGNAL_STATUS_ACTIONS.map(action => `
+                <button class="btn btn-${action.tone}" type="button" data-signal-status="${escapeAttr(action.id)}" data-signal-id="${escapeAttr(signal.id)}">
+                  ${escapeHtml(action.label)}
+                </button>
+              `).join("")}
+            </div>
           </div>
           <div class="intelligence-detail-block">
             <h4>Related assets</h4>
@@ -1344,16 +1374,59 @@
             </ul>
           </div>
           ${renderSignalBreakdown(breakdown)}
-          <div class="intelligence-form-actions">
-            ${SIGNAL_STATUS_ACTIONS.map(action => `
-              <button class="btn btn-${action.tone}" type="button" data-signal-status="${escapeAttr(action.id)}" data-signal-id="${escapeAttr(signal.id)}">
-                ${escapeHtml(action.label)}
-              </button>
-            `).join("")}
-          </div>
         </div>
       </div>
     `;
+  }
+
+  function renderEvidenceGroup(title, items) {
+    if (!items.length) return "";
+    return `
+      <div class="intelligence-evidence-group">
+        <div class="intelligence-stack-meta">
+          <span>${escapeHtml(title)}</span>
+          <strong>${number(items.length)}</strong>
+        </div>
+        <div class="intelligence-evidence-list">
+          ${items.map(item => `
+            <a class="intelligence-evidence-item" href="${escapeAttr(safeExternalUrl(item.sourceUrl || "#"))}" target="_blank" rel="noopener noreferrer">
+              <strong>${escapeHtml(item.type || "item")}</strong>
+              <span>${escapeHtml(item.title || item.id || "Referencia sin título")}</span>
+            </a>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function signalBreakdownHighlights(breakdown) {
+    const list = [];
+    const opportunity = breakdown?.opportunity || {};
+    const actionability = breakdown?.actionability || {};
+    const matching = breakdown?.matching || {};
+    const evidence = breakdown?.evidence || {};
+    if (typeof opportunity.topicGrowth === "number" && opportunity.topicGrowth >= 55) {
+      list.push(`El tema muestra crecimiento reciente (${score(opportunity.topicGrowth)}%).`);
+    }
+    if (typeof opportunity.proximityToBCC === "number" && opportunity.proximityToBCC >= 55) {
+      list.push(`La cercanía con las líneas BCC es alta (${score(opportunity.proximityToBCC)}%).`);
+    }
+    if (typeof opportunity.technicalPainDetected === "number" && opportunity.technicalPainDetected >= 45) {
+      list.push(`Hay pain points técnicos visibles en la evidencia (${score(opportunity.technicalPainDetected)}%).`);
+    }
+    if (typeof actionability.easeOfContact === "number" && actionability.easeOfContact >= 45) {
+      list.push(`La ventana de contacto/partnership parece operable (${score(actionability.easeOfContact)}%).`);
+    }
+    if (typeof actionability.contentPotential === "number" && actionability.contentPotential >= 50) {
+      list.push(`El tema tiene buen potencial de contenido (${score(actionability.contentPotential)}%).`);
+    }
+    if (typeof matching.paperMeanScore === "number") {
+      list.push(`La calidad media del match con papers es ${score(matching.paperMeanScore)}%.`);
+    }
+    if (typeof evidence.papers === "number" || typeof evidence.grants === "number" || typeof evidence.patents === "number") {
+      list.push(`La señal se apoya en ${number((evidence.papers || 0) + (evidence.grants || 0) + (evidence.patents || 0))} assets relacionados.`);
+    }
+    return list.slice(0, 5);
   }
 
   function renderSignalBreakdown(breakdown) {

@@ -1847,6 +1847,21 @@
   min-width: 0;
 }
 
+.intelligence-signal-rail-note{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+}
+
+.intelligence-signal-rail-note p{
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: .83rem;
+  line-height: 1.55;
+}
+
 .intelligence-chart-card{
   display: grid;
   gap: 14px;
@@ -2230,9 +2245,17 @@
   margin-top: 16px;
 }
 
+.intelligence-detail-grid-signals{
+  align-items: start;
+}
+
 .intelligence-detail-stack{
   display: grid;
   gap: 14px;
+}
+
+.intelligence-detail-stack-side{
+  align-content: start;
 }
 
 .intelligence-detail-block{
@@ -2257,7 +2280,63 @@
   line-height: 1.55;
 }
 
+.intelligence-detail-block-sticky{
+  position: sticky;
+  top: 18px;
+}
+
+.intelligence-detail-head{
+  align-items: start;
+}
+
+.intelligence-signal-detail-hero{
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.intelligence-signal-hero-copy{
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, var(--surface-solid)), var(--surface)),
+    var(--surface);
+}
+
+.intelligence-signal-hero-copy h4{
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 1.3rem;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+
+.intelligence-signal-hero-copy p{
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: .91rem;
+  line-height: 1.62;
+}
+
+.intelligence-signal-hero-metrics{
+  margin-top: 0;
+}
+
 .intelligence-evidence-list{
+  display: grid;
+  gap: 10px;
+}
+
+.intelligence-evidence-groups{
+  display: grid;
+  gap: 14px;
+}
+
+.intelligence-evidence-group{
   display: grid;
   gap: 10px;
 }
@@ -2293,6 +2372,18 @@
   padding-left: 18px;
   color: var(--ink-soft);
   font-size: .84rem;
+}
+
+.intelligence-breakdown-block{
+  display: grid;
+  gap: 8px;
+}
+
+.intelligence-breakdown-block strong{
+  color: var(--ink-strong);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 .intelligence-checkbox-grid{
@@ -3984,6 +4075,10 @@
     grid-template-columns: 1fr;
   }
 
+  .intelligence-signal-detail-hero{
+    grid-template-columns: 1fr;
+  }
+
   .intelligence-heatmap{
     grid-template-columns: 1fr;
   }
@@ -4009,6 +4104,10 @@
 @media (max-width: 580px){
   .intelligence-chart-head{
     display: grid;
+  }
+
+  .intelligence-detail-block-sticky{
+    position: static;
   }
 
   .intelligence-topic-topline{
