@@ -128,6 +128,113 @@ test("sync dry-run completes without persisting papers or signals", async () => 
   assert.equal(calls.saveSignal, 0);
 });
 
+test("sync_papers tolerates a rate-limited source when other paper connectors succeed", async () => {
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-partial-1" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-partial-1");
+      assert.equal(metrics.itemsFetched, 1);
+      assert.equal(metrics.itemsCreated, 1);
+    },
+    async failRun() {
+      throw new Error("failRun should not be called when at least one source succeeds");
+    },
+    async savePaper() {
+      return { action: "created", record: { id: "paper-ok-1" } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [];
+    },
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        trials: [],
+        institutions: [],
+        papers: [
+          {
+            id: "paper-ok-1",
+            title: "SEM image analysis workflow",
+            abstract: "Manual segmentation challenge in microscopy.",
+            topics: ["MAP-Nano"],
+            keywords: ["SEM image analysis"],
+            publicationDate: "2026-06-15",
+            sourceUrl: "https://example.com/paper-ok-1"
+          }
+        ]
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-ok-1" } };
+    }
+  };
+
+  const okConnector = {
+    sourceType: "openalex",
+    async search() {
+      return [
+        {
+          sourceName: "OpenAlex",
+          sourceType: "openalex",
+          externalId: "oa-1",
+          title: "SEM image analysis workflow",
+          abstract: "Manual segmentation challenge in microscopy.",
+          keywords: ["SEM image analysis"],
+          topics: ["MAP-Nano"],
+          sourceUrl: "https://example.com/paper-ok-1",
+          publicationDate: "2026-06-15",
+          rawData: { source: "openalex" }
+        }
+      ];
+    }
+  };
+
+  const failingConnector = {
+    sourceType: "semantic_scholar",
+    async search() {
+      throw new Error("HTTP 429");
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "sync_papers",
+      dryRun: false,
+      sourceTypes: ["openalex", "semantic_scholar"],
+      keywords: ["SEM image analysis"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [okConnector, failingConnector],
+      logger: { log() {}, warn() {} }
+    }
+  );
+
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(result.itemsCreated, 1);
+  assert.equal(result.sourceFailures.length, 1);
+  assert.equal(result.sourceFailures[0].sourceType, "semantic_scholar");
+});
+
 test("sync persists detected topic names onto papers before saving", async () => {
   const savedTopics = [];
   const store = {

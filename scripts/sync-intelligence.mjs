@@ -277,6 +277,17 @@ function dedupeGrantItems(items = []) {
   return [...seen.values()].filter(item => cleanText(item?.title || "", 600));
 }
 
+function logSourceFailure(logger, connector, error) {
+  const message = `[source:${connector.sourceType}] ${error instanceof Error ? error.message : String(error)}`;
+  if (typeof logger?.warn === "function") {
+    logger.warn(message);
+    return;
+  }
+  if (typeof logger?.log === "function") {
+    logger.log(message);
+  }
+}
+
 export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   const options = normalizeOptions(rawOptions);
   const logger = deps.logger || console;
@@ -367,10 +378,19 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       };
 
       const fetchedBySource = [];
+      const sourceFailures = [];
       for (const connector of connectors) {
-        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
-        fetchedBySource.push({ connector, items });
-        logger.log(`[source:${connector.sourceType}] fetched ${items.length} grants`);
+        try {
+          const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+          fetchedBySource.push({ connector, items });
+          logger.log(`[source:${connector.sourceType}] fetched ${items.length} grants`);
+        } catch (error) {
+          sourceFailures.push({ sourceType: connector.sourceType, message: error instanceof Error ? error.message : String(error) });
+          logSourceFailure(logger, connector, error);
+        }
+      }
+      if (!fetchedBySource.length && sourceFailures.length) {
+        throw new Error(sourceFailures.map(item => `${item.sourceType}: ${item.message}`).join(" | "));
       }
 
       const combinedItems = fetchedBySource.flatMap(entry => entry.items);
@@ -410,6 +430,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
         itemsCreated,
         itemsUpdated,
         signalsGenerated: 0,
+        sourceFailures,
         runId: run?.id || ""
       };
       logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
@@ -427,10 +448,19 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       };
 
       const fetchedBySource = [];
+      const sourceFailures = [];
       for (const connector of connectors) {
-        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
-        fetchedBySource.push({ connector, items });
-        logger.log(`[source:${connector.sourceType}] fetched ${items.length} patents`);
+        try {
+          const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+          fetchedBySource.push({ connector, items });
+          logger.log(`[source:${connector.sourceType}] fetched ${items.length} patents`);
+        } catch (error) {
+          sourceFailures.push({ sourceType: connector.sourceType, message: error instanceof Error ? error.message : String(error) });
+          logSourceFailure(logger, connector, error);
+        }
+      }
+      if (!fetchedBySource.length && sourceFailures.length) {
+        throw new Error(sourceFailures.map(item => `${item.sourceType}: ${item.message}`).join(" | "));
       }
 
       const combinedItems = fetchedBySource.flatMap(entry => entry.items);
@@ -470,6 +500,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
         itemsCreated,
         itemsUpdated,
         signalsGenerated: 0,
+        sourceFailures,
         runId: run?.id || ""
       };
       logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
@@ -487,10 +518,19 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       };
 
       const fetchedBySource = [];
+      const sourceFailures = [];
       for (const connector of connectors) {
-        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
-        fetchedBySource.push({ connector, items });
-        logger.log(`[source:${connector.sourceType}] fetched ${items.length} trials`);
+        try {
+          const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+          fetchedBySource.push({ connector, items });
+          logger.log(`[source:${connector.sourceType}] fetched ${items.length} trials`);
+        } catch (error) {
+          sourceFailures.push({ sourceType: connector.sourceType, message: error instanceof Error ? error.message : String(error) });
+          logSourceFailure(logger, connector, error);
+        }
+      }
+      if (!fetchedBySource.length && sourceFailures.length) {
+        throw new Error(sourceFailures.map(item => `${item.sourceType}: ${item.message}`).join(" | "));
       }
 
       const combinedItems = fetchedBySource.flatMap(entry => entry.items);
@@ -530,6 +570,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
         itemsCreated,
         itemsUpdated,
         signalsGenerated: 0,
+        sourceFailures,
         runId: run?.id || ""
       };
       logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
@@ -550,14 +591,23 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     };
 
     const fetchedBySource = [];
+    const sourceFailures = [];
 
     for (const connector of connectors) {
-      const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
-      fetchedBySource.push({
-        connector,
-        items
-      });
-      logger.log(`[source:${connector.sourceType}] fetched ${items.length} items`);
+      try {
+        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+        fetchedBySource.push({
+          connector,
+          items
+        });
+        logger.log(`[source:${connector.sourceType}] fetched ${items.length} items`);
+      } catch (error) {
+        sourceFailures.push({ sourceType: connector.sourceType, message: error instanceof Error ? error.message : String(error) });
+        logSourceFailure(logger, connector, error);
+      }
+    }
+    if (!fetchedBySource.length && sourceFailures.length) {
+      throw new Error(sourceFailures.map(item => `${item.sourceType}: ${item.message}`).join(" | "));
     }
 
     const combinedItems = fetchedBySource.flatMap(entry => entry.items);
@@ -615,10 +665,11 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       itemsDeduped: dedupedItems.length,
       itemsCreated,
       itemsUpdated,
-      signalsGenerated,
-      diagnostics,
-      runId: run?.id || ""
-    };
+        signalsGenerated,
+        diagnostics,
+        sourceFailures,
+        runId: run?.id || ""
+      };
     logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Topic diagnostics repaired: ${diagnostics.repaired}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
     return result;
   } catch (error) {
