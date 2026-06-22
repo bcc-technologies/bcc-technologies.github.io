@@ -406,3 +406,92 @@ test("fetch_grants persists normalized grants and updates run metrics", async ()
   assert.equal(savedGrants.length, 1);
   assert.deepEqual(savedGrants[0].topics, ["MAP-Bio"]);
 });
+
+test("fetch_grants also persists NSF grants through the grant pipeline", async () => {
+  const savedGrants = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-3",
+          name: "MAP-Bio",
+          category: "bio",
+          keywords: ["cell counting", "microscopy reproducibility"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async listEnabledSources() {
+      return [{ id: "source-nsf", type: "nsf", enabled: true }];
+    },
+    async startRun() {
+      return { id: "run-grants-2" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-grants-2");
+      assert.equal(metrics.itemsFetched, 1);
+      assert.equal(metrics.itemsCreated, 1);
+      assert.equal(metrics.itemsUpdated, 0);
+    },
+    async failRun() {
+      throw new Error("failRun should not execute in successful NSF fetch_grants test");
+    },
+    async saveGrant(item) {
+      savedGrants.push(item);
+      return { action: "created", record: { id: "grant-nsf-1" } };
+    },
+    async touchSourceSync() {}
+  };
+
+  const connector = {
+    sourceType: "nsf",
+    async search() {
+      return [
+        {
+          kind: "grant",
+          sourceName: "NSF Awards",
+          sourceType: "nsf",
+          externalId: "2622634",
+          title: "Automated microscopy benchmarks for cell counting",
+          abstract: "Biological image analysis workflow for microscopy reproducibility.",
+          agency: "NSF",
+          program: "Cross-BIO Activities",
+          amount: 195526,
+          currency: "USD",
+          startDate: "2026-06-17",
+          endDate: "2027-08-31",
+          principalInvestigators: ["Joseph Walder"],
+          institutions: ["University of Minnesota-Twin Cities"],
+          country: "US",
+          sourceUrl: "https://www.nsf.gov/awardsearch/showAward?AWD_ID=2622634",
+          topics: [],
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_grants",
+      dryRun: false,
+      sourceTypes: ["nsf"],
+      keywords: ["cell counting"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.action, "fetch_grants");
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(result.itemsCreated, 1);
+  assert.equal(savedGrants.length, 1);
+  assert.deepEqual(savedGrants[0].topics, ["MAP-Bio"]);
+});

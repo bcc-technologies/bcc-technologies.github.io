@@ -21,7 +21,7 @@ export const CONNECTORS = [
 const DEFAULT_ACTION_CONNECTOR_TYPES = {
   sync_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
   fetch_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
-  fetch_grants: ["nih_reporter"],
+  fetch_grants: ["nih_reporter", "nsf"],
   fetch_patents: [],
   generate_signals: []
 };

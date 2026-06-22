@@ -80,6 +80,7 @@ En esta primera versión:
 - `Fetch latest papers` sincroniza papers sin forzar generación posterior de señales.
 - `Generate signals` usa `papers`, `grants`, `patents`, `institutions` y `topics` ya guardados en Supabase.
 - `Fetch grants` ya funciona con `NIH RePORTER`.
+- `Fetch grants` ya funciona con `NIH RePORTER` y `NSF Awards`.
 - `Fetch patents` sigue respondiendo `not implemented yet`.
 
 En la capa de `papers`, las fuentes activas actuales ya incluyen:
@@ -91,6 +92,7 @@ En la capa de `papers`, las fuentes activas actuales ya incluyen:
 
 En la capa de `grants`, la fuente activa actual es:
 - `NIH RePORTER`
+- `NSF Awards`
 
 ### 6. Programación
 

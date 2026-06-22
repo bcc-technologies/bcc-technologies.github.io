@@ -65,6 +65,7 @@ Implemented now:
 - `Semantic Scholar`
 - `PubMed / NCBI`
 - `NIH RePORTER`
+- `NSF Awards`
 
 Prepared but not fully implemented yet:
 

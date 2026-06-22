@@ -12,12 +12,12 @@ Stage 3 adds a modular sync layer for BCC's `Intelligence` workspace.
 
 Prepared but not implemented yet:
 
-- `NSF Awards`
 - `USPTO`
 
-Implemented grants connector:
+Implemented grants connectors:
 
 - `NIH RePORTER`
+- `NSF Awards`
 
 ## Files
 
@@ -55,6 +55,8 @@ No secrets are stored in code.
 
 `NIH RePORTER` currently uses the public v2 Project Search API and does not require an API key in the implemented flow.
 
+`NSF Awards` currently uses the public NSF Award Search API and does not require an API key in the implemented flow.
+
 ## Usage
 
 Dry run with explicit keywords:
@@ -91,7 +93,8 @@ To stay inside the free OpenAlex allowance:
 1. `Semantic Scholar` uses the Graph API search endpoint and stores normalized paper payloads only.
 2. `PubMed` uses a two-step `esearch` plus `efetch` flow so abstracts, authors, affiliations, DOI, PMID and PMC links can be normalized into the paper model.
 3. `NIH RePORTER` uses the official v2 `projects/search` endpoint and normalizes awards into `intelligence_grants`.
-4. On the next real sync, the runner will auto-register newly implemented active connectors into `intelligence_sources` if they do not exist yet.
+4. `NSF Awards` uses the official NSF Award Search API and normalizes awards into `intelligence_grants`.
+5. On the next real sync, the runner will auto-register newly implemented active connectors into `intelligence_sources` if they do not exist yet.
 
 ## Deduplication strategy
 

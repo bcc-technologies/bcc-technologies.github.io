@@ -443,3 +443,66 @@ test("NIH RePORTER connector normalizes grant results from the official project 
     global.fetch = originalFetch;
   }
 });
+
+test("NSF Awards connector normalizes grant results from the official award search payload", async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (url) => {
+    requests.push(String(url));
+    return {
+      ok: true,
+      async json() {
+        return {
+          response: {
+            award: [
+              {
+                id: "2622634",
+                title: "Automated microscopy benchmarks for cell counting",
+                abstractText: "Biological image analysis workflow for microscopy reproducibility.",
+                agency: "NSF",
+                fundProgramName: "Cross-BIO Activities",
+                fundsObligatedAmt: "195526",
+                date: "06/17/2026",
+                expDate: "08/31/2027",
+                awardeeName: "University of Minnesota-Twin Cities",
+                awardeeCountryCode: "US",
+                piFirstName: "Joseph",
+                piLastName: "Walder",
+                pdPIName: "Joseph Walder",
+                program: "MCB"
+              }
+            ]
+          }
+        };
+      }
+    };
+  };
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/nsf-awards.mjs")).href}?test=${Date.now()}`);
+    const { default: nsfAwards } = await import(moduleUrl.href);
+
+    assert.equal(nsfAwards.requiresApiKey, false);
+    const items = await nsfAwards.search({
+      keywords: ["cell counting"],
+      limit: 2
+    });
+
+    assert.equal(requests.length, 1);
+    const requestUrl = new URL(requests[0]);
+    assert.equal(requestUrl.searchParams.get("keyword"), "cell counting");
+    assert.equal(requestUrl.searchParams.get("rpp"), "2");
+    assert.equal(items.length, 1);
+    assert.equal(items[0].kind, "grant");
+    assert.equal(items[0].externalId, "2622634");
+    assert.equal(items[0].agency, "NSF");
+    assert.equal(items[0].amount, 195526);
+    assert.equal(items[0].startDate, "2026-06-17");
+    assert.equal(items[0].endDate, "2027-08-31");
+    assert.deepEqual(items[0].principalInvestigators, ["Joseph Walder"]);
+    assert.ok(items[0].topics.includes("Cross-BIO Activities"));
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
