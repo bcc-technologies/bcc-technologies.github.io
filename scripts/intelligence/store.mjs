@@ -186,6 +186,17 @@ export function createIntelligenceStoreFromEnv() {
       return Array.isArray(rows) ? rows : [];
     },
 
+    async listSettings() {
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_settings", {
+        params: {
+          select: "id,max_results_per_source,default_date_range_days,suggested_frequency,default_dry_run,scoring_thresholds,monitored_lines",
+          order: "updated_at.desc",
+          limit: 1
+        }
+      });
+      return Array.isArray(rows) ? (rows[0] || null) : null;
+    },
+
     async listSignalInputs() {
       const [
         papers,

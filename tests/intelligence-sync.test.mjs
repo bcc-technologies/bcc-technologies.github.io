@@ -34,7 +34,7 @@ test("sync dry-run completes without persisting papers or signals", async () => 
     async completeRun(runId, metrics) {
       calls.completeRun += 1;
       assert.equal(runId, "run-1");
-      assert.equal(metrics.itemsFetched, 2);
+      assert.equal(metrics.itemsFetched, 1);
     },
     async failRun() {
       calls.failRun += 1;
@@ -119,7 +119,7 @@ test("sync dry-run completes without persisting papers or signals", async () => 
 
   assert.equal(result.action, "sync_papers");
   assert.equal(result.dryRun, true);
-  assert.equal(result.itemsFetched, 2);
+  assert.equal(result.itemsFetched, 1);
   assert.equal(result.itemsDeduped, 1);
   assert.equal(calls.startRun, 1);
   assert.equal(calls.completeRun, 1);
@@ -233,6 +233,144 @@ test("sync_papers tolerates a rate-limited source when other paper connectors su
   assert.equal(result.itemsCreated, 1);
   assert.equal(result.sourceFailures.length, 1);
   assert.equal(result.sourceFailures[0].sourceType, "semantic_scholar");
+});
+
+test("sync_papers fans out topic queries and keeps the strongest paper candidates", async () => {
+  const seenQueries = [];
+  const savedTitles = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        { id: "topic-1", name: "MAP-Nano", category: "nano", keywords: ["SEM image analysis", "microstructure analysis"], enabled: true },
+        { id: "topic-2", name: "MAP-Bio", category: "bio", keywords: ["cell counting", "cell morphology analysis"], enabled: true }
+      ];
+    },
+    async listSettings() {
+      return { max_results_per_source: 30 };
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-topic-fanout-1" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper(item) {
+      savedTitles.push(item.title);
+      return { action: "created", record: { id: `paper-${savedTitles.length}` } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [];
+    },
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        trials: [],
+        institutions: [],
+        papers: []
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-1" } };
+    }
+  };
+
+  const connector = {
+    sourceType: "openalex",
+    async search(query) {
+      seenQueries.push({ text: query.text, keywords: [...(query.keywords || [])], limit: query.limit });
+    if (String(query.text).includes("MAP-Nano")) {
+        return [
+          {
+            sourceName: "OpenAlex",
+            sourceType: "openalex",
+            externalId: "oa-nano-1",
+            title: "SEM image analysis workflow for microstructure inspection",
+            abstract: "Detailed abstract with microscopy, segmentation and benchmarking context.",
+            keywords: ["SEM image analysis", "microstructure analysis"],
+            topics: ["MAP-Nano"],
+            sourceUrl: "https://example.com/oa-nano-1",
+            openAccessUrl: "https://example.com/oa-nano-1.pdf",
+            publicationDate: "2026-06-20",
+            citationsCount: 14,
+            journalOrVenue: "Microscopy Today",
+            rawData: {}
+          },
+          {
+            sourceName: "OpenAlex",
+            sourceType: "openalex",
+            externalId: "oa-nano-2",
+            title: "Short note on grain images",
+            abstract: "",
+            keywords: ["grain boundary detection"],
+            topics: ["MAP-Nano"],
+            sourceUrl: "https://example.com/oa-nano-2",
+            publicationDate: "2021-01-01",
+            citationsCount: 0,
+            journalOrVenue: "",
+            rawData: {}
+          },
+          ...Array.from({ length: 34 }, (_, index) => ({
+            sourceName: "OpenAlex",
+            sourceType: "openalex",
+            externalId: `oa-nano-low-${index + 1}`,
+            title: `Low-signal microscopy note ${index + 1}`,
+            abstract: "",
+            keywords: ["microscopy"],
+            topics: ["MAP-Nano"],
+            sourceUrl: `https://example.com/oa-nano-low-${index + 1}`,
+            publicationDate: "2020-01-01",
+            citationsCount: 0,
+            journalOrVenue: "",
+            rawData: {}
+          }))
+        ];
+      }
+      return [
+        {
+          sourceName: "OpenAlex",
+          sourceType: "openalex",
+          externalId: "oa-bio-1",
+          title: "Cell morphology analysis for automated counting",
+          abstract: "Structured abstract with dataset, use case and open protocol.",
+          keywords: ["cell counting", "cell morphology analysis"],
+          topics: ["MAP-Bio"],
+          sourceUrl: "https://example.com/oa-bio-1",
+          openAccessUrl: "https://example.com/oa-bio-1.pdf",
+          publicationDate: "2026-06-18",
+          citationsCount: 9,
+          journalOrVenue: "Bioimage Analysis",
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_papers",
+      dryRun: false,
+      sourceTypes: ["openalex"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {}, warn() {} }
+    }
+  );
+
+  assert.equal(seenQueries.length, 2);
+  assert.ok(seenQueries.some(query => query.text === "MAP-Nano"));
+  assert.ok(seenQueries.some(query => query.text === "MAP-Bio"));
+  assert.ok(savedTitles.includes("SEM image analysis workflow for microstructure inspection"));
+  assert.ok(savedTitles.includes("Cell morphology analysis for automated counting"));
+  assert.equal(savedTitles[0], "SEM image analysis workflow for microstructure inspection");
+  assert.equal(result.itemsFetched, 30);
 });
 
 test("sync persists detected topic names onto papers before saving", async () => {

@@ -288,6 +288,142 @@ function logSourceFailure(logger, connector, error) {
   }
 }
 
+async function resolveRuntimeSettings(store) {
+  if (!store || typeof store.listSettings !== "function") return null;
+  try {
+    return await store.listSettings();
+  } catch {
+    return null;
+  }
+}
+
+function sourceQueryBudget(connector, explicitMode) {
+  if (explicitMode) return 1;
+  const type = String(connector?.sourceType || "").toLowerCase();
+  if (type === "semantic_scholar") {
+    return process.env.SEMANTIC_SCHOLAR_API_KEY ? 2 : 1;
+  }
+  if (type === "arxiv") return 2;
+  if (type === "openalex" || type === "crossref" || type === "pubmed") return 3;
+  return 2;
+}
+
+function buildPaperQueryPlans(options, topics = [], connector = null, runtimeSettings = null) {
+  const explicitMode = Boolean(cleanText(options.queryText, 400) || cleanArray(options.keywords, 32, 120).length);
+  const configuredLimit = Math.max(1, Number(runtimeSettings?.max_results_per_source) || 0);
+  const targetPerSource = Math.min(
+    100,
+    Math.max(
+      Number(options.limit) || 20,
+      configuredLimit,
+      explicitMode ? 20 : 30
+    )
+  );
+
+  if (explicitMode) {
+    return {
+      targetPerSource,
+      plans: [{
+        label: "explicit",
+        query: {
+          text: cleanText(options.queryText, 400),
+          keywords: cleanArray(options.keywords, 32, 120),
+          topics: [],
+          limit: targetPerSource,
+          fromDate: options.fromDate,
+          toDate: options.toDate
+        }
+      }]
+    };
+  }
+
+  const topicList = (Array.isArray(topics) ? topics : [])
+    .filter(topic => topic?.enabled !== false)
+    .slice(0, 8);
+  const budget = sourceQueryBudget(connector, false);
+  const selectedTopics = topicList.slice(0, budget);
+  const perQueryLimit = Math.min(20, Math.max(8, Math.ceil(targetPerSource / Math.max(1, selectedTopics.length))));
+  const plans = selectedTopics.map(topic => ({
+    label: cleanText(topic?.name || "topic", 160),
+    query: {
+      text: cleanText(topic?.name || "", 160),
+      keywords: cleanArray(Array.isArray(topic?.keywords) ? topic.keywords : [], 5, 120),
+      topics: cleanArray([topic?.name || ""], 1, 160),
+      limit: perQueryLimit,
+      fromDate: options.fromDate,
+      toDate: options.toDate
+    }
+  }));
+
+  if (!plans.length) {
+    plans.push({
+      label: "fallback",
+      query: {
+        text: "",
+        keywords: [],
+        topics: [],
+        limit: targetPerSource,
+        fromDate: options.fromDate,
+        toDate: options.toDate
+      }
+    });
+  }
+
+  return { targetPerSource, plans };
+}
+
+function paperRecencyScore(item) {
+  const date = item?.publicationDate ? new Date(item.publicationDate).getTime() : 0;
+  if (!date) return 0.12;
+  const ageDays = Math.max(0, (Date.now() - date) / (24 * 60 * 60 * 1000));
+  if (ageDays <= 30) return 1;
+  if (ageDays <= 90) return 0.82;
+  if (ageDays <= 180) return 0.62;
+  if (ageDays <= 365) return 0.38;
+  return 0.16;
+}
+
+function paperCitationScore(item) {
+  const citations = Math.max(0, Number(item?.citationsCount) || 0);
+  return Math.max(0, Math.min(1, Math.log10(citations + 1) / 2));
+}
+
+function paperTopicMatchScore(item, topics = []) {
+  const topicNames = new Set((Array.isArray(topics) ? topics : []).map(topic => cleanText(topic?.name || "", 160)).filter(Boolean));
+  const matched = (Array.isArray(item?.topics) ? item.topics : []).filter(topic => topicNames.has(cleanText(topic, 160)));
+  return Math.max(0, Math.min(1, matched.length / Math.max(1, Math.min(3, topicNames.size || 1))));
+}
+
+function paperQualityScore(item, topics = []) {
+  const topicMatch = paperTopicMatchScore(item, topics);
+  const recency = paperRecencyScore(item);
+  const citations = paperCitationScore(item);
+  const abstractScore = String(item?.abstract || "").length >= 500 ? 1 : String(item?.abstract || "").length >= 120 ? 0.7 : 0;
+  const openAccess = item?.openAccessUrl ? 1 : 0;
+  const venue = item?.journalOrVenue ? 1 : 0;
+  return (
+    0.38 * topicMatch +
+    0.22 * recency +
+    0.18 * citations +
+    0.1 * abstractScore +
+    0.08 * openAccess +
+    0.04 * venue
+  );
+}
+
+function selectBestPaperItems(items = [], topics = [], limit = 20) {
+  const annotated = annotatePossibleDuplicates(dedupeItems(items));
+  return [...annotated]
+    .sort((left, right) => {
+      const scoreDiff = paperQualityScore(right, topics) - paperQualityScore(left, topics);
+      if (Math.abs(scoreDiff) > 0.0001) return scoreDiff;
+      const citationDiff = (Number(right?.citationsCount) || 0) - (Number(left?.citationsCount) || 0);
+      if (citationDiff) return citationDiff;
+      return Date.parse(right?.publicationDate || 0) - Date.parse(left?.publicationDate || 0);
+    })
+    .slice(0, Math.max(1, limit));
+}
+
 export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   const options = normalizeOptions(rawOptions);
   const logger = deps.logger || console;
@@ -299,6 +435,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   let sourceRecords = [];
   let run = null;
   let enabledTopics = [];
+  let runtimeSettings = null;
 
   if (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action) || TRIAL_ACTIONS.has(action)) {
     if (store && !options.dryRun && !deps.connectors) {
@@ -312,6 +449,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     }
     if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action) || TRIAL_ACTIONS.has(action))) {
       enabledTopics = await store.listEnabledTopics();
+      runtimeSettings = await resolveRuntimeSettings(store);
     }
   }
 
@@ -581,26 +719,24 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       throw new Error(`${actionLabel(action)} is not implemented yet.`);
     }
 
-    const keywords = await resolveKeywords(store, options);
-    const query = {
-      text: cleanText(options.queryText, 400),
-      keywords,
-      limit: options.limit,
-      fromDate: options.fromDate,
-      toDate: options.toDate
-    };
-
     const fetchedBySource = [];
     const sourceFailures = [];
 
     for (const connector of connectors) {
       try {
-        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+        const { plans, targetPerSource } = buildPaperQueryPlans(options, enabledTopics, connector, runtimeSettings);
+        const planResults = [];
+        for (const plan of plans) {
+          const items = (await connector.search(plan.query)).map(item => enrichItemTopics(item, enabledTopics));
+          logger.log(`[source:${connector.sourceType}] query "${plan.label}" fetched ${items.length} items`);
+          planResults.push(...items);
+        }
+        const items = selectBestPaperItems(planResults, enabledTopics, targetPerSource);
         fetchedBySource.push({
           connector,
           items
         });
-        logger.log(`[source:${connector.sourceType}] fetched ${items.length} items`);
+        logger.log(`[source:${connector.sourceType}] selected ${items.length} best papers from ${planResults.length} fetched candidates`);
       } catch (error) {
         sourceFailures.push({ sourceType: connector.sourceType, message: error instanceof Error ? error.message : String(error) });
         logSourceFailure(logger, connector, error);
