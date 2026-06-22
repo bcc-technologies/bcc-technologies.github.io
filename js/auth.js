@@ -85,6 +85,16 @@ async function waitForSupabaseSession(timeoutMs = 5000) {
   return lastSession;
 }
 
+async function supabaseFunctionError(error, fallback) {
+  if (typeof error?.context?.json === "function") {
+    try {
+      const payload = await error.context.json();
+      if (payload?.error) return new Error(String(payload.error));
+    } catch {}
+  }
+  return error instanceof Error ? error : new Error(fallback);
+}
+
 async function preparePasswordRecovery(timeoutMs = 7000) {
   const supabase = await loadSupabaseClient();
   const params = new URLSearchParams(location.search);
@@ -1096,7 +1106,7 @@ async function bccApi(path, options = {}) {
     const { data, error } = await supabaseClient.functions.invoke("run-intelligence-sync", {
       body: payload
     });
-    if (error) throw new Error(error.message || "No fue posible disparar la sincronizacion.");
+    if (error) throw await supabaseFunctionError(error, "No fue posible disparar la sincronizacion.");
     if (!data?.ok) throw new Error(data?.error || "No fue posible disparar la sincronizacion.");
     return data;
   }
