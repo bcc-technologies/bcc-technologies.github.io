@@ -358,7 +358,7 @@
           <p>
             <code>Intelligence</code> is an internal Scientific &amp; Technology Intelligence
             module inside the admin dashboard. It helps BCC monitor papers, grants,
-            patents, institutions, topics, and derived strategic signals across
+            patents, trials, institutions, topics, and derived strategic signals across
             product lines such as <code>MAP-Nano</code>, <code>MAP-Bio</code>,
             <code>MAP-Med</code>, and <code>MAP-Ing</code>.
           </p>
@@ -376,7 +376,7 @@
         <section id="architecture">
           <h2>Architecture</h2>
           <ol>
-            <li><code>Supabase</code> stores sources, topics, papers, grants, patents, institutions, signals, runs, and settings.</li>
+            <li><code>Supabase</code> stores sources, topics, papers, grants, patents, trials, institutions, signals, runs, and settings.</li>
             <li><code>Connectors</code> fetch and normalize external items.</li>
             <li><code>Sync + scoring</code> deduplicates, stores data, and generates signals.</li>
             <li><code>Admin dashboard</code> lets admins review data and trigger runs.</li>
@@ -399,6 +399,7 @@
             <li><code>PubMed / NCBI</code></li>
             <li><code>NIH RePORTER</code></li>
             <li><code>NSF Awards</code></li>
+            <li><code>ClinicalTrials.gov</code></li>
             <li><code>EPO OPS</code> <small>(in code, pending credentials)</small></li>
           </ul>
           <p>Prepared but not fully implemented yet:</p>
@@ -438,9 +439,10 @@ EPO_OPS_SECRET=</code></pre>
           <ul>
             <li><code>Run Intelligence Sync</code></li>
             <li><code>Fetch latest papers</code></li>
+            <li><code>Fetch trials</code></li>
             <li><code>Generate signals</code></li>
           </ul>
-          <p><code>Fetch grants</code> and <code>Fetch patents</code> are still placeholders.</p>
+          <p><code>Fetch grants</code>, <code>Fetch trials</code> and <code>Fetch patents</code> now exist as dedicated actions. <code>Patents</code> still depend on credentialed sources.</p>
           <h3>From the CLI</h3>
           <pre><code>node scripts/sync-intelligence.mjs --dry-run --source arxiv,openalex,crossref --keyword "SEM image analysis" --limit 10</code></pre>
           <pre><code>SUPABASE_URL=... \
@@ -499,7 +501,7 @@ node scripts/sync-intelligence.mjs --source arxiv,openalex,crossref --query "sci
             <li><code>proximityToBCC</code>: keyword matching against MAP lines and topic evidence.</li>
             <li><code>technicalPainDetected</code>: terms such as <code>manual</code>, <code>bottleneck</code>, <code>time-consuming</code>, <code>segmentation challenge</code>, <code>annotation</code>, <code>thresholding</code>, <code>low accuracy</code>, <code>noisy images</code>.</li>
             <li><code>fundingPresence</code>: related grants increase the score.</li>
-            <li><code>activeInstitutions</code>: distinct institutions across matching papers and grants.</li>
+            <li><code>activeInstitutions</code>: distinct institutions across matching papers, grants, and trials.</li>
             <li><code>openDataAvailability</code>: boosted by open access or dataset-like evidence.</li>
           </ul>
           <div class="docs-callout">
@@ -550,7 +552,7 @@ node scripts/sync-intelligence.mjs --source arxiv,openalex,crossref --query "sci
         <section id="limits">
           <h2>Current limitations</h2>
           <ul>
-            <li><code>Fetch grants</code> and <code>Fetch patents</code> are not implemented end-to-end yet.</li>
+            <li><code>Patents</code> still depend on credentialed sources even though the pipeline is already wired.</li>
             <li>The current sync is strongest on papers.</li>
             <li>Signal scoring is intentionally simple and heuristic.</li>
             <li>Duplicate review exists as metadata, not yet as a full analyst workflow.</li>

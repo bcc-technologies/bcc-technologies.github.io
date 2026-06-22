@@ -317,6 +317,88 @@ test("sync diagnostics repair existing papers with missing topic names", async (
   assert.deepEqual(savedPapers[1].topics, ["MAP-Nano"]);
 });
 
+test("fetch_trials persists normalized topic names onto studies", async () => {
+  const savedTrials = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-med-1",
+          name: "MAP-Med",
+          category: "med",
+          keywords: ["pathology AI", "cell counting"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun(meta) {
+      assert.equal(meta.actionType, "fetch_trials");
+      return { id: "run-trials-1" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-trials-1");
+      assert.equal(metrics.itemsFetched, 1);
+    },
+    async failRun() {},
+    async saveTrial(item) {
+      savedTrials.push(item);
+      return { action: "created", record: { id: "trial-1" } };
+    },
+    async touchSourceSync() {}
+  };
+
+  const connector = {
+    sourceType: "clinicaltrials",
+    async search() {
+      return [
+        {
+          sourceName: "ClinicalTrials.gov",
+          sourceType: "clinicaltrials",
+          externalId: "NCT12345678",
+          title: "Pathology AI cell counting study",
+          summary: "Evaluates microscopy-assisted cell counting in digital pathology.",
+          conditions: ["Cancer"],
+          interventions: ["Device: Microscopy AI"],
+          studyType: "INTERVENTIONAL",
+          sponsor: "Hospital A",
+          collaborators: ["University B"],
+          startDate: "2026-06-01",
+          completionDate: "2027-01-01",
+          locations: ["Hospital A, Boston, USA"],
+          countries: ["USA"],
+          topics: [],
+          keywords: ["pathology AI", "cell counting"],
+          sourceUrl: "https://clinicaltrials.gov/study/NCT12345678",
+          rawData: { source: "clinicaltrials" }
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_trials",
+      dryRun: false,
+      sourceTypes: ["clinicaltrials"],
+      keywords: ["pathology AI"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(savedTrials.length, 1);
+  assert.deepEqual(savedTrials[0].topics, ["MAP-Med"]);
+  assert.equal(savedTrials[0].externalId, "NCT12345678");
+});
+
 test("fetch_grants persists normalized grants and updates run metrics", async () => {
   const savedGrants = [];
   const store = {

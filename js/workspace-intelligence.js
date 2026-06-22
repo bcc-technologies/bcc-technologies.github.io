@@ -2,12 +2,13 @@
   const INTELLIGENCE_TIMEOUT_MS = 12000;
   const INTELLIGENCE_CACHE_VERSION = 1;
   const INTELLIGENCE_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
-  const PANELS = ["overview", "signals", "papers", "grants", "patents", "institutions", "topics", "sources", "settings"];
+  const PANELS = ["overview", "signals", "papers", "grants", "patents", "trials", "institutions", "topics", "sources", "settings"];
   const RUN_ACTIONS = [
     { id: "sync_papers", label: "Run Intelligence Sync" },
     { id: "fetch_papers", label: "Fetch latest papers" },
     { id: "fetch_grants", label: "Fetch grants" },
     { id: "fetch_patents", label: "Fetch patents" },
+    { id: "fetch_trials", label: "Fetch trials" },
     { id: "generate_signals", label: "Generate signals" }
   ];
   const SIGNAL_STATUS_ACTIONS = [
@@ -82,6 +83,7 @@
         papersTracked: 0,
         totalGrants: 0,
         totalPatents: 0,
+        totalTrials: 0,
         priorityTopics: 0,
         newSignals: 0
       },
@@ -89,6 +91,7 @@
       papers: [],
       grants: [],
       patents: [],
+      trials: [],
       institutions: [],
       topics: [],
       signals: [],
@@ -113,7 +116,8 @@
     return {
       papers: { topic: "", source: "", line: "", dateRange, keyword: "" },
       grants: { topic: "", line: "", dateRange, keyword: "" },
-      patents: { topic: "", line: "", dateRange, keyword: "" }
+      patents: { topic: "", line: "", dateRange, keyword: "" },
+      trials: { topic: "", line: "", dateRange, keyword: "" }
     };
   }
 
@@ -155,6 +159,7 @@
           <section class="intelligence-panel is-hidden" data-intelligence-panel="papers"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="grants"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="patents"></section>
+          <section class="intelligence-panel is-hidden" data-intelligence-panel="trials"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="institutions"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="topics"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="sources"></section>
@@ -214,6 +219,7 @@
       papers: Array.isArray(payload.papers) ? payload.papers : [],
       grants: Array.isArray(payload.grants) ? payload.grants : [],
       patents: Array.isArray(payload.patents) ? payload.patents : [],
+      trials: Array.isArray(payload.trials) ? payload.trials : [],
       institutions: Array.isArray(payload.institutions) ? payload.institutions : [],
       topics: Array.isArray(payload.topics) ? payload.topics : [],
       signals: Array.isArray(payload.signals) ? payload.signals : [],
@@ -275,6 +281,7 @@
       || state?.runs?.length
       || state?.grants?.length
       || state?.patents?.length
+      || state?.trials?.length
       || state?.institutions?.length
     );
   }
@@ -311,6 +318,7 @@
     renderPapers();
     renderGrants();
     renderPatents();
+    renderTrials();
     renderInstitutions();
     renderTopics();
     renderSources();
@@ -337,6 +345,7 @@
         <div><span>Total papers</span><strong>${number(stats.totalPapers)}</strong><small>Repositorio actual</small></div>
         <div><span>Total grants</span><strong>${number(stats.totalGrants)}</strong><small>Oportunidades y awards</small></div>
         <div><span>Total patents</span><strong>${number(stats.totalPatents)}</strong><small>Patentes y solicitudes</small></div>
+        <div><span>Total trials</span><strong>${number(stats.totalTrials)}</strong><small>Estudios y validación</small></div>
         <div><span>Active topics</span><strong>${number(stats.activeTopics)}</strong><small>Radar habilitado</small></div>
         <div><span>New signals</span><strong>${number(stats.newSignals)}</strong><small>New + reviewing</small></div>
         <div><span>Last sync</span><strong>${escapeHtml(stats.lastSyncLabel)}</strong><small>${escapeHtml(stats.lastSyncState)}</small></div>
@@ -619,6 +628,26 @@
     });
   }
 
+  function renderTrials() {
+    renderResearchTable("trials", {
+      title: "Trials",
+      items: filteredTrials(),
+      filters: filters.trials,
+      rows: item => `
+        <tr>
+          <td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.summary || "Sin resumen")}</small></td>
+          <td>${escapeHtml(formatDate(item.startDate || item.completionDate))}</td>
+          <td>${escapeHtml(item.sponsor || sourceHost(item.sourceUrl))}</td>
+          <td>${escapeHtml(joinList(item.interventions, 2))}</td>
+          <td>${escapeHtml(joinList(item.locations, 2))}</td>
+          <td>${topicPills(item.topics)}</td>
+          <td>${escapeHtml(item.status || item.phase || "-")}</td>
+          <td><a href="${escapeAttr(safeExternalUrl(item.sourceUrl || "#"))}" target="_blank" rel="noopener noreferrer">Abrir</a></td>
+        </tr>
+      `
+    });
+  }
+
   function renderResearchTable(panelName, config) {
     const target = panelRoot(panelName);
     if (!target) return;
@@ -670,11 +699,11 @@
               <tr>
                 <th>Título</th>
                 <th>Fecha</th>
-                <th>${panelName === "grants" ? "Agency" : panelName === "patents" ? "Jurisdiction" : "Fuente"}</th>
-                <th>${panelName === "grants" ? "Investigadores" : panelName === "patents" ? "Inventores" : "Autores"}</th>
-                <th>${panelName === "patents" ? "Assignees" : "Instituciones"}</th>
+                <th>${panelName === "grants" ? "Agency" : panelName === "patents" ? "Jurisdiction" : panelName === "trials" ? "Sponsor" : "Fuente"}</th>
+                <th>${panelName === "grants" ? "Investigadores" : panelName === "patents" ? "Inventores" : panelName === "trials" ? "Interventions" : "Autores"}</th>
+                <th>${panelName === "patents" ? "Assignees" : panelName === "trials" ? "Locations" : "Instituciones"}</th>
                 <th>Topics</th>
-                <th>${panelName === "grants" ? "Monto" : panelName === "patents" ? "Status" : "Citas"}</th>
+                <th>${panelName === "grants" ? "Monto" : panelName === "patents" ? "Status" : panelName === "trials" ? "Status / phase" : "Citas"}</th>
                 <th>Link</th>
               </tr>
             </thead>
@@ -1161,6 +1190,7 @@
       if (panel === "papers") renderPapers();
       if (panel === "grants") renderGrants();
       if (panel === "patents") renderPatents();
+      if (panel === "trials") renderTrials();
     }
   }
 
@@ -1261,6 +1291,7 @@
       renderPapers();
       renderGrants();
       renderPatents();
+      renderTrials();
     } catch (error) {
       setMessage(error.message || "No fue posible guardar el topic.", "error");
     }
@@ -1279,6 +1310,7 @@
       renderOverview();
       renderSources();
       renderPapers();
+      renderTrials();
     } catch (error) {
       setMessage(error.message || "No fue posible actualizar la fuente.", "error");
     }
@@ -1307,7 +1339,8 @@
     const grouped = {
       paper: evidence.filter(item => item?.type === "paper"),
       grant: evidence.filter(item => item?.type === "grant"),
-      patent: evidence.filter(item => item?.type === "patent")
+      patent: evidence.filter(item => item?.type === "patent"),
+      trial: evidence.filter(item => item?.type === "trial")
     };
     return `
       <div class="intelligence-signal-detail-hero">
@@ -1345,6 +1378,7 @@
                 ${renderEvidenceGroup("Papers", grouped.paper)}
                 ${renderEvidenceGroup("Grants", grouped.grant)}
                 ${renderEvidenceGroup("Patents", grouped.patent)}
+                ${renderEvidenceGroup("Trials", grouped.trial)}
               </div>
             ` : emptyMarkup("Sin evidencia", "Esta señal no debería existir sin evidencia, así que conviene revisarla.")}
           </div>
@@ -1371,6 +1405,7 @@
               <li>Papers relacionados: ${number(grouped.paper.length)}</li>
               <li>Grants relacionados: ${number(grouped.grant.length)}</li>
               <li>Patents relacionados: ${number(grouped.patent.length)}</li>
+              <li>Trials relacionados: ${number(grouped.trial.length)}</li>
             </ul>
           </div>
           ${renderSignalBreakdown(breakdown)}
@@ -1423,8 +1458,8 @@
     if (typeof matching.paperMeanScore === "number") {
       list.push(`La calidad media del match con papers es ${score(matching.paperMeanScore)}%.`);
     }
-    if (typeof evidence.papers === "number" || typeof evidence.grants === "number" || typeof evidence.patents === "number") {
-      list.push(`La señal se apoya en ${number((evidence.papers || 0) + (evidence.grants || 0) + (evidence.patents || 0))} assets relacionados.`);
+    if (typeof evidence.papers === "number" || typeof evidence.grants === "number" || typeof evidence.patents === "number" || typeof evidence.trials === "number") {
+      list.push(`La señal se apoya en ${number((evidence.papers || 0) + (evidence.grants || 0) + (evidence.patents || 0) + (evidence.trials || 0))} assets relacionados.`);
     }
     return list.slice(0, 5);
   }
@@ -1474,6 +1509,7 @@
       totalPapers: dashboard.overview.papersTracked || dashboard.papers.length,
       totalGrants: dashboard.overview.totalGrants || dashboard.grants.length,
       totalPatents: dashboard.overview.totalPatents || dashboard.patents.length,
+      totalTrials: dashboard.overview.totalTrials || dashboard.trials.length,
       activeTopics: dashboard.topics.filter(item => item.enabled).length || dashboard.overview.priorityTopics || 0,
       newSignals: dashboard.signals.filter(item => ["new", "reviewing"].includes(item.status)).length || dashboard.overview.newSignals || 0,
       lastSyncLabel: latestRun ? formatDateTime(latestRun.finishedAt || latestRun.startedAt || latestRun.createdAt) : "Sin runs",
@@ -1616,13 +1652,14 @@
         const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
         const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
         const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
+        const trialHits = dashboard.trials.filter(item => itemMatchesTopic(item, topic, ["title", "summary", "topics", "keywords", "conditions", "interventions", "sponsor", "collaborators", "locations", "countries"])).length;
         const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === mapTopicLine(topic)).length;
-        const scoreValue = paperHits * 3 + grantHits * 2 + patentHits * 2 + signalHits * 4;
+        const scoreValue = paperHits * 3 + grantHits * 2 + patentHits * 2 + trialHits * 3 + signalHits * 4;
         return {
           name: topic.name,
           line: mapTopicLine(topic),
           score: scoreValue,
-          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patents · ${signalHits} signals`
+          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patents · ${trialHits} trials · ${signalHits} signals`
         };
       })
       .filter(item => item.score > 0)
@@ -1828,6 +1865,13 @@
     });
   }
 
+  function filteredTrials() {
+    return applyResearchFilters(dashboard.trials, filters.trials, {
+      dateField: "startDate",
+      searchFields: ["title", "summary", "conditions", "interventions", "phase", "status", "studyType", "sponsor", "collaborators", "locations", "countries", "topics", "keywords"]
+    });
+  }
+
   function applyResearchFilters(items, state, config) {
     const normalizedKeyword = String(state.keyword || "").trim().toLowerCase();
     const cutoff = cutoffDate(state.dateRange);
@@ -1881,6 +1925,7 @@
       dashboard.papers.forEach(item => counts.set(deriveLine(item), (counts.get(deriveLine(item)) || 0) + 1));
       dashboard.grants.forEach(item => counts.set(deriveLine(item), (counts.get(deriveLine(item)) || 0) + 1));
       dashboard.patents.forEach(item => counts.set(deriveLine(item), (counts.get(deriveLine(item)) || 0) + 1));
+      dashboard.trials.forEach(item => counts.set(deriveLine(item), (counts.get(deriveLine(item)) || 0) + 1));
     }
     return [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] || "General";
   }
@@ -1898,7 +1943,7 @@
     });
     if (!Object.keys(categories).length) {
       dashboard.topics.forEach(topic => {
-        if (itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions", "program", "agency", "inventors", "assignees", "jurisdiction", "status"])) {
+        if (itemMatchesTopic(item, topic, ["title", "abstract", "summary", "topics", "keywords", "authors", "institutions", "program", "agency", "inventors", "assignees", "jurisdiction", "status", "conditions", "interventions", "studyType", "sponsor", "collaborators", "locations", "countries"])) {
           categories[topic.category] = (categories[topic.category] || 0) + 1;
         }
       });
@@ -1947,6 +1992,7 @@
       papers: "Papers",
       grants: "Grants",
       patents: "Patents",
+      trials: "Trials",
       institutions: "Institutions",
       topics: "Topics",
       sources: "Sources",
@@ -2025,8 +2071,9 @@
     const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
     const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
     const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
+    const trialHits = dashboard.trials.filter(item => itemMatchesTopic(item, topic, ["title", "summary", "topics", "keywords", "conditions", "interventions", "sponsor", "collaborators", "locations", "countries"])).length;
     const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === line).length;
-    const totalHits = paperHits + grantHits + patentHits + signalHits;
+    const totalHits = paperHits + grantHits + patentHits + trialHits + signalHits;
     const keywordCount = Array.isArray(topic?.keywords) ? topic.keywords.length : 0;
     const health = !topic.enabled ? "paused" : totalHits >= 12 ? "hot" : totalHits >= 4 ? "active" : "cold";
     const healthLabel = {
@@ -2043,12 +2090,13 @@
       paperHits,
       grantHits,
       patentHits,
+      trialHits,
       signalHits,
       totalHits,
       keywordCount,
       health,
       healthLabel,
-      note: `${paperHits} papers · ${signalHits} signals · ${keywordCount} keywords`
+      note: `${paperHits} papers · ${trialHits} trials · ${signalHits} signals · ${keywordCount} keywords`
     };
   }
 
@@ -2341,6 +2389,7 @@
     if (panelName === "papers") return "No papers synced yet.";
     if (panelName === "grants") return "No grants synced yet.";
     if (panelName === "patents") return "No patents synced yet.";
+    if (panelName === "trials") return "No trials synced yet.";
     return "No hay resultados todavía.";
   }
 
@@ -2359,6 +2408,11 @@
     }
     if (panelName === "patents") {
       return emptyMarkup("No patents synced yet.", "Patent fetching is still pending implementation, so this view is expected to stay empty for now.");
+    }
+    if (panelName === "trials") {
+      return emptyMarkup("No trials synced yet.", "The radar has not stored ClinicalTrials.gov studies yet.", [
+        { label: "Run first sync", cta: "run-sync" }
+      ]);
     }
     return "";
   }
@@ -2441,7 +2495,14 @@
   function renderMessageBlock(target, text, tone = "neutral") {
     const content = String(text || "").trim();
     target.dataset.tone = tone;
-    target.replaceChildren(document.createTextNode(content));
+    const copySupported = typeof document?.createElement === "function";
+    if (!copySupported) {
+      target.textContent = content;
+      return;
+    }
+    const textNode = document.createElement("span");
+    textNode.textContent = content;
+    target.replaceChildren(textNode);
     if (content.length < 170) return;
     const button = document.createElement("button");
     button.type = "button";

@@ -8,6 +8,7 @@ import { createIntelligenceStoreFromEnv } from "./intelligence/store.mjs";
 const PAPER_ACTIONS = new Set(["sync_papers", "fetch_papers"]);
 const GRANT_ACTIONS = new Set(["fetch_grants"]);
 const PATENT_ACTIONS = new Set(["fetch_patents"]);
+const TRIAL_ACTIONS = new Set(["fetch_trials"]);
 
 function redactSensitiveText(value) {
   return String(value || "")
@@ -127,6 +128,7 @@ function actionLabel(action) {
     fetch_papers: "Fetch latest papers",
     fetch_grants: "Fetch grants",
     fetch_patents: "Fetch patents",
+    fetch_trials: "Fetch trials",
     generate_signals: "Generate signals"
   };
   return labels[action] || action || "Unknown action";
@@ -158,15 +160,25 @@ function itemTopicHaystack(item) {
   return [
     item?.title,
     item?.abstract,
+    item?.summary,
     ...(Array.isArray(item?.topics) ? item.topics : []),
     ...(Array.isArray(item?.keywords) ? item.keywords : []),
+    ...(Array.isArray(item?.conditions) ? item.conditions : []),
+    ...(Array.isArray(item?.interventions) ? item.interventions : []),
     ...(Array.isArray(item?.institutions) ? item.institutions : []),
     ...(Array.isArray(item?.authors) ? item.authors : []),
     ...(Array.isArray(item?.principalInvestigators) ? item.principalInvestigators : []),
     ...(Array.isArray(item?.assignees) ? item.assignees : []),
+    ...(Array.isArray(item?.collaborators) ? item.collaborators : []),
+    ...(Array.isArray(item?.locations) ? item.locations : []),
+    ...(Array.isArray(item?.countries) ? item.countries : []),
     item?.agency,
     item?.program,
     item?.country,
+    item?.phase,
+    item?.status,
+    item?.studyType,
+    item?.sponsor,
     item?.journalOrVenue,
     item?.sourceName
   ]
@@ -246,6 +258,7 @@ function dryRunSignalContext(store, topics, dedupedItems) {
     papers: dedupedItems,
     grants: [],
     patents: [],
+    trials: [],
     institutions: [],
     topics
   });
@@ -276,7 +289,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   let run = null;
   let enabledTopics = [];
 
-  if (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action)) {
+  if (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action) || TRIAL_ACTIONS.has(action)) {
     if (store && !options.dryRun && !deps.connectors) {
       const registryConnectors = CONNECTORS;
       await Promise.all(registryConnectors.map(connector => store.ensureSourceRecord(connector)));
@@ -286,7 +299,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     if (!connectors.length) {
       throw new Error("No intelligence connectors selected.");
     }
-    if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action))) {
+    if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action) || TRIAL_ACTIONS.has(action))) {
       enabledTopics = await store.listEnabledTopics();
     }
   }
@@ -320,7 +333,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       }
       if (run && store) {
         await store.completeRun(run.id, {
-          itemsFetched: context.papers.length + context.grants.length + context.patents.length,
+          itemsFetched: context.papers.length + context.grants.length + context.patents.length + (context.trials?.length || 0),
           itemsCreated: 0,
           itemsUpdated: 0,
           signalsGenerated: signals.length
@@ -331,7 +344,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
         dryRun: options.dryRun,
         connectors: [],
         sourceRecords,
-        itemsFetched: context.papers.length + context.grants.length + context.patents.length,
+        itemsFetched: context.papers.length + context.grants.length + context.patents.length + (context.trials?.length || 0),
         itemsDeduped: context.papers.length,
         itemsCreated: 0,
         itemsUpdated: 0,
@@ -431,6 +444,66 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
           if (!sourceRecord?.id) continue;
           for (const item of dedupeGrantItems(entry.items)) {
             const result = await store.savePatent(item, sourceRecord.id);
+            if (result.action === "created") itemsCreated += 1;
+            if (result.action === "updated") itemsUpdated += 1;
+          }
+          await store.touchSourceSync(sourceRecord.id);
+        }
+      }
+
+      if (run && store) {
+        await store.completeRun(run.id, {
+          itemsFetched: combinedItems.length,
+          itemsCreated,
+          itemsUpdated,
+          signalsGenerated: 0
+        });
+      }
+
+      const result = {
+        action,
+        dryRun: options.dryRun,
+        connectors: connectors.map(connector => connector.sourceType),
+        sourceRecords,
+        itemsFetched: combinedItems.length,
+        itemsDeduped: dedupedItems.length,
+        itemsCreated,
+        itemsUpdated,
+        signalsGenerated: 0,
+        runId: run?.id || ""
+      };
+      logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+      return result;
+    }
+
+    if (TRIAL_ACTIONS.has(action)) {
+      const keywords = await resolveKeywords(store, options);
+      const query = {
+        text: cleanText(options.queryText, 400),
+        keywords,
+        limit: options.limit,
+        fromDate: options.fromDate,
+        toDate: options.toDate
+      };
+
+      const fetchedBySource = [];
+      for (const connector of connectors) {
+        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+        fetchedBySource.push({ connector, items });
+        logger.log(`[source:${connector.sourceType}] fetched ${items.length} trials`);
+      }
+
+      const combinedItems = fetchedBySource.flatMap(entry => entry.items);
+      const dedupedItems = dedupeGrantItems(combinedItems);
+      let itemsCreated = 0;
+      let itemsUpdated = 0;
+
+      if (store && !options.dryRun) {
+        for (const entry of fetchedBySource) {
+          const sourceRecord = sourceRecords.find(record => record.type === entry.connector.sourceType);
+          if (!sourceRecord?.id) continue;
+          for (const item of dedupeGrantItems(entry.items)) {
+            const result = await store.saveTrial(item, sourceRecord.id);
             if (result.action === "created") itemsCreated += 1;
             if (result.action === "updated") itemsUpdated += 1;
           }

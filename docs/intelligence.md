@@ -9,6 +9,7 @@ Its job is to help BCC monitor:
 - scientific papers and preprints
 - grants and funded projects
 - patents
+- clinical and translational studies
 - institutions
 - monitored topics
 - derived strategic signals
@@ -33,7 +34,7 @@ Before this module, relevant signals were scattered across public sources and ha
 The current implementation has four layers:
 
 1. `Supabase`
-   Stores sources, topics, papers, grants, patents, institutions, signals, runs, and settings.
+   Stores sources, topics, papers, grants, patents, trials, institutions, signals, runs, and settings.
 
 2. `Connectors`
    Fetch external data and normalize it into the internal model.
@@ -66,12 +67,11 @@ Implemented now:
 - `PubMed / NCBI`
 - `NIH RePORTER`
 - `NSF Awards`
+- `ClinicalTrials.gov`
 - `EPO OPS` in code, pending credentials
 
 Prepared but not fully implemented yet:
 
-- `NIH RePORTER`
-- `NSF Awards`
 - `USPTO`
 
 The active sources visible in the dashboard are stored in `public.intelligence_sources`.
@@ -134,9 +134,10 @@ Then use:
 
 - `Run Intelligence Sync`
 - `Fetch latest papers`
+- `Fetch trials`
 - `Generate signals`
 
-`Fetch grants` and `Fetch patents` exist in the UI but are still placeholders in the current version.
+`Fetch grants`, `Fetch trials` and `Fetch patents` now exist as dedicated actions. The current sync is still strongest on `papers`; `trials` already enrich collaboration and translational evidence, while `patents` still depend on credentialed sources.
 
 ### From the CLI
 

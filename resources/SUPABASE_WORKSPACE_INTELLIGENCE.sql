@@ -13,7 +13,7 @@ create table if not exists public.intelligence_sources (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint intelligence_sources_name_check check (char_length(btrim(name)) between 1 and 120),
-  constraint intelligence_sources_type_check check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'epo_ops', 'cordis', 'uspto', 'custom')),
+  constraint intelligence_sources_type_check check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'clinicaltrials', 'epo_ops', 'cordis', 'uspto', 'custom')),
   constraint intelligence_sources_base_url_check check (char_length(base_url) <= 500),
   constraint intelligence_sources_rate_limit_notes_check check (char_length(rate_limit_notes) <= 2000)
 );
@@ -26,7 +26,7 @@ alter table public.intelligence_sources
 
 alter table public.intelligence_sources
   add constraint intelligence_sources_type_check
-  check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'epo_ops', 'cordis', 'uspto', 'custom'));
+  check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'clinicaltrials', 'epo_ops', 'cordis', 'uspto', 'custom'));
 
 create table if not exists public.intelligence_topics (
   id uuid primary key default gen_random_uuid(),
@@ -214,6 +214,51 @@ create unique index if not exists intelligence_patents_source_external_uidx
 on public.intelligence_patents (source_id, external_id)
 where source_id is not null and btrim(external_id) <> '';
 
+create table if not exists public.intelligence_trials (
+  id uuid primary key default gen_random_uuid(),
+  source_id uuid references public.intelligence_sources(id) on delete set null,
+  external_id text not null default '',
+  title text not null,
+  summary text not null default '',
+  conditions text[] not null default '{}'::text[],
+  interventions text[] not null default '{}'::text[],
+  phase text not null default '',
+  status text not null default '',
+  study_type text not null default '',
+  sponsor text not null default '',
+  collaborators text[] not null default '{}'::text[],
+  start_date date,
+  completion_date date,
+  locations text[] not null default '{}'::text[],
+  countries text[] not null default '{}'::text[],
+  source_url text not null default '',
+  topics text[] not null default '{}'::text[],
+  keywords text[] not null default '{}'::text[],
+  raw_data jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint intelligence_trials_external_id_check check (char_length(external_id) <= 200),
+  constraint intelligence_trials_title_check check (char_length(btrim(title)) between 1 and 600),
+  constraint intelligence_trials_summary_check check (char_length(summary) <= 40000),
+  constraint intelligence_trials_phase_check check (char_length(phase) <= 120),
+  constraint intelligence_trials_status_check check (char_length(status) <= 120),
+  constraint intelligence_trials_study_type_check check (char_length(study_type) <= 120),
+  constraint intelligence_trials_sponsor_check check (char_length(sponsor) <= 200),
+  constraint intelligence_trials_source_url_check check (char_length(source_url) <= 500),
+  constraint intelligence_trials_conditions_check check (coalesce(array_length(conditions, 1), 0) <= 64),
+  constraint intelligence_trials_interventions_check check (coalesce(array_length(interventions, 1), 0) <= 128),
+  constraint intelligence_trials_collaborators_check check (coalesce(array_length(collaborators, 1), 0) <= 128),
+  constraint intelligence_trials_locations_check check (coalesce(array_length(locations, 1), 0) <= 128),
+  constraint intelligence_trials_countries_check check (coalesce(array_length(countries, 1), 0) <= 64),
+  constraint intelligence_trials_topics_check check (coalesce(array_length(topics, 1), 0) <= 64),
+  constraint intelligence_trials_keywords_check check (coalesce(array_length(keywords, 1), 0) <= 128),
+  constraint intelligence_trials_raw_data_check check (jsonb_typeof(raw_data) = 'object')
+);
+
+create unique index if not exists intelligence_trials_source_external_uidx
+on public.intelligence_trials (source_id, external_id)
+where source_id is not null and btrim(external_id) <> '';
+
 create table if not exists public.intelligence_signals (
   id uuid primary key default gen_random_uuid(),
   title text not null,
@@ -263,7 +308,7 @@ create table if not exists public.intelligence_runs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint intelligence_runs_status_check check (status in ('pending', 'running', 'completed', 'failed')),
-  constraint intelligence_runs_action_type_check check (action_type in ('sync_papers', 'fetch_papers', 'fetch_grants', 'fetch_patents', 'generate_signals')),
+  constraint intelligence_runs_action_type_check check (action_type in ('sync_papers', 'fetch_papers', 'fetch_grants', 'fetch_patents', 'fetch_trials', 'generate_signals')),
   constraint intelligence_runs_sources_used_check check (coalesce(array_length(sources_used, 1), 0) <= 128),
   constraint intelligence_runs_items_fetched_check check (items_fetched >= 0),
   constraint intelligence_runs_items_created_check check (items_created >= 0),
@@ -278,19 +323,12 @@ alter table public.intelligence_runs
 alter table public.intelligence_runs
   add column if not exists dry_run boolean not null default false;
 
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'intelligence_runs_action_type_check'
-      and conrelid = 'public.intelligence_runs'::regclass
-  ) then
-    alter table public.intelligence_runs
-      add constraint intelligence_runs_action_type_check
-      check (action_type in ('sync_papers', 'fetch_papers', 'fetch_grants', 'fetch_patents', 'generate_signals'));
-  end if;
-end $$;
+alter table public.intelligence_runs
+  drop constraint if exists intelligence_runs_action_type_check;
+
+alter table public.intelligence_runs
+  add constraint intelligence_runs_action_type_check
+  check (action_type in ('sync_papers', 'fetch_papers', 'fetch_grants', 'fetch_patents', 'fetch_trials', 'generate_signals'));
 
 create table if not exists public.intelligence_settings (
   id uuid primary key default gen_random_uuid(),
@@ -348,6 +386,15 @@ on public.intelligence_patents (filing_date desc, publication_date desc);
 create index if not exists intelligence_patents_topics_gin_idx
 on public.intelligence_patents using gin (topics);
 
+create index if not exists intelligence_trials_dates_idx
+on public.intelligence_trials (start_date desc, completion_date desc);
+
+create index if not exists intelligence_trials_topics_gin_idx
+on public.intelligence_trials using gin (topics);
+
+create index if not exists intelligence_trials_keywords_gin_idx
+on public.intelligence_trials using gin (keywords);
+
 create index if not exists intelligence_signals_status_type_idx
 on public.intelligence_signals (status, signal_type, related_line, created_at desc);
 
@@ -400,6 +447,11 @@ create trigger intelligence_patents_set_timestamps
 before update on public.intelligence_patents
 for each row execute function public.set_intelligence_updated_at();
 
+drop trigger if exists intelligence_trials_set_timestamps on public.intelligence_trials;
+create trigger intelligence_trials_set_timestamps
+before update on public.intelligence_trials
+for each row execute function public.set_intelligence_updated_at();
+
 drop trigger if exists intelligence_signals_set_timestamps on public.intelligence_signals;
 create trigger intelligence_signals_set_timestamps
 before update on public.intelligence_signals
@@ -421,6 +473,7 @@ alter table public.intelligence_institutions enable row level security;
 alter table public.intelligence_papers enable row level security;
 alter table public.intelligence_grants enable row level security;
 alter table public.intelligence_patents enable row level security;
+alter table public.intelligence_trials enable row level security;
 alter table public.intelligence_signals enable row level security;
 alter table public.intelligence_runs enable row level security;
 alter table public.intelligence_settings enable row level security;
@@ -431,6 +484,7 @@ revoke all on public.intelligence_institutions from public, anon;
 revoke all on public.intelligence_papers from public, anon;
 revoke all on public.intelligence_grants from public, anon;
 revoke all on public.intelligence_patents from public, anon;
+revoke all on public.intelligence_trials from public, anon;
 revoke all on public.intelligence_signals from public, anon;
 revoke all on public.intelligence_runs from public, anon;
 revoke all on public.intelligence_settings from public, anon;
@@ -441,6 +495,7 @@ grant select, insert, update, delete on public.intelligence_institutions to auth
 grant select, insert, update, delete on public.intelligence_papers to authenticated;
 grant select, insert, update, delete on public.intelligence_grants to authenticated;
 grant select, insert, update, delete on public.intelligence_patents to authenticated;
+grant select, insert, update, delete on public.intelligence_trials to authenticated;
 grant select, insert, update, delete on public.intelligence_signals to authenticated;
 grant select, insert, update, delete on public.intelligence_runs to authenticated;
 grant select, insert, update, delete on public.intelligence_settings to authenticated;
@@ -493,6 +548,14 @@ to authenticated
 using (private.is_admin())
 with check (private.is_admin());
 
+drop policy if exists "Admins manage intelligence trials" on public.intelligence_trials;
+create policy "Admins manage intelligence trials"
+on public.intelligence_trials
+for all
+to authenticated
+using (private.is_admin())
+with check (private.is_admin());
+
 drop policy if exists "Admins manage intelligence signals" on public.intelligence_signals;
 create policy "Admins manage intelligence signals"
 on public.intelligence_signals
@@ -534,6 +597,9 @@ comment on table public.intelligence_grants is
 
 comment on table public.intelligence_patents is
 'Admin-only patent and patent application registry for competitive and technology intelligence.';
+
+comment on table public.intelligence_trials is
+'Admin-only clinical and translational study registry for adoption, validation and partnership intelligence.';
 
 comment on table public.intelligence_signals is
 'Admin-only derived strategic signals generated from monitored papers, grants, patents and institutions.';

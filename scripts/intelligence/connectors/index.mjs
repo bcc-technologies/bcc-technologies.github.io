@@ -1,4 +1,5 @@
 import arxiv from "./arxiv.mjs";
+import clinicalTrials from "./clinicaltrials.mjs";
 import crossref from "./crossref.mjs";
 import epoOps from "./epo-ops.mjs";
 import openalex from "./openalex.mjs";
@@ -10,6 +11,7 @@ import uspto from "./uspto.mjs";
 
 export const CONNECTORS = [
   arxiv,
+  clinicalTrials,
   openalex,
   crossref,
   semanticScholar,
@@ -25,6 +27,7 @@ const DEFAULT_ACTION_CONNECTOR_TYPES = {
   fetch_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
   fetch_grants: ["nih_reporter", "nsf"],
   fetch_patents: ["epo_ops", "uspto"],
+  fetch_trials: ["clinicaltrials"],
   generate_signals: []
 };
 

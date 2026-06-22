@@ -7,6 +7,7 @@ const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source
 const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url,raw_data";
 const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount";
 const PATENT_COLUMNS = "id,source_id,external_id,title,jurisdiction,status,publication_date,filing_date";
+const TRIAL_COLUMNS = "id,source_id,external_id,title,status,study_type,start_date,completion_date,sponsor";
 const SIGNAL_COLUMNS = "id,title,signal_type,related_line,confidence_score,opportunity_score,actionability_score,evidence_count,evidence_refs,score_breakdown,recommended_action,status";
 const RUN_COLUMNS = "id,status,action_type,dry_run,started_at,finished_at,items_fetched,items_created,items_updated,signals_generated,error_message";
 
@@ -131,6 +132,30 @@ function mapPatentRecord(item, sourceId) {
   };
 }
 
+function mapTrialRecord(item, sourceId) {
+  return {
+    source_id: sourceId,
+    external_id: cleanText(item.externalId || "", 200),
+    title: cleanText(item.title || "", 600),
+    summary: cleanText(item.summary || "", 40000),
+    conditions: Array.isArray(item.conditions) ? item.conditions : [],
+    interventions: Array.isArray(item.interventions) ? item.interventions : [],
+    phase: cleanText(item.phase || "", 120),
+    status: cleanText(item.status || "", 120),
+    study_type: cleanText(item.studyType || "", 120),
+    sponsor: cleanText(item.sponsor || "", 200),
+    collaborators: Array.isArray(item.collaborators) ? item.collaborators : [],
+    start_date: item.startDate || null,
+    completion_date: item.completionDate || null,
+    locations: Array.isArray(item.locations) ? item.locations : [],
+    countries: Array.isArray(item.countries) ? item.countries : [],
+    source_url: cleanText(item.sourceUrl || "", 500),
+    topics: Array.isArray(item.topics) ? item.topics : [],
+    keywords: Array.isArray(item.keywords) ? item.keywords : [],
+    raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+  };
+}
+
 export function createIntelligenceStoreFromEnv() {
   const baseUrl = String(process.env.SUPABASE_URL || "").trim();
   const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
@@ -166,6 +191,7 @@ export function createIntelligenceStoreFromEnv() {
         papers,
         grants,
         patents,
+        trials,
         institutions,
         topics
       ] = await Promise.all([
@@ -187,6 +213,13 @@ export function createIntelligenceStoreFromEnv() {
           params: {
             select: "id,title,abstract,assignees,jurisdiction,status,source_url,topics,raw_data",
             order: "publication_date.desc,updated_at.desc",
+            limit: 200
+          }
+        }),
+        restFetch(baseUrl, serviceKey, "intelligence_trials", {
+          params: {
+            select: "id,title,summary,conditions,interventions,phase,status,study_type,sponsor,collaborators,start_date,completion_date,locations,countries,source_url,topics,keywords,raw_data",
+            order: "start_date.desc,updated_at.desc",
             limit: 200
           }
         }),
@@ -245,6 +278,26 @@ export function createIntelligenceStoreFromEnv() {
           status: item.status || "",
           sourceUrl: item.source_url || "",
           topics: Array.isArray(item.topics) ? item.topics : [],
+          rawData: item.raw_data && typeof item.raw_data === "object" ? item.raw_data : {}
+        })) : [],
+        trials: Array.isArray(trials) ? trials.map(item => ({
+          id: item.id,
+          title: item.title || "",
+          summary: item.summary || "",
+          conditions: Array.isArray(item.conditions) ? item.conditions : [],
+          interventions: Array.isArray(item.interventions) ? item.interventions : [],
+          phase: item.phase || "",
+          status: item.status || "",
+          studyType: item.study_type || "",
+          sponsor: item.sponsor || "",
+          collaborators: Array.isArray(item.collaborators) ? item.collaborators : [],
+          startDate: item.start_date || "",
+          completionDate: item.completion_date || "",
+          locations: Array.isArray(item.locations) ? item.locations : [],
+          countries: Array.isArray(item.countries) ? item.countries : [],
+          sourceUrl: item.source_url || "",
+          topics: Array.isArray(item.topics) ? item.topics : [],
+          keywords: Array.isArray(item.keywords) ? item.keywords : [],
           rawData: item.raw_data && typeof item.raw_data === "object" ? item.raw_data : {}
         })) : [],
         institutions: Array.isArray(institutions) ? institutions.map(item => ({
@@ -644,6 +697,59 @@ export function createIntelligenceStoreFromEnv() {
       }
 
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_patents", {
+        method: "POST",
+        prefer: "return=representation",
+        body: payload
+      });
+      return { action: "created", record: Array.isArray(rows) ? rows[0] : rows };
+    },
+
+    async findExistingTrial(item, sourceId) {
+      const externalId = cleanText(item?.externalId || "", 200);
+      if (sourceId && externalId) {
+        const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
+          params: {
+            select: TRIAL_COLUMNS,
+            source_id: `eq.${sourceId}`,
+            external_id: `eq.${externalId}`,
+            limit: 1
+          }
+        });
+        const found = Array.isArray(rows) ? rows[0] : rows;
+        if (found?.id) return found;
+      }
+
+      const title = cleanText(item?.title || "", 600);
+      if (!title) return null;
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
+        params: {
+          select: TRIAL_COLUMNS,
+          title: `eq.${title}`,
+          limit: 5
+        }
+      });
+      const matches = Array.isArray(rows) ? rows : [];
+      return matches.find(row =>
+        cleanText(row?.sponsor || "", 200).toLowerCase() === cleanText(item?.sponsor || "", 200).toLowerCase()
+      ) || matches[0] || null;
+    },
+
+    async saveTrial(item, sourceId) {
+      const existing = await this.findExistingTrial(item, sourceId);
+      const payload = mapTrialRecord(item, sourceId);
+      if (existing?.id) {
+        const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
+          method: "PATCH",
+          prefer: "return=representation",
+          params: {
+            id: `eq.${existing.id}`
+          },
+          body: payload
+        });
+        return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
+      }
+
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
         method: "POST",
         prefer: "return=representation",
         body: payload

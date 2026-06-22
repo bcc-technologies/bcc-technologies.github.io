@@ -9,6 +9,7 @@ Stage 3 adds a modular sync layer for BCC's `Intelligence` workspace.
 - `Crossref`
 - `Semantic Scholar`
 - `PubMed`
+- `ClinicalTrials.gov`
 
 Prepared but not fully activatable yet:
 
@@ -104,8 +105,9 @@ To stay inside the free OpenAlex allowance:
 2. `PubMed` uses a two-step `esearch` plus `efetch` flow so abstracts, authors, affiliations, DOI, PMID and PMC links can be normalized into the paper model.
 3. `NIH RePORTER` uses the official v2 `projects/search` endpoint and normalizes awards into `intelligence_grants`.
 4. `NSF Awards` uses the official NSF Award Search API and normalizes awards into `intelligence_grants`.
-5. `EPO OPS` is the current patent-source target in code and normalizes published-data search results into `intelligence_patents`.
-6. On the next real sync, the runner will auto-register known connectors into `intelligence_sources`. Sources like `USPTO` can therefore stay visible but paused with a reason.
+5. `ClinicalTrials.gov` uses the public v2 studies API and normalizes studies into `intelligence_trials`.
+6. `EPO OPS` is the current patent-source target in code and normalizes published-data search results into `intelligence_patents`.
+7. On the next real sync, the runner will auto-register known connectors into `intelligence_sources`. Sources like `USPTO` can therefore stay visible but paused with a reason.
 
 ## Deduplication strategy
 
@@ -116,4 +118,4 @@ The sync layer deduplicates in two places:
 
 ## Scope in this phase
 
-This phase saves normalized papers into `public.intelligence_papers`, ensures `public.intelligence_sources` exists for each connector, and logs run metadata into `public.intelligence_runs`.
+This phase saves normalized `papers`, `grants`, `patents`, and `trials` into their respective `public.intelligence_*` tables, ensures `public.intelligence_sources` exists for each connector, and logs run metadata into `public.intelligence_runs`.

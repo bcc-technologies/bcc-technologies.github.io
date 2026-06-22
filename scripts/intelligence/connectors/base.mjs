@@ -216,6 +216,32 @@ export function normalizePatentItem(item = {}) {
   };
 }
 
+export function normalizeTrialItem(item = {}) {
+  return {
+    kind: "trial",
+    sourceName: cleanText(item.sourceName, 120),
+    sourceType: cleanText(item.sourceType, 80),
+    externalId: cleanText(item.externalId, 200),
+    title: normalizeTitle(item.title, 600),
+    summary: cleanText(item.summary, 40000),
+    conditions: cleanArray((Array.isArray(item.conditions) ? item.conditions : []).map(condition => normalizeTag(condition, 160)), 64, 160),
+    interventions: cleanArray((Array.isArray(item.interventions) ? item.interventions : []).map(intervention => normalizeTag(intervention, 200)), 128, 200),
+    phase: cleanText(item.phase, 120),
+    status: cleanText(item.status, 120),
+    studyType: cleanText(item.studyType, 120),
+    sponsor: normalizeInstitutionName(item.sponsor, 200),
+    collaborators: cleanArray((Array.isArray(item.collaborators) ? item.collaborators : []).map(collaborator => normalizeInstitutionName(collaborator, 200)), 128, 200),
+    startDate: normalizeDate(item.startDate),
+    completionDate: normalizeDate(item.completionDate),
+    locations: cleanArray((Array.isArray(item.locations) ? item.locations : []).map(location => cleanText(location, 200)), 128, 200),
+    countries: cleanArray((Array.isArray(item.countries) ? item.countries : []).map(country => cleanText(country, 120)), 64, 120),
+    sourceUrl: safeUrl(item.sourceUrl, 500),
+    topics: cleanArray((Array.isArray(item.topics) ? item.topics : []).map(topic => normalizeTag(topic, 120)), 64, 120),
+    keywords: cleanArray((Array.isArray(item.keywords) ? item.keywords : []).map(keyword => normalizeTag(keyword, 120)), 128, 120),
+    rawData: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+  };
+}
+
 export function createNotImplementedConnector(sourceName, sourceType) {
   return {
     sourceName,

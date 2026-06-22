@@ -2,7 +2,7 @@
 
 La vista `Intelligence` del dashboard ahora puede:
 
-1. Leer `sources`, `papers`, `topics`, `signals`, `runs`, `grants`, `patents` e `institutions` desde Supabase.
+1. Leer `sources`, `papers`, `topics`, `signals`, `runs`, `grants`, `patents`, `trials` e `institutions` desde Supabase.
 2. Disparar manualmente el workflow de sincronización desde el dashboard.
 3. Ejecutar en `dry-run`.
 4. Correr de forma programada por GitHub Actions.
@@ -67,7 +67,7 @@ Las demás quedan preparadas para conectores futuros.
 2. El dashboard llama la Edge Function `run-intelligence-sync`.
 3. La Edge Function dispara `.github/workflows/run-intelligence-sync.yml`.
 4. GitHub corre `node scripts/sync-intelligence.mjs`.
-5. El script actualiza `intelligence_sources`, `intelligence_papers` e `intelligence_runs`.
+5. El script actualiza `intelligence_sources`, `intelligence_papers`, `intelligence_grants`, `intelligence_patents`, `intelligence_trials` e `intelligence_runs`.
 
 ### 5. Acciones disponibles
 
@@ -75,16 +75,18 @@ Las demás quedan preparadas para conectores futuros.
 - `Fetch latest papers`
 - `Fetch grants`
 - `Fetch patents`
+- `Fetch trials`
 - `Generate signals`
 
 En esta primera versión:
 
 - `Run Intelligence Sync` sincroniza papers usando `enabled sources` y `enabled topics`, y luego genera señales por reglas heurísticas.
 - `Fetch latest papers` sincroniza papers sin forzar generación posterior de señales.
-- `Generate signals` usa `papers`, `grants`, `patents`, `institutions` y `topics` ya guardados en Supabase.
+- `Generate signals` usa `papers`, `grants`, `patents`, `trials`, `institutions` y `topics` ya guardados en Supabase.
 - `Fetch grants` ya funciona con `NIH RePORTER`.
 - `Fetch grants` ya funciona con `NIH RePORTER` y `NSF Awards`.
 - `Fetch patents` ya existe en código para `EPO OPS`, pero esa fuente debe seguir desactivada hasta cargar credenciales.
+- `Fetch trials` ya funciona con `ClinicalTrials.gov` y guarda estudios en `intelligence_trials`.
 
 En la capa de `papers`, las fuentes activas actuales ya incluyen:
 - `arXiv`
@@ -96,6 +98,9 @@ En la capa de `papers`, las fuentes activas actuales ya incluyen:
 En la capa de `grants`, la fuente activa actual es:
 - `NIH RePORTER`
 - `NSF Awards`
+
+En la capa de `trials`, la fuente activa actual es:
+- `ClinicalTrials.gov`
 
 En la capa de `patents`, la plataforma ahora muestra:
 - `EPO OPS` como fuente preparada pero pendiente de credenciales

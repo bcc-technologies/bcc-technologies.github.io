@@ -940,6 +940,28 @@ async function bccApi(path, options = {}) {
     return { ok: true, patents: (data || []).map(publicIntelligencePatent) };
   }
 
+  if (intelligencePath === "/api/admin/intelligence/trials" && (!options.method || options.method === "GET")) {
+    await requireAdminViewUser();
+    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
+    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
+    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
+    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
+    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
+    let query = supabase
+      .from("intelligence_trials")
+      .select(INTELLIGENCE_TRIAL_COLUMNS)
+      .order("start_date", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (topic) query = query.contains("topics", [topic]);
+    if (dateFrom) query = query.gte("start_date", dateFrom);
+    if (dateTo) query = query.lte("completion_date", dateTo);
+    if (keyword) query = query.ilike("title", `%${keyword}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return { ok: true, trials: (data || []).map(publicIntelligenceTrial) };
+  }
+
   if (intelligencePath === "/api/admin/intelligence/institutions" && (!options.method || options.method === "GET")) {
     await requireAdminViewUser();
     const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
@@ -1305,16 +1327,17 @@ const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal",
 const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
 const WORKSPACE_PROSPECT_ACTIVITY_TYPES = ["note", "call", "meeting", "email", "follow_up"];
 const INTELLIGENCE_TOPIC_CATEGORIES = ["nano", "bio", "med", "ing", "general"];
-const INTELLIGENCE_SOURCE_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "cordis", "uspto", "custom"];
+const INTELLIGENCE_SOURCE_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "clinicaltrials", "epo_ops", "cordis", "uspto", "custom"];
 const INTELLIGENCE_SIGNAL_TYPES = ["product_opportunity", "market_trend", "research_trend", "partnership", "content_idea", "competitive_risk", "grant_opportunity"];
 const INTELLIGENCE_SIGNAL_STATUSES = ["new", "reviewing", "accepted", "rejected", "archived"];
-const INTELLIGENCE_RUN_ACTIONS = ["sync_papers", "fetch_papers", "fetch_grants", "fetch_patents", "generate_signals"];
+const INTELLIGENCE_RUN_ACTIONS = ["sync_papers", "fetch_papers", "fetch_grants", "fetch_patents", "fetch_trials", "generate_signals"];
 const INTELLIGENCE_RUN_STATUSES = ["pending", "running", "completed", "failed"];
 const INTELLIGENCE_SETTINGS_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
 const INTELLIGENCE_SOURCE_COLUMNS = "id, name, type, base_url, enabled, requires_api_key, rate_limit_notes, last_sync_at, created_at, updated_at";
 const INTELLIGENCE_PAPER_COLUMNS = "id, external_id, doi, arxiv_id, normalized_title, title, abstract, authors, institutions, publication_date, source_name, source_url, journal_or_venue, topics, keywords, citations_count, open_access_url, possible_duplicate, duplicate_candidates, raw_data, created_at, updated_at";
 const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, raw_data, created_at, updated_at";
 const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, raw_data, created_at, updated_at";
+const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, raw_data, created_at, updated_at";
 const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
 const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
 const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, created_at, updated_at";
@@ -1469,6 +1492,32 @@ function publicIntelligencePatent(patent) {
     rawData: patent.raw_data && typeof patent.raw_data === "object" ? patent.raw_data : {},
     createdAt: patent.created_at,
     updatedAt: patent.updated_at
+  };
+}
+
+function publicIntelligenceTrial(trial) {
+  return {
+    id: trial.id,
+    externalId: trial.external_id || "",
+    title: trial.title,
+    summary: trial.summary || "",
+    conditions: Array.isArray(trial.conditions) ? trial.conditions : [],
+    interventions: Array.isArray(trial.interventions) ? trial.interventions : [],
+    phase: trial.phase || "",
+    status: trial.status || "",
+    studyType: trial.study_type || "",
+    sponsor: trial.sponsor || "",
+    collaborators: Array.isArray(trial.collaborators) ? trial.collaborators : [],
+    startDate: trial.start_date || "",
+    completionDate: trial.completion_date || "",
+    locations: Array.isArray(trial.locations) ? trial.locations : [],
+    countries: Array.isArray(trial.countries) ? trial.countries : [],
+    sourceUrl: trial.source_url || "",
+    topics: Array.isArray(trial.topics) ? trial.topics : [],
+    keywords: Array.isArray(trial.keywords) ? trial.keywords : [],
+    rawData: trial.raw_data && typeof trial.raw_data === "object" ? trial.raw_data : {},
+    createdAt: trial.created_at,
+    updatedAt: trial.updated_at
   };
 }
 
@@ -1742,7 +1791,7 @@ function inferIntelligenceLineFromTopics(topics, knownTopics = []) {
   return "General";
 }
 
-function buildIntelligenceOverviewPayload({ sources = [], papers = [], grants = [], patents = [], topics = [], signals = [], runs = [] } = {}) {
+function buildIntelligenceOverviewPayload({ sources = [], papers = [], grants = [], patents = [], trials = [], topics = [], signals = [], runs = [] } = {}) {
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
   const activeTopics = topics.filter(item => item.enabled);
@@ -1754,7 +1803,7 @@ function buildIntelligenceOverviewPayload({ sources = [], papers = [], grants = 
     lineCounts.set(line, (lineCounts.get(line) || 0) + 1);
   });
   if (![...lineCounts.values()].some(Boolean)) {
-    [...papers, ...grants, ...patents].forEach(item => {
+    [...papers, ...grants, ...patents, ...trials].forEach(item => {
       const line = inferIntelligenceLineFromTopics(item.topics, topics);
       lineCounts.set(line, (lineCounts.get(line) || 0) + 1);
     });
@@ -1771,6 +1820,7 @@ function buildIntelligenceOverviewPayload({ sources = [], papers = [], grants = 
     papersTracked: papers.length,
     totalGrants: grants.length,
     totalPatents: patents.length,
+    totalTrials: trials.length,
     newSignals: openSignals.length,
     lastSync: runs[0] || null,
     recentErrors: runs.filter(item => item.status === "failed" && item.errorMessage).slice(0, 5),
@@ -1784,6 +1834,7 @@ async function loadIntelligenceDashboardData(supabase) {
     { data: papers, error: papersError },
     { data: grants, error: grantsError },
     { data: patents, error: patentsError },
+    { data: trials, error: trialsError },
     { data: institutions, error: institutionsError },
     { data: topics, error: topicsError },
     { data: signals, error: signalsError },
@@ -1794,6 +1845,7 @@ async function loadIntelligenceDashboardData(supabase) {
     supabase.from("intelligence_papers").select(INTELLIGENCE_PAPER_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_grants").select(INTELLIGENCE_GRANT_COLUMNS).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_patents").select(INTELLIGENCE_PATENT_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_trials").select(INTELLIGENCE_TRIAL_COLUMNS).order("start_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_institutions").select(INTELLIGENCE_INSTITUTION_COLUMNS).order("related_papers_count", { ascending: false }).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_topics").select(INTELLIGENCE_TOPIC_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(100),
     supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).order("updated_at", { ascending: false }).limit(200),
@@ -1805,6 +1857,7 @@ async function loadIntelligenceDashboardData(supabase) {
   if (papersError) throw papersError;
   if (grantsError) throw grantsError;
   if (patentsError) throw patentsError;
+  if (trialsError) throw trialsError;
   if (institutionsError) throw institutionsError;
   if (topicsError) throw topicsError;
   if (signalsError) throw signalsError;
@@ -1815,6 +1868,7 @@ async function loadIntelligenceDashboardData(supabase) {
   const publicPapers = (papers || []).map(publicIntelligencePaper);
   const publicGrants = (grants || []).map(publicIntelligenceGrant);
   const publicPatents = (patents || []).map(publicIntelligencePatent);
+  const publicTrials = (trials || []).map(publicIntelligenceTrial);
   const publicInstitutions = (institutions || []).map(publicIntelligenceInstitution);
   const publicTopics = (topics || []).map(publicIntelligenceTopic);
   const publicSignals = (signals || []).map(publicIntelligenceSignal);
@@ -1827,6 +1881,7 @@ async function loadIntelligenceDashboardData(supabase) {
       papers: publicPapers,
       grants: publicGrants,
       patents: publicPatents,
+      trials: publicTrials,
       topics: publicTopics,
       signals: publicSignals,
       runs: publicRuns
@@ -1835,6 +1890,7 @@ async function loadIntelligenceDashboardData(supabase) {
     papers: publicPapers,
     grants: publicGrants,
     patents: publicPatents,
+    trials: publicTrials,
     institutions: publicInstitutions,
     topics: publicTopics,
     signals: publicSignals,

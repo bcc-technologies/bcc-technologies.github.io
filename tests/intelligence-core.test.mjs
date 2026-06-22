@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { normalizePaperItem } from "../scripts/intelligence/connectors/base.mjs";
+import { normalizePaperItem, normalizeTrialItem } from "../scripts/intelligence/connectors/base.mjs";
 import { dedupeItems } from "../scripts/intelligence/dedupe.mjs";
 import { generateStrategicSignals } from "../scripts/intelligence/signals.mjs";
 
@@ -39,6 +39,43 @@ test("normalizes paper payloads into the internal shape", () => {
   assert.deepEqual(paper.keywords, ["SEM image analysis", "noisy images"]);
   assert.equal(paper.citationsCount, 12);
   assert.deepEqual(paper.rawData, { ok: true });
+});
+
+test("normalizes trial payloads into the internal shape", () => {
+  const trial = normalizeTrialItem({
+    sourceName: "ClinicalTrials.gov",
+    sourceType: "clinicaltrials",
+    externalId: " NCT01234567 ",
+    title: "  Cell counting validation in microscopy workflow  ",
+    summary: "   Trial summary for translational validation.   ",
+    conditions: [" Cell morphology ", "Cell morphology"],
+    interventions: [" Device: AI microscopy ", "Device: AI microscopy"],
+    phase: " phase2 ",
+    status: " recruiting ",
+    studyType: " interventional ",
+    sponsor: "dept. of pathology, univ. x",
+    collaborators: ["Hospital Y", "hospital y"],
+    startDate: "2026-06",
+    completionDate: "2027",
+    locations: [" Lab 1, City ", "Lab 1, City"],
+    countries: [" usa ", "USA"],
+    sourceUrl: "http://clinicaltrials.gov/study/NCT01234567",
+    topics: [" MAP-Med "],
+    keywords: [" pathology AI ", "pathology AI"],
+    rawData: { ok: true }
+  });
+
+  assert.equal(trial.kind, "trial");
+  assert.equal(trial.externalId, "NCT01234567");
+  assert.equal(trial.title, "Cell counting validation in microscopy workflow");
+  assert.equal(trial.sponsor, "Department of pathology, University x");
+  assert.equal(trial.startDate, "2026-06-01");
+  assert.equal(trial.completionDate, "2027-01-01");
+  assert.equal(trial.sourceUrl, "https://clinicaltrials.gov/study/NCT01234567");
+  assert.deepEqual(trial.conditions, ["Cell morphology"]);
+  assert.deepEqual(trial.interventions, ["Device: AI microscopy"]);
+  assert.deepEqual(trial.topics, ["MAP-Med"]);
+  assert.deepEqual(trial.keywords, ["pathology AI"]);
 });
 
 test("deduplicates papers by DOI", () => {
@@ -267,6 +304,77 @@ test("Semantic Scholar connector works without API key and uses x-api-key when p
   } finally {
     global.fetch = originalFetch;
     process.env.SEMANTIC_SCHOLAR_API_KEY = originalApiKey;
+  }
+});
+
+test("ClinicalTrials.gov connector normalizes studies into trial records", async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (url) => {
+    requests.push(String(url));
+    return {
+      ok: true,
+      async json() {
+        return {
+          studies: [
+            {
+              protocolSection: {
+                identificationModule: {
+                  nctId: "NCT09999999",
+                  briefTitle: "Cell counting trial for pathology AI"
+                },
+                statusModule: {
+                  overallStatus: "RECRUITING",
+                  startDateStruct: { date: "2026-05" },
+                  completionDateStruct: { date: "2027-01" }
+                },
+                sponsorCollaboratorsModule: {
+                  leadSponsor: { name: "University Hospital" },
+                  collaborators: [{ name: "Cancer Lab" }]
+                },
+                descriptionModule: {
+                  briefSummary: "Validates microscopy-assisted cell counting."
+                },
+                conditionsModule: {
+                  conditions: ["Cancer"],
+                  keywords: ["cell counting", "pathology AI"]
+                },
+                designModule: {
+                  studyType: "INTERVENTIONAL",
+                  phases: ["PHASE2"]
+                },
+                armsInterventionsModule: {
+                  interventions: [{ type: "DEVICE", name: "Microscopy AI" }]
+                },
+                contactsLocationsModule: {
+                  locations: [{ facility: "Hospital A", city: "Boston", country: "USA" }]
+                }
+              }
+            }
+          ]
+        };
+      }
+    };
+  };
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/clinicaltrials.mjs")).href}?test=${Date.now()}`);
+    const { default: clinicalTrials } = await import(moduleUrl.href);
+    const items = await clinicalTrials.search({
+      keywords: ["cell counting", "pathology AI"],
+      limit: 3
+    });
+
+    assert.equal(requests.length, 1);
+    assert.equal(items.length, 1);
+    assert.equal(items[0].kind, "trial");
+    assert.equal(items[0].externalId, "NCT09999999");
+    assert.equal(items[0].studyType, "INTERVENTIONAL");
+    assert.equal(items[0].sponsor, "University Hospital");
+    assert.deepEqual(items[0].countries, ["USA"]);
+  } finally {
+    global.fetch = originalFetch;
   }
 });
 
