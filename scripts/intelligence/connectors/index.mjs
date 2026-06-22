@@ -36,21 +36,28 @@ export function getConnector(sourceType) {
   return CONNECTORS.find(connector => connector.sourceType === key) || null;
 }
 
+function supportedActionsFor(connector) {
+  const raw = Array.isArray(connector?.supportsActions) ? connector.supportsActions : ["fetch_papers"];
+  const actions = new Set(raw.map(item => String(item || "").trim().toLowerCase()).filter(Boolean));
+  if (actions.has("fetch_papers")) actions.add("sync_papers");
+  return actions;
+}
+
 export function getConnectors(sourceTypes = [], action = "fetch_papers") {
   const requested = Array.isArray(sourceTypes) ? sourceTypes : [];
-  const allowedActions = new Set([String(action || "").trim().toLowerCase()]);
+  const normalizedAction = String(action || "").trim().toLowerCase();
   if (!requested.length) {
     return CONNECTORS.filter(connector => {
-      const supported = Array.isArray(connector.supportsActions) ? connector.supportsActions : ["fetch_papers"];
-      return (DEFAULT_ACTION_CONNECTOR_TYPES[action] || []).includes(connector.sourceType)
-        && supported.some(item => allowedActions.has(String(item || "").trim().toLowerCase()));
+      const supported = supportedActionsFor(connector);
+      return (DEFAULT_ACTION_CONNECTOR_TYPES[normalizedAction] || []).includes(connector.sourceType)
+        && supported.has(normalizedAction);
     });
   }
   return requested
     .map(type => getConnector(type))
     .filter(Boolean)
     .filter(connector => {
-      const supported = Array.isArray(connector.supportsActions) ? connector.supportsActions : ["fetch_papers"];
-      return supported.some(item => allowedActions.has(String(item || "").trim().toLowerCase()));
+      const supported = supportedActionsFor(connector);
+      return supported.has(normalizedAction);
     });
 }

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { getConnectors } from "../scripts/intelligence/connectors/index.mjs";
 import { normalizePaperItem, normalizeTrialItem } from "../scripts/intelligence/connectors/base.mjs";
 import { dedupeItems } from "../scripts/intelligence/dedupe.mjs";
 import { generateStrategicSignals } from "../scripts/intelligence/signals.mjs";
@@ -213,6 +214,15 @@ test("does not generate signals when there is no evidence", () => {
   });
 
   assert.deepEqual(signals, []);
+});
+
+test("sync_papers resolves default paper connectors", () => {
+  const connectors = getConnectors([], "sync_papers");
+  const sourceTypes = connectors.map(connector => connector.sourceType);
+  assert.ok(sourceTypes.includes("arxiv"));
+  assert.ok(sourceTypes.includes("openalex"));
+  assert.ok(sourceTypes.includes("crossref"));
+  assert.ok(sourceTypes.includes("pubmed"));
 });
 
 test("OpenAlex connector uses api_key, mailto, and select fields for quota-aware requests", async () => {
