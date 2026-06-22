@@ -1,5 +1,7 @@
 (() => {
   const INTELLIGENCE_TIMEOUT_MS = 12000;
+  const INTELLIGENCE_CACHE_VERSION = 1;
+  const INTELLIGENCE_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
   const PANELS = ["overview", "signals", "papers", "grants", "patents", "institutions", "topics", "sources", "settings"];
   const RUN_ACTIONS = [
     { id: "sync_papers", label: "Run Intelligence Sync" },
@@ -170,23 +172,33 @@
   }
 
   async function loadDashboard() {
-    setMessage("Cargando intelligence...", "neutral");
+    const cached = readDashboardCache();
+    const hadSnapshot = hasDashboardContent(dashboard);
+    if (cached) {
+      applyDashboardState(cached.dashboard, { persist: false });
+      setMessage(`Mostrando snapshot guardado (${snapshotAgeLabel(cached.savedAt)}) mientras se actualiza...`, "neutral");
+      renderAll();
+    } else if (hadSnapshot) {
+      setMessage("Actualizando intelligence...", "neutral");
+      renderAll();
+    } else {
+      setMessage("Cargando intelligence...", "neutral");
+    }
     try {
       const data = await withTimeout(
         window.BCCAuth.api("/api/admin/intelligence/dashboard"),
         INTELLIGENCE_TIMEOUT_MS,
         "Supabase no respondio a tiempo al cargar intelligence."
       );
-      dashboard = normalizeDashboard(data.dashboard);
-      syncDryRun = dashboard.settings.defaultDryRun;
-      filters = Object.keys(filters).length ? filters : defaultFilters(String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
-      currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
-      selectedSignalId = existingOrFirst(selectedSignalId, dashboard.signals);
-      selectedTopicId = existingOrFirst(selectedTopicId, dashboard.topics);
-      selectedSourceId = existingOrFirst(selectedSourceId, dashboard.sources);
-      setMessage("");
+      applyDashboardState(data.dashboard);
+      setMessage(cached ? "Intelligence actualizado. Snapshot refrescado correctamente." : "");
       renderAll();
     } catch (error) {
+      if (cached || hadSnapshot || hasDashboardContent(dashboard)) {
+        setMessage(`${intelligenceError(error)} Mostrando snapshot guardado para mantener la vista estable.`, "error");
+        renderAll();
+        return;
+      }
       dashboard = emptyDashboard();
       filters = Object.keys(filters).length ? filters : defaultFilters("90");
       setMessage(intelligenceError(error), "error");
@@ -208,6 +220,74 @@
       runs: Array.isArray(payload.runs) ? payload.runs : [],
       settings: { ...defaultSettings(), ...(payload.settings || {}) }
     };
+  }
+
+  function applyDashboardState(nextDashboard, options = {}) {
+    dashboard = normalizeDashboard(nextDashboard);
+    syncDryRun = dashboard.settings.defaultDryRun;
+    filters = Object.keys(filters).length ? filters : defaultFilters(String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
+    currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
+    selectedSignalId = existingOrFirst(selectedSignalId, dashboard.signals);
+    selectedTopicId = existingOrFirst(selectedTopicId, dashboard.topics);
+    selectedSourceId = existingOrFirst(selectedSourceId, dashboard.sources);
+    if (options.persist !== false) writeDashboardCache(dashboard);
+  }
+
+  function cacheStorageKey() {
+    const actor = String(currentUser?.id || currentUser?.email || currentUser?.username || "admin").trim().toLowerCase();
+    return `bcc.intelligence.dashboard.v${INTELLIGENCE_CACHE_VERSION}.${actor || "admin"}`;
+  }
+
+  function readDashboardCache() {
+    try {
+      const raw = window.localStorage.getItem(cacheStorageKey());
+      if (!raw) return null;
+      const payload = JSON.parse(raw);
+      if (!payload || typeof payload !== "object" || !payload.dashboard) return null;
+      const savedAt = Number(payload.savedAt || 0);
+      if (!savedAt || (Date.now() - savedAt) > INTELLIGENCE_CACHE_MAX_AGE_MS) return null;
+      return {
+        savedAt,
+        dashboard: normalizeDashboard(payload.dashboard)
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function writeDashboardCache(nextDashboard) {
+    try {
+      window.localStorage.setItem(cacheStorageKey(), JSON.stringify({
+        savedAt: Date.now(),
+        dashboard: normalizeDashboard(nextDashboard)
+      }));
+    } catch {
+      // Ignore storage or privacy-mode failures; live state still works.
+    }
+  }
+
+  function hasDashboardContent(state) {
+    return Boolean(
+      state?.papers?.length
+      || state?.signals?.length
+      || state?.topics?.length
+      || state?.sources?.length
+      || state?.runs?.length
+      || state?.grants?.length
+      || state?.patents?.length
+      || state?.institutions?.length
+    );
+  }
+
+  function snapshotAgeLabel(savedAt) {
+    const elapsed = Math.max(0, Date.now() - Number(savedAt || 0));
+    const minutes = Math.round(elapsed / 60000);
+    if (minutes < 1) return "ahora mismo";
+    if (minutes < 60) return `hace ${minutes} min`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `hace ${hours} h`;
+    const days = Math.round(hours / 24);
+    return `hace ${days} d`;
   }
 
   function renderAll() {
@@ -1141,6 +1221,7 @@
       });
       upsertById(dashboard.signals, data.signal);
       selectedSignalId = data.signal.id;
+      writeDashboardCache(dashboard);
       setMessage(`Señal marcada como ${signalStatusLabel(status)}.`, "ok");
       renderOverview();
       renderSignals();
@@ -1168,6 +1249,7 @@
       });
       upsertById(dashboard.topics, data.topic);
       selectedTopicId = data.topic.id;
+      writeDashboardCache(dashboard);
       setMessage(payload.id ? "Topic actualizado." : "Topic creado.", "ok");
       renderOverview();
       renderTopics();
@@ -1187,6 +1269,7 @@
       });
       upsertById(dashboard.sources, data.source);
       selectedSourceId = data.source.id;
+      writeDashboardCache(dashboard);
       setMessage("Fuente actualizada.", "ok");
       renderOverview();
       renderSources();
@@ -1204,6 +1287,7 @@
       });
       dashboard.settings = { ...defaultSettings(), ...(data.settings || {}) };
       syncDryRun = dashboard.settings.defaultDryRun;
+      writeDashboardCache(dashboard);
       setMessage("Settings guardados.", "ok");
       renderAll();
     } catch (error) {
