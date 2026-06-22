@@ -399,6 +399,7 @@
             <li><code>PubMed / NCBI</code></li>
             <li><code>NIH RePORTER</code></li>
             <li><code>NSF Awards</code></li>
+            <li><code>EPO OPS</code> <small>(in code, pending credentials)</small></li>
           </ul>
           <p>Prepared but not fully implemented yet:</p>
           <ul>
@@ -421,10 +422,12 @@ OPENALEX_API_KEY=
 OPENALEX_EMAIL=
 SEMANTIC_SCHOLAR_API_KEY=
 NCBI_API_KEY=
-NIH_REPORTER_API_KEY=</code></pre>
+NIH_REPORTER_API_KEY=
+EPO_OPS_KEY=
+EPO_OPS_SECRET=</code></pre>
           <div class="docs-callout">
             <strong>Important</strong>
-            <p><code>SUPABASE_SERVICE_ROLE_KEY</code> is backend-only. Do not expose it to the frontend or store secrets in the Intelligence tables. For real OpenAlex sync usage, treat <code>OPENALEX_API_KEY</code> as required. <code>SEMANTIC_SCHOLAR_API_KEY</code> and <code>NCBI_API_KEY</code> are recommended but optional, and <code>NIH_REPORTER_API_KEY</code> is not required for the currently implemented NIH RePORTER flow.</p>
+            <p><code>SUPABASE_SERVICE_ROLE_KEY</code> is backend-only. Do not expose it to the frontend or store secrets in the Intelligence tables. For real OpenAlex sync usage, treat <code>OPENALEX_API_KEY</code> as required. <code>SEMANTIC_SCHOLAR_API_KEY</code> and <code>NCBI_API_KEY</code> are recommended but optional, <code>NIH_REPORTER_API_KEY</code> is not required for the current NIH RePORTER flow, and <code>EPO_OPS_KEY</code> plus <code>EPO_OPS_SECRET</code> are required to activate EPO OPS.</p>
           </div>
         </section>
 

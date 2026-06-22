@@ -1,5 +1,5 @@
 import { pathToFileURL } from "node:url";
-import { getConnectors } from "./intelligence/connectors/index.mjs";
+import { CONNECTORS, getConnectors } from "./intelligence/connectors/index.mjs";
 import { cleanArray, cleanText } from "./intelligence/connectors/base.mjs";
 import { annotatePossibleDuplicates, dedupeItems } from "./intelligence/dedupe.mjs";
 import { generateStrategicSignals } from "./intelligence/signals.mjs";
@@ -278,7 +278,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
 
   if (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action)) {
     if (store && !options.dryRun && !deps.connectors) {
-      const registryConnectors = getConnectors([], action);
+      const registryConnectors = CONNECTORS;
       await Promise.all(registryConnectors.map(connector => store.ensureSourceRecord(connector)));
     }
     const sourceTypes = await resolveSourceTypes(store, options);
@@ -286,7 +286,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     if (!connectors.length) {
       throw new Error("No intelligence connectors selected.");
     }
-    if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action))) {
+    if (store && (PAPER_ACTIONS.has(action) || GRANT_ACTIONS.has(action) || PATENT_ACTIONS.has(action))) {
       enabledTopics = await store.listEnabledTopics();
     }
   }
@@ -371,6 +371,66 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
           if (!sourceRecord?.id) continue;
           for (const item of dedupeGrantItems(entry.items)) {
             const result = await store.saveGrant(item, sourceRecord.id);
+            if (result.action === "created") itemsCreated += 1;
+            if (result.action === "updated") itemsUpdated += 1;
+          }
+          await store.touchSourceSync(sourceRecord.id);
+        }
+      }
+
+      if (run && store) {
+        await store.completeRun(run.id, {
+          itemsFetched: combinedItems.length,
+          itemsCreated,
+          itemsUpdated,
+          signalsGenerated: 0
+        });
+      }
+
+      const result = {
+        action,
+        dryRun: options.dryRun,
+        connectors: connectors.map(connector => connector.sourceType),
+        sourceRecords,
+        itemsFetched: combinedItems.length,
+        itemsDeduped: dedupedItems.length,
+        itemsCreated,
+        itemsUpdated,
+        signalsGenerated: 0,
+        runId: run?.id || ""
+      };
+      logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+      return result;
+    }
+
+    if (PATENT_ACTIONS.has(action)) {
+      const keywords = await resolveKeywords(store, options);
+      const query = {
+        text: cleanText(options.queryText, 400),
+        keywords,
+        limit: options.limit,
+        fromDate: options.fromDate,
+        toDate: options.toDate
+      };
+
+      const fetchedBySource = [];
+      for (const connector of connectors) {
+        const items = (await connector.search(query)).map(item => enrichItemTopics(item, enabledTopics));
+        fetchedBySource.push({ connector, items });
+        logger.log(`[source:${connector.sourceType}] fetched ${items.length} patents`);
+      }
+
+      const combinedItems = fetchedBySource.flatMap(entry => entry.items);
+      const dedupedItems = dedupeGrantItems(combinedItems);
+      let itemsCreated = 0;
+      let itemsUpdated = 0;
+
+      if (store && !options.dryRun) {
+        for (const entry of fetchedBySource) {
+          const sourceRecord = sourceRecords.find(record => record.type === entry.connector.sourceType);
+          if (!sourceRecord?.id) continue;
+          for (const item of dedupeGrantItems(entry.items)) {
+            const result = await store.savePatent(item, sourceRecord.id);
             if (result.action === "created") itemsCreated += 1;
             if (result.action === "updated") itemsUpdated += 1;
           }

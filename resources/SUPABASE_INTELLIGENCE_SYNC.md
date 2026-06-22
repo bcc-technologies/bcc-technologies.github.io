@@ -49,6 +49,8 @@ OPENALEX_EMAIL
 SEMANTIC_SCHOLAR_API_KEY
 NCBI_API_KEY
 NIH_REPORTER_API_KEY
+EPO_OPS_KEY
+EPO_OPS_SECRET
 ```
 
 Solo `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son obligatorios para que el pipeline exista, pero para usar `OpenAlex` de forma normal ya conviene tratar `OPENALEX_API_KEY` como requerida.
@@ -56,6 +58,7 @@ Solo `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son obligatorios para que el p
 `SEMANTIC_SCHOLAR_API_KEY` es opcional pero recomendable.
 `NCBI_API_KEY` es opcional, pero muy recomendable si vas a usar `PubMed` de forma habitual.
 `NIH_REPORTER_API_KEY` no es necesaria para la implementación actual de `NIH RePORTER`.
+`EPO_OPS_KEY` y `EPO_OPS_SECRET` sí son necesarias para activar `EPO OPS`.
 Las demás quedan preparadas para conectores futuros.
 
 ### 4. Qué hace el flujo
@@ -81,7 +84,7 @@ En esta primera versión:
 - `Generate signals` usa `papers`, `grants`, `patents`, `institutions` y `topics` ya guardados en Supabase.
 - `Fetch grants` ya funciona con `NIH RePORTER`.
 - `Fetch grants` ya funciona con `NIH RePORTER` y `NSF Awards`.
-- `Fetch patents` sigue respondiendo `not implemented yet`.
+- `Fetch patents` ya existe en código para `EPO OPS`, pero esa fuente debe seguir desactivada hasta cargar credenciales.
 
 En la capa de `papers`, las fuentes activas actuales ya incluyen:
 - `arXiv`
@@ -93,6 +96,10 @@ En la capa de `papers`, las fuentes activas actuales ya incluyen:
 En la capa de `grants`, la fuente activa actual es:
 - `NIH RePORTER`
 - `NSF Awards`
+
+En la capa de `patents`, la plataforma ahora muestra:
+- `EPO OPS` como fuente preparada pero pendiente de credenciales
+- `USPTO` como fuente inactiva con motivo operativo
 
 ### 6. Programación
 

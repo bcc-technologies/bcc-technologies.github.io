@@ -506,3 +506,38 @@ test("NSF Awards connector normalizes grant results from the official award sear
     global.fetch = originalFetch;
   }
 });
+
+test("EPO OPS connector stays disabled until credentials exist", async () => {
+  const originalKey = process.env.EPO_OPS_KEY;
+  const originalSecret = process.env.EPO_OPS_SECRET;
+  delete process.env.EPO_OPS_KEY;
+  delete process.env.EPO_OPS_SECRET;
+
+  try {
+    const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/epo-ops.mjs")).href}?test=${Date.now()}`);
+    const { default: epoOps } = await import(moduleUrl.href);
+
+    assert.equal(epoOps.requiresApiKey, true);
+    assert.equal(epoOps.defaultEnabled, false);
+    await assert.rejects(
+      () => epoOps.search({ keywords: ["microscopy"], limit: 2 }),
+      /EPO_OPS_KEY and EPO_OPS_SECRET/
+    );
+  } finally {
+    process.env.EPO_OPS_KEY = originalKey;
+    process.env.EPO_OPS_SECRET = originalSecret;
+  }
+});
+
+test("USPTO connector remains intentionally inactive with an explicit reason", async () => {
+  const moduleUrl = new URL(`${pathToFileURL(path.resolve(process.cwd(), "scripts/intelligence/connectors/uspto.mjs")).href}?test=${Date.now()}`);
+  const { default: uspto } = await import(moduleUrl.href);
+
+  assert.equal(uspto.requiresApiKey, true);
+  assert.equal(uspto.defaultEnabled, false);
+  assert.equal(uspto.enforcedDisabled, true);
+  await assert.rejects(
+    () => uspto.search({ keywords: ["microscopy"], limit: 2 }),
+    /intentionally inactive/
+  );
+});

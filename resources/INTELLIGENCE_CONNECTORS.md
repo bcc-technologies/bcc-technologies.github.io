@@ -10,14 +10,20 @@ Stage 3 adds a modular sync layer for BCC's `Intelligence` workspace.
 - `Semantic Scholar`
 - `PubMed`
 
-Prepared but not implemented yet:
+Prepared but not fully activatable yet:
 
+- `EPO OPS`
 - `USPTO`
 
 Implemented grants connectors:
 
 - `NIH RePORTER`
 - `NSF Awards`
+
+Implemented patent pipeline:
+
+- `EPO OPS` connector and `fetch_patents` flow are in code, but the source stays disabled until `EPO_OPS_KEY` and `EPO_OPS_SECRET` are configured.
+- `USPTO` stays visible but intentionally inactive because the current official credential path is not available for this workspace.
 
 ## Files
 
@@ -43,6 +49,8 @@ OPENALEX_EMAIL=
 SEMANTIC_SCHOLAR_API_KEY=
 NCBI_API_KEY=
 NIH_REPORTER_API_KEY=
+EPO_OPS_KEY=
+EPO_OPS_SECRET=
 ```
 
 No secrets are stored in code.
@@ -56,6 +64,8 @@ No secrets are stored in code.
 `NIH RePORTER` currently uses the public v2 Project Search API and does not require an API key in the implemented flow.
 
 `NSF Awards` currently uses the public NSF Award Search API and does not require an API key in the implemented flow.
+
+`EPO OPS` requires `EPO_OPS_KEY` and `EPO_OPS_SECRET` plus OAuth token exchange. The connector is ready in code but should remain disabled until those credentials exist.
 
 ## Usage
 
@@ -94,7 +104,8 @@ To stay inside the free OpenAlex allowance:
 2. `PubMed` uses a two-step `esearch` plus `efetch` flow so abstracts, authors, affiliations, DOI, PMID and PMC links can be normalized into the paper model.
 3. `NIH RePORTER` uses the official v2 `projects/search` endpoint and normalizes awards into `intelligence_grants`.
 4. `NSF Awards` uses the official NSF Award Search API and normalizes awards into `intelligence_grants`.
-5. On the next real sync, the runner will auto-register newly implemented active connectors into `intelligence_sources` if they do not exist yet.
+5. `EPO OPS` is the current patent-source target in code and normalizes published-data search results into `intelligence_patents`.
+6. On the next real sync, the runner will auto-register known connectors into `intelligence_sources`. Sources like `USPTO` can therefore stay visible but paused with a reason.
 
 ## Deduplication strategy
 

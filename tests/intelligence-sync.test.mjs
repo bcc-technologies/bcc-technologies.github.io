@@ -495,3 +495,90 @@ test("fetch_grants also persists NSF grants through the grant pipeline", async (
   assert.equal(savedGrants.length, 1);
   assert.deepEqual(savedGrants[0].topics, ["MAP-Bio"]);
 });
+
+test("fetch_patents persists patents through the patent pipeline", async () => {
+  const savedPatents = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-4",
+          name: "MAP-Med",
+          category: "med",
+          keywords: ["diagnostic image analysis", "microscopy"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async listEnabledSources() {
+      return [{ id: "source-epo", type: "epo_ops", enabled: true }];
+    },
+    async startRun(meta) {
+      assert.equal(meta.actionType, "fetch_patents");
+      return { id: "run-patents-1" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-patents-1");
+      assert.equal(metrics.itemsFetched, 1);
+      assert.equal(metrics.itemsCreated, 1);
+      assert.equal(metrics.itemsUpdated, 0);
+    },
+    async failRun() {
+      throw new Error("failRun should not execute in successful fetch_patents test");
+    },
+    async savePatent(item) {
+      savedPatents.push(item);
+      return { action: "created", record: { id: "patent-1" } };
+    },
+    async touchSourceSync() {}
+  };
+
+  const connector = {
+    sourceType: "epo_ops",
+    async search() {
+      return [
+        {
+          kind: "patent",
+          sourceName: "EPO OPS",
+          sourceType: "epo_ops",
+          externalId: "EP1234567A1",
+          title: "Diagnostic microscopy system for automated tissue segmentation",
+          abstract: "Patent record for biomedical microscopy classification.",
+          inventors: ["Jane Doe"],
+          assignees: ["MedVision Labs"],
+          publicationDate: "2026-06-20",
+          filingDate: "2025-02-14",
+          jurisdiction: "EP",
+          status: "published",
+          sourceUrl: "https://worldwide.espacenet.com/patent/search/family/EP1234567A1",
+          topics: [],
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_patents",
+      dryRun: false,
+      sourceTypes: ["epo_ops"],
+      keywords: ["diagnostic image analysis"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.action, "fetch_patents");
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(result.itemsCreated, 1);
+  assert.equal(savedPatents.length, 1);
+  assert.deepEqual(savedPatents[0].topics, ["MAP-Med"]);
+});

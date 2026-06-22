@@ -2094,7 +2094,7 @@
             ? "Protected"
             : "Active";
     const note = !source.enabled
-      ? "Disabled from the radar."
+      ? source.rateLimitNotes || "Disabled from the radar."
       : !hasLastSync
         ? source.rateLimitNotes || "Still waiting for the first successful sync."
         : daysSinceSync > 14

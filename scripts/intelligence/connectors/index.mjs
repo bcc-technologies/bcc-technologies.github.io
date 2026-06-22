@@ -1,5 +1,6 @@
 import arxiv from "./arxiv.mjs";
 import crossref from "./crossref.mjs";
+import epoOps from "./epo-ops.mjs";
 import openalex from "./openalex.mjs";
 import nihReporter from "./nih-reporter.mjs";
 import nsfAwards from "./nsf-awards.mjs";
@@ -15,6 +16,7 @@ export const CONNECTORS = [
   pubmed,
   nihReporter,
   nsfAwards,
+  epoOps,
   uspto
 ];
 
@@ -22,7 +24,7 @@ const DEFAULT_ACTION_CONNECTOR_TYPES = {
   sync_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
   fetch_papers: ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed"],
   fetch_grants: ["nih_reporter", "nsf"],
-  fetch_patents: [],
+  fetch_patents: ["epo_ops", "uspto"],
   generate_signals: []
 };
 

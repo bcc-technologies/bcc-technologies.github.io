@@ -13,13 +13,20 @@ create table if not exists public.intelligence_sources (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint intelligence_sources_name_check check (char_length(btrim(name)) between 1 and 120),
-  constraint intelligence_sources_type_check check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'cordis', 'uspto', 'custom')),
+  constraint intelligence_sources_type_check check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'epo_ops', 'cordis', 'uspto', 'custom')),
   constraint intelligence_sources_base_url_check check (char_length(base_url) <= 500),
   constraint intelligence_sources_rate_limit_notes_check check (char_length(rate_limit_notes) <= 2000)
 );
 
 create unique index if not exists intelligence_sources_name_type_uidx
 on public.intelligence_sources (lower(name), type);
+
+alter table public.intelligence_sources
+  drop constraint if exists intelligence_sources_type_check;
+
+alter table public.intelligence_sources
+  add constraint intelligence_sources_type_check
+  check (type in ('arxiv', 'openalex', 'crossref', 'semantic_scholar', 'pubmed', 'nih_reporter', 'nsf', 'epo_ops', 'cordis', 'uspto', 'custom'));
 
 create table if not exists public.intelligence_topics (
   id uuid primary key default gen_random_uuid(),

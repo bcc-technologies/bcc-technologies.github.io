@@ -66,6 +66,7 @@ Implemented now:
 - `PubMed / NCBI`
 - `NIH RePORTER`
 - `NSF Awards`
+- `EPO OPS` in code, pending credentials
 
 Prepared but not fully implemented yet:
 
@@ -99,6 +100,8 @@ OPENALEX_EMAIL=
 SEMANTIC_SCHOLAR_API_KEY=
 NCBI_API_KEY=
 NIH_REPORTER_API_KEY=
+EPO_OPS_KEY=
+EPO_OPS_SECRET=
 ```
 
 ### Notes
@@ -109,6 +112,7 @@ NIH_REPORTER_API_KEY=
 - `SEMANTIC_SCHOLAR_API_KEY` is optional but recommended for steadier rate limits.
 - `NCBI_API_KEY` is optional but recommended for smoother PubMed sync volume.
 - `NIH_REPORTER_API_KEY` is not needed for the currently implemented NIH RePORTER connector.
+- `EPO_OPS_KEY` and `EPO_OPS_SECRET` are required to activate the current EPO OPS patent connector.
 - Secrets are not stored in the `Intelligence` tables.
 
 More operational detail:

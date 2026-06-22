@@ -196,6 +196,26 @@ export function normalizeGrantItem(item = {}) {
   };
 }
 
+export function normalizePatentItem(item = {}) {
+  return {
+    kind: "patent",
+    sourceName: cleanText(item.sourceName, 120),
+    sourceType: cleanText(item.sourceType, 80),
+    externalId: cleanText(item.externalId, 200),
+    title: normalizeTitle(item.title, 600),
+    abstract: cleanText(item.abstract, 40000),
+    inventors: cleanArray((Array.isArray(item.inventors) ? item.inventors : []).map(inventor => normalizePersonName(inventor, 200)), 128, 200),
+    assignees: cleanArray((Array.isArray(item.assignees) ? item.assignees : []).map(assignee => normalizeInstitutionName(assignee, 200)), 128, 200),
+    publicationDate: normalizeDate(item.publicationDate),
+    filingDate: normalizeDate(item.filingDate),
+    jurisdiction: cleanText(item.jurisdiction, 40).toUpperCase(),
+    status: cleanText(item.status || "unknown", 24).toLowerCase() || "unknown",
+    sourceUrl: safeUrl(item.sourceUrl, 500),
+    topics: cleanArray((Array.isArray(item.topics) ? item.topics : []).map(topic => normalizeTag(topic, 120)), 64, 120),
+    rawData: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+  };
+}
+
 export function createNotImplementedConnector(sourceName, sourceType) {
   return {
     sourceName,
