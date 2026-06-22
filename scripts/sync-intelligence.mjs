@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import { getConnectors } from "./intelligence/connectors/index.mjs";
 import { cleanArray, cleanText } from "./intelligence/connectors/base.mjs";
 import { annotatePossibleDuplicates, dedupeItems } from "./intelligence/dedupe.mjs";
@@ -72,6 +73,19 @@ function parseArgs(argv) {
   return options;
 }
 
+function normalizeOptions(rawOptions = {}) {
+  return {
+    sourceTypes: Array.isArray(rawOptions.sourceTypes) ? rawOptions.sourceTypes.filter(Boolean) : [],
+    keywords: Array.isArray(rawOptions.keywords) ? rawOptions.keywords.filter(Boolean) : [],
+    dryRun: Boolean(rawOptions.dryRun),
+    action: String(rawOptions.action || "sync_papers").trim().toLowerCase() || "sync_papers",
+    limit: Math.min(100, Math.max(1, Number(rawOptions.limit) || 20)),
+    queryText: cleanText(rawOptions.queryText || "", 400),
+    fromDate: cleanText(rawOptions.fromDate || "", 32),
+    toDate: cleanText(rawOptions.toDate || "", 32)
+  };
+}
+
 function hasSupabaseEnv() {
   return Boolean(String(process.env.SUPABASE_URL || "").trim() && String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim());
 }
@@ -116,17 +130,38 @@ function actionLabel(action) {
   return labels[action] || action || "Unknown action";
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-  const store = hasSupabaseEnv() ? createIntelligenceStoreFromEnv() : null;
-  const action = String(options.action || "sync_papers").trim().toLowerCase();
+function dryRunSignalContext(store, topics, dedupedItems) {
+  if (store) {
+    // Dry-run still uses persisted topics/grants/patents when available so scoring is representative,
+    // but replaces papers with the just-fetched batch to avoid accidental writes.
+    return store.listSignalInputs().then(context => ({
+      ...context,
+      papers: dedupedItems
+    }));
+  }
+  return Promise.resolve({
+    papers: dedupedItems,
+    grants: [],
+    patents: [],
+    institutions: [],
+    topics
+  });
+}
+
+export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
+  const options = normalizeOptions(rawOptions);
+  const logger = deps.logger || console;
+  const store = Object.prototype.hasOwnProperty.call(deps, "store")
+    ? deps.store
+    : (hasSupabaseEnv() ? createIntelligenceStoreFromEnv() : null);
+  const action = options.action;
   let connectors = [];
   let sourceRecords = [];
   let run = null;
 
   if (PAPER_ACTIONS.has(action)) {
     const sourceTypes = await resolveSourceTypes(store, options);
-    connectors = getConnectors(sourceTypes);
+    connectors = deps.connectors || getConnectors(sourceTypes);
     if (!connectors.length) {
       throw new Error("No intelligence connectors selected.");
     }
@@ -167,8 +202,21 @@ async function main() {
           signalsGenerated: signals.length
         });
       }
-      console.log(`${actionLabel(action)} complete. Evidence items: ${context.papers.length + context.grants.length + context.patents.length}. Signals: ${signals.length}. Saved: ${savedSignals}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
-      return;
+      const result = {
+        action,
+        dryRun: options.dryRun,
+        connectors: [],
+        sourceRecords,
+        itemsFetched: context.papers.length + context.grants.length + context.patents.length,
+        itemsDeduped: context.papers.length,
+        itemsCreated: 0,
+        itemsUpdated: 0,
+        signalsGenerated: signals.length,
+        signalsSaved: savedSignals,
+        runId: run?.id || ""
+      };
+      logger.log(`${actionLabel(action)} complete. Evidence items: ${result.itemsFetched}. Signals: ${signals.length}. Saved: ${savedSignals}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+      return result;
     }
 
     if (!PAPER_ACTIONS.has(action)) {
@@ -192,7 +240,7 @@ async function main() {
         connector,
         items
       });
-      console.log(`[source:${connector.sourceType}] fetched ${items.length} items`);
+      logger.log(`[source:${connector.sourceType}] fetched ${items.length} items`);
     }
 
     const combinedItems = fetchedBySource.flatMap(entry => entry.items);
@@ -223,13 +271,8 @@ async function main() {
         signalsGenerated = signals.length;
       }
     } else if (action === "sync_papers") {
-      const signals = generateStrategicSignals({
-        papers: dedupedItems,
-        grants: [],
-        patents: [],
-        institutions: [],
-        topics: store ? (await store.listSignalInputs()).topics : []
-      });
+      const signalContext = await dryRunSignalContext(store, [], dedupedItems);
+      const signals = generateStrategicSignals(signalContext);
       signalsGenerated = signals.length;
     }
 
@@ -242,7 +285,20 @@ async function main() {
       });
     }
 
-    console.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+    const result = {
+      action,
+      dryRun: options.dryRun,
+      connectors: connectors.map(connector => connector.sourceType),
+      sourceRecords,
+      itemsFetched: combinedItems.length,
+      itemsDeduped: dedupedItems.length,
+      itemsCreated,
+      itemsUpdated,
+      signalsGenerated,
+      runId: run?.id || ""
+    };
+    logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+    return result;
   } catch (error) {
     if (run && store) {
       await store.failRun(run.id, error);
@@ -251,7 +307,13 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error(redactSensitiveText(error?.stack || error?.message || String(error)));
-  process.exitCode = 1;
-});
+async function main() {
+  return runIntelligenceSync(parseArgs(process.argv.slice(2)));
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(error => {
+    console.error(redactSensitiveText(error?.stack || error?.message || String(error)));
+    process.exitCode = 1;
+  });
+}

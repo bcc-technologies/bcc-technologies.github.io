@@ -44,14 +44,16 @@ En el repo, agrega estos secretos:
 ```bash
 SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
+OPENALEX_API_KEY
 OPENALEX_EMAIL
 SEMANTIC_SCHOLAR_API_KEY
 NCBI_API_KEY
 NIH_REPORTER_API_KEY
 ```
 
-Solo `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son obligatorios para la versión actual.
-Las demás quedan preparadas para conectores futuros o para OpenAlex polite pool.
+Solo `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` son obligatorios para que el pipeline exista, pero para usar `OpenAlex` de forma normal ya conviene tratar `OPENALEX_API_KEY` como requerida.
+`OPENALEX_EMAIL` sigue siendo opcional y sirve como identificación de contacto adicional.
+Las demás quedan preparadas para conectores futuros.
 
 ### 4. Qué hace el flujo
 
@@ -86,7 +88,19 @@ El workflow `.github/workflows/run-intelligence-sync.yml` también corre por cro
 
 Eso equivale a una ejecución diaria a las `06:17 UTC`.
 
-### 7. Si falla
+### 7. Diseño recomendado para la cuota gratuita de OpenAlex
+
+OpenAlex ya usa una cuota gratis basada en créditos con `api_key`.
+Para no gastar esa cuota torpemente:
+
+- Mantén `limit` bajo por fuente en runs normales, idealmente `20` a `50`.
+- Usa `dry-run` primero para probar queries amplias.
+- Evita disparar sync manual muchas veces seguidas con búsquedas full-text muy abiertas.
+- Prefiere topics/keywords específicos frente a consultas genéricas.
+- El workflow diario actual es razonable; no conviene subirlo a muchas ejecuciones por día sin necesidad.
+- Si necesitas vigilar la cuota, usa el endpoint oficial `/rate-limit` de OpenAlex con tu key.
+
+### 8. Si falla
 
 - Verifica que la function exista: `run-intelligence-sync`
 - Verifica los secretos en Supabase
@@ -94,7 +108,7 @@ Eso equivale a una ejecución diaria a las `06:17 UTC`.
 - Verifica que el token tenga permiso `Actions: Read and write`
 - Revisa los logs de la Edge Function y la página de Actions del repo
 
-### 8. Seguridad y límites
+### 9. Seguridad y límites
 
 - Solo `admins` pueden disparar el sync manual desde la Edge Function.
 - Las API keys siguen viviendo solo en secretos de Supabase y GitHub Actions; no se exponen al frontend.

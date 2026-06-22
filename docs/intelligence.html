@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script data-bcc-theme-init>
+    (function() {
+      try {
+        var t = localStorage.getItem("bcc-theme");
+        if (t === "dark" || t === "light") {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <title>BCC Intelligence Docs</title>
+  <meta name="description" content="Internal documentation for the BCC Intelligence module." />
+  <link rel="stylesheet" href="/css/00-tokens.css">
+  <link rel="stylesheet" href="/css/01-base.css">
+  <link rel="stylesheet" href="/css/02-layout.css">
+  <link rel="stylesheet" href="/css/03-components.css">
+  <script src="/js/prefs.js" defer></script>
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top left, var(--accent-soft), transparent 32%),
+        linear-gradient(180deg, var(--bg-alt), var(--bg));
+      color: var(--ink);
+    }
+
+    .docs-shell {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .docs-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .docs-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .docs-brand strong:last-child {
+      color: var(--accent);
+    }
+
+    .docs-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .docs-hero {
+      display: grid;
+      grid-template-columns: 1.4fr .9fr;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .docs-card {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow-soft);
+    }
+
+    .docs-hero-main {
+      padding: 28px;
+    }
+
+    .docs-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: .86rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .docs-hero h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(2.1rem, 4vw, 3.5rem);
+      line-height: .98;
+      letter-spacing: -.04em;
+    }
+
+    .docs-hero p {
+      max-width: 62ch;
+      color: var(--ink-soft);
+      font-size: 1.02rem;
+      line-height: 1.68;
+      margin: 0;
+    }
+
+    .docs-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .docs-stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--surface-solid);
+      border: 1px solid var(--line);
+    }
+
+    .docs-stat span {
+      display: block;
+      color: var(--ink-muted);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 8px;
+    }
+
+    .docs-stat strong {
+      display: block;
+      font-size: 1.35rem;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .docs-stat small {
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .docs-nav,
+    .docs-content {
+      padding: 22px;
+    }
+
+    .docs-nav {
+      position: sticky;
+      top: 20px;
+    }
+
+    .docs-nav h2 {
+      margin: 0 0 14px;
+      font-size: .95rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--ink-muted);
+    }
+
+    .docs-nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .docs-nav a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      transition: background var(--ease), color var(--ease);
+    }
+
+    .docs-nav a:hover,
+    .docs-nav a:focus-visible {
+      background: var(--hover);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .docs-content section + section {
+      margin-top: 34px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+
+    .docs-content h2 {
+      margin: 0 0 12px;
+      font-size: 1.45rem;
+      letter-spacing: -.02em;
+    }
+
+    .docs-content h3 {
+      margin: 20px 0 10px;
+      font-size: 1rem;
+      letter-spacing: -.01em;
+    }
+
+    .docs-content p,
+    .docs-content li {
+      color: var(--ink-soft);
+      line-height: 1.7;
+    }
+
+    .docs-content ul,
+    .docs-content ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .docs-content code {
+      padding: .15rem .38rem;
+      border-radius: 8px;
+      background: var(--surface-muted);
+      color: var(--ink-strong);
+      font-size: .92em;
+    }
+
+    .docs-content pre {
+      margin: 14px 0 0;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--surface-solid);
+      overflow-x: auto;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .docs-content pre code {
+      padding: 0;
+      background: transparent;
+    }
+
+    .docs-callout {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--accent-soft-border);
+      background: var(--accent-soft);
+    }
+
+    .docs-callout strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .docs-link-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .docs-link-list a {
+      color: var(--accent-strong);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    @media (max-width: 960px) {
+      .docs-hero,
+      .docs-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .docs-nav {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="docs-shell">
+    <header class="docs-topbar">
+      <a class="docs-brand" href="/admin-dashboard.html#intelligence" aria-label="Back to Intelligence">
+        <strong>BCC</strong>
+        <strong>&there4;</strong>
+        <span>Intelligence Docs</span>
+      </a>
+      <div class="docs-tools">
+        <a class="btn btn-ghost" href="/admin-dashboard.html#intelligence">Back to dashboard</a>
+        <a class="btn btn-primary" href="/docs/intelligence.md" target="_blank" rel="noopener noreferrer">Raw Markdown</a>
+      </div>
+    </header>
+
+    <section class="docs-hero">
+      <article class="docs-card docs-hero-main">
+        <span class="docs-kicker">Internal reference</span>
+        <h1>Scientific and Technology Intelligence</h1>
+        <p>
+          Operational documentation for the BCC Intelligence module: scope, sources,
+          sync flow, connector architecture, scoring rules, security boundaries,
+          limitations, and next implementation steps.
+        </p>
+      </article>
+      <aside class="docs-card docs-stat-grid" aria-label="Quick summary">
+        <article class="docs-stat">
+          <span>Connectors live</span>
+          <strong>3</strong>
+          <small>arXiv, OpenAlex, and Crossref are active in the current pipeline.</small>
+        </article>
+        <article class="docs-stat">
+          <span>Scoring mode</span>
+          <strong>Heuristic</strong>
+          <small>Signals are rule-based and require evidence before creation.</small>
+        </article>
+        <article class="docs-stat">
+          <span>Manual sync</span>
+          <strong>Admin only</strong>
+          <small>Dashboard and Edge Function access are restricted to admins.</small>
+        </article>
+        <article class="docs-stat">
+          <span>Coverage</span>
+          <strong>Stage 12</strong>
+          <small>Core normalization, dry-run, API protection, CRUD, and empty UI states are tested.</small>
+        </article>
+      </aside>
+    </section>
+
+    <div class="docs-layout">
+      <nav class="docs-card docs-nav" aria-label="Sections">
+        <h2>Contents</h2>
+        <ul>
+          <li><a href="#what">What it is</a></li>
+          <li><a href="#problem">Problem solved</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#sources">Sources</a></li>
+          <li><a href="#config">Configuration</a></li>
+          <li><a href="#sync">Manual sync</a></li>
+          <li><a href="#connectors">New connectors</a></li>
+          <li><a href="#scoring">Scores</a></li>
+          <li><a href="#dedupe">Deduplication</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#testing">Testing</a></li>
+          <li><a href="#limits">Limitations</a></li>
+          <li><a href="#pending">Pending work</a></li>
+        </ul>
+      </nav>
+
+      <article class="docs-card docs-content">
+        <section id="what">
+          <h2>What it is</h2>
+          <p>
+            <code>Intelligence</code> is an internal Scientific &amp; Technology Intelligence
+            module inside the admin dashboard. It helps BCC monitor papers, grants,
+            patents, institutions, topics, and derived strategic signals across
+            product lines such as <code>MAP-Nano</code>, <code>MAP-Bio</code>,
+            <code>MAP-Med</code>, and <code>MAP-Ing</code>.
+          </p>
+        </section>
+
+        <section id="problem">
+          <h2>Problem solved</h2>
+          <p>
+            The module replaces scattered manual review with a single radar that helps
+            BCC detect product opportunities, scientific trends, partner candidates,
+            content ideas, grant windows, and early competitive pressure.
+          </p>
+        </section>
+
+        <section id="architecture">
+          <h2>Architecture</h2>
+          <ol>
+            <li><code>Supabase</code> stores sources, topics, papers, grants, patents, institutions, signals, runs, and settings.</li>
+            <li><code>Connectors</code> fetch and normalize external items.</li>
+            <li><code>Sync + scoring</code> deduplicates, stores data, and generates signals.</li>
+            <li><code>Admin dashboard</code> lets admins review data and trigger runs.</li>
+          </ol>
+          <div class="docs-link-list">
+            <a href="/resources/SUPABASE_WORKSPACE_INTELLIGENCE.sql" target="_blank" rel="noopener noreferrer">Schema: SUPABASE_WORKSPACE_INTELLIGENCE.sql</a>
+            <a href="/resources/SUPABASE_INTELLIGENCE_SYNC.md" target="_blank" rel="noopener noreferrer">Operational sync guide</a>
+            <a href="/resources/INTELLIGENCE_CONNECTORS.md" target="_blank" rel="noopener noreferrer">Connector architecture notes</a>
+          </div>
+        </section>
+
+        <section id="sources">
+          <h2>Sources</h2>
+          <p>Implemented now:</p>
+          <ul>
+            <li><code>arXiv</code></li>
+            <li><code>OpenAlex</code></li>
+            <li><code>Crossref</code></li>
+          </ul>
+          <p>Prepared but not fully implemented yet:</p>
+          <ul>
+            <li><code>Semantic Scholar</code></li>
+            <li><code>PubMed / NCBI</code></li>
+            <li><code>NIH RePORTER</code></li>
+            <li><code>NSF Awards</code></li>
+            <li><code>USPTO</code></li>
+          </ul>
+        </section>
+
+        <section id="config">
+          <h2>Configuration and API keys</h2>
+          <h3>Supabase Edge Function secrets</h3>
+          <pre><code>GITHUB_WORKFLOW_TOKEN=
+GITHUB_REPO_OWNER=
+GITHUB_REPO_NAME=
+GITHUB_INTELLIGENCE_WORKFLOW_FILE=
+GITHUB_INTELLIGENCE_WORKFLOW_REF=</code></pre>
+          <h3>GitHub Actions secrets</h3>
+          <pre><code>SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENALEX_API_KEY=
+OPENALEX_EMAIL=
+SEMANTIC_SCHOLAR_API_KEY=
+NCBI_API_KEY=
+NIH_REPORTER_API_KEY=</code></pre>
+          <div class="docs-callout">
+            <strong>Important</strong>
+            <p><code>SUPABASE_SERVICE_ROLE_KEY</code> is backend-only. Do not expose it to the frontend or store secrets in the Intelligence tables. For real OpenAlex sync usage, treat <code>OPENALEX_API_KEY</code> as required.</p>
+          </div>
+        </section>
+
+        <section id="sync">
+          <h2>Manual sync</h2>
+          <h3>From the dashboard</h3>
+          <p>Open <code>/admin-dashboard.html#intelligence</code> and use:</p>
+          <ul>
+            <li><code>Run Intelligence Sync</code></li>
+            <li><code>Fetch latest papers</code></li>
+            <li><code>Generate signals</code></li>
+          </ul>
+          <p><code>Fetch grants</code> and <code>Fetch patents</code> are still placeholders.</p>
+          <h3>From the CLI</h3>
+          <pre><code>node scripts/sync-intelligence.mjs --dry-run --source arxiv,openalex,crossref --keyword "SEM image analysis" --limit 10</code></pre>
+          <pre><code>SUPABASE_URL=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+OPENALEX_API_KEY=... \
+OPENALEX_EMAIL=you@example.com \
+node scripts/sync-intelligence.mjs --source arxiv,openalex,crossref --query "scientific image analysis" --limit 15</code></pre>
+          <div class="docs-callout">
+            <strong>OpenAlex free quota</strong>
+            <p>Keep normal per-source limits around <code>20</code> to <code>50</code>, use <code>dry-run</code> for broad exploratory searches, and avoid repeated generic full-text syncs in the same day.</p>
+          </div>
+        </section>
+
+        <section id="connectors">
+          <h2>Adding a new connector</h2>
+          <p>Keep the source isolated in its own module. Do not hardcode new fetch logic into one shared function.</p>
+          <pre><code>{
+  sourceName,
+  sourceType,
+  search(query),
+  fetchById?(id)
+}</code></pre>
+          <ol>
+            <li>Create a new module under <code>scripts/intelligence/connectors/</code>.</li>
+            <li>Normalize outbound items with <code>scripts/intelligence/connectors/base.mjs</code>.</li>
+            <li>Use <code>scripts/intelligence/http.mjs</code> for timeout, retry, and rate-limit behavior.</li>
+            <li>Return normalized records with <code>rawData</code>.</li>
+            <li>Register the connector in <code>scripts/intelligence/connectors/index.mjs</code>.</li>
+            <li>Use environment variables for credentials.</li>
+            <li>Add tests for normalization and connector behavior.</li>
+          </ol>
+        </section>
+
+        <section id="scoring">
+          <h2>How scores are calculated</h2>
+          <p>Signals are heuristic, not LLM-generated.</p>
+          <h3>Opportunity Score</h3>
+          <pre><code>0.25 * topicGrowth
++ 0.20 * proximityToBCC
++ 0.15 * fundingPresence
++ 0.15 * technicalPainDetected
++ 0.10 * activeInstitutions
++ 0.10 * competitiveWhiteSpace
++ 0.05 * openDataAvailability</code></pre>
+          <h3>Actionability Score</h3>
+          <p>Estimated from:</p>
+          <ul>
+            <li><code>dataAvailability</code></li>
+            <li><code>clarityOfUseCase</code></li>
+            <li><code>easeOfContact</code></li>
+            <li><code>compatibilityWithCurrentProduct</code></li>
+            <li><code>contentPotential</code></li>
+          </ul>
+          <h3>Current heuristics</h3>
+          <ul>
+            <li><code>proximityToBCC</code>: keyword matching against MAP lines and topic evidence.</li>
+            <li><code>technicalPainDetected</code>: terms such as <code>manual</code>, <code>bottleneck</code>, <code>time-consuming</code>, <code>segmentation challenge</code>, <code>annotation</code>, <code>thresholding</code>, <code>low accuracy</code>, <code>noisy images</code>.</li>
+            <li><code>fundingPresence</code>: related grants increase the score.</li>
+            <li><code>activeInstitutions</code>: distinct institutions across matching papers and grants.</li>
+            <li><code>openDataAvailability</code>: boosted by open access or dataset-like evidence.</li>
+          </ul>
+          <div class="docs-callout">
+            <strong>Evidence rule</strong>
+            <p>Signals are not emitted without <code>evidenceRefs</code>.</p>
+          </div>
+        </section>
+
+        <section id="dedupe">
+          <h2>Deduplication and normalization</h2>
+          <p>Exact merge keys for papers:</p>
+          <ul>
+            <li>DOI</li>
+            <li>arXiv ID</li>
+            <li><code>sourceType + externalId</code></li>
+          </ul>
+          <p>
+            Near-identical normalized titles do not auto-merge ambiguous records. They are marked
+            as possible duplicates so the system stays conservative.
+          </p>
+          <p>Normalized fields currently include titles, authors, institutions, dates, source URLs, topics, and keywords. <code>rawData</code> is always preserved.</p>
+        </section>
+
+        <section id="security">
+          <h2>Security model</h2>
+          <ul>
+            <li>Only admins can access Intelligence admin routes.</li>
+            <li>API keys and backend secrets are not exposed to the frontend.</li>
+            <li>The manual sync Edge Function is admin-only.</li>
+            <li>Manual sync has basic rate limiting and active-run protection.</li>
+            <li>External requests use timeout and moderate retries.</li>
+            <li>Error logging redacts sensitive token-like material when possible.</li>
+            <li>External links in the UI are sanitized and restricted to safe protocols.</li>
+          </ul>
+        </section>
+
+        <section id="testing">
+          <h2>Testing</h2>
+          <pre><code>node --test tests/intelligence-*.test.mjs</code></pre>
+          <p>When <code>npm</code> is available:</p>
+          <pre><code>npm run test:intelligence</code></pre>
+          <p>Current coverage includes normalization, deduplication, signal generation, dry-run behavior, admin API protection, topic CRUD, source enable/disable, and empty-state rendering.</p>
+          <div class="docs-link-list">
+            <a href="/resources/INTELLIGENCE_TESTING.md" target="_blank" rel="noopener noreferrer">Testing notes</a>
+          </div>
+        </section>
+
+        <section id="limits">
+          <h2>Current limitations</h2>
+          <ul>
+            <li><code>Fetch grants</code> and <code>Fetch patents</code> are not implemented end-to-end yet.</li>
+            <li>The current sync is strongest on papers.</li>
+            <li>Signal scoring is intentionally simple and heuristic.</li>
+            <li>Duplicate review exists as metadata, not yet as a full analyst workflow.</li>
+            <li>Institution enrichment is still lightweight.</li>
+          </ul>
+        </section>
+
+        <section id="pending">
+          <h2>What remains pending</h2>
+          <ul>
+            <li>real grants connectors</li>
+            <li>real patents connectors</li>
+            <li>duplicate review workflow in the dashboard</li>
+            <li>better institution/entity resolution</li>
+            <li>analyst notes and richer signal lifecycle</li>
+            <li>saved views and exports</li>
+            <li>richer ranking once simple heuristics stop being enough</li>
+          </ul>
+        </section>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

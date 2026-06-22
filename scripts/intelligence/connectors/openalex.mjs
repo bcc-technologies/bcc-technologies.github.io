@@ -13,8 +13,25 @@ import {
 const SOURCE_NAME = "OpenAlex";
 const SOURCE_TYPE = "openalex";
 const API_URL = "https://api.openalex.org/works";
+const OPENALEX_API_KEY = String(process.env.OPENALEX_API_KEY || "").trim();
 const OPENALEX_EMAIL = String(process.env.OPENALEX_EMAIL || "").trim();
 const limitRequest = createRateLimiter(1200);
+const WORK_SELECT_FIELDS = [
+  "id",
+  "doi",
+  "ids",
+  "display_name",
+  "abstract_inverted_index",
+  "authorships",
+  "publication_date",
+  "primary_location",
+  "best_oa_location",
+  "locations",
+  "host_venue",
+  "concepts",
+  "keywords",
+  "cited_by_count"
+].join(",");
 
 function reconstructAbstract(index) {
   if (!index || typeof index !== "object") return "";
@@ -76,7 +93,7 @@ async function fetchOpenAlex(url) {
   return requestJson(url, {
     headers: {
       "User-Agent": OPENALEX_EMAIL
-        ? `mailto:${OPENALEX_EMAIL}`
+        ? `BCC-Intelligence/1.0 (mailto:${OPENALEX_EMAIL})`
         : "BCC-Intelligence/1.0"
     },
     timeoutMs: 20000
@@ -87,17 +104,19 @@ const openAlexConnector = {
   sourceName: SOURCE_NAME,
   sourceType: SOURCE_TYPE,
   baseUrl: "https://api.openalex.org",
-  requiresApiKey: false,
-  rateLimitNotes: OPENALEX_EMAIL
-    ? "Uses the polite pool via OPENALEX_EMAIL with a conservative interval around 1.2 seconds."
-    : "No API key required. Add OPENALEX_EMAIL for polite pool access. Uses a conservative interval around 1.2 seconds.",
+  requiresApiKey: true,
+  rateLimitNotes: OPENALEX_API_KEY
+    ? "Uses OPENALEX_API_KEY with a conservative interval around 1.2 seconds, trimmed select fields, and low default result volume to stay inside the free quota."
+    : "OpenAlex now expects OPENALEX_API_KEY for normal usage. Without it, the daily quota is only suitable for demos or quick tests.",
   async search(query) {
     const normalized = normalizeQuery(query);
     const searchText = buildSearchText(normalized);
     const url = new URL(API_URL);
+    if (OPENALEX_API_KEY) url.searchParams.set("api_key", OPENALEX_API_KEY);
     if (searchText) url.searchParams.set("search", searchText);
     url.searchParams.set("per-page", String(normalized.limit));
     url.searchParams.set("sort", "publication_date:desc");
+    url.searchParams.set("select", WORK_SELECT_FIELDS);
     const filters = [];
     if (normalized.fromDate) filters.push(`from_publication_date:${normalized.fromDate}`);
     if (normalized.toDate) filters.push(`to_publication_date:${normalized.toDate}`);
@@ -118,6 +137,8 @@ const openAlexConnector = {
       ? String(workId).split("/").pop()
       : workId;
     const url = new URL(`${API_URL}/${canonicalId}`);
+    if (OPENALEX_API_KEY) url.searchParams.set("api_key", OPENALEX_API_KEY);
+    url.searchParams.set("select", WORK_SELECT_FIELDS);
     if (OPENALEX_EMAIL) url.searchParams.set("mailto", OPENALEX_EMAIL);
 
     try {

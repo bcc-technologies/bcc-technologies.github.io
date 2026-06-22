@@ -112,6 +112,8 @@ export function normalizeInstitutionName(value, maxLength = 200) {
   return cleanText(value, maxLength)
     .replace(/\bdept\.?\b/gi, "Department")
     .replace(/\buniv\.?\b/gi, "University")
+    .replace(/\bDepartment\./g, "Department")
+    .replace(/\bUniversity\./g, "University")
     .replace(/\s+/g, " ")
     .trim();
 }

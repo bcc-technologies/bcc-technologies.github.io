@@ -7,6 +7,14 @@ Los assets y recursos multimedia están en `static/`.
 
 La página de productos ya no se mantiene duplicando HTML a mano. La fuente compartida está en `js/products-content.js` y el HTML de `products.html` / `en/products.html` se genera con `scripts/render-products-pages.mjs`.
 
+## Documentación interna
+
+- `docs/intelligence.html`: versión navegable de la documentación interna del módulo `Intelligence`.
+- `docs/intelligence.md`: fuente en Markdown de esa misma documentación.
+- `resources/SUPABASE_INTELLIGENCE_SYNC.md`: despliegue, secretos, Edge Function y workflow de sincronización.
+- `resources/INTELLIGENCE_CONNECTORS.md`: arquitectura de conectores y uso del pipeline.
+- `resources/INTELLIGENCE_TESTING.md`: cobertura actual y cómo correr los tests de `Intelligence`.
+
 Comandos útiles:
 
 - `npm run render:products`: regenera `products.html` y `en/products.html` desde `js/products-content.js`.
