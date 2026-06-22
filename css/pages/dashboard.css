@@ -1582,31 +1582,46 @@
   display: grid;
   gap: 12px;
   margin-top: 16px;
+  min-width: 0;
 }
 
 .intelligence-focus-item,
 .intelligence-stack-card{
   display: grid;
   gap: 6px;
+  min-width: 0;
+  max-inline-size: 100%;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
+  overflow: hidden;
 }
 
 .intelligence-focus-item strong,
 .intelligence-stack-card h4{
   margin: 0;
+  min-width: 0;
   color: var(--ink-strong);
   font-size: .95rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .intelligence-focus-item p,
 .intelligence-stack-card p{
   margin: 0;
+  min-width: 0;
+  max-inline-size: 100%;
   color: var(--ink-soft);
   font-size: .84rem;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  max-block-size: 9.6rem;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .intelligence-error-block{
@@ -1625,11 +1640,14 @@
 }
 
 .intelligence-focus-item span{
+  min-width: 0;
   color: var(--accent-strong);
   font-size: .76rem;
   font-weight: 800;
   letter-spacing: .03em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .intelligence-stack-meta{
