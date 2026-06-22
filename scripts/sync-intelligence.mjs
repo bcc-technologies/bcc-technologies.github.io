@@ -130,6 +130,102 @@ function actionLabel(action) {
   return labels[action] || action || "Unknown action";
 }
 
+function normalizeTopicMatchValue(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function topicMatchTerms(topic) {
+  return cleanArray(
+    [
+      topic?.name || "",
+      ...(Array.isArray(topic?.keywords) ? topic.keywords : [])
+    ],
+    32,
+    120
+  )
+    .map(normalizeTopicMatchValue)
+    .filter(Boolean);
+}
+
+function paperTopicHaystack(item) {
+  return [
+    item?.title,
+    item?.abstract,
+    ...(Array.isArray(item?.topics) ? item.topics : []),
+    ...(Array.isArray(item?.keywords) ? item.keywords : []),
+    ...(Array.isArray(item?.institutions) ? item.institutions : []),
+    ...(Array.isArray(item?.authors) ? item.authors : []),
+    item?.journalOrVenue,
+    item?.sourceName
+  ]
+    .map(normalizeTopicMatchValue)
+    .join(" ");
+}
+
+function enrichPaperTopics(item, topics = []) {
+  if (!topics.length) return item;
+  const explicitTopics = Array.isArray(item?.topics) ? item.topics : [];
+  const explicitNormalized = explicitTopics.map(normalizeTopicMatchValue);
+  const haystack = paperTopicHaystack(item);
+  const matchedTopicNames = topics
+    .filter(topic => topic?.enabled !== false)
+    .filter(topic => {
+      const topicName = normalizeTopicMatchValue(topic?.name || "");
+      if (topicName && explicitNormalized.includes(topicName)) return true;
+      return topicMatchTerms(topic).some(term => term && haystack.includes(term));
+    })
+    .map(topic => cleanText(topic?.name || "", 160))
+    .filter(Boolean);
+
+  const topicsOut = cleanArray([...explicitTopics, ...matchedTopicNames], 64, 120);
+  return {
+    ...item,
+    topics: topicsOut
+  };
+}
+
+function sameTopicSet(left = [], right = []) {
+  const normalize = values => cleanArray(values, 64, 120)
+    .map(normalizeTopicMatchValue)
+    .sort();
+  const a = normalize(left);
+  const b = normalize(right);
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+async function runTopicDiagnostics(store, topics, logger) {
+  if (!store || !topics.length || typeof store.listPapersForTopicDiagnostics !== "function") {
+    return { scanned: 0, repaired: 0, candidates: 0 };
+  }
+
+  const existingPapers = await store.listPapersForTopicDiagnostics(300);
+  let repaired = 0;
+  let candidates = 0;
+
+  for (const paper of existingPapers) {
+    const enriched = enrichPaperTopics(paper, topics);
+    if (sameTopicSet(paper.topics, enriched.topics)) continue;
+    candidates += 1;
+    await store.savePaper(enriched, paper.sourceId || "");
+    repaired += 1;
+  }
+
+  if (logger?.log) {
+    logger.log(`[diagnostics:topics] scanned ${existingPapers.length} papers · candidates ${candidates} · repaired ${repaired}`);
+  }
+
+  return {
+    scanned: existingPapers.length,
+    repaired,
+    candidates
+  };
+}
+
 function dryRunSignalContext(store, topics, dedupedItems) {
   if (store) {
     // Dry-run still uses persisted topics/grants/patents when available so scoring is representative,
@@ -158,12 +254,16 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
   let connectors = [];
   let sourceRecords = [];
   let run = null;
+  let enabledTopics = [];
 
   if (PAPER_ACTIONS.has(action)) {
     const sourceTypes = await resolveSourceTypes(store, options);
     connectors = deps.connectors || getConnectors(sourceTypes);
     if (!connectors.length) {
       throw new Error("No intelligence connectors selected.");
+    }
+    if (store) {
+      enabledTopics = await store.listEnabledTopics();
     }
   }
 
@@ -235,7 +335,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     const fetchedBySource = [];
 
     for (const connector of connectors) {
-      const items = await connector.search(query);
+      const items = (await connector.search(query)).map(item => enrichPaperTopics(item, enabledTopics));
       fetchedBySource.push({
         connector,
         items
@@ -249,6 +349,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     let itemsCreated = 0;
     let itemsUpdated = 0;
     let signalsGenerated = 0;
+    let diagnostics = { scanned: 0, repaired: 0, candidates: 0 };
 
     if (store && !options.dryRun) {
       for (const entry of fetchedBySource) {
@@ -261,6 +362,9 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
         }
         await store.touchSourceSync(sourceRecord.id);
       }
+
+      diagnostics = await runTopicDiagnostics(store, enabledTopics, logger);
+      itemsUpdated += diagnostics.repaired;
 
       if (action === "sync_papers") {
         const signalContext = await store.listSignalInputs();
@@ -295,9 +399,10 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       itemsCreated,
       itemsUpdated,
       signalsGenerated,
+      diagnostics,
       runId: run?.id || ""
     };
-    logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+    logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Topic diagnostics repaired: ${diagnostics.repaired}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
     return result;
   } catch (error) {
     if (run && store) {

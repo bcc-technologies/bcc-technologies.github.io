@@ -1297,6 +1297,7 @@
 
   function signalDetailMarkup(signal) {
     const evidence = Array.isArray(signal.evidenceRefs) ? signal.evidenceRefs : [];
+    const breakdown = signal.scoreBreakdown && typeof signal.scoreBreakdown === "object" ? signal.scoreBreakdown : {};
     const grouped = {
       paper: evidence.filter(item => item?.type === "paper"),
       grant: evidence.filter(item => item?.type === "grant"),
@@ -1342,6 +1343,7 @@
               <li>Patents relacionados: ${number(grouped.patent.length)}</li>
             </ul>
           </div>
+          ${renderSignalBreakdown(breakdown)}
           <div class="intelligence-form-actions">
             ${SIGNAL_STATUS_ACTIONS.map(action => `
               <button class="btn btn-${action.tone}" type="button" data-signal-status="${escapeAttr(action.id)}" data-signal-id="${escapeAttr(signal.id)}">
@@ -1352,6 +1354,45 @@
         </div>
       </div>
     `;
+  }
+
+  function renderSignalBreakdown(breakdown) {
+    const opportunity = breakdown?.opportunity && typeof breakdown.opportunity === "object" ? breakdown.opportunity : null;
+    const actionability = breakdown?.actionability && typeof breakdown.actionability === "object" ? breakdown.actionability : null;
+    const matching = breakdown?.matching && typeof breakdown.matching === "object" ? breakdown.matching : null;
+    const evidence = breakdown?.evidence && typeof breakdown.evidence === "object" ? breakdown.evidence : null;
+    if (!opportunity && !actionability && !matching && !evidence) return "";
+    return `
+      <div class="intelligence-detail-block">
+        <h4>Score breakdown</h4>
+        ${matching ? breakdownMetricList("Matching", matching) : ""}
+        ${opportunity ? breakdownMetricList("Opportunity factors", opportunity) : ""}
+        ${actionability ? breakdownMetricList("Actionability factors", actionability) : ""}
+        ${evidence ? breakdownMetricList("Evidence density", evidence, { plainNumber: true }) : ""}
+      </div>
+    `;
+  }
+
+  function breakdownMetricList(title, metrics, options = {}) {
+    const entries = Object.entries(metrics || {}).filter(([, value]) => typeof value === "number");
+    if (!entries.length) return "";
+    return `
+      <div class="intelligence-breakdown-block">
+        <strong>${escapeHtml(title)}</strong>
+        <ul class="intelligence-related-list">
+          ${entries.map(([key, value]) => `
+            <li>${escapeHtml(humanizeBreakdownKey(key))}: ${options.plainNumber ? number(value) : `${score(value)}%`}</li>
+          `).join("")}
+        </ul>
+      </div>
+    `;
+  }
+
+  function humanizeBreakdownKey(key) {
+    return String(key || "")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, char => char.toUpperCase());
   }
 
   function overviewStats() {
@@ -1499,9 +1540,9 @@
     const entries = dashboard.topics
       .filter(item => item.enabled)
       .map(topic => {
-        const paperHits = dashboard.papers.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
-        const grantHits = dashboard.grants.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
-        const patentHits = dashboard.patents.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+        const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
+        const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
+        const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
         const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === mapTopicLine(topic)).length;
         const scoreValue = paperHits * 3 + grantHits * 2 + patentHits * 2 + signalHits * 4;
         return {
@@ -1718,7 +1759,7 @@
     const normalizedKeyword = String(state.keyword || "").trim().toLowerCase();
     const cutoff = cutoffDate(state.dateRange);
     return [...items].filter(item => {
-      if (state.topic && !(Array.isArray(item.topics) && item.topics.includes(state.topic))) return false;
+      if (state.topic && !itemMatchesTopic(item, state.topic, config.searchFields)) return false;
       if (state.source && String(item[config.sourceField] || "") !== state.source) return false;
       if (state.line && deriveLine(item) !== state.line) return false;
       if (cutoff) {
@@ -1782,6 +1823,13 @@
       const topic = dashboard.topics.find(entry => entry.name === topicName);
       if (topic?.category) categories[topic.category] = (categories[topic.category] || 0) + 1;
     });
+    if (!Object.keys(categories).length) {
+      dashboard.topics.forEach(topic => {
+        if (itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions", "program", "agency", "inventors", "assignees", "jurisdiction", "status"])) {
+          categories[topic.category] = (categories[topic.category] || 0) + 1;
+        }
+      });
+    }
     const topCategory = Object.entries(categories).sort((left, right) => right[1] - left[1])[0]?.[0] || "";
     return lineFromCategory(topCategory);
   }
@@ -1901,9 +1949,9 @@
 
   function topicInsight(topic) {
     const line = mapTopicLine(topic);
-    const paperHits = dashboard.papers.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
-    const grantHits = dashboard.grants.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
-    const patentHits = dashboard.patents.filter(item => Array.isArray(item.topics) && item.topics.includes(topic.name)).length;
+    const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
+    const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
+    const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
     const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === line).length;
     const totalHits = paperHits + grantHits + patentHits + signalHits;
     const keywordCount = Array.isArray(topic?.keywords) ? topic.keywords.length : 0;
@@ -2114,6 +2162,46 @@
 
   function splitCsv(value) {
     return [...new Set(String(value || "").split(",").map(item => item.trim()).filter(Boolean))];
+  }
+
+  function normalizeTopicMatchValue(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function topicMatchTerms(topicOrName) {
+    if (typeof topicOrName === "string") {
+      const topic = dashboard.topics.find(item => item.name === topicOrName);
+      if (!topic) return [normalizeTopicMatchValue(topicOrName)].filter(Boolean);
+      topicOrName = topic;
+    }
+    const values = [
+      topicOrName?.name,
+      ...(Array.isArray(topicOrName?.keywords) ? topicOrName.keywords : [])
+    ];
+    return [...new Set(values.map(normalizeTopicMatchValue).filter(Boolean))];
+  }
+
+  function itemTopicHaystack(item, fields = []) {
+    return fields
+      .map(field => normalizeSearchValue(item?.[field]))
+      .join(" ")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function itemMatchesTopic(item, topicOrName, fields = []) {
+    const explicitTopics = Array.isArray(item?.topics) ? item.topics.map(normalizeTopicMatchValue) : [];
+    const terms = topicMatchTerms(topicOrName);
+    if (!terms.length) return false;
+    if (terms.some(term => explicitTopics.includes(term))) return true;
+    const haystack = itemTopicHaystack(item, fields);
+    return terms.some(term => term && haystack.includes(term));
   }
 
   function clampScore(value) {

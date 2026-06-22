@@ -153,6 +153,8 @@ test("generates strategic signals with evidence when the topic has matching reco
   assert.ok(signals.length > 0);
   assert.ok(signals.every(signal => signal.evidenceCount > 0));
   assert.ok(signals.every(signal => Array.isArray(signal.evidenceRefs) && signal.evidenceRefs.length > 0));
+  assert.ok(signals.every(signal => signal.scoreBreakdown && typeof signal.scoreBreakdown === "object"));
+  assert.ok(signals.every(signal => signal.scoreBreakdown?.opportunity && signal.scoreBreakdown?.actionability));
   assert.ok(signals.some(signal => signal.signalType === "grant_opportunity"));
 });
 

@@ -218,6 +218,7 @@ create table if not exists public.intelligence_signals (
   actionability_score numeric(5, 2) not null default 0,
   evidence_count integer not null default 0,
   evidence_refs jsonb not null default '[]'::jsonb,
+  score_breakdown jsonb not null default '{}'::jsonb,
   recommended_action text not null default '',
   status text not null default 'new',
   created_at timestamptz not null default now(),
@@ -231,9 +232,13 @@ create table if not exists public.intelligence_signals (
   constraint intelligence_signals_actionability_score_check check (actionability_score between 0 and 100),
   constraint intelligence_signals_evidence_count_check check (evidence_count >= 0),
   constraint intelligence_signals_evidence_refs_check check (jsonb_typeof(evidence_refs) = 'array'),
+  constraint intelligence_signals_score_breakdown_check check (jsonb_typeof(score_breakdown) = 'object'),
   constraint intelligence_signals_recommended_action_check check (char_length(recommended_action) <= 6000),
   constraint intelligence_signals_status_check check (status in ('new', 'reviewing', 'accepted', 'rejected', 'archived'))
 );
+
+alter table public.intelligence_signals
+  add column if not exists score_breakdown jsonb not null default '{}'::jsonb;
 
 create table if not exists public.intelligence_runs (
   id uuid primary key default gen_random_uuid(),

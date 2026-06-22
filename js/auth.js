@@ -1317,7 +1317,7 @@ const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, pr
 const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, raw_data, created_at, updated_at";
 const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
 const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
-const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, recommended_action, status, created_at, updated_at";
+const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, created_at, updated_at";
 const INTELLIGENCE_RUN_COLUMNS = "id, status, action_type, dry_run, started_at, finished_at, sources_used, items_fetched, items_created, items_updated, signals_generated, error_message, created_at, updated_at";
 const INTELLIGENCE_SETTINGS_COLUMNS = "id, max_results_per_source, default_date_range_days, suggested_frequency, default_dry_run, scoring_thresholds, monitored_lines, created_at, updated_at";
 
@@ -1516,6 +1516,7 @@ function publicIntelligenceSignal(signal) {
     actionabilityScore: Number(signal.actionability_score || 0),
     evidenceCount: Number(signal.evidence_count || 0),
     evidenceRefs: Array.isArray(signal.evidence_refs) ? signal.evidence_refs : [],
+    scoreBreakdown: signal.score_breakdown && typeof signal.score_breakdown === "object" ? signal.score_breakdown : {},
     recommendedAction: signal.recommended_action || "",
     status: signal.status || "new",
     createdAt: signal.created_at,

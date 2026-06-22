@@ -4,7 +4,8 @@ import { findPossibleDuplicateCandidates } from "./dedupe.mjs";
 const SOURCE_COLUMNS = "id,name,type,enabled,last_sync_at";
 const TOPIC_COLUMNS = "id,name,keywords,enabled";
 const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source_id,citations_count,possible_duplicate,duplicate_candidates";
-const SIGNAL_COLUMNS = "id,title,signal_type,related_line,confidence_score,opportunity_score,actionability_score,evidence_count,evidence_refs,recommended_action,status";
+const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url,raw_data";
+const SIGNAL_COLUMNS = "id,title,signal_type,related_line,confidence_score,opportunity_score,actionability_score,evidence_count,evidence_refs,score_breakdown,recommended_action,status";
 const RUN_COLUMNS = "id,status,action_type,dry_run,started_at,finished_at,items_fetched,items_created,items_updated,signals_generated,error_message";
 
 function assertEnv(name, value) {
@@ -219,6 +220,36 @@ export function createIntelligenceStoreFromEnv() {
           enabled: Boolean(item.enabled)
         })) : []
       };
+    },
+
+    async listPapersForTopicDiagnostics(limit = 300) {
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_papers", {
+        params: {
+          select: PAPER_DIAGNOSTIC_COLUMNS,
+          order: "updated_at.desc",
+          limit: Math.min(500, Math.max(1, Number(limit) || 300))
+        }
+      });
+      return Array.isArray(rows) ? rows.map(item => ({
+        id: item.id,
+        sourceId: item.source_id || "",
+        externalId: item.external_id || "",
+        doi: item.doi || "",
+        arxivId: item.arxiv_id || "",
+        title: item.title || "",
+        abstract: item.abstract || "",
+        authors: Array.isArray(item.authors) ? item.authors : [],
+        institutions: Array.isArray(item.institutions) ? item.institutions : [],
+        publicationDate: item.publication_date || "",
+        sourceName: item.source_name || "",
+        sourceUrl: item.source_url || "",
+        journalOrVenue: item.journal_or_venue || "",
+        topics: Array.isArray(item.topics) ? item.topics : [],
+        keywords: Array.isArray(item.keywords) ? item.keywords : [],
+        citationsCount: Number(item.citations_count || 0),
+        openAccessUrl: item.open_access_url || "",
+        rawData: item.raw_data && typeof item.raw_data === "object" ? item.raw_data : {}
+      })) : [];
     },
 
     async ensureSourceRecord(connector) {
@@ -472,6 +503,7 @@ export function createIntelligenceStoreFromEnv() {
         actionability_score: Math.max(0, Math.min(100, Number(signal?.actionabilityScore) || 0)),
         evidence_count: Math.max(0, Number(signal?.evidenceCount) || 0),
         evidence_refs: Array.isArray(signal?.evidenceRefs) ? signal.evidenceRefs.slice(0, 12) : [],
+        score_breakdown: signal?.scoreBreakdown && typeof signal.scoreBreakdown === "object" ? signal.scoreBreakdown : {},
         recommended_action: cleanText(signal?.recommendedAction || "", 6000),
         status: cleanText(signal?.status || "new", 24) || "new"
       };

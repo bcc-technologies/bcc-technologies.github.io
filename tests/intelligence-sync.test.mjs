@@ -12,6 +12,17 @@ test("sync dry-run completes without persisting papers or signals", async () => 
   };
 
   const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true
+        }
+      ];
+    },
     async findSourceRecord(sourceType) {
       return { id: `source-${sourceType}`, type: sourceType };
     },
@@ -115,4 +126,193 @@ test("sync dry-run completes without persisting papers or signals", async () => 
   assert.equal(calls.failRun, 0);
   assert.equal(calls.savePaper, 0);
   assert.equal(calls.saveSignal, 0);
+});
+
+test("sync persists detected topic names onto papers before saving", async () => {
+  const savedTopics = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis", "microstructure analysis"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-2" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper(item) {
+      savedTopics.push(item.topics);
+      return { action: "created", record: { id: "paper-1" } };
+    },
+    async touchSourceSync() {},
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        institutions: [],
+        papers: []
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-1" } };
+    }
+  };
+
+  const connector = {
+    sourceType: "arxiv",
+    async search() {
+      return [
+        {
+          sourceName: "arXiv",
+          sourceType: "arxiv",
+          externalId: "abs-topic-1",
+          title: "Manual SEM image analysis workflow for microstructure inspection",
+          abstract: "This microscopy pipeline remains time-consuming for materials teams.",
+          keywords: ["segmentation challenge"],
+          topics: [],
+          sourceUrl: "https://example.com/paper-topic-1",
+          publicationDate: "2026-06-18",
+          rawData: { source: "arxiv" }
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_papers",
+      dryRun: false,
+      sourceTypes: ["arxiv"],
+      keywords: ["SEM image analysis"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.itemsFetched, 1);
+  assert.equal(savedTopics.length, 1);
+  assert.deepEqual(savedTopics[0], ["MAP-Nano"]);
+});
+
+test("sync diagnostics repair existing papers with missing topic names", async () => {
+  const savedPapers = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-3" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper(item) {
+      savedPapers.push({
+        title: item.title,
+        topics: item.topics
+      });
+      return { action: savedPapers.length === 1 ? "created" : "updated", record: { id: `paper-${savedPapers.length}` } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [
+        {
+          id: "existing-1",
+          sourceId: "source-arxiv",
+          externalId: "existing-abs-1",
+          doi: "",
+          arxivId: "",
+          title: "SEM image analysis benchmark for particle segmentation",
+          abstract: "Historical paper already in DB but missing explicit topic names.",
+          authors: [],
+          institutions: [],
+          publicationDate: "2026-04-01",
+          sourceName: "arXiv",
+          sourceUrl: "https://example.com/existing-paper",
+          journalOrVenue: "",
+          topics: [],
+          keywords: ["particle segmentation"],
+          citationsCount: 0,
+          openAccessUrl: "",
+          rawData: {}
+        }
+      ];
+    },
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        institutions: [],
+        papers: []
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-3" } };
+    }
+  };
+
+  const connector = {
+    sourceType: "arxiv",
+    async search() {
+      return [
+        {
+          sourceName: "arXiv",
+          sourceType: "arxiv",
+          externalId: "new-abs-1",
+          title: "SEM image analysis workflow",
+          abstract: "Fresh paper from connector.",
+          keywords: ["SEM image analysis"],
+          topics: [],
+          sourceUrl: "https://example.com/new-paper",
+          publicationDate: "2026-06-18",
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_papers",
+      dryRun: false,
+      sourceTypes: ["arxiv"],
+      keywords: ["SEM image analysis"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.diagnostics.repaired, 1);
+  assert.equal(result.itemsUpdated, 1);
+  assert.deepEqual(savedPapers[1].topics, ["MAP-Nano"]);
 });
