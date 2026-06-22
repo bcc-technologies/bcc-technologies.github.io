@@ -29,7 +29,7 @@ const WORK_SELECT_FIELDS = [
   "primary_location",
   "best_oa_location",
   "locations",
-  "host_venue",
+  "sources",
   "concepts",
   "keywords",
   "cited_by_count"
@@ -74,7 +74,7 @@ function normalizeWork(work) {
     institutions: buildInstitutionList(work?.authorships),
     publicationDate: work?.publication_date || work?.from_publication_date || "",
     sourceUrl: safeUrl(work?.primary_location?.landing_page_url || work?.doi || work?.id || ""),
-    journalOrVenue: work?.primary_location?.source?.display_name || work?.host_venue?.display_name || "",
+    journalOrVenue: work?.primary_location?.source?.display_name || work?.sources?.[0]?.display_name || "",
     topics: inferTopicsFromKeywords(concepts),
     keywords: cleanArray([
       ...concepts,
