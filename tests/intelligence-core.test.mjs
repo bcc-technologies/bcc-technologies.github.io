@@ -200,7 +200,21 @@ test("OpenAlex connector uses api_key, mailto, and select fields for quota-aware
     const { default: openalex } = await import(moduleUrl.href);
 
     assert.equal(openalex.requiresApiKey, true);
-    await openalex.search({ keywords: ["SEM image analysis"], limit: 7 });
+    await openalex.search({
+      keywords: [
+        "SEM image analysis",
+        "grain boundary detection",
+        "materials characterization",
+        "microstructure analysis",
+        "nanomaterials microscopy",
+        "nanoparticle size distribution",
+        "particle segmentation",
+        "porosity analysis",
+        "surface roughness microscopy",
+        "TEM image analysis"
+      ],
+      limit: 7
+    });
 
     assert.equal(requests.length, 1);
     const requestUrl = new URL(requests[0]);
@@ -208,6 +222,7 @@ test("OpenAlex connector uses api_key, mailto, and select fields for quota-aware
     assert.equal(requestUrl.searchParams.get("mailto"), "lab@example.com");
     assert.equal(requestUrl.searchParams.get("per-page"), "7");
     assert.match(requestUrl.searchParams.get("select") || "", /display_name/);
+    assert.ok((requestUrl.searchParams.get("search") || "").length <= 180);
   } finally {
     global.fetch = originalFetch;
     process.env.OPENALEX_API_KEY = originalApiKey;

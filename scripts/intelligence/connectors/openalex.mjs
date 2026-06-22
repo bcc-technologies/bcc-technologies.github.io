@@ -16,6 +16,8 @@ const API_URL = "https://api.openalex.org/works";
 const OPENALEX_API_KEY = String(process.env.OPENALEX_API_KEY || "").trim();
 const OPENALEX_EMAIL = String(process.env.OPENALEX_EMAIL || "").trim();
 const limitRequest = createRateLimiter(1200);
+const OPENALEX_MAX_SEARCH_TERMS = 8;
+const OPENALEX_MAX_SEARCH_CHARS = 180;
 const WORK_SELECT_FIELDS = [
   "id",
   "doi",
@@ -100,17 +102,38 @@ async function fetchOpenAlex(url) {
   });
 }
 
+function compactOpenAlexSearch(query) {
+  const normalized = normalizeQuery(query);
+  if (normalized.text) {
+    return cleanText(normalized.text, OPENALEX_MAX_SEARCH_CHARS);
+  }
+
+  const terms = cleanArray(
+    [...(normalized.keywords || []), ...(normalized.topics || [])],
+    OPENALEX_MAX_SEARCH_TERMS,
+    80
+  );
+
+  let search = "";
+  for (const term of terms) {
+    const next = search ? `${search} ${term}` : term;
+    if (next.length > OPENALEX_MAX_SEARCH_CHARS) break;
+    search = next;
+  }
+  return search;
+}
+
 const openAlexConnector = {
   sourceName: SOURCE_NAME,
   sourceType: SOURCE_TYPE,
   baseUrl: "https://api.openalex.org",
   requiresApiKey: true,
   rateLimitNotes: OPENALEX_API_KEY
-    ? "Uses OPENALEX_API_KEY with a conservative interval around 1.2 seconds, trimmed select fields, and low default result volume to stay inside the free quota."
+    ? "Uses OPENALEX_API_KEY with a conservative interval around 1.2 seconds, trimmed select fields, compact search text, and low default result volume to stay inside the free quota."
     : "OpenAlex now expects OPENALEX_API_KEY for normal usage. Without it, the daily quota is only suitable for demos or quick tests.",
   async search(query) {
     const normalized = normalizeQuery(query);
-    const searchText = buildSearchText(normalized);
+    const searchText = compactOpenAlexSearch(normalized) || buildSearchText(normalized);
     const url = new URL(API_URL);
     if (OPENALEX_API_KEY) url.searchParams.set("api_key", OPENALEX_API_KEY);
     if (searchText) url.searchParams.set("search", searchText);
