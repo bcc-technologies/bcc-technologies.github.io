@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-18T10:16:01.069Z",
+  "updatedAt": "2026-06-22T11:47:04.703Z",
   "item": {
-    "copyright": "X-ray: NASA/CXC/UCLA/Z. Zhu et al.; ESA/XMM-Newton; Optical: PanSTARRS; Radio: MeerKAT; Image Processing: NASA/CXC/SAO/L. Frattare and P. Edmonds\n Text: \nCecilia Chirenti \n(NASA\nGSFC, \nUMCP, \nCRESST II)",
-    "date": "2026-06-18",
-    "explanation": "Do you see that blue blob to the lower right of the image center?   Astronomers think that it shows where a massive star exploded as a supernova whose light reached Earth 1,700 years ago.   The image combines optical data from the PanSTARRS telescopes in Hawaii (background stars in red, green, and blue), radio from the MeerKAT telescope in South Africa (large red cloud) and X-rays from NASA's Chandra X-ray Observatory and ESA’s XMM-Newton (shown in blue).   The large cloud is a star forming region called Sagittarius C, which is approximately 50 light-years in extent and about 26,000 light-years from Earth.   It is located only about 260 light-years from the supermassive black hole in the center of the Galaxy (off to the left of the image).   If the blue blob is confirmed to be a supernova remnant, it would be one of the closest ever discovered to the Galactic Center.   In this dense region, the deaths of massive stars are connected to the birth of new stars through gas and magnetic fields in a complex way.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2606/sgrc_lg.jpg",
+    "copyright": "Francesco Antonucci",
+    "date": "2026-06-22",
+    "explanation": "Is this what will become of our Sun? Quite possibly.  The first hint of our Sun's future was discovered inadvertently in 1764. At that time, Charles Messier was compiling a list of diffuse objects not to be confused with comets. The 27th object on Messier's list, now known as M27 or the Dumbbell Nebula, is a planetary nebula, one of the brightest planetary nebulas on the sky and visible with binoculars toward the constellation of the Fox (Vulpecula). It takes light about 1000 years to reach us from M27, featured here in colors enhanced by red for  hydrogen and blue for oxygen. We now know that in about 6 billion years, our Sun will shed its outer gases into a planetary nebula like M27, while its remaining center will become an X-ray hot white dwarf star.  Understanding the physics and significance of M27 was well beyond 18th century science, though. Even today, many things remain mysterious about planetary nebulas, including how their intricate shapes are created.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2606/M27_antonucci_3090.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Possible Supernova Remnant in Galactic Center",
-    "url": "https://apod.nasa.gov/apod/image/2606/sgrc.jpg"
+    "title": "M27: The Dumbbell Nebula",
+    "url": "https://apod.nasa.gov/apod/image/2606/M27_antonucci_960.jpg"
   }
 }
