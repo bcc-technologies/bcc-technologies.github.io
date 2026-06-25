@@ -1,8 +1,10 @@
 const $ = (sel) => document.querySelector(sel);
 
 const toastEl = $("#toast");
+const CMS_DRAFT_STORAGE = typeof window !== "undefined" && window.CmsDraftStorage ? window.CmsDraftStorage : null;
 let CMS_RUNTIME = "local";
 let WEB_USER = null;
+let CMS_DRAFT_STORAGE_USER = null;
 let WEB_INDEX_FALLBACK = null;
 let WEB_POST_BODY_CACHE = new Map();
 
@@ -58,6 +60,16 @@ async function probeLocalCmsApi() {
   }
 }
 
+async function ensureCmsDraftStorageUser() {
+  if (CMS_DRAFT_STORAGE_USER || !window.BCCAuth?.currentUser) return CMS_DRAFT_STORAGE_USER || WEB_USER || null;
+  try {
+    CMS_DRAFT_STORAGE_USER = await window.BCCAuth.currentUser();
+  } catch (_error) {
+    CMS_DRAFT_STORAGE_USER = WEB_USER || null;
+  }
+  return CMS_DRAFT_STORAGE_USER || WEB_USER || null;
+}
+
 async function initCmsRuntime() {
   const hasLocalApi = await probeLocalCmsApi();
   CMS_RUNTIME = hasLocalApi ? "local" : "web";
@@ -71,6 +83,8 @@ async function initCmsRuntime() {
     window.CMS_SUPABASE = await window.BCCAuth.loadSupabaseClient();
     configureWebModeUi();
   }
+
+  await ensureCmsDraftStorageUser();
 }
 
 function configureWebModeUi() {
@@ -2289,6 +2303,17 @@ function safeJsonParse(raw, fallback) {
   catch (_e) { return fallback; }
 }
 
+function currentCmsUserIdentity() {
+  return WEB_USER || CMS_DRAFT_STORAGE_USER || null;
+}
+
+function currentCmsStorageNamespace() {
+  if (CMS_DRAFT_STORAGE?.getCmsStorageNamespace) {
+    return CMS_DRAFT_STORAGE.getCmsStorageNamespace(currentCmsUserIdentity());
+  }
+  return "bccAdmin:anonymous";
+}
+
 function storageGet(key, fallback = null) {
   try { return safeJsonParse(localStorage.getItem(key), fallback); }
   catch (_e) { return fallback; }
@@ -2303,10 +2328,16 @@ function storageRemove(key) {
   try { localStorage.removeItem(key); } catch (_e) {}
 }
 
+function scopedStorageKey(prefix, id = null) {
+  const suffix = String(id || "").trim();
+  const namespace = currentCmsStorageNamespace();
+  return suffix ? `${namespace}:${prefix}${suffix}` : `${namespace}:${prefix}`;
+}
+
 function persistEditorSession(options = {}) {
   const payload = options.payload || collectPostPayload();
   const draftStorageKey = options.draftStorageKey || draftKey(payload.id);
-  storageSet(EDITOR_STORE.session, {
+  storageSet(scopedStorageKey(EDITOR_STORE.session), {
     postId: String(payload.id || "").trim(),
     payload: payload.id ? null : payload,
     draftStorageKey,
@@ -2315,11 +2346,11 @@ function persistEditorSession(options = {}) {
 }
 
 function readEditorSession() {
-  return storageGet(EDITOR_STORE.session, null);
+  return storageGet(scopedStorageKey(EDITOR_STORE.session), null);
 }
 
 function clearEditorSession() {
-  storageRemove(EDITOR_STORE.session);
+  storageRemove(scopedStorageKey(EDITOR_STORE.session));
 }
 
 function createLocalDraftId() {
@@ -2334,8 +2365,13 @@ function stablePostKey(id = null) {
   return `new-${title}`;
 }
 
-function draftKey(id = null) { return EDITOR_STORE.draftPrefix + stablePostKey(id); }
-function historyKey(id = null) { return EDITOR_STORE.historyPrefix + stablePostKey(id); }
+function draftKey(id = null) {
+  return scopedStorageKey(EDITOR_STORE.draftPrefix, stablePostKey(id));
+}
+
+function historyKey(id = null) {
+  return scopedStorageKey(EDITOR_STORE.historyPrefix, stablePostKey(id));
+}
 
 function currentEditorIdentity() {
   const savedId = String($("#postId")?.value || currentPostId || "").trim();
@@ -2369,10 +2405,11 @@ function flushActiveEditorDraft(reason = "cambio de entrada") {
 
 function getLocalDraftEntries() {
   const entries = [];
+  const namespacePrefix = `${currentCmsStorageNamespace()}:`;
   try {
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);
-      if (!key || !key.startsWith(EDITOR_STORE.draftPrefix)) continue;
+      if (!key || !key.startsWith(namespacePrefix + EDITOR_STORE.draftPrefix)) continue;
       const record = storageGet(key, null);
       if (!record?.payload || record.payload.id) continue;
       const localDraftId = String(record.payload.localDraftId || "").trim();
@@ -2401,9 +2438,10 @@ function getLocalDraftEntries() {
 function pruneLegacyLocalDrafts() {
   try {
     const keysToRemove = [];
+    const namespacePrefix = `${currentCmsStorageNamespace()}:`;
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);
-      if (!key || !key.startsWith(EDITOR_STORE.draftPrefix)) continue;
+      if (!key || !key.startsWith(namespacePrefix + EDITOR_STORE.draftPrefix)) continue;
       const record = storageGet(key, null);
       const payload = record?.payload;
       if (!payload || payload.id) continue;
