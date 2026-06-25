@@ -179,42 +179,60 @@ function publicProfile(profile, authUser = null) {
 }
 
 async function currentUser() {
-  const supabase = await loadSupabaseClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return null;
+  try {
+    const supabase = await loadSupabaseClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (!userError && userData?.user) {
+      let { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userData.user.id)
+        .maybeSingle();
 
-  let { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userData.user.id)
-    .maybeSingle();
+      if (error) throw error;
 
-  if (error) throw error;
+      if (!profile) {
+        const metadata = userData.user.user_metadata || {};
+        const parsed = parsePersonName(metadata.full_name || metadata.name || "");
+        const payload = {
+          id: userData.user.id,
+          email: userData.user.email || "",
+          full_name: parsed.fullName,
+          first_name: parsed.firstName,
+          middle_names: parsed.middleNames,
+          first_last_name: parsed.firstLastName,
+          second_last_name: parsed.secondLastName,
+          display_name: parsed.displayName,
+          company: metadata.company || "",
+          title: metadata.title || "",
+          role: "client",
+          staff_roles: [],
+          departments: []
+        };
+        const created = await supabase.from("profiles").insert(payload).select("*").single();
+        if (!created.error) profile = created.data;
+      }
 
-  if (!profile) {
-    const metadata = userData.user.user_metadata || {};
-    const parsed = parsePersonName(metadata.full_name || metadata.name || "");
-    const payload = {
-      id: userData.user.id,
-      email: userData.user.email || "",
-      full_name: parsed.fullName,
-      first_name: parsed.firstName,
-      middle_names: parsed.middleNames,
-      first_last_name: parsed.firstLastName,
-      second_last_name: parsed.secondLastName,
-      display_name: parsed.displayName,
-      company: metadata.company || "",
-      title: metadata.title || "",
-      role: "client",
-      staff_roles: [],
-      departments: []
-    };
-    const created = await supabase.from("profiles").insert(payload).select("*").single();
-    if (!created.error) profile = created.data;
+      currentPageUser = publicProfile(profile, userData.user);
+      return currentPageUser;
+    }
+  } catch (_error) {
+    // Fall back to local account server when Supabase auth is unavailable.
   }
 
-  currentPageUser = publicProfile(profile, userData.user);
-  return currentPageUser;
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+    if (!res.ok) return null;
+    const payload = await res.json().catch(() => null);
+    if (payload?.ok && payload?.user) {
+      currentPageUser = payload.user;
+      return payload.user;
+    }
+  } catch (_error) {
+    // Ignore and continue with a null user.
+  }
+
+  return null;
 }
 
 async function authorizedUser() {
@@ -2256,16 +2274,33 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       authMessage("");
       const form = new FormData(loginForm);
+      const email = String(form.get("email") || "").trim();
+      const password = String(form.get("password") || "");
       try {
-        const supabase = await loadSupabaseClient();
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: String(form.get("email") || "").trim(),
-          password: String(form.get("password") || "")
+        try {
+          const supabase = await loadSupabaseClient();
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (!error && data?.user) {
+            const user = await currentUser();
+            const next = new URLSearchParams(location.search).get("next");
+            window.location.assign(next || routeForUser(user || publicProfile(null, data.user)));
+            return;
+          }
+        } catch (_supabaseError) {
+          // Fall back to local account server login.
+        }
+
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
         });
-        if (error) throw error;
-        const user = await currentUser();
+        const payload = await res.json().catch(() => null);
+        if (!res.ok || payload?.ok === false) throw new Error(payload?.error || "Credenciales inválidas.");
+        const user = payload?.user || null;
         const next = new URLSearchParams(location.search).get("next");
-        window.location.assign(next || routeForUser(user || publicProfile(null, data.user)));
+        window.location.assign(next || routeForUser(user));
       } catch (error) {
         authMessage(error.message);
       }
