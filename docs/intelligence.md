@@ -47,7 +47,7 @@ The current implementation has four layers:
 
 Relevant files:
 
-- `js/workspace-intelligence.js`
+- `js/workspace/intelligence.js`
 - `js/auth.js`
 - `scripts/sync-intelligence.mjs`
 - `scripts/intelligence/connectors/`

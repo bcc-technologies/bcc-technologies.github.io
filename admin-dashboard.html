@@ -11,15 +11,15 @@
   <link rel="stylesheet" href="css/pages/dashboard.css">
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
-  <script src="js/workspace-icons.js" defer></script>
+  <script src="js/workspace/icons.js" defer></script>
   <script src="js/auth.js" defer></script>
-  <script src="js/workspace-analytics.js" defer></script>
-  <script src="js/workspace-intelligence.js" defer></script>
-  <script src="js/workspace-prospects.js" defer></script>
-  <script src="js/workspace-productivity.js" defer></script>
-  <script src="js/workspace-forms.js" defer></script>
+  <script src="js/workspace/analytics.js" defer></script>
+  <script src="js/workspace/intelligence.js" defer></script>
+  <script src="js/workspace/prospects.js" defer></script>
+  <script src="js/workspace/productivity.js" defer></script>
+  <script src="js/workspace/forms.js" defer></script>
   <script src="js/admin-dashboard.js" defer></script>
-  <script src="js/workspace-shell.js" defer></script>
+  <script src="js/workspace/shell.js" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined admin-workspace">
   <div class="workspace">
@@ -66,18 +66,25 @@
     </header>
     <aside class="workspace-sidebar">
       <nav class="workspace-nav" aria-label="Secciones de administración">
-        <p class="workspace-nav-label">Administración</p>
+        <p class="workspace-nav-label"><i data-lucide="command"></i><span>Centro</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <p class="workspace-nav-label"><i data-lucide="shield-check"></i><span>Gobierno</span></p>
         <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
         <a href="#roles"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
+        <a href="#auditoria"><i data-lucide="history"></i><span>Auditoría</span></a>
+        <p class="workspace-nav-label"><i data-lucide="activity"></i><span>Señales</span></p>
         <a href="#prospectos"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
         <a href="#analytics"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
         <a href="#intelligence"><i data-lucide="radar"></i><span>Intelligence</span></a>
-        <a href="#auditoria"><i data-lucide="history"></i><span>Auditoría</span></a>
+        <p class="workspace-nav-label"><i data-lucide="workflow"></i><span>Operación</span></p>
         <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
         <a href="/cms.html"><i data-lucide="file-text"></i><span>Content (CMS)</span></a>
-        <p class="workspace-nav-label">Vistas</p>
+        <p class="workspace-nav-label"><i data-lucide="sparkles"></i><span>Potencial</span></p>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="boxes"></i><span>Inventario</span><small>Futuro</small></span>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="receipt-text"></i><span>Finanzas</span><small>Futuro</small></span>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="file-bar-chart"></i><span>Reportes</span><small>Futuro</small></span>
+        <p class="workspace-nav-label"><i data-lucide="panel-right"></i><span>Vistas</span></p>
         <a href="/staff-dashboard.html"><i data-lucide="briefcase-business"></i><span>Personal</span></a>
         <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Cliente</span></a>
       </nav>

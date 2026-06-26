@@ -11,11 +11,11 @@
   <link rel="stylesheet" href="css/pages/dashboard.css">
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
-  <script src="js/workspace-icons.js" defer></script>
+  <script src="js/workspace/icons.js" defer></script>
   <script src="js/auth.js" defer></script>
-  <script src="js/workspace-forms.js" defer></script>
+  <script src="js/workspace/forms.js" defer></script>
   <script src="js/dashboard.js" defer></script>
-  <script src="js/workspace-shell.js" defer></script>
+  <script src="js/workspace/shell.js" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined customer-workspace">
   <div class="workspace">
@@ -61,17 +61,21 @@
     </header>
     <aside class="workspace-sidebar">
       <nav class="workspace-nav" aria-label="Secciones de cuenta">
-        <p class="workspace-nav-label">Cuenta</p>
+        <p class="workspace-nav-label"><i data-lucide="home"></i><span>Esencial</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <a href="#solicitudes"><i data-lucide="inbox"></i><span>Solicitudes</span></a>
+        <p class="workspace-nav-label"><i data-lucide="user-cog"></i><span>Cuenta</span></p>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
         <a href="#seguridad"><i data-lucide="shield-check"></i><span>Seguridad</span></a>
-        <p class="workspace-nav-label">Operaciones</p>
+        <p class="workspace-nav-label"><i data-lucide="folder-kanban"></i><span>Operación</span></p>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
-        <a href="#solicitudes"><i data-lucide="inbox"></i><span>Solicitudes</span></a>
         <a href="/products.html"><i data-lucide="package"></i><span>Productos</span></a>
         <a href="/contactUs.html"><i data-lucide="life-buoy"></i><span>Soporte</span></a>
-        <p class="workspace-nav-label">Recursos</p>
-        <a href="/blog.html"><i data-lucide="book-open"></i><span>Recursos</span></a>
+        <p class="workspace-nav-label"><i data-lucide="book-open"></i><span>Recursos</span></p>
+        <a href="/blog.html"><i data-lucide="library-big"></i><span>Biblioteca</span></a>
+        <p class="workspace-nav-label"><i data-lucide="sparkles"></i><span>Potencial</span></p>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="receipt-text"></i><span>Facturación</span><small>Futuro</small></span>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="folder-lock"></i><span>Documentos</span><small>Futuro</small></span>
         <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
       </nav>
       <section class="workspace-help">

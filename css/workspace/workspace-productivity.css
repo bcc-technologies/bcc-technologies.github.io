@@ -1,0 +1,593 @@
+/* Private work tracking: tasks, board and derived KPI reporting. */
+[data-productivity-workspace]{
+  margin-bottom: 22px;
+}
+
+.productivity-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.productivity-head h2,
+.task-dialog h2{
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.productivity-head p,
+.task-dialog p,
+.workload-report p{
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: .86rem;
+}
+
+.productivity-new{
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.productivity-new svg{
+  width: 16px;
+  height: 16px;
+}
+
+.productivity-tabs{
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.productivity-tabs button{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink-muted);
+  background: transparent;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.productivity-tabs button.active{
+  color: var(--ink);
+  background: var(--surface-solid);
+  box-shadow: 0 1px 3px rgb(15 25 31 / 9%);
+}
+
+.productivity-tabs svg{
+  width: 16px;
+  height: 16px;
+}
+
+.productivity-message{
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink-muted);
+  background: var(--surface-solid);
+  font-size: .84rem;
+}
+
+.productivity-message[data-tone="error"]{
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--line));
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-solid));
+}
+
+.productivity-message[data-tone="ok"]{
+  border-color: color-mix(in srgb, var(--success) 34%, var(--line));
+  color: color-mix(in srgb, var(--success) 72%, var(--ink));
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-solid));
+}
+
+.productivity-overview{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 252px;
+  gap: 15px;
+}
+
+.productivity-surface,
+.kanban-column,
+.report-stat{
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+}
+
+.productivity-toolbar{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 18px 12px;
+}
+
+.productivity-toolbar h3,
+.kpi-rail h3,
+.kanban-column h3{
+  margin: 0;
+  color: var(--ink);
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.productivity-toolbar select{
+  height: 36px;
+  min-width: 126px;
+  padding: 0 31px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: .82rem;
+}
+
+.task-list{
+  min-height: 274px;
+  padding: 0 18px 8px;
+  margin: 0;
+  list-style: none;
+}
+
+.task-row{
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 34px;
+  align-items: start;
+  gap: 11px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.task-row.complete .task-copy strong{
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+
+.task-check{
+  padding-top: 2px;
+}
+
+.task-check input{
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.task-copy strong{
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: .89rem;
+  font-weight: 600;
+}
+
+.task-copy div{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.priority,
+.task-status,
+.task-date{
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 0 8px;
+  border-radius: 4px;
+  color: var(--ink-muted);
+  background: var(--surface-muted);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.priority-high{
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid));
+}
+
+.priority-medium{
+  color: color-mix(in srgb, var(--warning) 70%, var(--ink));
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface-solid));
+}
+
+.priority-low{
+  color: color-mix(in srgb, var(--success) 70%, var(--ink));
+  background: color-mix(in srgb, var(--success) 11%, var(--surface-solid));
+}
+
+.task-date{
+  gap: 4px;
+  background: transparent;
+}
+
+.task-date svg{
+  width: 13px;
+  height: 13px;
+}
+
+.task-date.overdue,
+.kanban-meta .overdue{
+  color: #b1362c;
+}
+
+.task-delete,
+.kanban-actions button{
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.task-delete:hover,
+.kanban-actions button:not(:disabled):hover{
+  color: var(--ink);
+  background: var(--hover);
+}
+
+.task-delete svg,
+.kanban-actions svg{
+  width: 16px;
+  height: 16px;
+}
+
+.task-empty{
+  display: grid;
+  place-items: center;
+  min-height: 245px;
+  padding: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-muted);
+  text-align: center;
+  font-size: .87rem;
+}
+
+.kpi-rail{
+  padding: 17px;
+}
+
+.kpi-compact-grid{
+  margin-top: 14px;
+}
+
+.kpi-compact-grid div{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.kpi-compact-grid span,
+.kpi-progress span,
+.report-stat span{
+  color: var(--ink-muted);
+  font-size: .78rem;
+}
+
+.kpi-compact-grid strong{
+  color: var(--ink);
+  font-size: 1.02rem;
+}
+
+.kpi-progress{
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.kpi-progress div{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.kpi-progress strong{
+  font-size: .83rem;
+}
+
+.kpi-progress progress,
+.workload-bars progress{
+  width: 100%;
+  height: 7px;
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.kpi-progress progress::-webkit-progress-bar,
+.workload-bars progress::-webkit-progress-bar{
+  background: var(--surface-muted);
+}
+
+.kpi-progress progress::-webkit-progress-value,
+.workload-bars progress::-webkit-progress-value{
+  background: var(--accent);
+}
+
+.kanban-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(205px, 1fr));
+  gap: 14px;
+}
+
+.kanban-column{
+  min-height: 328px;
+  padding: 14px;
+  background: var(--surface-muted);
+}
+
+.kanban-column-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 13px;
+}
+
+.kanban-column-head span{
+  min-width: 25px;
+  padding: 4px 7px;
+  border-radius: 13px;
+  color: var(--ink-muted);
+  background: var(--surface-solid);
+  text-align: center;
+  font-size: .75rem;
+  font-weight: 650;
+}
+
+.kanban-cards{
+  display: grid;
+  gap: 10px;
+}
+
+.kanban-card{
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-solid);
+}
+
+.kanban-card strong{
+  display: block;
+  margin-bottom: 12px;
+  color: var(--ink);
+  font-size: .84rem;
+  font-weight: 600;
+}
+
+.kanban-meta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+.kanban-meta small{
+  color: var(--ink-muted);
+  font-size: .73rem;
+}
+
+.kanban-actions{
+  display: flex;
+  justify-content: end;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+.kanban-actions button:disabled{
+  opacity: .34;
+  cursor: default;
+}
+
+.kanban-empty{
+  padding: 32px 0;
+  color: var(--ink-muted);
+  text-align: center;
+  font-size: .82rem;
+}
+
+.report-stat-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.report-stat{
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+}
+
+.report-stat strong{
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.report-stat small{
+  color: var(--ink-muted);
+  font-size: .74rem;
+}
+
+.workload-report{
+  padding-bottom: 18px;
+}
+
+.workload-bars{
+  display: grid;
+  gap: 16px;
+  padding: 5px 18px 0;
+}
+
+.workload-bars label{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--ink-muted);
+  font-size: .82rem;
+}
+
+.task-dialog{
+  width: min(495px, calc(100% - 28px));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 20px 55px rgb(12 24 31 / 17%);
+}
+
+.task-dialog::backdrop{
+  background: rgb(12 24 31 / 34%);
+}
+
+.task-form{
+  display: grid;
+  gap: 15px;
+  padding: 21px;
+}
+
+.task-dialog-head{
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 3px;
+}
+
+.icon-close{
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.icon-close svg{
+  width: 17px;
+  height: 17px;
+}
+
+.task-form label{
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: .8rem;
+  font-weight: 650;
+}
+
+.task-form input,
+.task-form select,
+.task-form textarea{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 11px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: .86rem;
+}
+
+.task-form-row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.task-dialog-actions{
+  display: flex;
+  justify-content: end;
+  gap: 9px;
+  margin-top: 5px;
+}
+
+@media (max-width: 1000px){
+  .productivity-overview{
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-compact-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+
+  .kpi-compact-grid div{
+    display: grid;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 700px){
+  .productivity-head{
+    flex-direction: column;
+  }
+
+  .productivity-new{
+    width: 100%;
+    justify-content: center;
+  }
+
+  .productivity-tabs{
+    width: 100%;
+  }
+
+  .productivity-tabs button{
+    flex: 1;
+    justify-content: center;
+    padding: 0 8px;
+  }
+
+  .kanban-grid,
+  .report-stat-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .kanban-column{
+    min-height: auto;
+  }
+}
+
+@media (max-width: 480px){
+  .productivity-tabs button{
+    gap: 0;
+  }
+
+  .productivity-tabs button svg{
+    display: none;
+  }
+
+  .task-form-row,
+  .kpi-compact-grid{
+    grid-template-columns: 1fr;
+  }
+}

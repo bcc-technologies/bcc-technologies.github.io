@@ -11,12 +11,12 @@
   <link rel="stylesheet" href="css/pages/dashboard.css">
   <script src="js/prefs.js" defer></script>
   <script src="js/supabase-config.js" defer></script>
-  <script src="js/workspace-icons.js" defer></script>
+  <script src="js/workspace/icons.js" defer></script>
   <script src="js/auth.js" defer></script>
-  <script src="js/workspace-productivity.js" defer></script>
-  <script src="js/workspace-forms.js" defer></script>
+  <script src="js/workspace/productivity.js" defer></script>
+  <script src="js/workspace/forms.js" defer></script>
   <script src="js/staff-dashboard.js" defer></script>
-  <script src="js/workspace-shell.js" defer></script>
+  <script src="js/workspace/shell.js" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined staff-workspace">
   <div class="workspace">
@@ -63,14 +63,19 @@
     </header>
     <aside class="workspace-sidebar">
       <nav class="workspace-nav" aria-label="Secciones de personal">
-        <p class="workspace-nav-label">Personal</p>
+        <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Jornada</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
-        <p class="workspace-nav-label">Herramientas</p>
         <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
+        <p class="workspace-nav-label"><i data-lucide="user-cog"></i><span>Cuenta</span></p>
+        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <p class="workspace-nav-label"><i data-lucide="wrench"></i><span>Herramientas</span></p>
         <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
         <a href="/cms.html" data-cms-access hidden><i data-lucide="file-text"></i><span>Content (CMS)</span></a>
+        <p class="workspace-nav-label"><i data-lucide="shield-check"></i><span>Gobierno</span></p>
         <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
+        <p class="workspace-nav-label"><i data-lucide="sparkles"></i><span>Potencial</span></p>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="calendar-days"></i><span>Calendario</span><small>Futuro</small></span>
+        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span><small>Futuro</small></span>
       </nav>
       <section class="workspace-help">
         <strong>Acceso interno</strong>

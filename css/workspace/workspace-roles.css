@@ -1,0 +1,252 @@
+/* Role and permission administration */
+.role-admin-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+
+.role-builder-surface,
+.permission-reference-surface,
+.role-library-surface{
+  padding: 22px;
+}
+
+.role-admin-form{
+  display: grid;
+  gap: 14px;
+}
+
+.role-admin-form label{
+  display: grid;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 750;
+}
+
+.role-admin-form input[type="text"],
+.role-admin-form textarea{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.permission-picker{
+  display: grid;
+  gap: 10px;
+}
+
+.permission-picker fieldset{
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 44%, var(--surface-solid));
+  padding: 12px;
+}
+
+.permission-picker legend{
+  padding: 0 5px;
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.permission-picker fieldset > div{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.permission-picker label{
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink-soft);
+  padding: 7px 9px;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.permission-picker input{
+  accent-color: var(--accent);
+}
+
+.role-form-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.permission-reference-surface .module-head.compact span{
+  color: var(--ink-muted);
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.permission-reference{
+  display: grid;
+  gap: 12px;
+}
+
+.permission-reference section{
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.permission-reference section:last-child{
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.permission-reference strong{
+  color: var(--ink);
+  font-size: .86rem;
+}
+
+.permission-reference div,
+.role-permission-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.permission-reference span,
+.role-permission-chips span{
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-muted) 62%, var(--surface-solid));
+  color: var(--ink-soft);
+  padding: 5px 8px;
+  font-size: .72rem;
+  font-weight: 750;
+}
+
+.role-library-surface{
+  display: grid;
+  gap: 16px;
+}
+
+.role-library-toolbar{
+  margin: -22px -22px 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.role-library-toolbar .quick-filter-group button.active{
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(15, 17, 21, .06);
+}
+
+.role-library{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.role-card{
+  min-height: 238px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding: 16px;
+}
+
+.role-card.custom{
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface-solid));
+}
+
+.role-card-head{
+  display: grid;
+  gap: 5px;
+}
+
+.role-card-head > span{
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  padding: 4px 8px;
+  font-size: .68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.role-card-head strong{
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.22;
+}
+
+.role-card-head small{
+  color: var(--ink-muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.role-card-foot{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.role-card-foot small,
+.locked-note{
+  color: var(--ink-muted);
+  font-size: .74rem;
+  font-weight: 800;
+}
+
+.role-card-foot .btn{
+  min-height: 32px;
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: .78rem;
+}
+
+.role-card-foot .btn svg{
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 1120px){
+  .role-admin-grid,
+  .role-library{
+    grid-template-columns: 1fr;
+  }
+
+  .permission-picker fieldset > div{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 580px){
+  .permission-picker fieldset > div{
+    grid-template-columns: 1fr;
+  }
+
+  .role-form-actions .btn,
+  .role-card-foot .btn{
+    width: 100%;
+  }
+}
