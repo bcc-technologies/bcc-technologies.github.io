@@ -88,8 +88,13 @@
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
           <section class="workspace-intro">
             <div>
+              <span class="workspace-eyebrow">Panel de personal</span>
               <h1>Hola, <span data-user-name>...</span></h1>
               <p>Gestiona tareas, formularios internos y herramientas habilitadas para tus funciones.</p>
+            </div>
+            <div class="dashboard-actions">
+              <a class="btn btn-primary" href="#productividad"><i data-lucide="clipboard-check"></i>Tareas y KPIs</a>
+              <a class="btn btn-ghost" href="#formularios"><i data-lucide="file-pen-line"></i>Formularios</a>
             </div>
           </section>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos de personal">
@@ -151,6 +156,17 @@
                 </div>
               </div>
             </article>
+            <aside class="module-surface staff-shift-panel">
+              <div class="module-head compact">
+                <h2>Rutina operativa</h2>
+                <span class="status-dot">En curso</span>
+              </div>
+              <div class="status-list">
+                <a href="#productividad"><i data-lucide="list-checks"></i><span>Prioridad</span><strong>Actualizar avance</strong></a>
+                <a href="#formularios"><i data-lucide="clipboard-list"></i><span>Seguimiento</span><strong>Revisar formularios</strong></a>
+                <a href="#perfil"><i data-lucide="badge-check"></i><span>Cuenta</span><strong>Validar permisos</strong></a>
+              </div>
+            </aside>
           </section>
         </section>
 

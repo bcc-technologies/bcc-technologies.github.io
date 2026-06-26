@@ -91,11 +91,13 @@
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
           <section class="workspace-intro">
             <div>
+              <span class="workspace-eyebrow">Dashboard cliente</span>
               <h1>Hola, <span data-user-name>...</span></h1>
               <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes, formularios y datos clave de tu organización.</p>
             </div>
             <div class="dashboard-actions">
               <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
+              <a class="btn btn-ghost" href="#formularios"><i data-lucide="file-text"></i>Ver formularios</a>
             </div>
           </section>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos">
@@ -165,6 +167,17 @@
                   <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
                   <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
                 </dl>
+              </article>
+              <article class="module-surface client-status-panel">
+                <div class="module-head compact">
+                  <h2>Estado operativo</h2>
+                  <span class="status-dot">Activo</span>
+                </div>
+                <div class="status-list">
+                  <div><i data-lucide="clock-3"></i><span>Respuesta estimada</span><strong>1 día hábil</strong></div>
+                  <div><i data-lucide="mail-check"></i><span>Canal principal</span><strong>Correo registrado</strong></div>
+                  <div><i data-lucide="shield-check"></i><span>Acceso</span><strong>Cuenta verificada</strong></div>
+                </div>
               </article>
             </aside>
           </div>

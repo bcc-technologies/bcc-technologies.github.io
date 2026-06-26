@@ -1,5 +1,8 @@
 let adminUsers = [];
 let adminAuditLogs = [];
+let roleDefinitions = [];
+let rolePermissions = [];
+let activeRoleFilter = "all";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ admin: true });
@@ -15,13 +18,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindWorkspaceControls();
   bindWorkspaceViews();
   bindAccessModal();
+  bindRoleAdminControls();
   initializeWorkspaceModule("intelligence", user);
   initializeWorkspaceModule("prospectos", user);
   initializeWorkspaceModule("analytics", user);
   initializeWorkspaceModule("productividad", user);
   initializeWorkspaceModule("formularios", user);
   refreshIcons();
-  await Promise.all([loadUsers(), loadAuditLogs()]);
+  await Promise.all([loadUsers(), loadAuditLogs(), loadRoleDefinitions()]);
 });
 
 async function loadUsers() {
@@ -103,7 +107,7 @@ function filteredUsers() {
   const cmsOnly = Boolean(document.querySelector("[data-cms-filter]")?.checked);
   return adminUsers.filter(user => {
     const activity = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "sin acceso";
-    const searchable = [user.name, user.email, user.company, user.title, roleLabel(user.role), activity].join(" ").toLowerCase();
+    const searchable = [user.name, user.email, user.company, user.title, roleLabel(user.role), labelsFor(user.customRoles || [], customRoleOptions()), activity].join(" ").toLowerCase();
     if (query && !searchable.includes(query)) return false;
     if (role && user.role !== role) return false;
     if (department && !(user.departments || []).includes(department)) return false;
@@ -137,6 +141,7 @@ function userRow(user) {
         ${hasCmsAccess(user) ? "CMS habilitado" : "Sin CMS"}
       </span>
       ${chipList(user.staffRoles || [], staffRoleOptions(), "Sin rol interno")}
+      ${chipList(user.customRoles || [], customRoleOptions(), "Sin rol personalizado")}
     </td>
     <td class="activity-date" data-label="Última actividad">${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Sin acceso"}</td>
     <td class="table-action">
@@ -352,6 +357,7 @@ function openAccessModal(user) {
   modal.querySelector("[data-modal-role-note]").hidden = !isSelfAdmin;
   renderChoiceGroup(modal.querySelector("[data-modal-staff-roles]"), staffRoleOptions(), user.staffRoles || [], "staff-role");
   renderChoiceGroup(modal.querySelector("[data-modal-departments]"), departmentOptions(), user.departments || [], "department");
+  renderChoiceGroup(modal.querySelector("[data-modal-custom-roles]"), customRoleOptions(), user.customRoles || [], "custom-role");
   updateAccessPreview();
   modal.showModal();
   refreshIcons();
@@ -374,10 +380,13 @@ function updateAccessPreview() {
   if (!modal || !preview) return;
   const role = modal.querySelector("[data-modal-role-select]")?.value || "client";
   const staffRoles = [...modal.querySelectorAll("[data-staff-role]:checked")].map(input => input.dataset.staffRole);
+  const customRoles = [...modal.querySelectorAll("[data-custom-role]:checked")].map(input => input.dataset.customRole);
+  const customPermissions = permissionsForCustomRoles(customRoles);
   const labels = [];
   labels.push(roleLabel(role));
-  if (role === "admin" || staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item))) labels.push("CMS");
-  if (role === "admin" || staffRoles.includes("department_director")) labels.push("Formularios");
+  if (customRoles.length) labels.push(`${customRoles.length} rol personalizado`);
+  if (role === "admin" || staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item)) || customPermissions.includes("cms:access")) labels.push("CMS");
+  if (role === "admin" || staffRoles.includes("department_director") || customPermissions.includes("forms:manage")) labels.push("Formularios");
   hideAccessConfirmation(modal);
   preview.textContent = labels.join(" · ");
 }
@@ -393,21 +402,22 @@ async function saveAccessFromModal() {
     const role = roleSelect.disabled ? user.role : roleSelect.value;
     const nextStaffRoles = [...modal.querySelectorAll("[data-staff-role]:checked")].map(input => input.dataset.staffRole);
     const nextDepartments = [...modal.querySelectorAll("[data-department]:checked")].map(input => input.dataset.department);
-    const changes = accessChangeSummary(user, role, nextStaffRoles, nextDepartments);
+    const nextCustomRoles = [...modal.querySelectorAll("[data-custom-role]:checked")].map(input => input.dataset.customRole);
+    const changes = accessChangeSummary(user, role, nextStaffRoles, nextDepartments, nextCustomRoles);
     if (!changes.length) {
       showModalMessage(message, "No hay cambios de acceso para guardar.", "error");
       return;
     }
     if (modal.dataset.confirming !== "true") {
-      showAccessConfirmation(modal, user, changes, isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments));
+      showAccessConfirmation(modal, user, changes, isSensitiveAccessChange(user, role, nextStaffRoles, nextDepartments, nextCustomRoles));
       return;
     }
     await window.BCCAuth.api(`/api/admin/users/${encodeURIComponent(user.id)}/role`, {
       method: "PATCH",
-      body: JSON.stringify({ role, staffRoles: nextStaffRoles, departments: nextDepartments })
+      body: JSON.stringify({ role, staffRoles: nextStaffRoles, departments: nextDepartments, customRoles: nextCustomRoles })
     });
     modal.close();
-    await Promise.all([loadUsers(), loadAuditLogs()]);
+    await Promise.all([loadUsers(), loadAuditLogs(), loadRoleDefinitions()]);
   } catch (error) {
     showModalMessage(message, error.message, "error");
   }
@@ -442,16 +452,20 @@ function hideAccessConfirmation(modal = document.querySelector("[data-access-mod
   if (saveButton) saveButton.textContent = "Guardar acceso";
 }
 
-function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments) {
+function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments, nextCustomRoles = []) {
   const changes = [];
   const oldStaffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const oldDepartments = Array.isArray(user.departments) ? user.departments : [];
+  const oldCustomRoles = Array.isArray(user.customRoles) ? user.customRoles : [];
   if (user.role !== nextRole) changes.push(`Rol base: ${roleLabel(user.role)} -> ${roleLabel(nextRole)}`);
   if (!sameSet(oldStaffRoles, nextStaffRoles)) {
     changes.push(`Roles internos: ${labelsFor(oldStaffRoles, staffRoleOptions()) || "ninguno"} -> ${labelsFor(nextStaffRoles, staffRoleOptions()) || "ninguno"}`);
   }
   if (!sameSet(oldDepartments, nextDepartments)) {
     changes.push(`Departamentos: ${labelsFor(oldDepartments, departmentOptions()) || "ninguno"} -> ${labelsFor(nextDepartments, departmentOptions()) || "ninguno"}`);
+  }
+  if (!sameSet(oldCustomRoles, nextCustomRoles)) {
+    changes.push(`Roles personalizados: ${labelsFor(oldCustomRoles, customRoleOptions()) || "ninguno"} -> ${labelsFor(nextCustomRoles, customRoleOptions()) || "ninguno"}`);
   }
   return changes;
 }
@@ -460,17 +474,20 @@ function shortAccessChange(before = {}, after = {}) {
   const changes = accessChangeSummary({
     role: before.role || "client",
     staffRoles: before.staffRoles || [],
-    departments: before.departments || []
-  }, after.role || "client", after.staffRoles || [], after.departments || []);
+    departments: before.departments || [],
+    customRoles: before.customRoles || []
+  }, after.role || "client", after.staffRoles || [], after.departments || [], after.customRoles || []);
   return changes[0] || "Acceso revisado";
 }
 
-function isSensitiveAccessChange(user, nextRole, nextStaffRoles, nextDepartments) {
+function isSensitiveAccessChange(user, nextRole, nextStaffRoles, nextDepartments, nextCustomRoles = []) {
   const oldStaffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const oldDepartments = Array.isArray(user.departments) ? user.departments : [];
+  const oldCustomRoles = Array.isArray(user.customRoles) ? user.customRoles : [];
   if (window.BCCAdminCurrentUser?.id === user.id) return true;
   if (user.role === "admin" || nextRole === "admin") return true;
   if (!sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director"].includes(role))) return true;
+  if (!sameSet(oldCustomRoles, nextCustomRoles) && permissionsForCustomRoles(nextCustomRoles).some(permission => ["admin:view", "users:manage", "cms:access", "forms:manage"].includes(permission))) return true;
   return !sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department));
 }
 
@@ -506,6 +523,20 @@ function departmentOptions() {
   ];
 }
 
+
+function customRoleOptions() {
+  return roleDefinitions
+    .filter(role => role.type === "custom")
+    .map(role => ({ value: role.id, label: role.name }));
+}
+
+function permissionsForCustomRoles(customRoles = []) {
+  const selected = new Set(customRoles);
+  return [...new Set(roleDefinitions
+    .filter(role => selected.has(role.id))
+    .flatMap(role => Array.isArray(role.permissions) ? role.permissions : []))];
+}
+
 function sameSet(left, right) {
   const a = [...new Set(left)].sort();
   const b = [...new Set(right)].sort();
@@ -515,6 +546,239 @@ function sameSet(left, right) {
 function labelsFor(values, options) {
   const labels = new Map(options.map(option => [option.value, option.label]));
   return [...new Set(values)].map(value => labels.get(value) || value).join(", ");
+}
+
+
+async function loadRoleDefinitions() {
+  const message = document.querySelector("[data-role-admin-message]");
+  try {
+    const data = await window.BCCAuth.api("/api/admin/roles");
+    roleDefinitions = data.roles || [];
+    rolePermissions = data.permissions || [];
+    renderRoleAdmin();
+    if (adminUsers.length) renderUsers();
+  } catch (error) {
+    if (message) renderWorkspaceMessage(message, error.message, "error");
+  }
+}
+
+function bindRoleAdminControls() {
+  const form = document.querySelector("[data-role-form]");
+  form?.addEventListener("submit", saveRoleDefinition);
+  document.querySelector("[data-role-form-reset]")?.addEventListener("click", resetRoleForm);
+  document.querySelectorAll("[data-role-filter]").forEach(button => {
+    button.addEventListener("click", () => {
+      activeRoleFilter = button.dataset.roleFilter || "all";
+      renderRoleLibrary();
+    });
+  });
+  document.querySelector("[data-role-library]")?.addEventListener("click", event => {
+    const edit = event.target.closest("[data-role-edit]");
+    const remove = event.target.closest("[data-role-delete]");
+    if (edit) editRoleDefinition(edit.dataset.roleEdit);
+    if (remove) deleteRoleDefinition(remove.dataset.roleDelete);
+  });
+}
+
+function renderRoleAdmin() {
+  renderPermissionPicker();
+  renderPermissionReference();
+  renderRoleLibrary();
+}
+
+function groupedPermissions() {
+  return rolePermissions.reduce((groups, permission) => {
+    const group = permission.group || "general";
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(permission);
+    return groups;
+  }, new Map());
+}
+
+function renderPermissionPicker(selected = []) {
+  const container = document.querySelector("[data-permission-picker]");
+  if (!container) return;
+  const selectedSet = new Set(selected);
+  const groups = [...groupedPermissions().entries()];
+  container.innerHTML = groups.map(([group, permissions]) => `
+    <fieldset>
+      <legend>${escapeHtml(permissionGroupLabel(group))}</legend>
+      <div>
+        ${permissions.map(permission => `
+          <label>
+            <input type="checkbox" name="permissions" value="${escapeHtml(permission.value)}" ${selectedSet.has(permission.value) ? "checked" : ""}>
+            <span>${escapeHtml(permission.label || permission.value)}</span>
+          </label>
+        `).join("")}
+      </div>
+    </fieldset>
+  `).join("");
+}
+
+function renderPermissionReference() {
+  const count = document.querySelector("[data-permission-count]");
+  if (count) count.textContent = `${rolePermissions.length} permisos`;
+  const container = document.querySelector("[data-permission-reference]");
+  if (!container) return;
+  container.innerHTML = [...groupedPermissions().entries()].map(([group, permissions]) => `
+    <section>
+      <strong>${escapeHtml(permissionGroupLabel(group))}</strong>
+      <div>${permissions.map(permission => `<span>${escapeHtml(permission.label || permission.value)}</span>`).join("")}</div>
+    </section>
+  `).join("");
+}
+
+function renderRoleLibrary() {
+  const container = document.querySelector("[data-role-library]");
+  const message = document.querySelector("[data-role-admin-message]");
+  if (!container) return;
+  document.querySelectorAll("[data-role-filter]").forEach(button => {
+    button.classList.toggle("active", (button.dataset.roleFilter || "all") === activeRoleFilter);
+  });
+  const roles = roleDefinitions.filter(role => activeRoleFilter === "all" || role.type === activeRoleFilter);
+  if (message) renderWorkspaceMessage(message, `${roles.length} de ${roleDefinitions.length} rol(es) visibles.`);
+  if (!roles.length) {
+    container.innerHTML = `<p class="muted-text">No hay roles en esta vista.</p>`;
+    return;
+  }
+  container.innerHTML = roles.map(roleCard).join("");
+  refreshIcons();
+}
+
+function roleCard(role) {
+  const permissions = Array.isArray(role.permissions) ? role.permissions : [];
+  const labels = permissions.map(permissionLabel).slice(0, 8);
+  const overflow = permissions.length > labels.length ? permissions.length - labels.length : 0;
+  return `
+    <article class="role-card ${role.locked ? "locked" : "custom"}">
+      <div class="role-card-head">
+        <span>${escapeHtml(roleTypeLabel(role.type))}</span>
+        <strong>${escapeHtml(role.name)}</strong>
+        <small>${escapeHtml(role.description || "Sin descripción")}</small>
+      </div>
+      <div class="role-permission-chips">
+        ${labels.map(label => `<span>${escapeHtml(label)}</span>`).join("")}
+        ${overflow ? `<span>+${overflow}</span>` : ""}
+      </div>
+      <div class="role-card-foot">
+        <small>${permissions.length} permiso(s)</small>
+        ${role.locked ? `<span class="locked-note">Protegido</span>` : `
+          <button class="btn btn-ghost" type="button" data-role-edit="${escapeHtml(role.id)}"><i data-lucide="pencil"></i>Editar</button>
+          <button class="btn btn-ghost" type="button" data-role-delete="${escapeHtml(role.id)}"><i data-lucide="trash-2"></i>Eliminar</button>
+        `}
+      </div>
+    </article>
+  `;
+}
+
+async function saveRoleDefinition(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const message = document.querySelector("[data-role-form-message]");
+  const id = form.elements.roleId.value;
+  const permissions = [...form.querySelectorAll('input[name="permissions"]:checked')].map(input => input.value);
+  const payload = {
+    name: form.elements.name.value,
+    description: form.elements.description.value,
+    permissions
+  };
+  try {
+    const data = await window.BCCAuth.api(id ? `/api/admin/roles/${encodeURIComponent(id)}` : "/api/admin/roles", {
+      method: id ? "PATCH" : "POST",
+      body: JSON.stringify(payload)
+    });
+    roleDefinitions = data.roles || roleDefinitions;
+    rolePermissions = data.permissions || rolePermissions;
+    resetRoleForm();
+    renderRoleAdmin();
+    if (adminUsers.length) renderUsers();
+    showRoleFormMessage(message, id ? "Rol actualizado." : "Rol creado.", "ok");
+  } catch (error) {
+    showRoleFormMessage(message, error.message, "error");
+  }
+}
+
+function editRoleDefinition(id) {
+  const role = roleDefinitions.find(item => item.id === id && !item.locked);
+  const form = document.querySelector("[data-role-form]");
+  if (!role || !form) return;
+  form.elements.roleId.value = role.id;
+  form.elements.name.value = role.name || "";
+  form.elements.description.value = role.description || "";
+  renderPermissionPicker(role.permissions || []);
+  showRoleFormMessage(document.querySelector("[data-role-form-message]"), "Editando rol personalizado.", "ok");
+  document.querySelector("#roles")?.scrollIntoView({ block: "start" });
+  refreshIcons();
+}
+
+async function deleteRoleDefinition(id) {
+  const role = roleDefinitions.find(item => item.id === id && !item.locked);
+  if (!role) return;
+  if (!window.confirm(`Eliminar el rol personalizado "${role.name}"?`)) return;
+  const message = document.querySelector("[data-role-admin-message]");
+  try {
+    const data = await window.BCCAuth.api(`/api/admin/roles/${encodeURIComponent(id)}`, { method: "DELETE" });
+    roleDefinitions = data.roles || roleDefinitions.filter(item => item.id !== id);
+    rolePermissions = data.permissions || rolePermissions;
+    resetRoleForm();
+    renderRoleAdmin();
+    if (adminUsers.length) renderUsers();
+    if (message) renderWorkspaceMessage(message, "Rol eliminado.", "ok");
+  } catch (error) {
+    if (message) renderWorkspaceMessage(message, error.message, "error");
+  }
+}
+
+function resetRoleForm() {
+  const form = document.querySelector("[data-role-form]");
+  if (!form) return;
+  form.reset();
+  form.elements.roleId.value = "";
+  renderPermissionPicker();
+  const message = document.querySelector("[data-role-form-message]");
+  if (message) {
+    message.hidden = true;
+    message.textContent = "";
+  }
+  refreshIcons();
+}
+
+function showRoleFormMessage(message, text, tone) {
+  if (!message) return;
+  message.textContent = text;
+  message.dataset.tone = tone;
+  message.hidden = !text;
+}
+
+function permissionLabel(value) {
+  return rolePermissions.find(permission => permission.value === value)?.label || value;
+}
+
+function roleTypeLabel(type) {
+  return {
+    base: "Rol base",
+    staff: "Rol interno",
+    department: "Departamento",
+    custom: "Personalizado"
+  }[type] || type;
+}
+
+function permissionGroupLabel(group) {
+  return {
+    dashboard: "Dashboard",
+    profile: "Perfil",
+    downloads: "Recursos",
+    support: "Soporte",
+    staff: "Personal",
+    clients: "Clientes",
+    content: "Contenido",
+    cms: "CMS",
+    users: "Usuarios",
+    forms: "Formularios",
+    admin: "Administración",
+    strategy: "Estrategia",
+    department: "Departamentos"
+  }[group] || group;
 }
 
 function showModalMessage(message, text, tone) {

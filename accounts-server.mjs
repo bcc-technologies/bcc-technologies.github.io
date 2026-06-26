@@ -11,6 +11,7 @@ const DATA_DIR = path.resolve(process.env.BCC_ACCOUNTS_DATA_DIR || path.join(ROO
 const USERS_PATH = path.join(DATA_DIR, "users.json");
 const SESSIONS_PATH = path.join(DATA_DIR, "sessions.json");
 const ACCESS_AUDIT_PATH = path.join(DATA_DIR, "access-audit.json");
+const ROLES_PATH = path.join(DATA_DIR, "roles.json");
 
 const PORT = Number(process.env.PORT || process.env.BCC_ACCOUNTS_PORT || 3888);
 const SESSION_COOKIE = "bcc_session";
@@ -61,6 +62,7 @@ function ensureStore() {
   if (!fs.existsSync(USERS_PATH)) fs.writeFileSync(USERS_PATH, "[]\n", "utf-8");
   if (!fs.existsSync(SESSIONS_PATH)) fs.writeFileSync(SESSIONS_PATH, "[]\n", "utf-8");
   if (!fs.existsSync(ACCESS_AUDIT_PATH)) fs.writeFileSync(ACCESS_AUDIT_PATH, "[]\n", "utf-8");
+  if (!fs.existsSync(ROLES_PATH)) fs.writeFileSync(ROLES_PATH, "[]\n", "utf-8");
 }
 
 function readJson(file, fallback) {
@@ -160,7 +162,8 @@ function publicUser(user) {
   if (!user) return null;
   const staffRoles = normalizeList(user.staffRoles || user.staff_roles, STAFF_ROLES);
   const departments = normalizeList(user.departments, DEPARTMENTS);
-  const permissions = permissionsForUser(user.role, staffRoles, departments);
+  const customRoles = normalizeCustomRoleList(user.customRoles || user.custom_roles);
+  const permissions = permissionsForUser(user.role, staffRoles, departments, customRoles);
   const nameParts = {
     ...parsePersonName(user.name),
     ...(user.nameParts && typeof user.nameParts === "object" ? user.nameParts : {})
@@ -177,6 +180,7 @@ function publicUser(user) {
     role: user.role || "client",
     staffRoles,
     departments,
+    customRoles,
     status: user.status || "active",
     permissions,
     createdAt: user.createdAt,
@@ -194,13 +198,17 @@ function validatePassword(password) {
   return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[^A-Za-z0-9]/.test(value);
 }
 
-function permissionsForUser(role, staffRoles = [], departments = []) {
+function permissionsForUser(role, staffRoles = [], departments = [], customRoles = []) {
   const permissions = new Set(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client);
   normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => {
     (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission));
   });
   normalizeList(departments, DEPARTMENTS).forEach(department => {
     (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission));
+  });
+  const customDefinitions = new Map(readCustomRoles().map(customRole => [customRole.id, customRole]));
+  normalizeCustomRoleList(customRoles).forEach(customRoleId => {
+    (customDefinitions.get(customRoleId)?.permissions || []).forEach(permission => permissions.add(permission));
   });
   if (role === "admin") {
     STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
@@ -209,11 +217,168 @@ function permissionsForUser(role, staffRoles = [], departments = []) {
   return [...permissions];
 }
 
+
+const PERMISSION_LABELS = {
+  "dashboard:view": "Ver dashboard",
+  "profile:update": "Actualizar perfil",
+  "downloads:view": "Ver descargas",
+  "support:create": "Crear solicitudes",
+  "staff:view": "Vista de personal",
+  "clients:view": "Ver clientes",
+  "content:view": "Ver contenido",
+  "cms:access": "Acceso CMS",
+  "users:manage": "Administrar usuarios",
+  "forms:manage": "Administrar formularios",
+  "admin:view": "Vista administrador",
+  "content:write": "Crear contenido",
+  "strategy:view": "Ver estrategia",
+  "department:manage": "Gestionar departamento",
+  "department:technology": "Departamento tecnología",
+  "department:finance": "Departamento finanzas",
+  "department:operations": "Departamento operaciones",
+  "department:marketing": "Departamento marketing",
+  "department:hr": "Departamento RR. HH."
+};
+
+const ROLE_LABELS = {
+  client: "Cliente",
+  staff: "Personal",
+  admin: "Administrador",
+  author: "Autor",
+  cofounder: "Cofounder",
+  department_director: "Director",
+  technology: "Tecnología",
+  finance: "Finanzas",
+  operations: "Operaciones",
+  marketing: "Marketing",
+  hr: "Recursos humanos"
+};
+
+function allKnownPermissions() {
+  return [...new Set([
+    ...Object.values(ROLE_PERMISSIONS).flat(),
+    ...Object.values(STAFF_ROLE_PERMISSIONS).flat(),
+    ...Object.values(DEPARTMENT_PERMISSIONS).flat(),
+    ...readJson(ROLES_PATH, []).flatMap(role => Array.isArray(role.permissions) ? role.permissions : [])
+  ])].sort();
+}
+
+function permissionCatalog() {
+  return allKnownPermissions().map(value => ({
+    value,
+    label: PERMISSION_LABELS[value] || value,
+    group: value.includes(":") ? value.split(":")[0] : "general"
+  }));
+}
+
+function builtInRoleDefinitions() {
+  const base = Object.entries(ROLE_PERMISSIONS).map(([id, permissions]) => ({
+    id: `base:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: id === "client" ? "Acceso externo para clientes." : id === "staff" ? "Acceso interno operativo." : "Control completo del workspace.",
+    type: "base",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  const staff = Object.entries(STAFF_ROLE_PERMISSIONS).map(([id, permissions]) => ({
+    id: `staff:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: "Rol interno acumulable para personal y administradores.",
+    type: "staff",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  const departments = Object.entries(DEPARTMENT_PERMISSIONS).map(([id, permissions]) => ({
+    id: `department:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: "Ámbito departamental acumulable.",
+    type: "department",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  return [...base, ...staff, ...departments];
+}
+
+function slugifyRole(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
+function sanitizeCustomRole(body, existing = []) {
+  const name = String(body.name || "").trim().replace(/\s+/g, " ");
+  if (!name) return { error: "Nombre de rol requerido." };
+  const allowed = new Set(allKnownPermissions());
+  const permissions = [...new Set((Array.isArray(body.permissions) ? body.permissions : [])
+    .map(permission => String(permission || "").trim())
+    .filter(permission => allowed.has(permission)))]
+    .sort();
+  if (!permissions.length) return { error: "Selecciona al menos un permiso." };
+  const now = new Date().toISOString();
+  const providedId = String(body.id || "").trim();
+  const baseId = providedId.startsWith("custom:") ? providedId.slice(7) : slugifyRole(name);
+  const fallback = crypto.randomBytes(4).toString("hex");
+  let id = `custom:${baseId || fallback}`;
+  const ids = new Set(existing.map(role => role.id));
+  if (!providedId) {
+    let suffix = 2;
+    const original = id;
+    while (ids.has(id)) id = `${original}-${suffix++}`;
+  }
+  return {
+    role: {
+      id,
+      key: id.slice(7),
+      name,
+      description: String(body.description || "").trim(),
+      type: "custom",
+      locked: false,
+      permissions,
+      createdAt: body.createdAt || now,
+      updatedAt: now
+    }
+  };
+}
+
+function readCustomRoles() {
+  return readJson(ROLES_PATH, [])
+    .filter(role => role && typeof role === "object" && String(role.id || "").startsWith("custom:"))
+    .map(role => ({
+      id: String(role.id),
+      key: String(role.key || role.id).replace(/^custom:/, ""),
+      name: String(role.name || "Rol personalizado"),
+      description: String(role.description || ""),
+      type: "custom",
+      locked: false,
+      permissions: [...new Set(Array.isArray(role.permissions) ? role.permissions.map(String) : [])].sort(),
+      createdAt: role.createdAt || "",
+      updatedAt: role.updatedAt || ""
+    }));
+}
+
+function roleCatalog() {
+  return [...builtInRoleDefinitions(), ...readCustomRoles()];
+}
+
+function normalizeCustomRoleList(value) {
+  const allowed = new Set(readCustomRoles().map(role => role.id));
+  const list = Array.isArray(value) ? value : [];
+  return [...new Set(list.map(item => String(item || "").trim()).filter(item => allowed.has(item)))];
+}
+
 function accessSnapshot(user) {
   return {
     role: user?.role || "client",
     staffRoles: normalizeList(user?.staffRoles || user?.staff_roles, STAFF_ROLES),
-    departments: normalizeList(user?.departments, DEPARTMENTS)
+    departments: normalizeList(user?.departments, DEPARTMENTS),
+    customRoles: normalizeCustomRoleList(user?.customRoles || user?.custom_roles)
   };
 }
 
@@ -221,8 +386,10 @@ function sameAccess(left, right) {
   return left.role === right.role
     && left.staffRoles.length === right.staffRoles.length
     && left.departments.length === right.departments.length
+    && (left.customRoles || []).length === (right.customRoles || []).length
     && left.staffRoles.every(value => right.staffRoles.includes(value))
-    && left.departments.every(value => right.departments.includes(value));
+    && left.departments.every(value => right.departments.includes(value))
+    && (left.customRoles || []).every(value => (right.customRoles || []).includes(value));
 }
 
 function writeAccessAudit(actor, target, before, after) {
@@ -541,6 +708,48 @@ async function handleApi(req, res, url) {
       return sendJson(res, 200, { ok: true, users });
     }
 
+
+    if (req.method === "GET" && url.pathname === "/api/admin/roles") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "users:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      return sendJson(res, 200, { ok: true, roles: roleCatalog(), permissions: permissionCatalog() });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/admin/roles") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "users:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const body = await readBody(req);
+      const existing = readCustomRoles();
+      const { role, error } = sanitizeCustomRole(body, existing);
+      if (error) return sendJson(res, 400, { ok: false, error });
+      const roles = [...existing, role];
+      writeJson(ROLES_PATH, roles);
+      return sendJson(res, 201, { ok: true, role, roles: roleCatalog(), permissions: permissionCatalog() });
+    }
+
+    const roleDefinitionMatch = url.pathname.match(/^\/api\/admin\/roles\/([^/]+)$/);
+    if ((req.method === "PATCH" || req.method === "DELETE") && roleDefinitionMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "users:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const id = decodeURIComponent(roleDefinitionMatch[1]);
+      if (!id.startsWith("custom:")) return sendJson(res, 400, { ok: false, error: "Solo los roles personalizados se pueden modificar." });
+      const existing = readCustomRoles();
+      const target = existing.find(role => role.id === id);
+      if (!target) return sendJson(res, 404, { ok: false, error: "Rol no encontrado." });
+      if (req.method === "DELETE") {
+        writeJson(ROLES_PATH, existing.filter(role => role.id !== id));
+        return sendJson(res, 200, { ok: true, roles: roleCatalog(), permissions: permissionCatalog() });
+      }
+      const body = await readBody(req);
+      const { role, error } = sanitizeCustomRole({ ...body, id, createdAt: target.createdAt }, existing.filter(item => item.id !== id));
+      if (error) return sendJson(res, 400, { ok: false, error });
+      writeJson(ROLES_PATH, existing.map(item => item.id === id ? role : item));
+      return sendJson(res, 200, { ok: true, role, roles: roleCatalog(), permissions: permissionCatalog() });
+    }
+
     if (req.method === "GET" && url.pathname === "/api/admin/access-audit") {
       const user = requireUser(req, res);
       if (!user) return;
@@ -570,6 +779,7 @@ async function handleApi(req, res, url) {
       if (!ROLE_PERMISSIONS[role]) return sendJson(res, 400, { ok: false, error: "Rol inválido" });
       const staffRoles = normalizeList(body.staffRoles, STAFF_ROLES);
       const departments = normalizeList(body.departments, DEPARTMENTS);
+      const customRoles = normalizeCustomRoleList(body.customRoles);
       const users = readJson(USERS_PATH, []);
       const targetId = roleMatch[1];
       const target = users.find(u => u.id === targetId);
@@ -585,7 +795,8 @@ async function handleApi(req, res, url) {
       const afterAccess = {
         role,
         staffRoles: role === "client" ? [] : staffRoles,
-        departments: role === "client" ? [] : departments
+        departments: role === "client" ? [] : departments,
+        customRoles: role === "client" ? [] : customRoles
       };
       const updated = users.map(u => u.id === targetId ? {
         ...u,

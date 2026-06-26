@@ -69,6 +69,7 @@
         <p class="workspace-nav-label">Administración</p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#usuarios"><i data-lucide="users-round"></i><span>Usuarios</span></a>
+        <a href="#roles"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
         <a href="#prospectos"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
         <a href="#analytics"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
         <a href="#intelligence"><i data-lucide="radar"></i><span>Intelligence</span></a>
@@ -96,13 +97,36 @@
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
           <section class="workspace-intro">
             <div>
+              <span class="workspace-eyebrow">Centro de control</span>
               <h1>Control de accesos</h1>
               <p>Administra cuentas, permisos internos y cambios sensibles con historial verificable.</p>
             </div>
             <div class="dashboard-actions">
+              <a class="btn btn-primary" href="#usuarios"><i data-lucide="users-round"></i>Gestionar usuarios</a>
+              <a class="btn btn-ghost" href="#roles"><i data-lucide="key-round"></i>Roles y permisos</a>
               <a class="btn btn-ghost" href="#analytics"><i data-lucide="chart-no-axes-column-increasing"></i>Ver analytics</a>
               <a class="btn btn-ghost" href="/docs/intelligence.html" target="_blank" rel="noopener noreferrer"><i data-lucide="book-open-text"></i>Docs Intelligence</a>
             </div>
+          </section>
+
+          <section class="admin-command-grid" aria-label="Supervisión administrativa">
+            <article class="module-surface admin-command-card">
+              <div class="module-head compact">
+                <h2>Prioridades administrativas</h2>
+                <span class="status-dot">Activo</span>
+              </div>
+              <div class="admin-action-list">
+                <a href="#roles"><i data-lucide="shield-check"></i><span>Accesos</span><strong>Roles y permisos</strong></a>
+                <a href="#auditoria"><i data-lucide="history"></i><span>Control</span><strong>Cambios recientes</strong></a>
+                <a href="#prospectos"><i data-lucide="send"></i><span>Comercial</span><strong>Prospectos y correos</strong></a>
+              </div>
+            </article>
+            <article class="module-surface admin-signal-card">
+              <h2>Supervisión</h2>
+              <div class="admin-signal-row"><span>Usuarios</span><strong>Permisos efectivos</strong><i data-lucide="chevron-right"></i></div>
+              <div class="admin-signal-row"><span>Analytics</span><strong>Eventos y CTAs</strong><i data-lucide="chevron-right"></i></div>
+              <div class="admin-signal-row"><span>Intelligence</span><strong>Señales estratégicas</strong><i data-lucide="chevron-right"></i></div>
+            </article>
           </section>
 
           <section class="workspace-priority-strip admin-priority-strip" aria-label="Acciones administrativas">
@@ -221,6 +245,60 @@
           </section>
         </section>
 
+        <section class="workspace-view" id="roles" data-workspace-view data-view-title="Roles y permisos" hidden>
+          <section class="role-admin-grid" aria-label="Creación y administración de roles">
+            <article class="module-surface role-builder-surface">
+              <div class="module-head">
+                <div>
+                  <h2>Crear rol personalizado</h2>
+                  <p>Define una plantilla de permisos reutilizable para documentar accesos por rol.</p>
+                </div>
+                <span class="status-pill enabled"><i data-lucide="key-round"></i>Catálogo activo</span>
+              </div>
+              <form class="role-admin-form" data-role-form>
+                <input type="hidden" name="roleId" />
+                <p class="auth-message" data-role-form-message hidden></p>
+                <label>
+                  Nombre del rol
+                  <input type="text" name="name" placeholder="Ej. Analista de inteligencia" required />
+                </label>
+                <label>
+                  Descripción
+                  <textarea name="description" rows="3" placeholder="Responsabilidad principal y alcance del rol"></textarea>
+                </label>
+                <div class="permission-picker" data-permission-picker aria-label="Permisos disponibles"></div>
+                <div class="role-form-actions">
+                  <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Guardar rol</button>
+                  <button class="btn btn-ghost" type="button" data-role-form-reset>Limpiar</button>
+                </div>
+              </form>
+            </article>
+            <aside class="module-surface permission-reference-surface">
+              <div class="module-head compact">
+                <h2>Mapa de permisos</h2>
+                <span data-permission-count>-</span>
+              </div>
+              <div class="permission-reference" data-permission-reference></div>
+            </aside>
+          </section>
+
+          <section class="module-surface role-library-surface">
+            <div class="surface-toolbar role-library-toolbar">
+              <div>
+                <h2>Roles configurados</h2>
+                <p class="muted-text" data-role-admin-message>Cargando roles...</p>
+              </div>
+              <div class="quick-filter-group" aria-label="Filtrar roles">
+                <button type="button" data-role-filter="all">Todos</button>
+                <button type="button" data-role-filter="base">Base</button>
+                <button type="button" data-role-filter="staff">Internos</button>
+                <button type="button" data-role-filter="custom">Personalizados</button>
+              </div>
+            </div>
+            <div class="role-library" data-role-library></div>
+          </section>
+        </section>
+
         <section class="workspace-view" id="analytics" data-workspace-view data-view-title="Analytics" hidden>
           <section data-analytics-workspace aria-label="Analytics del sitio">
             <p class="muted-text">Cargando analytics...</p>
@@ -285,6 +363,10 @@
         <fieldset class="access-choice-group">
           <legend>Departamentos</legend>
           <div data-modal-departments></div>
+        </fieldset>
+        <fieldset class="access-choice-group">
+          <legend>Roles personalizados</legend>
+          <div data-modal-custom-roles></div>
         </fieldset>
         <section class="access-preview" data-access-preview>
           <span>Acceso efectivo</span>
