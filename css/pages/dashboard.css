@@ -5,7 +5,9 @@
 
 @import url("../workspace/dashboard-legacy.css");
 @import url("../workspace/workspace-core.css");
+@import url("../workspace/workspace-shell.css");
 @import url("../workspace/workspace-intelligence-analytics.css");
+@import url("../workspace/workspace-components.css");
 @import url("../workspace/workspace-prospects-account.css");
 @import url("../workspace/workspace-productivity.css");
 @import url("../workspace/workspace-forms.css");

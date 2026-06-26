@@ -4,9 +4,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   hydrateUser(user);
   hydrateAccountMenu(user);
-  bindWorkspaceMenu();
-  bindWorkspaceViews();
   bindStaffWorkPanels();
+  bindStaffWorkspaceRouter();
   hydrateProfileForm(user);
   bindEmailManager(user);
   renderPermissions(user);
@@ -48,61 +47,15 @@ function hydrateAccountMenu(user) {
   document.querySelectorAll("[data-cms-access]").forEach(el => { el.hidden = !hasCms; });
 }
 
-function bindWorkspaceMenu() {
-  const menuButton = document.querySelector("[data-workspace-menu]");
-  menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
-  document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
-    link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
-  });
-}
-
-function bindWorkspaceViews() {
-  const views = [...document.querySelectorAll("[data-workspace-view]")];
-  if (!views.length) return;
-
-  const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
-  const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
-  const title = document.querySelector("[data-workspace-view-title]");
-  const viewIds = new Set(views.map(view => view.id));
-  const aliases = { productividad: "trabajo", calendario: "trabajo", formularios: "trabajo" };
+function bindStaffWorkspaceRouter() {
   const panelAliases = { productividad: "tareas", calendario: "agenda", formularios: "formularios" };
-
-  const normalizeViewId = id => aliases[id] || id;
-
-  const showView = id => {
-    const requestedId = id || "resumen";
-    const nextId = viewIds.has(normalizeViewId(requestedId)) ? normalizeViewId(requestedId) : "resumen";
-    views.forEach(view => {
-      view.hidden = view.id !== nextId;
-    });
-    sidebarLinks.forEach(link => {
-      link.classList.toggle("active", normalizeViewId(link.getAttribute("href").slice(1)) === nextId);
-    });
-    const activeView = views.find(view => view.id === nextId);
-    if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
-    if (nextId === "trabajo") openStaffWorkPanel(panelAliases[requestedId] || document.body.dataset.pendingWorkPanel || "tareas");
-    document.body.dataset.pendingWorkPanel = "";
-    document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
-
-  links.forEach(link => {
-    link.addEventListener("click", event => {
-      const id = link.getAttribute("href").slice(1);
-      const nextId = normalizeViewId(id);
-      if (!viewIds.has(nextId)) return;
-      event.preventDefault();
-      document.body.dataset.pendingWorkPanel = link.dataset.workPanelLink || panelAliases[id] || "";
-      if (window.location.hash !== `#${nextId}`) {
-        window.history.pushState(null, "", `#${nextId}`);
-      }
-      showView(id);
-      document.body.classList.remove("workspace-nav-open");
-    });
+  window.BCCWorkspaceRouter?.bind({
+    aliases: { productividad: "trabajo", calendario: "trabajo", formularios: "trabajo" },
+    panelAliases,
+    onShow({ nextId, panelId }) {
+      if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");
+    }
   });
-
-  window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
-  showView(window.location.hash.slice(1));
 }
 
 function bindStaffWorkPanels() {

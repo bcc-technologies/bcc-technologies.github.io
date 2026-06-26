@@ -4,8 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   hydrateUser(user);
   hydrateAccountMenu(user);
-  bindWorkspaceMenu();
-  bindWorkspaceViews();
+  bindCustomerWorkspaceRouter();
   hydrateProfileForm(user);
   bindEmailManager(user);
   renderPermissions(user);
@@ -168,64 +167,17 @@ function hydrateAccountMenu(user) {
   document.querySelectorAll("[data-admin-return]").forEach(el => { el.hidden = !user.permissions.includes("admin:view"); });
 }
 
-function bindWorkspaceMenu() {
-  const menuButton = document.querySelector("[data-workspace-menu]");
-  menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
-  document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
-    link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
+function bindCustomerWorkspaceRouter() {
+  window.BCCWorkspaceRouter?.bind({
+    aliases: {
+      perfil: "cuenta",
+      seguridad: "cuenta",
+      solicitudes: "operacion",
+      formularios: "operacion",
+      facturacion: "comercial",
+      documentos: "comercial"
+    }
   });
-}
-
-function bindWorkspaceViews() {
-  const views = [...document.querySelectorAll("[data-workspace-view]")];
-  if (!views.length) return;
-
-  const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
-  const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
-  const title = document.querySelector("[data-workspace-view-title]");
-  const viewIds = new Set(views.map(view => view.id));
-  const viewAliases = {
-    perfil: "cuenta",
-    seguridad: "cuenta",
-    solicitudes: "operacion",
-    formularios: "operacion",
-    facturacion: "comercial",
-    documentos: "comercial"
-  };
-
-  const canonicalViewId = id => viewAliases[id] || id;
-
-  const showView = id => {
-    const requestedId = canonicalViewId(id);
-    const nextId = viewIds.has(requestedId) ? requestedId : "resumen";
-    views.forEach(view => {
-      view.hidden = view.id !== nextId;
-    });
-    sidebarLinks.forEach(link => {
-      link.classList.toggle("active", link.getAttribute("href") === `#${nextId}`);
-    });
-    const activeView = views.find(view => view.id === nextId);
-    if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
-    document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
-
-  links.forEach(link => {
-    link.addEventListener("click", event => {
-      const id = link.getAttribute("href").slice(1);
-      const nextId = canonicalViewId(id);
-      if (!viewIds.has(nextId)) return;
-      event.preventDefault();
-      if (window.location.hash !== `#${nextId}`) {
-        window.history.pushState(null, "", `#${nextId}`);
-      }
-      showView(nextId);
-      document.body.classList.remove("workspace-nav-open");
-    });
-  });
-
-  window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
-  showView(window.location.hash.slice(1));
 }
 
 function hydrateProfileForm(user) {

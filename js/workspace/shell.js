@@ -8,10 +8,12 @@
 
   if (!nav) return;
 
-  const closeMobileNav = () => {
-    root.classList.remove("workspace-nav-open");
-    menuButton?.setAttribute("aria-expanded", "false");
+  const setMobileNav = open => {
+    root.classList.toggle("workspace-nav-open", open);
+    menuButton?.setAttribute("aria-expanded", String(open));
   };
+
+  const closeMobileNav = () => setMobileNav(false);
 
   const setCollapsed = collapsed => {
     root.classList.toggle("workspace-collapsed", collapsed);
@@ -30,9 +32,7 @@
 
   menuButton?.setAttribute("aria-expanded", "false");
   menuButton?.addEventListener("click", () => {
-    window.requestAnimationFrame(() => {
-      menuButton.setAttribute("aria-expanded", String(root.classList.contains("workspace-nav-open")));
-    });
+    setMobileNav(!root.classList.contains("workspace-nav-open"));
   });
 
   collapseButton?.addEventListener("click", () => {
@@ -82,4 +82,6 @@
       row.hidden = Boolean(query) && !row.textContent.toLocaleLowerCase().includes(query);
     });
   });
+
+  window.BCCWorkspaceShell = { closeMobileNav, setCollapsed };
 })();
