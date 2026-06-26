@@ -1,56 +1,140 @@
-.prospects-toolbar{
-  align-items: flex-end;
+.prospects-workspace{
+  display: grid;
+  gap: 18px;
+}
+
+.prospects-hero{
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  border-color: color-mix(in srgb, var(--line) 84%, var(--surface-muted));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-solid) 96%, transparent), color-mix(in srgb, var(--surface-muted) 58%, var(--surface-solid))),
+    var(--surface-solid);
+  box-shadow: 0 14px 32px rgba(15, 17, 21, .055);
+  padding: clamp(20px, 2.4vw, 30px);
+}
+
+.prospects-hero-copy{
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.prospects-hero h2{
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: clamp(1.85rem, 2.5vw, 2.35rem);
+  line-height: 1.1;
+}
+
+.prospects-hero [data-prospects-message]{
+  max-width: 720px;
+  margin: 0;
+  font-size: .94rem;
+  line-height: 1.5;
 }
 
 .prospects-toolbar-actions{
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+.prospects-toolbar-actions select{
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  padding: 0 10px;
+  font: inherit;
+  font-size: .86rem;
+}
+
+.prospects-toolbar-actions .btn{
+  min-height: 42px;
+  border-radius: 8px;
+}
+
 .prospects-search{
-  min-width: min(320px, 100%);
+  width: min(340px, 100%);
+  height: 42px;
+  border-radius: 8px;
 }
 
 .prospects-metrics{
-  margin-bottom: 18px;
+  overflow: hidden;
+  margin-bottom: 0;
+  border-color: color-mix(in srgb, var(--line) 86%, var(--surface-muted));
+  box-shadow: 0 10px 24px rgba(15, 17, 21, .045);
 }
 
-.prospects-insights{
+.prospects-metrics div{
+  min-height: 104px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 94%, transparent), color-mix(in srgb, var(--surface-muted) 32%, var(--surface-solid)));
+}
+
+.prospects-command-grid{
   display: grid;
-  grid-template-columns: 1.2fr .9fr .9fr;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
   gap: 18px;
-  margin-bottom: 18px;
+  align-items: start;
+}
+
+.prospects-pipeline-panel,
+.prospects-panel{
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--line) 86%, var(--surface-muted));
+  box-shadow: 0 10px 24px rgba(15, 17, 21, .045);
+}
+
+.prospects-pipeline-panel{
+  padding: 22px;
+}
+
+.prospects-signal-stack{
+  display: grid;
+  gap: 18px;
+}
+
+.prospects-panel-compact{
+  padding: 18px;
 }
 
 .prospect-insight-grid{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .prospect-insight-card{
   display: grid;
-  gap: 4px;
-  padding: 13px;
+  gap: 5px;
+  min-height: 92px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 54%, var(--surface-solid));
+  padding: 13px;
 }
 
 .prospect-insight-card span,
 .prospect-insight-row span{
   color: var(--ink-muted);
-  font-size: .77rem;
-  font-weight: 700;
+  font-size: .72rem;
+  font-weight: 850;
+  text-transform: uppercase;
 }
 
 .prospect-insight-card strong,
 .prospect-insight-row strong{
   color: var(--ink-strong);
-  font-size: 1.15rem;
+  font-size: 1.16rem;
   line-height: 1.05;
 }
 
@@ -62,35 +146,50 @@
 
 .prospect-insight-list{
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .prospect-insight-row{
   display: grid;
-  gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 44%, var(--surface-solid));
+  padding: 10px;
 }
 
-.prospect-insight-row:last-child{
-  border-bottom: 0;
-  padding-bottom: 0;
+.prospect-insight-row small{
+  grid-column: 1 / -1;
 }
 
 .prospects-board{
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(7, minmax(188px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scroll-snap-type: x proximity;
+}
+
+.prospects-board::-webkit-scrollbar{
+  height: 8px;
+}
+
+.prospects-board::-webkit-scrollbar-thumb{
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-muted) 22%, transparent);
 }
 
 .prospect-column{
   min-width: 0;
+  scroll-snap-align: start;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-solid);
-  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 42%, var(--surface-solid));
+  padding: 10px;
 }
 
 .prospect-column header{
@@ -98,15 +197,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .prospect-column header strong{
   color: var(--ink-strong);
-  font-size: .86rem;
+  font-size: .83rem;
 }
 
-.prospect-column header span{
+.prospect-column header span,
+.activity-head span{
   min-width: 28px;
   height: 28px;
   display: inline-grid;
@@ -115,26 +215,27 @@
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: .76rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .prospect-column-list{
   display: grid;
-  gap: 10px;
+  gap: 9px;
 }
 
 .prospect-card{
   width: 100%;
   min-width: 0;
   display: grid;
-  gap: 5px;
+  gap: 6px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 8px;
+  background: var(--surface-solid);
   color: var(--ink);
   padding: 12px;
   text-align: left;
   cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
 .prospect-card:hover,
@@ -143,9 +244,14 @@
   background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
 }
 
+.prospect-card:hover{
+  transform: translateY(-1px);
+}
+
 .prospect-card strong{
   color: var(--ink-strong);
   font-size: .88rem;
+  line-height: 1.25;
 }
 
 .prospect-card span,
@@ -171,34 +277,32 @@
   color: var(--ink-soft);
   padding: 4px 8px;
   font-style: normal;
-  font-size: .74rem;
+  font-size: .72rem;
+  font-weight: 700;
 }
 
 .prospect-empty{
-  padding: 16px 10px;
   border: 1px dashed var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-solid) 64%, transparent);
   color: var(--ink-muted);
-  font-size: .81rem;
+  padding: 14px 10px;
+  font-size: .8rem;
+  line-height: 1.45;
 }
 
-.prospects-grid{
+.prospects-workbench,
+.prospects-operations-grid{
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(340px, .86fr);
   gap: 18px;
-  margin-bottom: 18px;
+  align-items: start;
 }
 
-.prospects-grid-bottom{
-  grid-template-columns: 1fr;
-}
-
-.prospects-grid-bottom-split{
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.prospects-panel{
-  min-width: 0;
+.prospect-profile-panel,
+.prospect-email-panel,
+.prospects-operations-grid .prospects-panel{
+  padding: 22px;
 }
 
 .prospects-form{
@@ -222,12 +326,13 @@
   gap: 6px;
   color: var(--ink-muted);
   font-size: .83rem;
-  font-weight: 700;
+  font-weight: 750;
 }
 
 .prospects-form input,
 .prospects-form select,
-.prospects-form textarea{
+.prospects-form textarea,
+.prospects-email-toolbar select{
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -238,11 +343,12 @@
 }
 
 .prospects-form textarea{
-  resize: vertical;
   min-height: 120px;
+  resize: vertical;
 }
 
-.prospects-form-actions{
+.prospects-form-actions,
+.prospects-email-toolbar{
   display: flex;
   align-items: center;
   gap: 10px;
@@ -256,10 +362,7 @@
 }
 
 .prospects-email-toolbar{
-  display: flex;
   align-items: end;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 .prospects-email-toolbar label{
@@ -268,7 +371,7 @@
   gap: 6px;
   color: var(--ink-muted);
   font-size: .83rem;
-  font-weight: 700;
+  font-weight: 750;
 }
 
 .prospect-email-note{
@@ -278,11 +381,7 @@
 }
 
 .prospect-email-list,
-.prospect-template-list{
-  display: grid;
-  gap: 10px;
-}
-
+.prospect-template-list,
 .prospect-activity-list{
   display: grid;
   gap: 10px;
@@ -295,14 +394,15 @@
   width: 100%;
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 5px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 36%, var(--surface-solid));
   color: var(--ink);
   padding: 12px;
   text-align: left;
   cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
 .prospect-email-item:hover,
@@ -315,6 +415,12 @@
   background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
 }
 
+.prospect-email-item:hover,
+.prospect-template-item:hover,
+.prospect-activity-item:hover{
+  transform: translateY(-1px);
+}
+
 .prospect-email-item strong,
 .prospect-template-item strong,
 .prospect-activity-item strong{
@@ -324,28 +430,10 @@
 
 .prospect-email-item span,
 .prospect-template-item span,
-.prospect-activity-item span{
-  color: var(--ink-muted);
-  font-size: .77rem;
-}
-
-.prospects-template-layout{
-  display: grid;
-  grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr);
-  gap: 18px;
-  margin-top: 16px;
-}
-
-.prospects-timeline-layout{
-  display: grid;
-  grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr);
-  gap: 18px;
-  margin-top: 16px;
-}
-
+.prospect-activity-item span,
 .prospect-activity-item small{
   color: var(--ink-muted);
-  font-size: .75rem;
+  font-size: .77rem;
 }
 
 .prospect-activity-item p{
@@ -353,6 +441,14 @@
   color: var(--ink-soft);
   font-size: .8rem;
   line-height: 1.45;
+}
+
+.prospects-template-layout,
+.prospects-timeline-layout{
+  display: grid;
+  grid-template-columns: minmax(280px, .92fr) minmax(0, 1.08fr);
+  gap: 18px;
+  margin-top: 16px;
 }
 
 .prospect-template-hints{
@@ -1529,15 +1625,6 @@
   .analytics-domain-grid{
     grid-template-columns: 1fr;
   }
-
-  .prospects-board,
-  .prospects-insights,
-  .prospects-grid,
-  .prospects-template-layout,
-  .prospects-timeline-layout,
-  .prospects-grid-bottom-split{
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 580px){
@@ -1714,5 +1801,58 @@
     grid-column: 2;
     justify-self: start;
     margin-top: 7px;
+  }
+}
+
+
+@media (max-width: 1180px){
+  .prospects-hero,
+  .prospects-command-grid,
+  .prospects-workbench,
+  .prospects-operations-grid,
+  .prospects-template-layout,
+  .prospects-timeline-layout{
+    grid-template-columns: 1fr;
+  }
+
+  .prospects-hero{
+    display: grid;
+    align-items: start;
+  }
+
+  .prospects-toolbar-actions{
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px){
+  .prospects-pipeline-panel,
+  .prospect-profile-panel,
+  .prospect-email-panel,
+  .prospects-operations-grid .prospects-panel{
+    padding: 18px;
+  }
+
+  .prospects-board{
+    grid-template-columns: repeat(7, minmax(220px, 84vw));
+  }
+
+  .prospect-insight-grid,
+  .prospects-form-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .prospects-toolbar-actions,
+  .prospects-email-toolbar,
+  .prospects-form-actions{
+    align-items: stretch;
+  }
+
+  .prospects-search,
+  .prospects-toolbar-actions select,
+  .prospects-toolbar-actions .btn,
+  .prospects-email-toolbar label,
+  .prospects-form-actions .btn{
+    width: 100%;
   }
 }

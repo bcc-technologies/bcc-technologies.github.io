@@ -4,6 +4,24 @@ let roleDefinitions = [];
 let rolePermissions = [];
 let activeRoleFilter = "all";
 
+const FALLBACK_BASE_ROLES = [
+  { value: "client", label: "Cliente" },
+  { value: "staff", label: "Personal" },
+  { value: "admin", label: "Administrador" }
+];
+const FALLBACK_STAFF_ROLES = [
+  { value: "author", label: "Autor" },
+  { value: "cofounder", label: "Cofounder" },
+  { value: "department_director", label: "Director" }
+];
+const FALLBACK_DEPARTMENTS = [
+  { value: "technology", label: "Tecnología" },
+  { value: "finance", label: "Finanzas" },
+  { value: "operations", label: "Operaciones" },
+  { value: "marketing", label: "Marketing" },
+  { value: "hr", label: "Recursos humanos" }
+];
+
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ admin: true });
   if (!user) return;
@@ -350,8 +368,8 @@ function openAccessModal(user) {
   modal.querySelector("[data-access-modal-user]").textContent = `${user.name} · ${user.email}`;
   hideAccessConfirmation(modal);
   const roleSelect = modal.querySelector("[data-modal-role-select]");
-  roleSelect.innerHTML = ["client", "staff", "admin"]
-    .map(role => `<option value="${role}" ${role === user.role ? "selected" : ""}>${roleLabel(role)}</option>`)
+  roleSelect.innerHTML = baseRoleOptions()
+    .map(role => `<option value="${escapeHtml(role.value)}" ${role.value === user.role ? "selected" : ""}>${escapeHtml(role.label)}</option>`)
     .join("");
   roleSelect.disabled = isSelfAdmin;
   modal.querySelector("[data-modal-role-note]").hidden = !isSelfAdmin;
@@ -502,32 +520,70 @@ function chipList(values, options, emptyLabel) {
 }
 
 function roleLabel(role) {
-  return { client: "Cliente", staff: "Personal", admin: "Administrador" }[role] || role;
+  return optionLabel(baseRoleOptions(), role) || role;
+}
+
+function baseRoleOptions() {
+  return catalogOptions("base", FALLBACK_BASE_ROLES, "key");
 }
 
 function staffRoleOptions() {
-  return [
-    { value: "author", label: "Autor" },
-    { value: "cofounder", label: "Cofounder" },
-    { value: "department_director", label: "Director" }
-  ];
+  return catalogOptions("staff", FALLBACK_STAFF_ROLES, "key");
 }
 
 function departmentOptions() {
-  return [
-    { value: "technology", label: "Tecnología" },
-    { value: "finance", label: "Finanzas" },
-    { value: "operations", label: "Operaciones" },
-    { value: "marketing", label: "Marketing" },
-    { value: "hr", label: "Recursos humanos" }
-  ];
+  return catalogOptions("department", FALLBACK_DEPARTMENTS, "key");
 }
 
-
 function customRoleOptions() {
-  return roleDefinitions
-    .filter(role => role.type === "custom")
-    .map(role => ({ value: role.id, label: role.name }));
+  return catalogOptions("custom", [], "id");
+}
+
+function catalogOptions(type, fallback = [], valueKey = "key") {
+  const options = roleDefinitions
+    .filter(role => role.type === type)
+    .map(role => ({
+      value: String(role[valueKey] || role.id || ""),
+      label: role.name || role.label || String(role[valueKey] || role.id || "")
+    }))
+    .filter(option => option.value);
+  return options.length ? options : fallback;
+}
+
+function optionLabel(options, value) {
+  return options.find(option => option.value === value)?.label || "";
+}
+
+function renderUserRoleFilter() {
+  const select = document.querySelector("select[data-role-filter]");
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = `<option value="">Todos los roles</option>${baseRoleOptions()
+    .map(role => `<option value="${escapeHtml(role.value)}">${escapeHtml(role.label)}</option>`)
+    .join("")}`;
+  select.value = [...select.options].some(option => option.value === current) ? current : "";
+}
+
+function syncOpenAccessModalRoleChoices() {
+  const modal = document.querySelector("[data-access-modal]");
+  if (!modal?.open) return;
+  const roleSelect = modal.querySelector("[data-modal-role-select]");
+  const selectedRole = roleSelect?.value || "client";
+  const selectedStaffRoles = [...modal.querySelectorAll("[data-staff-role]:checked")].map(input => input.dataset.staffRole);
+  const selectedDepartments = [...modal.querySelectorAll("[data-department]:checked")].map(input => input.dataset.department);
+  const selectedCustomRoles = [...modal.querySelectorAll("[data-custom-role]:checked")].map(input => input.dataset.customRole);
+
+  if (roleSelect) {
+    roleSelect.innerHTML = baseRoleOptions()
+      .map(role => `<option value="${escapeHtml(role.value)}" ${role.value === selectedRole ? "selected" : ""}>${escapeHtml(role.label)}</option>`)
+      .join("");
+    if (![...roleSelect.options].some(option => option.value === selectedRole)) roleSelect.value = "client";
+  }
+  renderChoiceGroup(modal.querySelector("[data-modal-staff-roles]"), staffRoleOptions(), selectedStaffRoles, "staff-role");
+  renderChoiceGroup(modal.querySelector("[data-modal-departments]"), departmentOptions(), selectedDepartments, "department");
+  renderChoiceGroup(modal.querySelector("[data-modal-custom-roles]"), customRoleOptions(), selectedCustomRoles, "custom-role");
+  updateAccessPreview();
+  refreshIcons();
 }
 
 function permissionsForCustomRoles(customRoles = []) {
@@ -556,6 +612,8 @@ async function loadRoleDefinitions() {
     roleDefinitions = data.roles || [];
     rolePermissions = data.permissions || [];
     renderRoleAdmin();
+    renderUserRoleFilter();
+    syncOpenAccessModalRoleChoices();
     if (adminUsers.length) renderUsers();
   } catch (error) {
     if (message) renderWorkspaceMessage(message, error.message, "error");
@@ -566,9 +624,9 @@ function bindRoleAdminControls() {
   const form = document.querySelector("[data-role-form]");
   form?.addEventListener("submit", saveRoleDefinition);
   document.querySelector("[data-role-form-reset]")?.addEventListener("click", resetRoleForm);
-  document.querySelectorAll("[data-role-filter]").forEach(button => {
+  document.querySelectorAll("[data-role-library-filter]").forEach(button => {
     button.addEventListener("click", () => {
-      activeRoleFilter = button.dataset.roleFilter || "all";
+      activeRoleFilter = button.dataset.roleLibraryFilter || "all";
       renderRoleLibrary();
     });
   });
@@ -632,8 +690,8 @@ function renderRoleLibrary() {
   const container = document.querySelector("[data-role-library]");
   const message = document.querySelector("[data-role-admin-message]");
   if (!container) return;
-  document.querySelectorAll("[data-role-filter]").forEach(button => {
-    button.classList.toggle("active", (button.dataset.roleFilter || "all") === activeRoleFilter);
+  document.querySelectorAll("[data-role-library-filter]").forEach(button => {
+    button.classList.toggle("active", (button.dataset.roleLibraryFilter || "all") === activeRoleFilter);
   });
   const roles = roleDefinitions.filter(role => activeRoleFilter === "all" || role.type === activeRoleFilter);
   if (message) renderWorkspaceMessage(message, `${roles.length} de ${roleDefinitions.length} rol(es) visibles.`);
@@ -691,8 +749,10 @@ async function saveRoleDefinition(event) {
     rolePermissions = data.permissions || rolePermissions;
     resetRoleForm();
     renderRoleAdmin();
-    if (adminUsers.length) renderUsers();
-    showRoleFormMessage(message, id ? "Rol actualizado." : "Rol creado.", "ok");
+    renderUserRoleFilter();
+    syncOpenAccessModalRoleChoices();
+    if (adminUsers.length) await loadUsers();
+    showRoleFormMessage(message, id ? "Rol actualizado y usuarios sincronizados." : "Rol creado y disponible para usuarios.", "ok");
   } catch (error) {
     showRoleFormMessage(message, error.message, "error");
   }
@@ -722,8 +782,10 @@ async function deleteRoleDefinition(id) {
     rolePermissions = data.permissions || rolePermissions;
     resetRoleForm();
     renderRoleAdmin();
-    if (adminUsers.length) renderUsers();
-    if (message) renderWorkspaceMessage(message, "Rol eliminado.", "ok");
+    renderUserRoleFilter();
+    syncOpenAccessModalRoleChoices();
+    await loadUsers();
+    if (message) renderWorkspaceMessage(message, "Rol eliminado y usuarios sincronizados.", "ok");
   } catch (error) {
     if (message) renderWorkspaceMessage(message, error.message, "error");
   }
