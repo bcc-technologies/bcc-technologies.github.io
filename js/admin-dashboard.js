@@ -2,6 +2,8 @@ let adminUsers = [];
 let adminAuditLogs = [];
 let roleDefinitions = [];
 let rolePermissions = [];
+let roleDefinitionsLoaded = false;
+let roleDefinitionsRequest = null;
 let activeRoleFilter = "all";
 
 const FALLBACK_BASE_ROLES = [
@@ -43,7 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   initializeWorkspaceModule("productividad", user);
   initializeWorkspaceModule("formularios", user);
   refreshIcons();
-  await Promise.all([loadUsers(), loadAuditLogs(), loadRoleDefinitions()]);
+  await loadRoleDefinitions();
+  await Promise.all([loadUsers(), loadAuditLogs()]);
 });
 
 async function loadUsers() {
@@ -354,9 +357,10 @@ function bindAccessModal() {
   modal.addEventListener("change", updateAccessPreview);
 }
 
-function openAccessModal(user) {
+async function openAccessModal(user) {
   const modal = document.querySelector("[data-access-modal]");
   if (!modal) return;
+  await ensureRoleDefinitionsLoaded();
   const isSelfAdmin = window.BCCAdminCurrentUser?.id === user.id && user.role === "admin";
   modal.dataset.userId = user.id;
   modal.dataset.confirming = "false";
@@ -384,6 +388,13 @@ function openAccessModal(user) {
 function renderChoiceGroup(container, options, selected, key) {
   if (!container) return;
   const active = Array.isArray(selected) ? selected : [];
+  if (!options.length) {
+    const emptyText = key === "custom-role"
+      ? "No hay roles personalizados creados."
+      : "No hay opciones disponibles.";
+    container.innerHTML = `<p class="muted-text access-empty-state">${escapeHtml(emptyText)}</p>`;
+    return;
+  }
   container.innerHTML = options.map(option => `
     <label>
       <input type="checkbox" data-${key}="${escapeHtml(option.value)}" ${active.includes(option.value) ? "checked" : ""}>
@@ -606,16 +617,35 @@ function labelsFor(values, options) {
 
 
 async function loadRoleDefinitions() {
+  if (roleDefinitionsRequest) return roleDefinitionsRequest;
+  roleDefinitionsRequest = fetchRoleDefinitions().finally(() => {
+    roleDefinitionsRequest = null;
+  });
+  return roleDefinitionsRequest;
+}
+
+async function ensureRoleDefinitionsLoaded() {
+  if (roleDefinitionsLoaded) return;
+  if (roleDefinitionsRequest) {
+    await roleDefinitionsRequest;
+    return;
+  }
+  await loadRoleDefinitions();
+}
+
+async function fetchRoleDefinitions() {
   const message = document.querySelector("[data-role-admin-message]");
   try {
     const data = await window.BCCAuth.api("/api/admin/roles");
     roleDefinitions = data.roles || [];
     rolePermissions = data.permissions || [];
+    roleDefinitionsLoaded = true;
     renderRoleAdmin();
     renderUserRoleFilter();
     syncOpenAccessModalRoleChoices();
     if (adminUsers.length) renderUsers();
   } catch (error) {
+    roleDefinitionsLoaded = false;
     if (message) renderWorkspaceMessage(message, error.message, "error");
   }
 }
