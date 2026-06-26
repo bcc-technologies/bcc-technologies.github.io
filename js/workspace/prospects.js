@@ -54,7 +54,6 @@
       <section class="prospects-workspace">
         <section class="module-surface prospects-hero">
           <div class="prospects-hero-copy">
-            <span class="workspace-eyebrow">CRM comercial</span>
             <h2>Prospectos y correos</h2>
             <p class="muted-text" data-prospects-message>Cargando CRM...</p>
           </div>
@@ -67,7 +66,7 @@
               <option value="">Todas las fases</option>
               ${PHASES.map(phase => `<option value="${escapeHtml(phase.id)}">${escapeHtml(phase.label)}</option>`).join("")}
             </select>
-            <button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh>Actualizar</button>
+            <button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh><i data-lucide="refresh-cw"></i>Actualizar</button>
             <button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button>
           </div>
         </section>
@@ -83,7 +82,6 @@
           <article class="module-surface prospects-pipeline-panel">
             <div class="module-head compact">
               <h2>Pipeline</h2>
-              <span class="status-dot">Activo</span>
             </div>
             <section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section>
           </article>
@@ -221,11 +219,9 @@
   function setMessage(text, tone = "neutral") {
     const message = root.querySelector("[data-prospects-message]");
     if (!message) return;
-    renderMessageBlock(
-      message,
-      text || "Gestiona prospectos, seguimiento y plantillas.",
-      tone
-    );
+    const content = String(text || "").trim();
+    message.hidden = !content;
+    renderMessageBlock(message, content, tone);
   }
 
   function renderMessageBlock(target, text, tone = "neutral") {
