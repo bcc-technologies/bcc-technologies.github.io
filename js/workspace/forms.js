@@ -169,12 +169,17 @@
   }
 
   function inboxTemplate() {
-    const audience = view === "staff" ? "personal" : "clientes";
+    const isStaffView = view === "staff";
+    const audience = isStaffView ? "personal" : "clientes";
+    const title = isStaffView ? "Formularios" : "Requerimientos pendientes";
+    const description = isStaffView
+      ? (isPreview() ? `Vista previa de encuestas publicadas para ${audience}.` : `Encuestas disponibles para ${audience}. Tus respuestas quedan registradas de forma privada.`)
+      : (isPreview() ? "Vista previa de requerimientos publicados para clientes." : "Solicitudes de información publicadas para tu cuenta. Tus respuestas quedan registradas de forma privada.");
     return `
       <div class="forms-head">
         <div>
-          <h2>Formularios</h2>
-          <p>${isPreview() ? `Vista previa de encuestas publicadas para ${audience}.` : `Encuestas disponibles para ${audience}. Tus respuestas quedan registradas de forma privada.`}</p>
+          <h2>${title}</h2>
+          <p>${description}</p>
         </div>
       </div>
       <p class="forms-message" data-forms-message hidden></p>

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateProfileForm(user);
   bindEmailManager(user);
   renderPermissions(user);
-    window.BCCWorkspaceForms?.init(user);
+  window.BCCWorkspaceForms?.init(user);
   refreshIcons();
 });
 
@@ -184,9 +184,20 @@ function bindWorkspaceViews() {
   const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
   const title = document.querySelector("[data-workspace-view-title]");
   const viewIds = new Set(views.map(view => view.id));
+  const viewAliases = {
+    perfil: "cuenta",
+    seguridad: "cuenta",
+    solicitudes: "operacion",
+    formularios: "operacion",
+    facturacion: "comercial",
+    documentos: "comercial"
+  };
+
+  const canonicalViewId = id => viewAliases[id] || id;
 
   const showView = id => {
-    const nextId = viewIds.has(id) ? id : "resumen";
+    const requestedId = canonicalViewId(id);
+    const nextId = viewIds.has(requestedId) ? requestedId : "resumen";
     views.forEach(view => {
       view.hidden = view.id !== nextId;
     });
@@ -202,12 +213,13 @@ function bindWorkspaceViews() {
   links.forEach(link => {
     link.addEventListener("click", event => {
       const id = link.getAttribute("href").slice(1);
-      if (!viewIds.has(id)) return;
+      const nextId = canonicalViewId(id);
+      if (!viewIds.has(nextId)) return;
       event.preventDefault();
-      if (window.location.hash !== `#${id}`) {
-        window.history.pushState(null, "", `#${id}`);
+      if (window.location.hash !== `#${nextId}`) {
+        window.history.pushState(null, "", `#${nextId}`);
       }
-      showView(id);
+      showView(nextId);
       document.body.classList.remove("workspace-nav-open");
     });
   });

@@ -241,6 +241,90 @@
   font-size: .9rem;
 }
 
+
+.customer-record-workspace{
+  display: grid;
+  gap: 18px;
+}
+
+.customer-record-hero{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+}
+
+.customer-record-hero h2,
+.customer-record-panel h2{
+  margin: 0;
+}
+
+.customer-record-hero p{
+  max-width: 680px;
+  margin: 7px 0 0;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.customer-record-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, .72fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.customer-record-panel{
+  padding: 22px;
+}
+
+.customer-record-panel .resource-rows{
+  margin-top: 10px;
+}
+
+.customer-requirements-block{
+  min-width: 0;
+}
+
+.customer-requirements-block [data-forms-workspace]{
+  margin-bottom: 0;
+  padding-top: 0;
+}
+
+.customer-empty-row{
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 48%, var(--surface-solid));
+  padding: 16px;
+}
+
+.customer-empty-row svg{
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink-soft);
+  padding: 10px;
+}
+
+.customer-empty-row strong{
+  display: block;
+  color: var(--ink-strong);
+  font-size: .95rem;
+}
+
+.customer-empty-row span{
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  line-height: 1.45;
+}
+
 .customer-workspace .workspace-help{
   border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
   border-radius: 8px;
@@ -261,7 +345,8 @@
 
 @media (max-width: 1120px){
   .customer-workspace .workspace-priority-strip,
-  .customer-workspace .client-operation-grid{
+  .customer-workspace .client-operation-grid,
+  .customer-record-grid{
     grid-template-columns: 1fr;
   }
 
@@ -275,8 +360,13 @@
 }
 
 @media (max-width: 860px){
-  .customer-workspace .workspace-intro{
+  .customer-workspace .workspace-intro,
+  .customer-record-hero{
     align-items: flex-start;
+  }
+
+  .customer-record-hero{
+    display: grid;
   }
 
   .customer-workspace .dashboard-actions{
@@ -303,7 +393,9 @@
     display: none;
   }
 
-  .customer-workspace .workspace-intro{
+  .customer-workspace .workspace-intro,
+  .customer-record-hero,
+  .customer-record-panel{
     padding: 18px;
   }
 

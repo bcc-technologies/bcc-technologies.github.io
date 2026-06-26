@@ -61,21 +61,11 @@
     </header>
     <aside class="workspace-sidebar">
       <nav class="workspace-nav" aria-label="Secciones de cuenta">
-        <p class="workspace-nav-label"><i data-lucide="home"></i><span>Esencial</span></p>
+        <p class="workspace-nav-label"><i data-lucide="layout-dashboard"></i><span>Panel</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#solicitudes"><i data-lucide="inbox"></i><span>Solicitudes</span></a>
-        <p class="workspace-nav-label"><i data-lucide="user-cog"></i><span>Cuenta</span></p>
-        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
-        <a href="#seguridad"><i data-lucide="shield-check"></i><span>Seguridad</span></a>
-        <p class="workspace-nav-label"><i data-lucide="folder-kanban"></i><span>Operación</span></p>
-        <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
-        <a href="/products.html"><i data-lucide="package"></i><span>Productos</span></a>
-        <a href="/contactUs.html"><i data-lucide="life-buoy"></i><span>Soporte</span></a>
-        <p class="workspace-nav-label"><i data-lucide="book-open"></i><span>Recursos</span></p>
-        <a href="/blog.html"><i data-lucide="library-big"></i><span>Biblioteca</span></a>
-        <p class="workspace-nav-label"><i data-lucide="sparkles"></i><span>Potencial</span></p>
-        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="receipt-text"></i><span>Facturación</span><small>Futuro</small></span>
-        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="folder-lock"></i><span>Documentos</span><small>Futuro</small></span>
+        <a href="#cuenta"><i data-lucide="user-round-cog"></i><span>Cuenta</span></a>
+        <a href="#operacion"><i data-lucide="inbox"></i><span>Operación</span></a>
+        <a href="#comercial"><i data-lucide="briefcase-business"></i><span>Comercial</span></a>
         <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
       </nav>
       <section class="workspace-help">
@@ -97,46 +87,47 @@
             <div>
               <span class="workspace-eyebrow">Dashboard cliente</span>
               <h1>Hola, <span data-user-name>...</span></h1>
-              <p>Bienvenido a tu espacio de cliente. Gestiona solicitudes, formularios y datos clave de tu organización.</p>
+              <p>Un espacio compacto para ver tu cuenta, pendientes, soporte, documentos y estado comercial.</p>
             </div>
             <div class="dashboard-actions">
               <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
-              <a class="btn btn-ghost" href="#formularios"><i data-lucide="file-text"></i>Ver formularios</a>
+              <a class="btn btn-ghost" href="#operacion"><i data-lucide="inbox"></i>Operación</a>
+              <a class="btn btn-ghost" href="#comercial"><i data-lucide="briefcase-business"></i>Comercial</a>
             </div>
           </section>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos">
             <article class="priority-card primary">
               <i data-lucide="inbox"></i>
               <div>
-                <span>Próximo paso</span>
-                <strong>Crear o dar seguimiento a una solicitud</strong>
-                <p>Centraliza consultas, soporte y requerimientos del equipo BCC.</p>
+                <span>Operación</span>
+                <strong>Solicitudes y requerimientos</strong>
+                <p>Canaliza soporte y responde pendientes asignados por el equipo.</p>
               </div>
-              <a href="#solicitudes">Ver solicitudes</a>
+              <a href="#operacion">Abrir</a>
             </article>
             <article class="priority-card">
-              <i data-lucide="file-pen-line"></i>
+              <i data-lucide="user-round-cog"></i>
               <div>
-                <span>Formularios</span>
-                <strong>Responder pendientes</strong>
-                <p>Encuestas y retroalimentación publicadas para clientes.</p>
+                <span>Cuenta</span>
+                <strong>Perfil, correos y seguridad</strong>
+                <p>Mantén actualizada la información de contacto y acceso.</p>
               </div>
-              <a href="#formularios">Abrir</a>
+              <a href="#cuenta">Ver</a>
             </article>
             <article class="priority-card">
-              <i data-lucide="book-open"></i>
+              <i data-lucide="folder-lock"></i>
               <div>
-                <span>Recursos</span>
-                <strong>Explorar documentación</strong>
-                <p>Materiales técnicos, productos y novedades de BCC.</p>
+                <span>Comercial</span>
+                <strong>Facturación y documentos</strong>
+                <p>Consulta el estado comercial y los archivos compartidos.</p>
               </div>
-              <a href="/blog.html">Leer</a>
+              <a href="#comercial">Abrir</a>
             </article>
           </section>
           <section class="setup-progress module-surface" aria-label="Configuración de cuenta">
             <div class="module-head compact">
               <h2>Configuración de cuenta</h2>
-              <a href="#perfil">Ver detalles <i data-lucide="chevron-right"></i></a>
+              <a href="#cuenta">Ver detalles <i data-lucide="chevron-right"></i></a>
             </div>
             <div class="setup-steps">
               <div class="complete"><i data-lucide="check"></i><strong>Información básica</strong><small data-profile-completion>-</small></div>
@@ -151,15 +142,16 @@
                 <h2>Acciones frecuentes</h2>
                 <div class="resource-rows">
                   <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/blog.html"><i data-lucide="file-down"></i><div><strong>Documentación</strong><span>Lee recursos y novedades BCC.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="#operacion"><i data-lucide="file-check-2"></i><div><strong>Ver pendientes</strong><span>Solicitudes y requerimientos.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="#comercial"><i data-lucide="receipt-text"></i><div><strong>Facturación y documentos</strong><span>Estado comercial y archivos.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="external-link"></i></a>
                 </div>
               </article>
               <article class="module-surface client-resources">
                 <h2>Recursos recomendados</h2>
                 <div class="resource-rows">
+                  <a href="/blog.html"><i data-lucide="library-big"></i><div><strong>Biblioteca BCC</strong><span>Recursos, novedades y documentación pública.</span></div><i data-lucide="external-link"></i></a>
                   <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
-                  <a href="/products.html"><i data-lucide="microscope"></i><div><strong>Catálogo BCC</strong><span>Plataformas y productos.</span></div><i data-lucide="external-link"></i></a>
                 </div>
               </article>
             </section>
@@ -187,13 +179,13 @@
           </div>
         </section>
 
-        <section class="workspace-view" id="perfil" data-workspace-view data-view-title="Mi perfil" hidden>
+        <section class="workspace-view" id="cuenta" data-workspace-view data-view-title="Cuenta" hidden>
           <div class="profile-workspace profile-workspace-expanded">
             <article class="module-surface">
               <div class="module-head">
                 <div>
                   <h2>Datos de cuenta</h2>
-                  <p>Manten actualizados tus datos para comunicaciones y solicitudes.</p>
+                  <p>Manten actualizados tus datos para comunicaciones, solicitudes y documentos.</p>
                 </div>
                 <span class="status-pill enabled"><i data-lucide="check-circle-2"></i>Cuenta activa</span>
               </div>
@@ -242,44 +234,126 @@
                 <button class="btn btn-ghost" type="submit">Confirmar correo</button>
               </form>
             </article>
+            <article class="module-surface security-view">
+              <div class="module-head">
+                <div>
+                  <h2>Seguridad y acceso</h2>
+                  <p>Estado de sesión, perfil y capacidades habilitadas.</p>
+                </div>
+                <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesión activa</span>
+              </div>
+              <dl class="account-details">
+                <div><dt>Organización</dt><dd data-user-company>...</dd></div>
+                <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
+                <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
+              </dl>
+              <div class="security-summary">
+                <div><i data-lucide="check-circle-2"></i><strong>Sesión protegida</strong><span>Acceso autenticado activo</span></div>
+                <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periódicamente</span></div>
+              </div>
+            </article>
             <article class="module-surface">
               <h2>Capacidades activas</h2>
               <ul class="permission-list permission-readable" data-permissions></ul>
             </article>
           </div>
         </section>
-        <section class="workspace-view" id="seguridad" data-workspace-view data-view-title="Seguridad" hidden>
-          <article class="module-surface security-view">
-            <div class="module-head">
+
+        <section class="workspace-view" id="operacion" data-workspace-view data-view-title="Operación" hidden>
+          <section class="customer-record-workspace" aria-label="Operación de cliente">
+            <article class="module-surface customer-record-hero">
               <div>
-                <h2>Seguridad de la cuenta</h2>
-                <p>Estado de sesión, perfil y acceso autenticado.</p>
+                <h2>Operación</h2>
+                <p>Solicitudes, soporte y requerimientos pendientes en un solo lugar.</p>
               </div>
-              <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesión activa</span>
-            </div>
-            <dl class="account-details">
-              <div><dt>Organización</dt><dd data-user-company>...</dd></div>
-              <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
-              <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
-            </dl>
-            <div class="security-summary">
-              <div><i data-lucide="check-circle-2"></i><strong>Sesión protegida</strong><span>Acceso autenticado activo</span></div>
-              <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periódicamente</span></div>
-            </div>
-          </article>
+              <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
+            </article>
+            <section class="customer-record-grid">
+              <article class="module-surface request-empty customer-record-panel">
+                <div class="empty-icon"><i data-lucide="folder-open"></i></div>
+                <h2>Aún no tienes solicitudes</h2>
+                <p>Cuando crees una solicitud, podrás darle seguimiento desde este panel.</p>
+                <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
+              </article>
+              <article class="module-surface customer-record-panel">
+                <h2>Soporte y productos</h2>
+                <div class="resource-rows">
+                  <a href="/contactUs.html"><i data-lucide="life-buoy"></i><div><strong>Contactar soporte</strong><span>Consulta dudas, requerimientos o seguimiento.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="external-link"></i></a>
+                </div>
+              </article>
+            </section>
+            <section class="customer-requirements-block">
+              <section data-forms-workspace data-forms-view="client" aria-label="Requerimientos y retroalimentación"></section>
+            </section>
+          </section>
         </section>
 
-        <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
-          <section data-forms-workspace data-forms-view="client" aria-label="Formularios y retroalimentación"></section>
-        </section>
-
-        <section class="workspace-view" id="solicitudes" data-workspace-view data-view-title="Solicitudes" hidden>
-          <article class="module-surface request-empty">
-            <div class="empty-icon"><i data-lucide="folder-open"></i></div>
-            <h2>Aún no tienes solicitudes</h2>
-            <p>Cuando crees una solicitud, podrás darle seguimiento desde este panel.</p>
-            <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
-          </article>
+        <section class="workspace-view" id="comercial" data-workspace-view data-view-title="Comercial" hidden>
+          <section class="customer-record-workspace" aria-label="Comercial de cliente">
+            <article class="module-surface customer-record-hero">
+              <div>
+                <h2>Comercial</h2>
+                <p>Estado de cuenta, facturación, documentos privados y recursos relacionados.</p>
+              </div>
+              <span class="status-pill enabled"><i data-lucide="lock-keyhole"></i>Acceso privado</span>
+            </article>
+            <section class="customer-record-grid">
+              <article class="module-surface customer-record-panel">
+                <div class="module-head compact">
+                  <h2>Estado de cuenta</h2>
+                  <span class="status-dot">Sin pendientes</span>
+                </div>
+                <dl class="account-details">
+                  <div><dt>Organización</dt><dd data-user-company>...</dd></div>
+                  <div><dt>Contacto de facturación</dt><dd><span>Correo registrado</span><small data-user-email>...</small></dd></div>
+                  <div><dt>Condición actual</dt><dd>Sin facturas abiertas</dd></div>
+                </dl>
+              </article>
+              <article class="module-surface customer-record-panel">
+                <h2>Acciones comerciales</h2>
+                <div class="resource-rows">
+                  <a href="/contactUs.html"><i data-lucide="file-plus-2"></i><div><strong>Solicitar factura</strong><span>Envía datos fiscales o requerimientos.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="/contactUs.html"><i data-lucide="message-square-text"></i><div><strong>Consultar pago o documento</strong><span>Contacta al equipo administrativo.</span></div><i data-lucide="chevron-right"></i></a>
+                </div>
+              </article>
+            </section>
+            <section class="customer-record-grid">
+              <article class="module-surface customer-record-panel">
+                <div class="module-head compact">
+                  <h2>Facturación</h2>
+                  <span>0 registros</span>
+                </div>
+                <div class="customer-empty-row">
+                  <i data-lucide="receipt-text"></i>
+                  <div>
+                    <strong>No hay facturas publicadas en el portal.</strong>
+                    <span>Cuando el equipo comparta facturas o comprobantes, aparecerán aquí.</span>
+                  </div>
+                </div>
+              </article>
+              <article class="module-surface customer-record-panel">
+                <div class="module-head compact">
+                  <h2>Documentos</h2>
+                  <span>0 archivos</span>
+                </div>
+                <div class="customer-empty-row">
+                  <i data-lucide="folder-lock"></i>
+                  <div>
+                    <strong>No hay documentos privados publicados.</strong>
+                    <span>Los contratos, reportes o entregables asignados a tu cuenta aparecerán aquí.</span>
+                  </div>
+                </div>
+              </article>
+            </section>
+            <section class="module-surface customer-record-panel">
+              <h2>Recursos relacionados</h2>
+              <div class="resource-rows">
+                <a href="/blog.html"><i data-lucide="book-open"></i><div><strong>Biblioteca pública</strong><span>Documentación general y novedades BCC.</span></div><i data-lucide="external-link"></i></a>
+                <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Catálogo técnico</strong><span>Consulta capacidades y soluciones.</span></div><i data-lucide="external-link"></i></a>
+              </div>
+            </section>
+          </section>
         </section>
       </main>
     </div>
