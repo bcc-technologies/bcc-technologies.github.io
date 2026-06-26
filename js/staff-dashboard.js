@@ -6,11 +6,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateAccountMenu(user);
   bindWorkspaceMenu();
   bindWorkspaceViews();
+  bindStaffWorkPanels();
   hydrateProfileForm(user);
   bindEmailManager(user);
   renderPermissions(user);
-    window.BCCWorkspaceProductivity?.init(user);
-    window.BCCWorkspaceForms?.init(user);
+  window.BCCWorkspaceProductivity?.init(user);
+  window.BCCWorkspaceForms?.init(user);
   refreshIcons();
 });
 
@@ -63,17 +64,24 @@ function bindWorkspaceViews() {
   const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
   const title = document.querySelector("[data-workspace-view-title]");
   const viewIds = new Set(views.map(view => view.id));
+  const aliases = { productividad: "trabajo", calendario: "trabajo", formularios: "trabajo" };
+  const panelAliases = { productividad: "tareas", calendario: "agenda", formularios: "formularios" };
+
+  const normalizeViewId = id => aliases[id] || id;
 
   const showView = id => {
-    const nextId = viewIds.has(id) ? id : "resumen";
+    const requestedId = id || "resumen";
+    const nextId = viewIds.has(normalizeViewId(requestedId)) ? normalizeViewId(requestedId) : "resumen";
     views.forEach(view => {
       view.hidden = view.id !== nextId;
     });
     sidebarLinks.forEach(link => {
-      link.classList.toggle("active", link.getAttribute("href") === `#${nextId}`);
+      link.classList.toggle("active", normalizeViewId(link.getAttribute("href").slice(1)) === nextId);
     });
     const activeView = views.find(view => view.id === nextId);
     if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
+    if (nextId === "trabajo") openStaffWorkPanel(panelAliases[requestedId] || document.body.dataset.pendingWorkPanel || "tareas");
+    document.body.dataset.pendingWorkPanel = "";
     document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
     window.scrollTo({ top: 0, behavior: "auto" });
   };
@@ -81,10 +89,12 @@ function bindWorkspaceViews() {
   links.forEach(link => {
     link.addEventListener("click", event => {
       const id = link.getAttribute("href").slice(1);
-      if (!viewIds.has(id)) return;
+      const nextId = normalizeViewId(id);
+      if (!viewIds.has(nextId)) return;
       event.preventDefault();
-      if (window.location.hash !== `#${id}`) {
-        window.history.pushState(null, "", `#${id}`);
+      document.body.dataset.pendingWorkPanel = link.dataset.workPanelLink || panelAliases[id] || "";
+      if (window.location.hash !== `#${nextId}`) {
+        window.history.pushState(null, "", `#${nextId}`);
       }
       showView(id);
       document.body.classList.remove("workspace-nav-open");
@@ -93,6 +103,28 @@ function bindWorkspaceViews() {
 
   window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
   showView(window.location.hash.slice(1));
+}
+
+function bindStaffWorkPanels() {
+  document.querySelectorAll("[data-work-panel]").forEach(panel => {
+    panel.addEventListener("toggle", () => {
+      if (!panel.open) return;
+      document.querySelectorAll("[data-work-panel]").forEach(other => {
+        if (other !== panel) other.open = false;
+      });
+      refreshIcons();
+    });
+  });
+}
+
+function openStaffWorkPanel(panelId = "tareas") {
+  const panels = [...document.querySelectorAll("[data-work-panel]")];
+  const panel = panels.find(item => item.dataset.workPanel === panelId);
+  if (!panel) return;
+  panels.forEach(item => {
+    item.open = item === panel;
+  });
+  refreshIcons();
 }
 
 async function bindEmailManager(user) {

@@ -63,19 +63,11 @@
     </header>
     <aside class="workspace-sidebar">
       <nav class="workspace-nav" aria-label="Secciones de personal">
-        <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Jornada</span></p>
+        <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Personal</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#productividad"><i data-lucide="clipboard-check"></i><span>Tareas y KPIs</span></a>
-        <p class="workspace-nav-label"><i data-lucide="user-cog"></i><span>Cuenta</span></p>
-        <a href="#perfil"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
-        <p class="workspace-nav-label"><i data-lucide="wrench"></i><span>Herramientas</span></p>
-        <a href="#formularios"><i data-lucide="file-pen-line"></i><span>Formularios</span></a>
-        <a href="/cms.html" data-cms-access hidden><i data-lucide="file-text"></i><span>Content (CMS)</span></a>
-        <p class="workspace-nav-label"><i data-lucide="shield-check"></i><span>Gobierno</span></p>
-        <a href="/admin-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
-        <p class="workspace-nav-label"><i data-lucide="sparkles"></i><span>Potencial</span></p>
-        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="calendar-days"></i><span>Calendario</span><small>Futuro</small></span>
-        <span class="workspace-nav-item disabled" aria-disabled="true"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span><small>Futuro</small></span>
+        <a href="#trabajo"><i data-lucide="briefcase-business"></i><span>Trabajo</span></a>
+        <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
+        <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
       <section class="workspace-help">
         <strong>Acceso interno</strong>
@@ -98,8 +90,8 @@
               <p>Gestiona tareas, formularios internos y herramientas habilitadas para tus funciones.</p>
             </div>
             <div class="dashboard-actions">
-              <a class="btn btn-primary" href="#productividad"><i data-lucide="clipboard-check"></i>Tareas y KPIs</a>
-              <a class="btn btn-ghost" href="#formularios"><i data-lucide="file-pen-line"></i>Formularios</a>
+              <a class="btn btn-primary" href="#trabajo" data-work-panel-link="tareas"><i data-lucide="briefcase-business"></i>Trabajo</a>
+              <a class="btn btn-ghost" href="#conocimiento"><i data-lucide="notebook-tabs"></i>Conocimiento</a>
             </div>
           </section>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos de personal">
@@ -110,25 +102,25 @@
                 <strong>Revisar tareas y KPIs</strong>
                 <p>Organiza prioridades, estado y avance de actividades privadas.</p>
               </div>
-              <a href="#productividad">Abrir</a>
+              <a href="#trabajo" data-work-panel-link="tareas">Abrir</a>
             </article>
             <article class="priority-card">
-              <i data-lucide="file-pen-line"></i>
+              <i data-lucide="calendar-days"></i>
               <div>
-                <span>Formularios</span>
-                <strong>Responder pendientes internos</strong>
-                <p>Encuestas y reportes publicados para personal.</p>
+                <span>Agenda</span>
+                <strong>Ver calendario operativo</strong>
+                <p>Hitos, reuniones y seguimiento de la jornada interna.</p>
               </div>
-              <a href="#formularios">Revisar</a>
+              <a href="#trabajo" data-work-panel-link="agenda">Abrir</a>
             </article>
             <article class="priority-card">
-              <i data-lucide="mail"></i>
+              <i data-lucide="notebook-tabs"></i>
               <div>
-                <span>Cuenta</span>
-                <strong>Revisar correos</strong>
-                <p>Gestiona correos confirmados y contacto principal.</p>
+                <span>Conocimiento</span>
+                <strong>Consultar recursos internos</strong>
+                <p>Materiales, referencias y accesos utiles para el equipo.</p>
               </div>
-              <a href="#perfil">Abrir</a>
+              <a href="#conocimiento">Abrir</a>
             </article>
           </section>
           <section class="workspace-metrics account-metrics refined-metrics" aria-label="Estado de personal">
@@ -167,8 +159,9 @@
                 <span class="status-dot">En curso</span>
               </div>
               <div class="status-list">
-                <a href="#productividad"><i data-lucide="list-checks"></i><span>Prioridad</span><strong>Actualizar avance</strong></a>
-                <a href="#formularios"><i data-lucide="clipboard-list"></i><span>Seguimiento</span><strong>Revisar formularios</strong></a>
+                <a href="#trabajo" data-work-panel-link="tareas"><i data-lucide="list-checks"></i><span>Prioridad</span><strong>Actualizar avance</strong></a>
+                <a href="#trabajo" data-work-panel-link="agenda"><i data-lucide="calendar-clock"></i><span>Agenda</span><strong>Revisar proximos hitos</strong></a>
+                <a href="#trabajo" data-work-panel-link="formularios"><i data-lucide="clipboard-list"></i><span>Formularios</span><strong>Responder pendientes</strong></a>
                 <a href="#perfil"><i data-lucide="badge-check"></i><span>Cuenta</span><strong>Validar permisos</strong></a>
               </div>
             </aside>
@@ -247,12 +240,124 @@
             </aside>
           </div>
         </section>
-        <section class="workspace-view" id="productividad" data-workspace-view data-view-title="Tareas y KPIs" hidden>
-          <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
+        <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Trabajo" hidden>
+          <section class="staff-work-hub" aria-label="Trabajo de personal">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Operacion diaria</span>
+                <h2>Trabajo</h2>
+                <p>Unifica tareas, agenda y formularios en una sola vista para reducir saltos de navegacion y dejar espacio para crecer por subsecciones.</p>
+              </div>
+              <span class="status-pill enabled">Rutina activa</span>
+            </article>
+
+            <div class="staff-work-accordion">
+              <details class="module-surface staff-work-panel" data-work-panel="tareas" open>
+                <summary>
+                  <span><i data-lucide="clipboard-check"></i><strong>Tareas y KPIs</strong></span>
+                  <small>Prioridades, estado y avance</small>
+                  <i data-lucide="chevron-down"></i>
+                </summary>
+                <div class="staff-work-panel-body">
+                  <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
+                </div>
+              </details>
+
+              <details class="module-surface staff-work-panel" data-work-panel="agenda">
+                <summary>
+                  <span><i data-lucide="calendar-days"></i><strong>Calendario</strong></span>
+                  <small>Hoy, hitos y atajos</small>
+                  <i data-lucide="chevron-down"></i>
+                </summary>
+                <div class="staff-work-panel-body">
+                  <div class="staff-hub-grid compact">
+                    <article class="staff-hub-panel inline">
+                      <div class="module-head compact">
+                        <h2>Hoy</h2>
+                        <span class="status-dot">Activo</span>
+                      </div>
+                      <div class="staff-schedule-list">
+                        <div><i data-lucide="clipboard-check"></i><span>Prioridad</span><strong>Actualizar avance de tareas</strong></div>
+                        <div><i data-lucide="file-pen-line"></i><span>Operacion</span><strong>Revisar formularios pendientes</strong></div>
+                        <div><i data-lucide="badge-check"></i><span>Cuenta</span><strong>Validar permisos activos</strong></div>
+                      </div>
+                    </article>
+                    <article class="staff-hub-panel inline">
+                      <div class="module-head compact">
+                        <h2>Proximos hitos</h2>
+                        <span class="status-dot">Semanal</span>
+                      </div>
+                      <div class="staff-timeline-list">
+                        <a href="#trabajo" data-work-panel-link="tareas"><span>Tareas y KPIs</span><strong>Seguimiento de avance operativo</strong></a>
+                        <a href="#trabajo" data-work-panel-link="formularios"><span>Formularios</span><strong>Respuestas y reportes internos</strong></a>
+                        <a href="#conocimiento"><span>Conocimiento</span><strong>Actualizacion de recursos del equipo</strong></a>
+                      </div>
+                    </article>
+                    <aside class="staff-hub-panel inline staff-hub-actions">
+                      <h2>Atajos</h2>
+                      <a href="#trabajo" data-work-panel-link="tareas"><i data-lucide="list-checks"></i><span>Tareas y KPIs</span></a>
+                      <a href="#trabajo" data-work-panel-link="formularios"><i data-lucide="clipboard-list"></i><span>Formularios</span></a>
+                      <a href="/cms.html" data-cms-access hidden><i data-lucide="panels-top-left"></i><span>Content (CMS)</span></a>
+                    </aside>
+                  </div>
+                </div>
+              </details>
+
+              <details class="module-surface staff-work-panel" data-work-panel="formularios">
+                <summary>
+                  <span><i data-lucide="file-pen-line"></i><strong>Formularios</strong></span>
+                  <small>Solicitudes y reportes internos</small>
+                  <i data-lucide="chevron-down"></i>
+                </summary>
+                <div class="staff-work-panel-body">
+                  <section data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
+                </div>
+              </details>
+            </div>
+          </section>
         </section>
 
-        <section class="workspace-view" id="formularios" data-workspace-view data-view-title="Formularios" hidden>
-          <section data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
+        <section class="workspace-view" id="conocimiento" data-workspace-view data-view-title="Conocimiento" hidden>
+          <section class="staff-hub-workspace" aria-label="Conocimiento interno">
+            <article class="module-surface staff-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Base interna</span>
+                <h2>Conocimiento</h2>
+                <p>Un punto de entrada para recursos, referencias publicas y materiales internos que ayudan al equipo a trabajar con contexto comun.</p>
+              </div>
+              <span class="status-pill">Recursos</span>
+            </article>
+            <div class="staff-hub-grid">
+              <article class="module-surface staff-hub-panel">
+                <div class="module-head compact">
+                  <h2>Recursos BCC</h2>
+                  <span class="status-dot">Disponible</span>
+                </div>
+                <div class="staff-resource-list">
+                  <a href="/blog.html"><i data-lucide="newspaper"></i><span>Blog</span><strong>Contenido publicado</strong></a>
+                  <a href="/science.html"><i data-lucide="microscope"></i><span>Ciencia</span><strong>Investigacion y referencias</strong></a>
+                  <a href="/products.html"><i data-lucide="boxes"></i><span>Productos</span><strong>Soluciones y capacidades</strong></a>
+                  <a href="/cms.html" data-cms-access hidden><i data-lucide="file-text"></i><span>CMS</span><strong>Gestion editorial interna</strong></a>
+                </div>
+              </article>
+              <article class="module-surface staff-hub-panel">
+                <div class="module-head compact">
+                  <h2>Guias rapidas</h2>
+                  <span class="status-dot">Equipo</span>
+                </div>
+                <div class="staff-guide-list">
+                  <div><span>Accesos</span><strong>Valida tus permisos desde Mi perfil.</strong></div>
+                  <div><span>Operacion</span><strong>Gestiona avance y formularios desde las vistas de trabajo.</strong></div>
+                  <div><span>Contenido</span><strong>El acceso al CMS depende de roles internos asignados.</strong></div>
+                </div>
+              </article>
+              <aside class="module-surface staff-hub-panel staff-hub-note">
+                <i data-lucide="library"></i>
+                <h2>Biblioteca interna</h2>
+                <p>La estructura ya queda preparada para conectar documentos privados, manuales y procesos cuando el repositorio de conocimiento crezca.</p>
+              </aside>
+            </div>
+          </section>
         </section>
       </main>
     </div>
