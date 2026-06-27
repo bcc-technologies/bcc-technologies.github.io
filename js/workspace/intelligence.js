@@ -2601,9 +2601,10 @@
   }
 
   function formatDate(value) {
-    const date = value ? new Date(value) : null;
-    if (!date || Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString("es-DO", { year: "numeric", month: "short", day: "2-digit" });
+    return window.BCCWorkspaceUtils.formatDate(value, {
+      empty: "-",
+      dateOptions: { year: "numeric", month: "short", day: "2-digit" }
+    });
   }
 
   function trimText(value, maxLength = 0) {
@@ -2613,15 +2614,14 @@
   }
 
   function formatDateTime(value) {
-    const date = value ? new Date(value) : null;
-    if (!date || Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleString("es-DO", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return window.BCCWorkspaceUtils.formatDateTime(value, { empty: "-" });
   }
 
   function compactDateLabel(value) {
-    const date = value ? new Date(value) : null;
-    if (!date || Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString("es-DO", { month: "short", day: "2-digit" });
+    return window.BCCWorkspaceUtils.formatDate(value, {
+      empty: "-",
+      dateOptions: { month: "short", day: "2-digit" }
+    });
   }
 
   function cutoffDate(range) {
@@ -2767,33 +2767,7 @@
   }
 
   function renderMessageBlock(target, text, tone = "neutral") {
-    const content = String(text || "").trim();
-    target.dataset.tone = tone;
-    const copySupported = typeof document?.createElement === "function";
-    if (!copySupported) {
-      target.textContent = content;
-      return;
-    }
-    const textNode = document.createElement("span");
-    textNode.textContent = content;
-    target.replaceChildren(textNode);
-    if (content.length < 170) return;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "workspace-message-copy";
-    button.textContent = "Copiar detalle";
-    button.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(content);
-        button.textContent = "Copiado";
-        window.setTimeout(() => {
-          button.textContent = "Copiar detalle";
-        }, 1400);
-      } catch {
-        button.textContent = "No se pudo copiar";
-      }
-    });
-    target.append(button);
+    window.BCCWorkspaceUtils.renderMessageBlock(target, text, tone);
   }
 
   async function copyErrorDetail(button, text) {
@@ -2820,30 +2794,19 @@
   }
 
   function withTimeout(promise, timeoutMs, message) {
-    let timerId = 0;
-    const timeoutPromise = new Promise((_, reject) => {
-      timerId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
-    });
-    return Promise.race([promise, timeoutPromise]).finally(() => {
-      window.clearTimeout(timerId);
-    });
+    return window.BCCWorkspaceUtils.withTimeout(promise, timeoutMs, message);
   }
 
   function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+    return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
   function escapeAttr(value) {
-    return escapeHtml(value);
+    return window.BCCWorkspaceUtils.escapeAttr(value);
   }
 
   function refreshIcons() {
-    window.BCCWorkspaceIcons?.createIcons(root);
+    window.BCCWorkspaceUtils.refreshIcons(root);
     window.refreshIcons?.();
   }
 

@@ -398,7 +398,7 @@
   }
 
   function formatDate(date) {
-    return new Date(`${date}T12:00:00`).toLocaleDateString("es-DO", { day: "numeric", month: "short" });
+    return window.BCCWorkspaceUtils.formatLocalDate(date);
   }
 
   function localDate(date = new Date()) {
@@ -411,11 +411,7 @@
   }
 
   function setMessage(message, tone = "neutral") {
-    const target = root.querySelector("[data-task-message]");
-    if (!target) return;
-    target.textContent = message;
-    target.dataset.tone = tone;
-    target.hidden = !message;
+    window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-task-message]"), message, tone);
   }
 
   function toggleSubmitting(form, busy) {
@@ -432,17 +428,11 @@
   }
 
   function refreshIcons() {
-    window.BCCWorkspaceIcons?.createIcons(root);
+    window.BCCWorkspaceUtils.refreshIcons(root);
   }
 
   function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[char]));
+    return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
   window.BCCWorkspaceProductivity = { init };

@@ -1,0 +1,133 @@
+/* Account, profile and security surfaces shared by client and staff dashboards. */
+
+.account-details dd small{
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-muted);
+  font-size: .74rem;
+  font-weight: 500;
+}
+
+.security-summary{
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 18px;
+}
+
+.security-summary div{
+  display: grid;
+  grid-template-columns: 21px minmax(0, 1fr);
+  gap: 2px 9px;
+}
+
+.security-summary svg{
+  grid-row: span 2;
+  width: 17px;
+  color: #188957;
+}
+
+.security-summary strong{
+  font-size: .79rem;
+}
+
+.security-summary span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+}
+
+.profile-workspace{
+  display: grid;
+  grid-template-columns: minmax(420px, 2.05fr) minmax(250px, .95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.profile-workspace-expanded{
+  grid-template-columns: minmax(360px, 1fr) minmax(320px, 1fr);
+}
+
+.profile-workspace-expanded .account-email-manager{
+  grid-row: span 2;
+}
+
+@media (max-width: 1120px){
+  .account-workspace-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .account-rail{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px){
+  .profile-workspace{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px){
+  .account-rail{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shared profile forms and permission lists */
+.auth-message{
+  min-height: 20px;
+  color: var(--danger, #b42318);
+  font-size: .92rem;
+}
+
+.auth-message[data-tone="ok"]{
+  color: var(--success, #067647);
+}
+
+.permission-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+
+.permission-list li{
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+}
+
+.profile-form{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.profile-form .auth-message{
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.profile-form label{
+  display: grid;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 700;
+}
+
+.profile-form input{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+}

@@ -1,30 +1,7 @@
 (() => {
-  const PHASES = [
-    { id: "lead", label: "Lead" },
-    { id: "qualified", label: "Calificado" },
-    { id: "contacted", label: "Contactado" },
-    { id: "proposal", label: "Propuesta" },
-    { id: "negotiation", label: "Negociación" },
-    { id: "won", label: "Ganado" },
-    { id: "lost", label: "Perdido" }
-  ];
-
-  const EMAIL_STATUSES = [
-    { id: "draft", label: "Borrador" },
-    { id: "scheduled", label: "Programado" },
-    { id: "sent", label: "Enviado" },
-    { id: "archived", label: "Archivado" }
-  ];
-
-  const TEMPLATE_HINTS = [
-    "{{first_name}}",
-    "{{full_name}}",
-    "{{company}}",
-    "{{email}}",
-    "{{phase}}"
-  ];
-
-  const PROSPECTS_TIMEOUT_MS = 12000;
+  const { PHASES, EMAIL_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
+  const ProspectsApi = window.BCCWorkspaceProspectsApi;
+  const ProspectsLayout = window.BCCWorkspaceProspectsLayout;
 
   let root = null;
   let user = null;
@@ -50,108 +27,7 @@
   }
 
   function renderShell() {
-    root.innerHTML = `
-      <section class="prospects-workspace">
-        <section class="module-surface prospects-hero">
-          <div class="prospects-hero-copy">
-            <h2>Prospectos y correos</h2>
-            <p class="muted-text" data-prospects-message>Cargando CRM...</p>
-          </div>
-          <div class="prospects-toolbar-actions">
-            <label class="workspace-search prospects-search">
-              <i data-lucide="search"></i>
-              <input type="search" data-prospect-search placeholder="Buscar prospectos..." autocomplete="off" aria-label="Buscar prospectos" />
-            </label>
-            <select data-prospect-phase-filter aria-label="Filtrar por fase">
-              <option value="">Todas las fases</option>
-              ${PHASES.map(phase => `<option value="${escapeHtml(phase.id)}">${escapeHtml(phase.label)}</option>`).join("")}
-            </select>
-            <button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh><i data-lucide="refresh-cw"></i>Actualizar</button>
-            <button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button>
-          </div>
-        </section>
-
-        <section class="workspace-metrics prospects-metrics" aria-label="Resumen de prospectos">
-          <div><span>Prospectos</span><strong data-prospect-metric="total">-</strong><small>Base activa</small></div>
-          <div><span>Seguimiento hoy</span><strong data-prospect-metric="due">-</strong><small>Acciones vencidas o para hoy</small></div>
-          <div><span>En propuesta</span><strong data-prospect-metric="pipeline">-</strong><small>Propuesta y negociación</small></div>
-          <div><span>Ganados</span><strong data-prospect-metric="won">-</strong><small>Cierres registrados</small></div>
-        </section>
-
-        <section class="prospects-command-grid">
-          <article class="module-surface prospects-pipeline-panel">
-            <div class="module-head compact">
-              <h2>Pipeline</h2>
-            </div>
-            <section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section>
-          </article>
-          <aside class="prospects-signal-stack" aria-label="Señales comerciales">
-            <article class="module-surface prospects-panel prospects-panel-compact">
-              <div class="activity-head">
-                <h3>Señales comerciales</h3>
-                <span data-prospect-sent-count>0</span>
-              </div>
-              <div class="prospect-insight-grid" data-prospect-insight-grid></div>
-            </article>
-            <article class="module-surface prospects-panel prospects-panel-compact">
-              <div class="activity-head">
-                <h3>Correos por fase</h3>
-                <span data-prospect-phase-email-count>0</span>
-              </div>
-              <div class="prospect-insight-list" data-prospect-phase-email-list></div>
-            </article>
-            <article class="module-surface prospects-panel prospects-panel-compact">
-              <div class="activity-head">
-                <h3>Avance entre etapas</h3>
-                <span data-prospect-conversion-count>0</span>
-              </div>
-              <div class="prospect-insight-list" data-prospect-conversion-list></div>
-            </article>
-          </aside>
-        </section>
-
-        <section class="prospects-workbench">
-          <article class="module-surface prospects-panel prospect-profile-panel">
-            <div class="activity-head">
-              <h3>Ficha del prospecto</h3>
-              <span data-prospect-card-state>nuevo</span>
-            </div>
-            <form class="prospects-form" data-prospect-form></form>
-          </article>
-          <article class="module-surface prospects-panel prospect-email-panel">
-            <div class="activity-head">
-              <h3>Correos y seguimiento</h3>
-              <span data-prospect-email-count>0</span>
-            </div>
-            <section class="prospects-email" data-prospect-email-section></section>
-          </article>
-        </section>
-
-        <section class="prospects-operations-grid">
-          <article class="module-surface prospects-panel">
-            <div class="activity-head">
-              <h3>Plantillas</h3>
-              <span data-prospect-template-count>0</span>
-            </div>
-            <section class="prospects-template-layout">
-              <form class="prospects-form prospects-form-compact" data-template-form></form>
-              <div class="prospect-template-list" data-template-list></div>
-            </section>
-          </article>
-          <article class="module-surface prospects-panel">
-            <div class="activity-head">
-              <h3>Timeline</h3>
-              <span data-prospect-activity-count>0</span>
-            </div>
-            <section class="prospects-timeline-layout">
-              <form class="prospects-form prospects-form-compact" data-activity-form></form>
-              <div class="prospect-activity-list" data-activity-list></div>
-            </section>
-          </article>
-        </section>
-      </section>
-    `;
-    refreshIcons();
+    ProspectsLayout.renderShell(root, { phases: PHASES, escapeHtml, refreshIcons });
   }
 
   function bindControls() {
@@ -186,11 +62,7 @@
   async function loadDashboard() {
     setMessage("Cargando prospectos...", "neutral");
     try {
-      const data = await withTimeout(
-        window.BCCAuth.api("/api/admin/prospects/dashboard"),
-        PROSPECTS_TIMEOUT_MS,
-        "Supabase no respondio a tiempo al cargar prospectos."
-      );
+      const data = await ProspectsApi.loadDashboard({ timeoutMs: PROSPECTS_TIMEOUT_MS, withTimeout });
       prospects = Array.isArray(data.prospects) ? data.prospects : [];
       templates = Array.isArray(data.templates) ? data.templates : [];
       emails = Array.isArray(data.emails) ? data.emails : [];
@@ -657,9 +529,7 @@
     };
     try {
       const prospectId = fieldValue(form, "id");
-      const data = prospectId
-        ? await window.BCCAuth.api(`/api/admin/prospects/${encodeURIComponent(prospectId)}`, { method: "PATCH", body: JSON.stringify(payload) })
-        : await window.BCCAuth.api("/api/admin/prospects", { method: "POST", body: JSON.stringify(payload) });
+      const data = await ProspectsApi.saveProspect(prospectId, payload);
       upsertStateItem(prospects, data.prospect);
       selectedProspectId = data.prospect.id;
       selectedEmailId = "";
@@ -674,7 +544,7 @@
     const id = event.currentTarget.dataset.prospectDelete || "";
     if (!id || !window.confirm("¿Eliminar este prospecto y su historial de correos?")) return;
     try {
-      await window.BCCAuth.api(`/api/admin/prospects/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await ProspectsApi.deleteProspect(id);
       prospects = prospects.filter(item => item.id !== id);
       emails = emails.filter(item => item.prospectId !== id);
       activities = activities.filter(item => item.prospectId !== id);
@@ -703,9 +573,7 @@
     };
     try {
       const templateId = fieldValue(form, "id");
-      const data = templateId
-        ? await window.BCCAuth.api(`/api/admin/prospect-templates/${encodeURIComponent(templateId)}`, { method: "PATCH", body: JSON.stringify(payload) })
-        : await window.BCCAuth.api("/api/admin/prospect-templates", { method: "POST", body: JSON.stringify(payload) });
+      const data = await ProspectsApi.saveTemplate(templateId, payload);
       upsertStateItem(templates, data.template);
       selectedTemplateId = data.template.id;
       setMessage(`Plantilla ${data.template.name} guardada.`, "ok");
@@ -720,7 +588,7 @@
     const id = event.currentTarget.dataset.templateDelete || "";
     if (!id || !window.confirm("¿Eliminar esta plantilla?")) return;
     try {
-      await window.BCCAuth.api(`/api/admin/prospect-templates/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await ProspectsApi.deleteTemplate(id);
       templates = templates.filter(item => item.id !== id);
       if (selectedTemplateId === id) selectedTemplateId = templates[0]?.id || "";
       setMessage("Plantilla eliminada.", "ok");
@@ -773,7 +641,7 @@
     const id = event.currentTarget.dataset.emailDelete || "";
     if (!id || !window.confirm("¿Eliminar este correo del historial?")) return;
     try {
-      await window.BCCAuth.api(`/api/admin/prospect-emails/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await ProspectsApi.deleteEmail(id);
       emails = emails.filter(item => item.id !== id);
       if (selectedEmailId === id) selectedEmailId = "";
       setMessage("Correo eliminado.", "ok");
@@ -796,9 +664,7 @@
     };
     try {
       const activityId = fieldValue(form, "id");
-      const data = activityId
-        ? await window.BCCAuth.api(`/api/admin/prospect-activities/${encodeURIComponent(activityId)}`, { method: "PATCH", body: JSON.stringify(payload) })
-        : await window.BCCAuth.api(`/api/admin/prospects/${encodeURIComponent(prospect.id)}/activities`, { method: "POST", body: JSON.stringify(payload) });
+      const data = await ProspectsApi.saveActivity(prospect.id, activityId, payload);
       upsertStateItem(activities, data.activity);
       selectedActivityId = data.activity.id;
       setMessage("Actividad guardada en la timeline.", "ok");
@@ -814,7 +680,7 @@
     const id = event.currentTarget.dataset.activityDelete || "";
     if (!id || !window.confirm("¿Eliminar esta actividad del timeline?")) return;
     try {
-      await window.BCCAuth.api(`/api/admin/prospect-activities/${encodeURIComponent(id)}`, { method: "DELETE" });
+      await ProspectsApi.deleteActivity(id);
       activities = activities.filter(item => item.id !== id);
       if (selectedActivityId === id) selectedActivityId = "";
       setMessage("Actividad eliminada.", "ok");
@@ -827,21 +693,14 @@
   }
 
   async function persistEmail(prospectId, payload, emailId = "") {
-    const data = emailId
-      ? await window.BCCAuth.api(`/api/admin/prospect-emails/${encodeURIComponent(emailId)}`, { method: "PATCH", body: JSON.stringify(payload) })
-      : await window.BCCAuth.api(`/api/admin/prospects/${encodeURIComponent(prospectId)}/emails`, { method: "POST", body: JSON.stringify(payload) });
+    const data = await ProspectsApi.persistEmail(prospectId, payload, emailId);
     upsertStateItem(emails, data.email);
     selectedEmailId = data.email.id;
     return data;
   }
 
   async function invokeSendEmail(id) {
-    const supabase = await window.BCCAuth.loadSupabaseClient();
-    const { data, error } = await supabase.functions.invoke("send-prospect-email", {
-      body: { emailId: id }
-    });
-    if (error) throw await edgeFunctionError(error, "No fue posible enviar el correo.");
-    if (data?.ok === false) throw new Error(data.error || "No fue posible enviar el correo.");
+    const data = await ProspectsApi.sendEmail(id, { edgeFunctionError });
     if (data?.email) {
       upsertStateItem(emails, data.email);
       selectedEmailId = data.email.id;
@@ -988,13 +847,7 @@
   }
 
   function activityTypeOptions() {
-    return [
-      { id: "note", label: "Nota" },
-      { id: "call", label: "Llamada" },
-      { id: "meeting", label: "Reunión" },
-      { id: "email", label: "Correo" },
-      { id: "follow_up", label: "Follow-up" }
-    ];
+    return ACTIVITY_TYPES;
   }
 
   function activityTypeLabel(value) {
@@ -1055,9 +908,7 @@
   }
 
   function formatDate(value) {
-    const date = value ? new Date(value) : null;
-    if (!date || Number.isNaN(date.getTime())) return "sin fecha";
-    return date.toLocaleString("es-DO", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return window.BCCWorkspaceUtils.formatDateTime(value, { empty: "sin fecha" });
   }
 
   function number(value) {
@@ -1065,13 +916,7 @@
   }
 
   function withTimeout(promise, timeoutMs, message) {
-    let timerId = 0;
-    const timeoutPromise = new Promise((_, reject) => {
-      timerId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
-    });
-    return Promise.race([promise, timeoutPromise]).finally(() => {
-      window.clearTimeout(timerId);
-    });
+    return window.BCCWorkspaceUtils.withTimeout(promise, timeoutMs, message);
   }
 
   function prospectsError(error) {
@@ -1104,20 +949,15 @@
   }
 
   function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+    return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
   function escapeAttr(value) {
-    return escapeHtml(value);
+    return window.BCCWorkspaceUtils.escapeAttr(value);
   }
 
   function refreshIcons() {
-    window.refreshIcons?.();
+    window.BCCWorkspaceUtils.refreshIcons(root || document);
   }
 
   window.BCCWorkspaceProspects = { init };

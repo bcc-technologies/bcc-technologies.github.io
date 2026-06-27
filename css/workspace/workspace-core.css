@@ -632,3 +632,156 @@
   color: var(--ink-muted);
   font-size: .74rem;
 }
+
+@media (max-width: 1120px){
+  .workspace-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .activity-surface{
+    max-width: none;
+  }
+
+  .activity-feed{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+}
+
+@media (max-width: 900px){
+  .workspace-metrics{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workspace-metrics div:nth-child(2){
+    border-right: 0;
+  }
+
+  .workspace-metrics div:nth-child(-n + 2){
+    border-bottom: 1px solid var(--line);
+  }
+
+  .surface-toolbar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .surface-filters{
+    justify-content: flex-start;
+  }
+
+  .activity-feed{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px){
+  .surface-filters select{
+    flex: 1 1 155px;
+    max-width: none;
+  }
+
+  .surface-mobile-search{
+    flex: 1 1 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0 10px;
+    color: var(--ink-muted);
+  }
+
+  .surface-mobile-search svg{
+    width: 17px;
+  }
+
+  .surface-mobile-search input{
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: .88rem;
+  }
+
+  .table-scroll{
+    overflow: visible;
+  }
+}
+
+/* Shared tables and access chips */
+.account-table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.account-table th,
+.account-table td{
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.account-table th{
+  color: var(--ink-muted);
+  font-size: .78rem;
+  text-transform: uppercase;
+}
+
+.account-table td span{
+  display: block;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  margin-top: 2px;
+}
+
+.role-badge,
+.chip-list span,
+.muted-chip{
+  width: fit-content;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.role-badge{
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.role-client{
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.role-staff{
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+}
+
+.chip-list{
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-list span{
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.muted-chip{
+  color: var(--ink-muted);
+  background: transparent;
+}

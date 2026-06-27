@@ -1683,3 +1683,81 @@
   color: var(--ink-muted);
   font-size: .82rem;
 }
+
+@media (max-width: 900px){
+  .analytics-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-grid-overview,
+  .intelligence-signal-stage{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-controls{
+    justify-content: flex-start;
+  }
+
+  .intelligence-summary-strip,
+  .intelligence-filter-grid,
+  .intelligence-detail-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-head-split,
+  .intelligence-paper-card-head,
+  .intelligence-paper-card-footer{
+    flex-direction: column;
+  }
+
+  .intelligence-head-actions,
+  .intelligence-paper-card-actions{
+    justify-content: flex-start;
+  }
+
+  .intelligence-filter-grid-papers,
+  .intelligence-paper-card-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-paper-card-side{
+    justify-items: start;
+    min-width: 0;
+  }
+
+  .intelligence-signal-detail-hero,
+  .intelligence-heatmap,
+  .intelligence-form,
+  .analytics-domain-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px){
+  .intelligence-briefing-head,
+  .intelligence-chart-head,
+  .intelligence-topic-topline{
+    display: grid;
+  }
+
+  .intelligence-briefing-metrics,
+  .intelligence-priority-list,
+  .intelligence-signal-summary,
+  .analytics-domain-metrics,
+  .analytics-domain-columns{
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-detail-block-sticky{
+    position: static;
+  }
+
+  .analytics-controls{
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .analytics-range-field{
+    flex: 1 1 100%;
+  }
+}

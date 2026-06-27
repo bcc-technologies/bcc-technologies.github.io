@@ -95,7 +95,7 @@
   border-radius: 9px;
 }
 
-@media (max-width: 860px){
+@media (max-width: 900px){
   .workspace-nav-item{
     min-height: 38px;
   }

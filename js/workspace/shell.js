@@ -43,7 +43,7 @@
 
   nav.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => {
-      if (window.matchMedia("(max-width: 860px)").matches) closeMobileNav();
+      if (window.matchMedia("(max-width: 900px)").matches) closeMobileNav();
     });
   });
 

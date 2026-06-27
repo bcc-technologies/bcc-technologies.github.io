@@ -6,40 +6,23 @@ let roleDefinitionsLoaded = false;
 let roleDefinitionsRequest = null;
 let activeRoleFilter = "all";
 
-const FALLBACK_BASE_ROLES = [
-  { value: "client", label: "Cliente" },
-  { value: "staff", label: "Personal" },
-  { value: "admin", label: "Administrador" }
-];
-const FALLBACK_STAFF_ROLES = [
-  { value: "author", label: "Autor" },
-  { value: "cofounder", label: "Cofounder" },
-  { value: "department_director", label: "Director" }
-];
-const FALLBACK_DEPARTMENTS = [
-  { value: "technology", label: "Tecnología" },
-  { value: "finance", label: "Finanzas" },
-  { value: "operations", label: "Operaciones" },
-  { value: "marketing", label: "Marketing" },
-  { value: "hr", label: "Recursos humanos" }
-];
+const FALLBACK_BASE_ROLES = window.BCCWorkspaceUtils.BASE_ROLE_OPTIONS;
+const FALLBACK_STAFF_ROLES = window.BCCWorkspaceUtils.STAFF_ROLE_OPTIONS;
+const FALLBACK_DEPARTMENTS = window.BCCWorkspaceUtils.DEPARTMENT_OPTIONS;
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ admin: true });
   if (!user) return;
   window.BCCAdminCurrentUser = user;
 
-  document.querySelectorAll("[data-user-menu-name]").forEach(el => { el.textContent = user.displayName || user.name; });
-  document.querySelectorAll("[data-user-menu-role]").forEach(el => { el.textContent = roleLabel(user.role); });
-  document.querySelectorAll("[data-user-initial]").forEach(el => { el.textContent = (user.displayName || user.name || "?").trim().charAt(0).toUpperCase(); });
-  document.querySelectorAll("[data-dashboard-link]").forEach(el => { el.href = window.BCCAuth.routeForUser(user); });
+  window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel });
 
   hydrateLocalCmsLinks();
   bindWorkspaceControls();
   bindAdminWorkspaceRouter(user);
   bindAccessModal();
   bindRoleAdminControls();
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
   await loadRoleDefinitions();
   await Promise.all([loadUsers(), loadAuditLogs()]);
 });
@@ -52,7 +35,7 @@ async function loadUsers() {
     renderUsers();
     renderMetrics();
   } catch (error) {
-    if (message) renderWorkspaceMessage(message, error.message, "error");
+    if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, error.message, "error");
   }
 }
 
@@ -65,13 +48,13 @@ async function loadAuditLogs() {
     adminAuditLogs = logs;
     feed.replaceChildren(...logs.slice(0, 10).map(auditItem));
     if (message) {
-      renderWorkspaceMessage(message, logs.length ? "Cambios de permisos registrados." : "Todavia no hay cambios registrados.");
+      window.BCCWorkspaceUtils.renderMessageBlock(message, logs.length ? "Cambios de permisos registrados." : "Todavia no hay cambios registrados.");
     }
     const count = document.querySelector("[data-audit-count]");
     if (count) count.textContent = String(logs.length);
     renderMetrics();
   } catch (error) {
-    if (message) renderWorkspaceMessage(message, error.message, "error");
+    if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, error.message, "error");
   }
 }
 
@@ -87,32 +70,10 @@ function renderUsers() {
   } else {
     table.replaceChildren(...users.map(userRow));
   }
-  if (message) renderWorkspaceMessage(message, `${users.length} de ${adminUsers.length} cuenta(s).`);
-  refreshIcons();
+  if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, `${users.length} de ${adminUsers.length} cuenta(s).`);
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
-function renderWorkspaceMessage(target, text, tone = "neutral") {
-  const content = String(text || "").trim();
-  target.dataset.tone = tone;
-  target.replaceChildren(document.createTextNode(content));
-  if (content.length < 170) return;
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "workspace-message-copy";
-  button.textContent = "Copiar detalle";
-  button.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      button.textContent = "Copiado";
-      window.setTimeout(() => {
-        button.textContent = "Copiar detalle";
-      }, 1400);
-    } catch {
-      button.textContent = "No se pudo copiar";
-    }
-  });
-  target.append(button);
-}
 
 function filteredUsers() {
   const query = [...document.querySelectorAll("[data-user-search], [data-user-search-mobile]")]
@@ -123,7 +84,7 @@ function filteredUsers() {
   const cmsOnly = Boolean(document.querySelector("[data-cms-filter]")?.checked);
   return adminUsers.filter(user => {
     const activity = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "sin acceso";
-    const searchable = [user.name, user.email, user.company, user.title, roleLabel(user.role), labelsFor(user.customRoles || [], customRoleOptions()), activity].join(" ").toLowerCase();
+    const searchable = [user.name, user.email, user.company, user.title, roleLabel(user.role), window.BCCWorkspaceUtils.labelsFor(user.customRoles || [], customRoleOptions()), activity].join(" ").toLowerCase();
     if (query && !searchable.includes(query)) return false;
     if (role && user.role !== role) return false;
     if (department && !(user.departments || []).includes(department)) return false;
@@ -133,10 +94,10 @@ function filteredUsers() {
 }
 
 function renderMetrics() {
-  setText("[data-metric-accounts]", adminUsers.length);
-  setText("[data-metric-staff]", adminUsers.filter(user => user.role === "staff" || user.role === "admin").length);
-  setText("[data-metric-cms]", adminUsers.filter(hasCmsAccess).length);
-  setText("[data-metric-changes]", adminAuditLogs.length);
+  window.BCCWorkspaceUtils.setText("[data-metric-accounts]", adminUsers.length);
+  window.BCCWorkspaceUtils.setText("[data-metric-staff]", adminUsers.filter(user => user.role === "staff" || user.role === "admin").length);
+  window.BCCWorkspaceUtils.setText("[data-metric-cms]", adminUsers.filter(hasCmsAccess).length);
+  window.BCCWorkspaceUtils.setText("[data-metric-changes]", adminAuditLogs.length);
 }
 
 function userRow(user) {
@@ -144,12 +105,12 @@ function userRow(user) {
   const row = document.createElement("tr");
   row.innerHTML = `
     <td class="user-cell" data-label="Cuenta">
-      <strong>${escapeHtml(user.name)}</strong>
-      <span>${escapeHtml(user.email)}</span>
-      <small>${escapeHtml(user.company || "Sin compañía")}</small>
+      <strong>${window.BCCWorkspaceUtils.escapeHtml(user.name)}</strong>
+      <span>${window.BCCWorkspaceUtils.escapeHtml(user.email)}</span>
+      <small>${window.BCCWorkspaceUtils.escapeHtml(user.company || "Sin compañía")}</small>
     </td>
     <td data-label="Rol y área">
-      <span class="role-badge role-${escapeHtml(user.role)}">${escapeHtml(roleLabel(user.role))}</span>
+      <span class="role-badge role-${window.BCCWorkspaceUtils.escapeHtml(user.role)}">${window.BCCWorkspaceUtils.escapeHtml(roleLabel(user.role))}</span>
       ${chipList(departments, departmentOptions(), "Sin área")}
     </td>
     <td data-label="Acceso">
@@ -175,9 +136,9 @@ function auditItem(log) {
   item.innerHTML = `
     <span class="activity-dot"></span>
     <div>
-      <strong>${escapeHtml(log.actorEmail || "Administrador")}</strong>
-      <p>${escapeHtml(shortAccessChange(log.beforeAccess, log.afterAccess))}</p>
-      <small>${escapeHtml(log.targetEmail || "-")} · ${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</small>
+      <strong>${window.BCCWorkspaceUtils.escapeHtml(log.actorEmail || "Administrador")}</strong>
+      <p>${window.BCCWorkspaceUtils.escapeHtml(shortAccessChange(log.beforeAccess, log.afterAccess))}</p>
+      <small>${window.BCCWorkspaceUtils.escapeHtml(log.targetEmail || "-")} · ${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</small>
     </div>
   `;
   return item;
@@ -266,12 +227,12 @@ function mountWorkspaceModule(config, user) {
   if (root.dataset.workspaceModuleReady === "true") return;
 
   if (!config.module?.init) {
-    root.innerHTML = `<p class="muted-text">${escapeHtml(config.errorText)}</p>`;
+    root.innerHTML = `<p class="muted-text">${window.BCCWorkspaceUtils.escapeHtml(config.errorText)}</p>`;
     return;
   }
 
   if (!root.textContent.trim()) {
-    root.innerHTML = `<p class="muted-text">${escapeHtml(config.loadingText)}</p>`;
+    root.innerHTML = `<p class="muted-text">${window.BCCWorkspaceUtils.escapeHtml(config.loadingText)}</p>`;
   }
 
   try {
@@ -279,7 +240,7 @@ function mountWorkspaceModule(config, user) {
     root.dataset.workspaceModuleReady = "true";
   } catch (error) {
     console.error(`Failed to initialize workspace module: ${config.key}`, error);
-    root.innerHTML = `<p class="muted-text">${escapeHtml(config.errorText)}</p>`;
+    root.innerHTML = `<p class="muted-text">${window.BCCWorkspaceUtils.escapeHtml(config.errorText)}</p>`;
   }
 }
 
@@ -330,7 +291,7 @@ async function openAccessModal(user) {
   hideAccessConfirmation(modal);
   const roleSelect = modal.querySelector("[data-modal-role-select]");
   roleSelect.innerHTML = baseRoleOptions()
-    .map(role => `<option value="${escapeHtml(role.value)}" ${role.value === user.role ? "selected" : ""}>${escapeHtml(role.label)}</option>`)
+    .map(role => `<option value="${window.BCCWorkspaceUtils.escapeHtml(role.value)}" ${role.value === user.role ? "selected" : ""}>${window.BCCWorkspaceUtils.escapeHtml(role.label)}</option>`)
     .join("");
   roleSelect.disabled = isSelfAdmin;
   modal.querySelector("[data-modal-role-note]").hidden = !isSelfAdmin;
@@ -339,7 +300,7 @@ async function openAccessModal(user) {
   renderChoiceGroup(modal.querySelector("[data-modal-custom-roles]"), customRoleOptions(), user.customRoles || [], "custom-role");
   updateAccessPreview();
   modal.showModal();
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
 function renderChoiceGroup(container, options, selected, key) {
@@ -349,13 +310,13 @@ function renderChoiceGroup(container, options, selected, key) {
     const emptyText = key === "custom-role"
       ? "No hay roles personalizados creados."
       : "No hay opciones disponibles.";
-    container.innerHTML = `<p class="muted-text access-empty-state">${escapeHtml(emptyText)}</p>`;
+    container.innerHTML = `<p class="muted-text access-empty-state">${window.BCCWorkspaceUtils.escapeHtml(emptyText)}</p>`;
     return;
   }
   container.innerHTML = options.map(option => `
     <label>
-      <input type="checkbox" data-${key}="${escapeHtml(option.value)}" ${active.includes(option.value) ? "checked" : ""}>
-      <span>${escapeHtml(option.label)}</span>
+      <input type="checkbox" data-${key}="${window.BCCWorkspaceUtils.escapeHtml(option.value)}" ${active.includes(option.value) ? "checked" : ""}>
+      <span>${window.BCCWorkspaceUtils.escapeHtml(option.label)}</span>
     </label>
   `).join("");
 }
@@ -444,14 +405,14 @@ function accessChangeSummary(user, nextRole, nextStaffRoles, nextDepartments, ne
   const oldDepartments = Array.isArray(user.departments) ? user.departments : [];
   const oldCustomRoles = Array.isArray(user.customRoles) ? user.customRoles : [];
   if (user.role !== nextRole) changes.push(`Rol base: ${roleLabel(user.role)} -> ${roleLabel(nextRole)}`);
-  if (!sameSet(oldStaffRoles, nextStaffRoles)) {
-    changes.push(`Roles internos: ${labelsFor(oldStaffRoles, staffRoleOptions()) || "ninguno"} -> ${labelsFor(nextStaffRoles, staffRoleOptions()) || "ninguno"}`);
+  if (!window.BCCWorkspaceUtils.sameSet(oldStaffRoles, nextStaffRoles)) {
+    changes.push(`Roles internos: ${window.BCCWorkspaceUtils.labelsFor(oldStaffRoles, staffRoleOptions()) || "ninguno"} -> ${window.BCCWorkspaceUtils.labelsFor(nextStaffRoles, staffRoleOptions()) || "ninguno"}`);
   }
-  if (!sameSet(oldDepartments, nextDepartments)) {
-    changes.push(`Departamentos: ${labelsFor(oldDepartments, departmentOptions()) || "ninguno"} -> ${labelsFor(nextDepartments, departmentOptions()) || "ninguno"}`);
+  if (!window.BCCWorkspaceUtils.sameSet(oldDepartments, nextDepartments)) {
+    changes.push(`Departamentos: ${window.BCCWorkspaceUtils.labelsFor(oldDepartments, departmentOptions()) || "ninguno"} -> ${window.BCCWorkspaceUtils.labelsFor(nextDepartments, departmentOptions()) || "ninguno"}`);
   }
-  if (!sameSet(oldCustomRoles, nextCustomRoles)) {
-    changes.push(`Roles personalizados: ${labelsFor(oldCustomRoles, customRoleOptions()) || "ninguno"} -> ${labelsFor(nextCustomRoles, customRoleOptions()) || "ninguno"}`);
+  if (!window.BCCWorkspaceUtils.sameSet(oldCustomRoles, nextCustomRoles)) {
+    changes.push(`Roles personalizados: ${window.BCCWorkspaceUtils.labelsFor(oldCustomRoles, customRoleOptions()) || "ninguno"} -> ${window.BCCWorkspaceUtils.labelsFor(nextCustomRoles, customRoleOptions()) || "ninguno"}`);
   }
   return changes;
 }
@@ -472,9 +433,9 @@ function isSensitiveAccessChange(user, nextRole, nextStaffRoles, nextDepartments
   const oldCustomRoles = Array.isArray(user.customRoles) ? user.customRoles : [];
   if (window.BCCAdminCurrentUser?.id === user.id) return true;
   if (user.role === "admin" || nextRole === "admin") return true;
-  if (!sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director"].includes(role))) return true;
-  if (!sameSet(oldCustomRoles, nextCustomRoles) && permissionsForCustomRoles(nextCustomRoles).some(permission => ["admin:view", "users:manage", "cms:access", "forms:manage"].includes(permission))) return true;
-  return !sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department));
+  if (!window.BCCWorkspaceUtils.sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director"].includes(role))) return true;
+  if (!window.BCCWorkspaceUtils.sameSet(oldCustomRoles, nextCustomRoles) && permissionsForCustomRoles(nextCustomRoles).some(permission => ["admin:view", "users:manage", "cms:access", "forms:manage"].includes(permission))) return true;
+  return !window.BCCWorkspaceUtils.sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department));
 }
 
 function hasCmsAccess(user) {
@@ -482,9 +443,9 @@ function hasCmsAccess(user) {
 }
 
 function chipList(values, options, emptyLabel) {
-  const labels = labelsFor(values || [], options);
-  if (!labels) return `<span class="muted-chip">${escapeHtml(emptyLabel)}</span>`;
-  return `<span class="chip-list">${labels.split(", ").map(label => `<span>${escapeHtml(label)}</span>`).join("")}</span>`;
+  const labels = window.BCCWorkspaceUtils.labelsFor(values || [], options);
+  if (!labels) return `<span class="muted-chip">${window.BCCWorkspaceUtils.escapeHtml(emptyLabel)}</span>`;
+  return `<span class="chip-list">${labels.split(", ").map(label => `<span>${window.BCCWorkspaceUtils.escapeHtml(label)}</span>`).join("")}</span>`;
 }
 
 function roleLabel(role) {
@@ -527,7 +488,7 @@ function renderUserRoleFilter() {
   if (!select) return;
   const current = select.value;
   select.innerHTML = `<option value="">Todos los roles</option>${baseRoleOptions()
-    .map(role => `<option value="${escapeHtml(role.value)}">${escapeHtml(role.label)}</option>`)
+    .map(role => `<option value="${window.BCCWorkspaceUtils.escapeHtml(role.value)}">${window.BCCWorkspaceUtils.escapeHtml(role.label)}</option>`)
     .join("")}`;
   select.value = [...select.options].some(option => option.value === current) ? current : "";
 }
@@ -543,7 +504,7 @@ function syncOpenAccessModalRoleChoices() {
 
   if (roleSelect) {
     roleSelect.innerHTML = baseRoleOptions()
-      .map(role => `<option value="${escapeHtml(role.value)}" ${role.value === selectedRole ? "selected" : ""}>${escapeHtml(role.label)}</option>`)
+      .map(role => `<option value="${window.BCCWorkspaceUtils.escapeHtml(role.value)}" ${role.value === selectedRole ? "selected" : ""}>${window.BCCWorkspaceUtils.escapeHtml(role.label)}</option>`)
       .join("");
     if (![...roleSelect.options].some(option => option.value === selectedRole)) roleSelect.value = "client";
   }
@@ -551,7 +512,7 @@ function syncOpenAccessModalRoleChoices() {
   renderChoiceGroup(modal.querySelector("[data-modal-departments]"), departmentOptions(), selectedDepartments, "department");
   renderChoiceGroup(modal.querySelector("[data-modal-custom-roles]"), customRoleOptions(), selectedCustomRoles, "custom-role");
   updateAccessPreview();
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
 function permissionsForCustomRoles(customRoles = []) {
@@ -561,16 +522,7 @@ function permissionsForCustomRoles(customRoles = []) {
     .flatMap(role => Array.isArray(role.permissions) ? role.permissions : []))];
 }
 
-function sameSet(left, right) {
-  const a = [...new Set(left)].sort();
-  const b = [...new Set(right)].sort();
-  return a.length === b.length && a.every((value, index) => value === b[index]);
-}
 
-function labelsFor(values, options) {
-  const labels = new Map(options.map(option => [option.value, option.label]));
-  return [...new Set(values)].map(value => labels.get(value) || value).join(", ");
-}
 
 
 async function loadRoleDefinitions() {
@@ -603,7 +555,7 @@ async function fetchRoleDefinitions() {
     if (adminUsers.length) renderUsers();
   } catch (error) {
     roleDefinitionsLoaded = false;
-    if (message) renderWorkspaceMessage(message, error.message, "error");
+    if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, error.message, "error");
   }
 }
 
@@ -647,12 +599,12 @@ function renderPermissionPicker(selected = []) {
   const groups = [...groupedPermissions().entries()];
   container.innerHTML = groups.map(([group, permissions]) => `
     <fieldset>
-      <legend>${escapeHtml(permissionGroupLabel(group))}</legend>
+      <legend>${window.BCCWorkspaceUtils.escapeHtml(permissionGroupLabel(group))}</legend>
       <div>
         ${permissions.map(permission => `
           <label>
-            <input type="checkbox" name="permissions" value="${escapeHtml(permission.value)}" ${selectedSet.has(permission.value) ? "checked" : ""}>
-            <span>${escapeHtml(permission.label || permission.value)}</span>
+            <input type="checkbox" name="permissions" value="${window.BCCWorkspaceUtils.escapeHtml(permission.value)}" ${selectedSet.has(permission.value) ? "checked" : ""}>
+            <span>${window.BCCWorkspaceUtils.escapeHtml(permission.label || permission.value)}</span>
           </label>
         `).join("")}
       </div>
@@ -667,8 +619,8 @@ function renderPermissionReference() {
   if (!container) return;
   container.innerHTML = [...groupedPermissions().entries()].map(([group, permissions]) => `
     <section>
-      <strong>${escapeHtml(permissionGroupLabel(group))}</strong>
-      <div>${permissions.map(permission => `<span>${escapeHtml(permission.label || permission.value)}</span>`).join("")}</div>
+      <strong>${window.BCCWorkspaceUtils.escapeHtml(permissionGroupLabel(group))}</strong>
+      <div>${permissions.map(permission => `<span>${window.BCCWorkspaceUtils.escapeHtml(permission.label || permission.value)}</span>`).join("")}</div>
     </section>
   `).join("");
 }
@@ -681,13 +633,13 @@ function renderRoleLibrary() {
     button.classList.toggle("active", (button.dataset.roleLibraryFilter || "all") === activeRoleFilter);
   });
   const roles = roleDefinitions.filter(role => activeRoleFilter === "all" || role.type === activeRoleFilter);
-  if (message) renderWorkspaceMessage(message, `${roles.length} de ${roleDefinitions.length} rol(es) visibles.`);
+  if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, `${roles.length} de ${roleDefinitions.length} rol(es) visibles.`);
   if (!roles.length) {
     container.innerHTML = `<p class="muted-text">No hay roles en esta vista.</p>`;
     return;
   }
   container.innerHTML = roles.map(roleCard).join("");
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
 function roleCard(role) {
@@ -697,19 +649,19 @@ function roleCard(role) {
   return `
     <article class="role-card ${role.locked ? "locked" : "custom"}">
       <div class="role-card-head">
-        <span>${escapeHtml(roleTypeLabel(role.type))}</span>
-        <strong>${escapeHtml(role.name)}</strong>
-        <small>${escapeHtml(role.description || "Sin descripción")}</small>
+        <span>${window.BCCWorkspaceUtils.escapeHtml(roleTypeLabel(role.type))}</span>
+        <strong>${window.BCCWorkspaceUtils.escapeHtml(role.name)}</strong>
+        <small>${window.BCCWorkspaceUtils.escapeHtml(role.description || "Sin descripción")}</small>
       </div>
       <div class="role-permission-chips">
-        ${labels.map(label => `<span>${escapeHtml(label)}</span>`).join("")}
+        ${labels.map(label => `<span>${window.BCCWorkspaceUtils.escapeHtml(label)}</span>`).join("")}
         ${overflow ? `<span>+${overflow}</span>` : ""}
       </div>
       <div class="role-card-foot">
         <small>${permissions.length} permiso(s)</small>
         ${role.locked ? `<span class="locked-note">Protegido</span>` : `
-          <button class="btn btn-ghost" type="button" data-role-edit="${escapeHtml(role.id)}"><i data-lucide="pencil"></i>Editar</button>
-          <button class="btn btn-ghost" type="button" data-role-delete="${escapeHtml(role.id)}"><i data-lucide="trash-2"></i>Eliminar</button>
+          <button class="btn btn-ghost" type="button" data-role-edit="${window.BCCWorkspaceUtils.escapeHtml(role.id)}"><i data-lucide="pencil"></i>Editar</button>
+          <button class="btn btn-ghost" type="button" data-role-delete="${window.BCCWorkspaceUtils.escapeHtml(role.id)}"><i data-lucide="trash-2"></i>Eliminar</button>
         `}
       </div>
     </article>
@@ -755,7 +707,7 @@ function editRoleDefinition(id) {
   renderPermissionPicker(role.permissions || []);
   showRoleFormMessage(document.querySelector("[data-role-form-message]"), "Editando rol personalizado.", "ok");
   document.querySelector("#roles")?.scrollIntoView({ block: "start" });
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
 async function deleteRoleDefinition(id) {
@@ -772,9 +724,9 @@ async function deleteRoleDefinition(id) {
     renderUserRoleFilter();
     syncOpenAccessModalRoleChoices();
     await loadUsers();
-    if (message) renderWorkspaceMessage(message, "Rol eliminado y usuarios sincronizados.", "ok");
+    if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, "Rol eliminado y usuarios sincronizados.", "ok");
   } catch (error) {
-    if (message) renderWorkspaceMessage(message, error.message, "error");
+    if (message) window.BCCWorkspaceUtils.renderMessageBlock(message, error.message, "error");
   }
 }
 
@@ -789,7 +741,7 @@ function resetRoleForm() {
     message.hidden = true;
     message.textContent = "";
   }
-  refreshIcons();
+  window.BCCWorkspaceUtils.refreshIcons();
 }
 
 function showRoleFormMessage(message, text, tone) {
@@ -837,26 +789,8 @@ function showModalMessage(message, text, tone) {
   message.hidden = false;
 }
 
-function setText(selector, value) {
-  const target = document.querySelector(selector);
-  if (target) target.textContent = String(value);
-}
 
 function hydrateLocalCmsLinks() {
   const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
   document.querySelectorAll("[data-local-cms-link]").forEach(el => { el.hidden = !isLocal; });
-}
-
-function refreshIcons() {
-  window.BCCWorkspaceIcons?.createIcons();
-}
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[char]));
 }

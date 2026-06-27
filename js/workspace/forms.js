@@ -505,10 +505,7 @@
   }
 
   function setMessage(message, tone = "neutral") {
-    const target = root.querySelector("[data-forms-message]");
-    target.textContent = message || "";
-    target.dataset.tone = tone;
-    target.hidden = !message;
+    window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-forms-message]"), message, tone);
   }
 
   function formsError(error) {
@@ -519,21 +516,15 @@
   }
 
   function formatDate(value) {
-    return value ? new Date(value).toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" }) : "";
+    return window.BCCWorkspaceUtils.formatDate(value, { empty: "" });
   }
 
   function refreshIcons() {
-    window.BCCWorkspaceIcons?.createIcons(root);
+    window.BCCWorkspaceUtils.refreshIcons(root);
   }
 
   function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[char]));
+    return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
   window.BCCWorkspaceForms = { init };

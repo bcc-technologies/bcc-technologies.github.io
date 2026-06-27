@@ -1,0 +1,205 @@
+.access-drawer{
+  width: min(460px, 100%);
+  height: 100vh;
+  max-height: none;
+  margin: 0 0 0 auto;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface-solid);
+  color: var(--ink);
+  padding: 0;
+}
+
+.access-drawer[open]{
+  animation: drawer-enter 160ms ease both;
+}
+
+.access-drawer::backdrop{
+  background: rgba(10, 14, 20, .42);
+}
+
+.access-drawer-panel{
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 25px 24px 20px;
+}
+
+.access-drawer .access-modal-head h2{
+  margin: 0 0 6px;
+  font-size: 1.18rem;
+}
+
+.access-drawer .access-modal-actions{
+  margin-top: auto;
+  padding-top: 17px;
+  border-top: 1px solid var(--line);
+}
+
+.access-preview{
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  padding: 13px;
+}
+
+.access-preview span{
+  color: var(--ink-muted);
+  font-size: .73rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-preview strong{
+  color: var(--ink);
+  font-size: .92rem;
+}
+
+.access-confirm-panel{
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--warning) 38%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning) 9%, var(--surface-solid));
+  padding: 13px;
+}
+
+.access-confirm-panel[hidden]{
+  display: none !important;
+}
+
+.access-confirm-panel span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-confirm-panel strong{
+  color: var(--ink);
+  font-size: .9rem;
+}
+
+.access-confirm-panel ul{
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.access-confirm-panel small{
+  color: var(--ink-muted);
+  font-size: .75rem;
+}
+
+@keyframes drawer-enter{
+  from{ transform: translateX(18px); opacity: .75; }
+  to{ transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 580px){
+  .access-drawer{
+    width: 100%;
+  }
+}
+
+/* Access drawer form controls */
+.access-modal-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.icon-close{
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.access-modal-body{
+  display: grid;
+  gap: 14px;
+}
+
+.access-field{
+  display: grid;
+  gap: 7px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 800;
+}
+
+.access-field select{
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.access-field small{
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.access-choice-group{
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.access-choice-group legend{
+  padding: 0 4px;
+  color: var(--ink-muted);
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-choice-group div{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.access-choice-group label{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: .88rem;
+  cursor: pointer;
+}
+
+.access-choice-group input{
+  accent-color: var(--accent);
+}
+
+.access-modal-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
