@@ -1,0 +1,445 @@
+/* Shared workspace components
+   Keep dashboard primitives here so feature modules cannot accidentally own global UI.
+*/
+
+.account-workspace-grid{
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+.account-primary,
+.account-rail{
+  display: grid;
+  gap: 18px;
+}
+
+.module-surface{
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding: 20px;
+}
+
+.module-surface h2{
+  margin: 0 0 13px;
+  color: var(--ink);
+  font-size: 1.03rem;
+}
+
+.module-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.module-head h2{
+  margin: 0 0 5px;
+}
+
+.module-head p{
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: .84rem;
+  line-height: 1.45;
+}
+
+.status-pill{
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--ink-muted);
+  font-size: .76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pill svg{
+  width: 14px;
+  height: 14px;
+}
+
+.status-pill.enabled{
+  border-color: color-mix(in srgb, var(--success) 30%, var(--line));
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-solid));
+  color: color-mix(in srgb, var(--success) 68%, var(--ink));
+}
+
+.workspace-profile-form{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.workspace-profile-form button{
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.resource-rows,
+.tool-rows{
+  display: grid;
+}
+
+.resource-rows a,
+.tool-rows > div{
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.resource-rows a:first-child,
+.tool-rows > div:first-child{
+  border-top: 0;
+}
+
+.resource-rows a > svg:first-child,
+.tool-rows > div > svg:first-child{
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+  padding: 9px;
+}
+
+.resource-rows strong,
+.tool-rows strong{
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ink);
+  font-size: .89rem;
+}
+
+.resource-rows span,
+.tool-rows span{
+  color: var(--ink-muted);
+  font-size: .8rem;
+}
+
+.resource-rows a > svg:last-child{
+  width: 16px;
+  height: 16px;
+  color: var(--ink-muted);
+}
+
+.tool-rows a{
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  padding: 7px 11px;
+  text-decoration: none;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.tool-rows a:hover{
+  background: var(--hover);
+}
+
+.account-details{
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.account-details div{
+  display: grid;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+}
+
+.account-details div:first-child{
+  padding-top: 0;
+}
+
+.account-details div:last-child{
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.account-details dt{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-details dd{
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: var(--ink);
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+.permission-readable{
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.permission-readable li{
+  border-radius: 7px;
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+  padding: 9px 10px;
+}
+
+.workspace-view{
+  display: grid;
+  gap: 18px;
+}
+
+.workspace-view[hidden]{
+  display: none !important;
+}
+
+.workspace-refined [id]{
+  scroll-margin-top: 92px;
+}
+
+.workspace-refined .workspace-intro{
+  margin-bottom: 24px;
+}
+
+.workspace-refined .workspace-intro h1{
+  margin-bottom: 7px;
+  font-size: clamp(1.7rem, 2.1vw, 2rem);
+}
+
+.workspace-refined .workspace-intro p{
+  max-width: 630px;
+}
+
+.workspace-priority-strip{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.priority-card{
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding: 16px;
+}
+
+.priority-card.primary{
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+}
+
+.priority-card > svg{
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border-radius: 8px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.priority-card span{
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-muted);
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.priority-card strong{
+  display: block;
+  color: var(--ink);
+  font-size: .92rem;
+  line-height: 1.25;
+}
+
+.priority-card p{
+  margin: 7px 0 0;
+  color: var(--ink-muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.priority-card a{
+  grid-column: 2;
+  width: fit-content;
+  color: var(--accent-strong);
+  font-size: .78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.module-head.compact{
+  margin-bottom: 17px;
+  align-items: center;
+}
+
+.module-head.compact a{
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent-strong);
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.module-head.compact a svg{
+  width: 15px;
+  height: 15px;
+}
+
+.account-email-manager{
+  grid-row: span 2;
+}
+
+.profile-workspace .permission-readable{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.profile-workspace .permission-readable li{
+  flex: 0 1 auto;
+}
+
+.account-email-manager{
+  display: grid;
+  gap: 16px;
+}
+
+.account-email-list{
+  display: grid;
+  gap: 10px;
+}
+
+.account-email-row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.account-email-row strong{
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: .92rem;
+}
+
+.account-email-row span{
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-muted);
+  font-size: .78rem;
+}
+
+.account-email-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-email-actions .btn{
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: .8rem;
+}
+
+.account-email-form{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.account-email-form.confirm{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.account-email-form label{
+  display: grid;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: .86rem;
+  font-weight: 700;
+}
+
+.account-email-form input{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+@media (max-width: 1120px){
+  .workspace-priority-strip{
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px){
+  .priority-card{
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .priority-card > svg{
+    width: 34px;
+    height: 34px;
+    padding: 8px;
+  }
+
+  .account-email-row,
+  .account-email-form,
+  .account-email-form.confirm{
+    grid-template-columns: 1fr;
+  }
+
+  .account-email-actions{
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 580px){
+  .workspace-refined .workspace-intro{
+    gap: 17px;
+    margin-bottom: 20px;
+  }
+
+  .workspace-refined .workspace-intro h1{
+    font-size: 1.7rem;
+  }
+
+  .workspace-refined .workspace-intro p{
+    font-size: .92rem;
+  }
+}

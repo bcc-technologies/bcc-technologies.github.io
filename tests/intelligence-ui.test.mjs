@@ -84,7 +84,7 @@ function createWorkspaceRoot() {
 }
 
 async function loadWorkspaceModule() {
-  const code = fs.readFileSync(path.resolve(process.cwd(), "js/workspace-intelligence.js"), "utf8");
+  const code = fs.readFileSync(path.resolve(process.cwd(), "js/workspace/intelligence.js"), "utf8");
   const { root, panels, message } = createWorkspaceRoot();
 
   const documentStub = {
@@ -155,7 +155,7 @@ async function loadWorkspaceModule() {
 
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(code, context, { filename: "workspace-intelligence.js" });
+  vm.runInContext(code, context, { filename: "workspace/intelligence.js" });
 
   context.window.BCCWorkspaceIntelligence.init({ id: "admin-1" });
   await new Promise(resolve => setTimeout(resolve, 0));

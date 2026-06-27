@@ -20,6 +20,43 @@ const DEPARTMENT_PERMISSIONS = {
 
 const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
 const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
+
+const PERMISSION_LABELS = {
+  "dashboard:view": "Ver dashboard",
+  "profile:update": "Actualizar perfil",
+  "downloads:view": "Ver descargas",
+  "support:create": "Crear solicitudes",
+  "staff:view": "Vista de personal",
+  "clients:view": "Ver clientes",
+  "content:view": "Ver contenido",
+  "cms:access": "Acceso CMS",
+  "users:manage": "Administrar usuarios",
+  "forms:manage": "Administrar formularios",
+  "admin:view": "Vista administrador",
+  "content:write": "Crear contenido",
+  "strategy:view": "Ver estrategia",
+  "department:manage": "Gestionar departamento",
+  "department:technology": "Departamento tecnología",
+  "department:finance": "Departamento finanzas",
+  "department:operations": "Departamento operaciones",
+  "department:marketing": "Departamento marketing",
+  "department:hr": "Departamento RR. HH."
+};
+
+const ROLE_LABELS = {
+  client: "Cliente",
+  staff: "Personal",
+  admin: "Administrador",
+  author: "Autor",
+  cofounder: "Cofounder",
+  department_director: "Director",
+  technology: "Tecnología",
+  finance: "Finanzas",
+  operations: "Operaciones",
+  marketing: "Marketing",
+  hr: "Recursos humanos"
+};
+
 let currentPageUser = null;
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
@@ -33,7 +70,14 @@ function validatePassword(password) {
   return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[^A-Za-z0-9]/.test(value);
 }
 
-function permissionsForProfile(role, staffRoles = [], departments = []) {
+function normalizeCustomRoleList(value, definitions = []) {
+  const allowed = new Set((definitions || []).map(role => role.id));
+  const list = Array.isArray(value) ? value : [];
+  const clean = [...new Set(list.map(item => String(item || "").trim()).filter(Boolean))];
+  return allowed.size ? clean.filter(item => allowed.has(item)) : clean;
+}
+
+function permissionsForProfile(role, staffRoles = [], departments = [], customRoles = [], customRoleDefinitions = []) {
   const permissions = new Set(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client);
   normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => {
     (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission));
@@ -41,11 +85,112 @@ function permissionsForProfile(role, staffRoles = [], departments = []) {
   normalizeList(departments, DEPARTMENTS).forEach(department => {
     (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission));
   });
+  const customDefinitions = new Map((customRoleDefinitions || []).map(customRole => [customRole.id, customRole]));
+  normalizeCustomRoleList(customRoles, customRoleDefinitions).forEach(customRoleId => {
+    (customDefinitions.get(customRoleId)?.permissions || []).forEach(permission => permissions.add(permission));
+  });
   if (role === "admin") {
     STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
     DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
   }
   return [...permissions];
+}
+
+function builtInRoleDefinitions() {
+  const base = Object.entries(ROLE_PERMISSIONS).map(([id, permissions]) => ({
+    id: `base:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: id === "client" ? "Acceso externo para clientes." : id === "staff" ? "Acceso interno operativo." : "Control completo del workspace.",
+    type: "base",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  const staff = Object.entries(STAFF_ROLE_PERMISSIONS).map(([id, permissions]) => ({
+    id: `staff:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: "Rol interno acumulable para personal y administradores.",
+    type: "staff",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  const departments = Object.entries(DEPARTMENT_PERMISSIONS).map(([id, permissions]) => ({
+    id: `department:${id}`,
+    key: id,
+    name: ROLE_LABELS[id] || id,
+    description: "Ámbito departamental acumulable.",
+    type: "department",
+    locked: true,
+    permissions: [...permissions].sort()
+  }));
+  return [...base, ...staff, ...departments];
+}
+
+function permissionCatalog(customRoles = []) {
+  const values = new Set([
+    ...Object.values(ROLE_PERMISSIONS).flat(),
+    ...Object.values(STAFF_ROLE_PERMISSIONS).flat(),
+    ...Object.values(DEPARTMENT_PERMISSIONS).flat(),
+    ...(customRoles || []).flatMap(role => Array.isArray(role.permissions) ? role.permissions : [])
+  ]);
+  return [...values].sort().map(value => ({
+    value,
+    label: PERMISSION_LABELS[value] || value,
+    group: value.includes(":") ? value.split(":")[0] : "general"
+  }));
+}
+
+function slugifyRole(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
+function publicWorkspaceRoleDefinition(row = {}) {
+  const id = String(row.id || "");
+  return {
+    id,
+    key: String(row.key || id).replace(/^custom:/, ""),
+    name: String(row.name || "Rol personalizado"),
+    description: String(row.description || ""),
+    type: "custom",
+    locked: false,
+    permissions: [...new Set(Array.isArray(row.permissions) ? row.permissions.map(String) : [])].sort(),
+    createdAt: row.created_at || row.createdAt || "",
+    updatedAt: row.updated_at || row.updatedAt || ""
+  };
+}
+
+function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
+  const name = String(body.name || "").trim().replace(/\s+/g, " ");
+  if (!name) throw new Error("Nombre de rol requerido.");
+  const allowed = new Set(permissionCatalog(existing).map(permission => permission.value));
+  const permissions = [...new Set((Array.isArray(body.permissions) ? body.permissions : [])
+    .map(permission => String(permission || "").trim())
+    .filter(permission => allowed.has(permission)))]
+    .sort();
+  if (!permissions.length) throw new Error("Selecciona al menos un permiso.");
+  const providedId = String(body.id || "").trim();
+  const baseId = providedId.startsWith("custom:") ? providedId.slice(7) : slugifyRole(name);
+  const ids = new Set(existing.map(role => role.id));
+  let id = providedId || `custom:${baseId || Math.random().toString(16).slice(2, 10)}`;
+  if (!providedId) {
+    const original = id;
+    let suffix = 2;
+    while (ids.has(id)) id = `${original}-${suffix++}`;
+  }
+  return {
+    id,
+    key: id.replace(/^custom:/, ""),
+    name,
+    description: String(body.description || "").trim(),
+    permissions
+  };
 }
 
 async function loadSupabaseClient() {
@@ -144,7 +289,7 @@ function parsePersonName(name) {
   return { fullName: clean, firstName, middleNames, firstLastName, secondLastName, displayName: firstName || clean };
 }
 
-function publicProfile(profile, authUser = null) {
+function publicProfile(profile, authUser = null, customRoleDefinitions = []) {
   if (!profile && !authUser) return null;
   const metadata = authUser?.user_metadata || {};
   const fullName = profile?.full_name || metadata.full_name || metadata.name || authUser?.email || "";
@@ -152,6 +297,7 @@ function publicProfile(profile, authUser = null) {
   const role = profile?.role || "client";
   const staffRoles = normalizeList(profile?.staff_roles, STAFF_ROLES);
   const departments = normalizeList(profile?.departments, DEPARTMENTS);
+  const customRoles = normalizeCustomRoleList(profile?.custom_roles, customRoleDefinitions);
   return {
     id: profile?.id || authUser?.id,
     name: fullName,
@@ -171,8 +317,9 @@ function publicProfile(profile, authUser = null) {
     role,
     staffRoles,
     departments,
+    customRoles,
     status: "active",
-    permissions: permissionsForProfile(role, staffRoles, departments),
+    permissions: permissionsForProfile(role, staffRoles, departments, customRoles, customRoleDefinitions),
     createdAt: profile?.created_at || authUser?.created_at || "",
     lastLoginAt: authUser?.last_sign_in_at || ""
   };
@@ -207,7 +354,8 @@ async function currentUser() {
           title: metadata.title || "",
           role: "client",
           staff_roles: [],
-          departments: []
+          departments: [],
+          custom_roles: []
         };
         const created = await supabase.from("profiles").insert(payload).select("*").single();
         if (!created.error) profile = created.data;
@@ -812,9 +960,61 @@ async function bccApi(path, options = {}) {
   if (path === "/api/admin/users") {
     const me = await authorizedUser();
     if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    const [{ data, error }, customRoles] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      loadWorkspaceRoleDefinitions(supabase)
+    ]);
     if (error) throw error;
-    return { ok: true, users: data.map(profile => publicProfile(profile)) };
+    return { ok: true, users: data.map(profile => publicProfile(profile, null, customRoles)) };
+  }
+
+  if (path === "/api/admin/roles" && (!options.method || options.method === "GET")) {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
+    const customRoles = await loadWorkspaceRoleDefinitions(supabase);
+    return { ok: true, roles: [...builtInRoleDefinitions(), ...customRoles], permissions: permissionCatalog(customRoles) };
+  }
+
+  if (path === "/api/admin/roles" && options.method === "POST") {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
+    const existing = await loadWorkspaceRoleDefinitions(supabase);
+    const payload = sanitizeWorkspaceRoleInput(JSON.parse(options.body || "{}"), existing);
+    const { data, error } = await supabase
+      .from("workspace_role_definitions")
+      .insert(payload)
+      .select("id, key, name, description, permissions, created_at, updated_at")
+      .single();
+    if (error) throw error;
+    const roles = await loadWorkspaceRoleDefinitions(supabase);
+    return { ok: true, role: publicWorkspaceRoleDefinition(data), roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
+  }
+
+  const roleDefinitionMatch = path.match(/^\/api\/admin\/roles\/([^/]+)$/);
+  if (roleDefinitionMatch && (options.method === "PATCH" || options.method === "DELETE")) {
+    const me = await authorizedUser();
+    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
+    const id = decodeURIComponent(roleDefinitionMatch[1]);
+    if (!id.startsWith("custom:")) throw new Error("Solo los roles personalizados se pueden modificar.");
+    const existing = await loadWorkspaceRoleDefinitions(supabase);
+    const target = existing.find(role => role.id === id);
+    if (!target) throw new Error("Rol no encontrado.");
+    if (options.method === "DELETE") {
+      const { error } = await supabase.from("workspace_role_definitions").delete().eq("id", id);
+      if (error) throw error;
+      const roles = await loadWorkspaceRoleDefinitions(supabase);
+      return { ok: true, roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
+    }
+    const payload = sanitizeWorkspaceRoleInput({ ...JSON.parse(options.body || "{}"), id }, existing.filter(role => role.id !== id));
+    const { data, error } = await supabase
+      .from("workspace_role_definitions")
+      .update({ key: payload.key, name: payload.name, description: payload.description, permissions: payload.permissions })
+      .eq("id", id)
+      .select("id, key, name, description, permissions, created_at, updated_at")
+      .single();
+    if (error) throw error;
+    const roles = await loadWorkspaceRoleDefinitions(supabase);
+    return { ok: true, role: publicWorkspaceRoleDefinition(data), roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
   }
 
   if (path === "/api/admin/access-audit") {
@@ -1190,11 +1390,13 @@ async function bccApi(path, options = {}) {
   const roleMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
   if (roleMatch && options.method === "PATCH") {
     const body = JSON.parse(options.body || "{}");
+    const customRoles = await loadWorkspaceRoleDefinitions(supabase);
     const { error } = await supabase.rpc("set_user_access", {
       target_user_id: decodeURIComponent(roleMatch[1]),
       next_role: body.role,
       next_staff_roles: body.staffRoles || [],
-      next_departments: body.departments || []
+      next_departments: body.departments || [],
+      next_custom_roles: normalizeCustomRoleList(body.customRoles, customRoles)
     });
     if (error) throw error;
     return { ok: true };
@@ -1203,12 +1405,22 @@ async function bccApi(path, options = {}) {
   throw new Error(`Endpoint no migrado a Supabase: ${path}`);
 }
 
+async function loadWorkspaceRoleDefinitions(supabase) {
+  const { data, error } = await supabase
+    .from("workspace_role_definitions")
+    .select("id, key, name, description, permissions, created_at, updated_at")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data || []).map(publicWorkspaceRoleDefinition);
+}
+
 function normalizeAccessPayload(value) {
   const payload = value && typeof value === "object" ? value : {};
   return {
     role: payload.role || "client",
     staffRoles: normalizeList(payload.staffRoles, STAFF_ROLES),
-    departments: normalizeList(payload.departments, DEPARTMENTS)
+    departments: normalizeList(payload.departments, DEPARTMENTS),
+    customRoles: Array.isArray(payload.customRoles) ? payload.customRoles.map(String) : []
   };
 }
 

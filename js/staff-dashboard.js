@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   hydrateUser(user);
   hydrateAccountMenu(user);
-  bindWorkspaceMenu();
-  bindWorkspaceViews();
+  bindStaffWorkPanels();
+  bindStaffWorkspaceRouter();
   hydrateProfileForm(user);
   bindEmailManager(user);
   renderPermissions(user);
-    window.BCCWorkspaceProductivity?.init(user);
-    window.BCCWorkspaceForms?.init(user);
+  window.BCCWorkspaceProductivity?.init(user);
+  window.BCCWorkspaceForms?.init(user);
   refreshIcons();
 });
 
@@ -47,52 +47,37 @@ function hydrateAccountMenu(user) {
   document.querySelectorAll("[data-cms-access]").forEach(el => { el.hidden = !hasCms; });
 }
 
-function bindWorkspaceMenu() {
-  const menuButton = document.querySelector("[data-workspace-menu]");
-  menuButton?.addEventListener("click", () => document.body.classList.toggle("workspace-nav-open"));
-  document.querySelectorAll(".workspace-nav a, .workspace-sidebar-foot a").forEach(link => {
-    link.addEventListener("click", () => document.body.classList.remove("workspace-nav-open"));
+function bindStaffWorkspaceRouter() {
+  const panelAliases = { productividad: "tareas", calendario: "agenda", formularios: "formularios" };
+  window.BCCWorkspaceRouter?.bind({
+    aliases: { productividad: "trabajo", calendario: "trabajo", formularios: "trabajo" },
+    panelAliases,
+    onShow({ nextId, panelId }) {
+      if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");
+    }
   });
 }
 
-function bindWorkspaceViews() {
-  const views = [...document.querySelectorAll("[data-workspace-view]")];
-  if (!views.length) return;
-
-  const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
-  const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
-  const title = document.querySelector("[data-workspace-view-title]");
-  const viewIds = new Set(views.map(view => view.id));
-
-  const showView = id => {
-    const nextId = viewIds.has(id) ? id : "resumen";
-    views.forEach(view => {
-      view.hidden = view.id !== nextId;
-    });
-    sidebarLinks.forEach(link => {
-      link.classList.toggle("active", link.getAttribute("href") === `#${nextId}`);
-    });
-    const activeView = views.find(view => view.id === nextId);
-    if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
-    document.querySelector(".workspace-content")?.scrollTo({ top: 0, behavior: "auto" });
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
-
-  links.forEach(link => {
-    link.addEventListener("click", event => {
-      const id = link.getAttribute("href").slice(1);
-      if (!viewIds.has(id)) return;
-      event.preventDefault();
-      if (window.location.hash !== `#${id}`) {
-        window.history.pushState(null, "", `#${id}`);
-      }
-      showView(id);
-      document.body.classList.remove("workspace-nav-open");
+function bindStaffWorkPanels() {
+  document.querySelectorAll("[data-work-panel]").forEach(panel => {
+    panel.addEventListener("toggle", () => {
+      if (!panel.open) return;
+      document.querySelectorAll("[data-work-panel]").forEach(other => {
+        if (other !== panel) other.open = false;
+      });
+      refreshIcons();
     });
   });
+}
 
-  window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
-  showView(window.location.hash.slice(1));
+function openStaffWorkPanel(panelId = "tareas") {
+  const panels = [...document.querySelectorAll("[data-work-panel]")];
+  const panel = panels.find(item => item.dataset.workPanel === panelId);
+  if (!panel) return;
+  panels.forEach(item => {
+    item.open = item === panel;
+  });
+  refreshIcons();
 }
 
 async function bindEmailManager(user) {

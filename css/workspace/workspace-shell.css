@@ -1,0 +1,190 @@
+/* Shared workspace shell refinements
+   Layout, refined sidebar chrome and collapsed state for dashboard shells.
+*/
+
+.workspace-refined .workspace{
+  grid-template-columns: var(--workspace-sidebar-width) minmax(0, 1fr);
+  transition: grid-template-columns .22s ease;
+}
+
+.workspace-refined .workspace-sidebar{
+  gap: 14px;
+  padding: 14px 11px 11px;
+  transition: width .22s ease, transform .22s ease;
+}
+
+.workspace-refined .workspace-nav{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 3px;
+}
+
+.workspace-nav-label{
+  margin: 13px 10px 5px;
+  color: var(--ink-muted);
+  font-size: .68rem;
+  font-weight: 750;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.workspace-nav-label:first-child{
+  margin-top: 2px;
+}
+
+.workspace-refined .workspace-nav a,
+.workspace-refined .workspace-sidebar-foot a,
+.workspace-refined .workspace-sidebar-foot button{
+  min-height: 36px;
+}
+
+.workspace-help{
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding: 13px 10px 2px;
+}
+
+.workspace-help strong{
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: .82rem;
+}
+
+.workspace-help p{
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+
+.workspace-help a{
+  color: var(--accent-strong);
+  font-size: .78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.workspace-refined .workspace-sidebar-foot{
+  margin-top: 0;
+}
+
+.workspace-sidebar-foot button{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 0 10px;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.workspace-sidebar-foot button svg{
+  width: 17px;
+  height: 17px;
+}
+
+.workspace-sidebar-foot button:hover{
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.workspace-backdrop{
+  display: none;
+}
+
+.workspace-refined .workspace-header{
+  padding-inline: clamp(20px, 2.3vw, 32px);
+}
+
+.workspace-refined .workspace-main{
+  max-width: 1320px;
+  padding: 32px clamp(20px, 2.3vw, 32px) 42px;
+  scroll-behavior: smooth;
+}
+
+.workspace-collapsed .workspace{
+  --workspace-sidebar-width: 62px;
+}
+
+.workspace-collapsed .workspace-sidebar{
+  padding-inline: 7px;
+}
+
+.workspace-collapsed .workspace-brand{
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.workspace-collapsed .workspace-nav-label,
+.workspace-collapsed .workspace-nav span,
+.workspace-collapsed .workspace-sidebar-foot span,
+.workspace-collapsed .workspace-help{
+  display: none;
+}
+
+.workspace-collapsed .workspace-nav a,
+.workspace-collapsed .workspace-sidebar-foot a,
+.workspace-collapsed .workspace-sidebar-foot button{
+  width: 42px;
+  min-height: 42px;
+  margin-inline: auto;
+  justify-content: center;
+  padding: 0;
+  border-radius: 9px;
+}
+
+.workspace-collapsed .workspace-nav a.active::before{
+  display: none;
+}
+
+@media (max-width: 860px){
+  .workspace-refined .workspace{
+    display: block;
+  }
+
+  .workspace-refined .workspace-sidebar{
+    position: fixed;
+    z-index: 70;
+    top: 64px;
+    left: 0;
+    height: calc(100vh - 64px);
+    width: min(290px, calc(100vw - 48px));
+    transform: translateX(-101%);
+    box-shadow: 12px 0 34px rgba(10, 22, 40, .13);
+  }
+
+  .workspace-refined.workspace-nav-open .workspace-sidebar{
+    transform: translateX(0);
+  }
+
+  .workspace-refined.workspace-nav-open .workspace-backdrop{
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgba(10, 22, 40, .32);
+  }
+
+  .workspace-sidebar-foot [data-workspace-collapse]{
+    display: none;
+  }
+
+  .account-search{
+    display: none;
+  }
+}
+
+@media (max-width: 580px){
+  .workspace-refined .workspace-main{
+    padding: 24px 16px 32px;
+  }
+}
