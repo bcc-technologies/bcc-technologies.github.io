@@ -3,6 +3,11 @@
 */
 
 .workspace-refined .workspace{
+  --workspace-chrome-bg: var(--surface-solid);
+  --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
+  --workspace-brand-z: 120;
+  --workspace-header-z: 110;
+  --workspace-sidebar-z: 80;
   grid-template-columns: var(--workspace-sidebar-width) minmax(0, 1fr);
   transition: grid-template-columns .22s ease;
 }
@@ -100,6 +105,29 @@
   display: none;
 }
 
+/* The dashboard topbar is structural chrome: feature views must never bleed into it. */
+body.workspace-refined .workspace > .workspace-brand,
+body.workspace-refined .workspace > .workspace-header,
+body.workspace-refined .workspace > .workspace-sidebar{
+  background: var(--workspace-chrome-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body.workspace-refined .workspace > .workspace-brand{
+  z-index: var(--workspace-brand-z);
+  overflow: hidden;
+}
+
+body.workspace-refined .workspace > .workspace-header{
+  z-index: var(--workspace-header-z);
+  isolation: isolate;
+}
+
+body.workspace-refined .workspace > .workspace-sidebar{
+  z-index: var(--workspace-sidebar-z);
+}
+
 .workspace-refined .workspace-header{
   padding-inline: clamp(20px, 2.3vw, 32px);
 }
@@ -153,19 +181,20 @@
   .workspace-refined .workspace-brand{
     position: fixed;
     top: 0;
-    left: 68px;
-    z-index: 23;
-    width: 44px;
+    left: 64px;
+    z-index: var(--workspace-brand-z);
+    width: 52px;
     height: 64px;
     display: inline-flex;
     padding: 0;
     border: 0;
-    background: transparent;
+    border-bottom: 1px solid var(--line);
+    background: var(--workspace-chrome-bg);
   }
 
   .workspace-refined .workspace-sidebar{
     position: fixed;
-    z-index: 70;
+    z-index: var(--workspace-sidebar-z);
     top: 64px;
     left: 0;
     height: calc(100vh - 64px);
@@ -207,8 +236,8 @@
     color: var(--ink);
   }
 
-  .workspace-refined .workspace-title div,
-  .workspace-refined .workspace-search{
+  .workspace-refined .workspace-header > .workspace-title div,
+  .workspace-refined .workspace-header > .workspace-search{
     display: none;
   }
 

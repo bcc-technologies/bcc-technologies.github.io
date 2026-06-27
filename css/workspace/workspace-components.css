@@ -16,9 +16,10 @@
 }
 
 .module-surface{
-  border: 1px solid var(--line);
+  border: 1px solid var(--workspace-surface-border, var(--line));
   border-radius: 8px;
   background: var(--surface-solid);
+  box-shadow: var(--workspace-surface-shadow, none);
   padding: 20px;
 }
 
@@ -200,6 +201,22 @@
   padding: 9px 10px;
 }
 
+.workspace-metrics{
+  overflow: var(--workspace-metrics-overflow, visible);
+  border-color: var(--workspace-surface-border, var(--line));
+  box-shadow: var(--workspace-surface-shadow, none);
+}
+
+.workspace-metrics div{
+  min-height: var(--workspace-metric-min-height, auto);
+  background: var(--workspace-metric-bg, transparent);
+}
+
+.workspace-metrics strong{
+  font-size: var(--workspace-metric-value-size, 1.72rem);
+  overflow-wrap: anywhere;
+}
+
 .workspace-view{
   display: grid;
   gap: 18px;
@@ -214,34 +231,55 @@
 }
 
 .workspace-refined .workspace-intro{
+  min-height: var(--workspace-intro-min-height, auto);
+  align-items: var(--workspace-intro-align, flex-start);
   margin-bottom: 24px;
+  border: var(--workspace-intro-border, 0);
+  border-radius: var(--workspace-intro-radius, 0);
+  background: var(--workspace-intro-bg, transparent);
+  box-shadow: var(--workspace-intro-shadow, none);
+  padding: var(--workspace-intro-padding, 0);
 }
 
 .workspace-refined .workspace-intro h1{
+  max-width: var(--workspace-intro-title-width, none);
   margin-bottom: 7px;
-  font-size: clamp(1.7rem, 2.1vw, 2rem);
+  font-size: var(--workspace-intro-title-size, clamp(1.7rem, 2.1vw, 2rem));
+  letter-spacing: 0;
 }
 
 .workspace-refined .workspace-intro p{
-  max-width: 630px;
+  max-width: var(--workspace-intro-copy-width, 630px);
+  font-size: var(--workspace-intro-copy-size, .94rem);
+  line-height: var(--workspace-intro-copy-leading, normal);
 }
 
 .workspace-priority-strip{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 14px;
-  margin-bottom: 22px;
+  grid-template-columns: var(--workspace-priority-columns, repeat(auto-fit, minmax(210px, 1fr)));
+  gap: var(--workspace-priority-gap, 14px);
+  margin-bottom: var(--workspace-priority-margin, 22px);
 }
 
 .priority-card{
   min-width: 0;
+  min-height: var(--priority-card-min-height, auto);
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: var(--priority-card-columns, 38px minmax(0, 1fr));
+  align-content: var(--priority-card-align, stretch);
   gap: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--priority-card-border, var(--line));
   border-radius: 8px;
   background: var(--surface-solid);
+  box-shadow: var(--priority-card-shadow, none);
   padding: 16px;
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.priority-card:hover{
+  border-color: var(--priority-card-hover-border, var(--priority-card-border, var(--line)));
+  box-shadow: var(--priority-card-hover-shadow, var(--priority-card-shadow, none));
+  transform: var(--priority-card-hover-transform, none);
 }
 
 .priority-card.primary{
@@ -250,8 +288,9 @@
 }
 
 .priority-card > svg{
-  width: 38px;
-  height: 38px;
+  width: var(--priority-card-icon-size, 38px);
+  height: var(--priority-card-icon-size, 38px);
+  border: var(--priority-card-icon-border, 0);
   padding: 9px;
   border-radius: 8px;
   color: var(--accent-strong);
@@ -284,7 +323,14 @@
 .priority-card a{
   grid-column: 2;
   width: fit-content;
+  display: var(--priority-card-link-display, inline);
+  align-items: center;
+  min-height: var(--priority-card-link-min-height, auto);
+  margin-top: var(--priority-card-link-margin-top, 0);
+  border-radius: var(--priority-card-link-radius, 0);
+  background: var(--priority-card-link-bg, transparent);
   color: var(--accent-strong);
+  padding: var(--priority-card-link-padding, 0);
   font-size: .78rem;
   font-weight: 800;
   text-decoration: none;
@@ -470,10 +516,21 @@
 /* Shared account menu and dashboard actions */
 .dashboard-actions{
   display: flex;
-  align-items: center;
+  align-items: var(--dashboard-actions-align, center);
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.dashboard-actions .btn{
+  min-height: var(--dashboard-action-min-height, auto);
+  border-radius: var(--dashboard-action-radius, inherit);
+  box-shadow: var(--dashboard-action-shadow, inherit);
+}
+
+.dashboard-actions .btn svg{
+  width: var(--dashboard-action-icon-size, 17px);
+  height: var(--dashboard-action-icon-size, 17px);
 }
 
 .account-menu{

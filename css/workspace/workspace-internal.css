@@ -5,20 +5,10 @@
     linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 62%, var(--bg)) 0, var(--bg) 380px);
 }
 
-.staff-workspace .workspace-header,
-.staff-workspace .workspace-brand,
-.staff-workspace .workspace-sidebar,
-.admin-workspace .workspace-header,
-.admin-workspace .workspace-brand,
-.admin-workspace .workspace-sidebar{
-  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-.staff-workspace .workspace-header,
-.admin-workspace .workspace-header{
-  box-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
+.staff-workspace .workspace,
+.admin-workspace .workspace{
+  --workspace-chrome-bg: var(--surface-solid);
+  --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
 }
 
 .staff-workspace .workspace-main,
@@ -549,11 +539,6 @@
 }
 
 @media (max-width: 580px){
-  .staff-workspace .workspace-header,
-  .admin-workspace .workspace-header{
-    padding-inline: 14px;
-  }
-
   .staff-workspace .workspace-title,
   .admin-workspace .workspace-title{
     min-width: 0;
