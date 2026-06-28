@@ -5,7 +5,7 @@
 - `workspace-core.css`: shared layout primitives, shell tokens, filters, tables, metrics and activity feeds.
 - `workspace-shell.css`: refined dashboard shell layout, protected topbar/brand/sidebar chrome and collapsed state.
 - `workspace-intelligence-analytics.css`: analytics and intelligence views.
-- `workspace-components.css`: shared dashboard components such as module surfaces, section headers, status pills, priority cards, account grids and compact resource rows.
+- `workspace-components.css`: shared dashboard components and tokens for surfaces, intros, actions, metrics, priority cards, status lists, account grids and compact resource rows.
 - `workspace-account.css`: account, profile, email and security surfaces shared by client/staff dashboards.
 - `workspace-access.css`: admin access drawer, access preview and confirmation surfaces.
 - `workspace-prospects.css`: prospect CRM pipeline, forms, emails, timeline and prospect-specific responsive rules.

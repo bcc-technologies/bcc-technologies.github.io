@@ -9,97 +9,21 @@
 .admin-workspace .workspace{
   --workspace-chrome-bg: var(--surface-solid);
   --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
+  --workspace-intro-min-height: 132px;
+  --workspace-intro-title-width: 760px;
+  --workspace-intro-title-size: clamp(1.85rem, 2.65vw, 2.4rem);
+  --workspace-intro-copy-width: 700px;
+  --priority-card-border: color-mix(in srgb, var(--line) 84%, var(--surface-muted));
+  --priority-card-hover-border: color-mix(in srgb, var(--accent) 26%, var(--line));
+  --workspace-metrics-overflow: hidden;
+  --workspace-metric-min-height: 112px;
+  --workspace-metric-bg: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 94%, transparent), color-mix(in srgb, var(--surface-muted) 32%, var(--surface-solid)));
+  --workspace-metric-value-size: clamp(1.35rem, 2vw, 1.72rem);
 }
 
 .staff-workspace .workspace-main,
 .admin-workspace .workspace-main{
   max-width: 1280px;
-}
-
-.staff-workspace .workspace-intro,
-.admin-workspace .workspace-intro{
-  min-height: 132px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--surface-solid) 96%, transparent), color-mix(in srgb, var(--surface-muted) 58%, var(--surface-solid))),
-    var(--surface-solid);
-  box-shadow: 0 14px 32px rgba(15, 17, 21, .055);
-  padding: clamp(20px, 2.4vw, 30px);
-}
-
-.staff-workspace .workspace-intro h1,
-.admin-workspace .workspace-intro h1{
-  max-width: 760px;
-  font-size: clamp(1.85rem, 2.65vw, 2.4rem);
-  letter-spacing: 0;
-}
-
-.staff-workspace .workspace-intro p,
-.admin-workspace .workspace-intro p{
-  max-width: 700px;
-  font-size: .98rem;
-  line-height: 1.55;
-}
-
-.staff-workspace .dashboard-actions,
-.admin-workspace .dashboard-actions{
-  align-items: stretch;
-}
-
-.staff-workspace .dashboard-actions .btn,
-.admin-workspace .dashboard-actions .btn{
-  min-height: 42px;
-  border-radius: 8px;
-  box-shadow: none;
-}
-
-.staff-workspace .workspace-priority-strip,
-.admin-workspace .workspace-priority-strip{
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.staff-workspace .priority-card,
-.admin-workspace .priority-card{
-  border-color: color-mix(in srgb, var(--line) 84%, var(--surface-muted));
-  box-shadow: 0 9px 22px rgba(15, 17, 21, .04);
-  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
-}
-
-.staff-workspace .priority-card:hover,
-.admin-workspace .priority-card:hover{
-  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
-  box-shadow: 0 14px 28px rgba(15, 17, 21, .07);
-  transform: translateY(-1px);
-}
-
-.staff-workspace .module-surface,
-.admin-workspace .module-surface,
-.admin-workspace .users-surface,
-.admin-workspace .activity-surface{
-  border-color: color-mix(in srgb, var(--line) 86%, var(--surface-muted));
-  box-shadow: 0 10px 24px rgba(15, 17, 21, .045);
-}
-
-.staff-workspace .workspace-metrics,
-.admin-workspace .workspace-metrics{
-  overflow: hidden;
-  border-color: color-mix(in srgb, var(--line) 86%, var(--surface-muted));
-  box-shadow: 0 10px 24px rgba(15, 17, 21, .045);
-}
-
-.staff-workspace .workspace-metrics div,
-.admin-workspace .workspace-metrics div{
-  min-height: 112px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 94%, transparent), color-mix(in srgb, var(--surface-muted) 32%, var(--surface-solid)));
-}
-
-.staff-workspace .workspace-metrics strong,
-.admin-workspace .workspace-metrics strong{
-  font-size: clamp(1.35rem, 2vw, 1.72rem);
-  overflow-wrap: anywhere;
 }
 
 .staff-workspace .staff-work-section{
@@ -133,24 +57,6 @@
 .staff-workspace .tool-rows > div:hover{
   border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
   background: color-mix(in srgb, var(--surface-muted) 62%, var(--surface-solid));
-}
-
-.status-list a{
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 2px 10px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-muted) 54%, var(--surface-solid));
-  color: inherit;
-  padding: 11px;
-  text-decoration: none;
-}
-
-.status-list a:hover{
-  border-color: color-mix(in srgb, var(--accent) 20%, var(--line));
-  background: color-mix(in srgb, var(--surface-muted) 68%, var(--surface-solid));
 }
 
 .admin-workspace .admin-command-grid{
@@ -268,7 +174,6 @@
 .admin-workspace .activity-surface{
   max-width: 980px;
 }
-
 
 .staff-work-hub{
   display: grid;

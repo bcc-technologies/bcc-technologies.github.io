@@ -194,6 +194,25 @@
 .customer-workspace .workspace{
   --workspace-chrome-bg: var(--surface-solid);
   --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
+  --workspace-intro-min-height: 138px;
+  --workspace-intro-title-width: 720px;
+  --workspace-intro-title-size: clamp(1.85rem, 2.8vw, 2.45rem);
+  --workspace-intro-copy-width: 680px;
+  --dashboard-action-icon-size: 16px;
+  --workspace-priority-columns: 1.18fr .91fr .91fr;
+  --priority-card-min-height: 158px;
+  --priority-card-columns: 40px minmax(0, 1fr);
+  --priority-card-align: start;
+  --priority-card-border: color-mix(in srgb, var(--line) 82%, var(--surface-muted));
+  --priority-card-hover-border: color-mix(in srgb, var(--accent) 28%, var(--line));
+  --priority-card-icon-size: 40px;
+  --priority-card-icon-border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  --priority-card-link-display: inline-flex;
+  --priority-card-link-min-height: 30px;
+  --priority-card-link-margin-top: 12px;
+  --priority-card-link-radius: 7px;
+  --priority-card-link-bg: color-mix(in srgb, var(--accent) 9%, transparent);
+  --priority-card-link-padding: 5px 9px;
 }
 
 .customer-workspace .workspace-main{
@@ -218,86 +237,6 @@
   padding: 3px 9px;
   font-size: .72rem;
   font-weight: 800;
-}
-
-.customer-workspace .workspace-intro{
-  min-height: 138px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--surface-solid) 96%, transparent), color-mix(in srgb, var(--surface-muted) 58%, var(--surface-solid))),
-    var(--surface-solid);
-  box-shadow: 0 14px 32px rgba(15, 17, 21, .055);
-  padding: clamp(20px, 2.4vw, 30px);
-}
-
-.customer-workspace .workspace-intro h1{
-  max-width: 720px;
-  font-size: clamp(1.85rem, 2.8vw, 2.45rem);
-}
-
-.customer-workspace .workspace-intro p{
-  max-width: 680px;
-  font-size: .98rem;
-  line-height: 1.55;
-}
-
-.customer-workspace .dashboard-actions{
-  align-items: stretch;
-}
-
-.customer-workspace .dashboard-actions .btn{
-  min-height: 42px;
-  border-radius: 8px;
-  box-shadow: none;
-}
-
-.customer-workspace .dashboard-actions .btn svg{
-  width: 16px;
-  height: 16px;
-}
-
-.customer-workspace .workspace-priority-strip{
-  grid-template-columns: 1.18fr .91fr .91fr;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.customer-workspace .priority-card{
-  min-height: 158px;
-  grid-template-columns: 40px minmax(0, 1fr);
-  align-content: start;
-  border-color: color-mix(in srgb, var(--line) 82%, var(--surface-muted));
-  box-shadow: 0 9px 22px rgba(15, 17, 21, .04);
-  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
-}
-
-.customer-workspace .priority-card:hover{
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
-  box-shadow: 0 14px 28px rgba(15, 17, 21, .07);
-  transform: translateY(-1px);
-}
-
-.customer-workspace .priority-card > svg{
-  width: 40px;
-  height: 40px;
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
-}
-
-.customer-workspace .priority-card a{
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  margin-top: 12px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--accent) 9%, transparent);
-  padding: 5px 9px;
-}
-
-.customer-workspace .module-surface{
-  border-color: color-mix(in srgb, var(--line) 86%, var(--surface-muted));
-  box-shadow: 0 10px 24px rgba(15, 17, 21, .045);
 }
 
 .customer-workspace .setup-progress{
@@ -382,45 +321,6 @@
   border-radius: 999px;
   background: currentColor;
 }
-
-.status-list{
-  display: grid;
-  gap: 10px;
-}
-
-.status-list div{
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 2px 10px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-muted) 54%, var(--surface-solid));
-  padding: 11px;
-}
-
-.status-list svg{
-  grid-row: span 2;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: var(--surface-solid);
-  color: var(--ink-soft);
-  padding: 8px;
-}
-
-.status-list span{
-  color: var(--ink-muted);
-  font-size: .72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.status-list strong{
-  color: var(--ink);
-  font-size: .9rem;
-}
-
 
 .customer-record-workspace{
   display: grid;
