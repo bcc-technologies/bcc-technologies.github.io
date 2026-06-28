@@ -37,6 +37,21 @@
   gap: 7px;
 }
 
+.calendar-add-task{
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: .78rem;
+}
+
+.calendar-add-task svg{
+  width: 14px;
+  height: 14px;
+}
+
 .calendar-task-link svg{
   width: 16px;
   height: 16px;
@@ -189,8 +204,12 @@
 }
 
 .calendar-task{
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 3px 9px;
   align-items: center;
   min-height: 58px;
@@ -219,6 +238,14 @@
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.calendar-task > i{
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  width: 15px;
+  height: 15px;
+  color: var(--ink-muted);
 }
 
 .calendar-task small{

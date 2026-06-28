@@ -46,9 +46,9 @@ function hydrateUser(user) {
 }
 
 function bindStaffWorkspaceRouter() {
-  const panelAliases = { productividad: "tareas", calendario: "agenda", formularios: "formularios" };
+  const panelAliases = { productividad: "tareas", calendario: "agenda", kpis: "kpis", formularios: "formularios" };
   window.BCCWorkspaceRouter?.bind({
-    aliases: { productividad: "trabajo", calendario: "trabajo", formularios: "trabajo" },
+    aliases: { productividad: "trabajo", calendario: "trabajo", kpis: "trabajo", formularios: "trabajo" },
     panelAliases,
     onShow({ nextId, panelId }) {
       if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");

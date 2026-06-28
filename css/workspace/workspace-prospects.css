@@ -101,7 +101,7 @@
 }
 
 .prospects-signal-stack{
-  display: grid;
+  display: block;
   gap: 12px;
 }
 
@@ -786,135 +786,190 @@
     grid-template-columns: 1fr;
   }
 }
-/* Contextual prospect workbench: one active action at a time. */\
-.prospects-action-panel{\
-  display: grid;\
-  gap: 0;\
-  padding: 0;\
-  overflow: hidden;\
-  border-color: var(--line);\
-  box-shadow: none;\
-}\
-\
-.prospect-action-head{\
-  display: grid;\
-  grid-template-columns: minmax(220px, 1fr) auto;\
-  gap: 14px;\
-  align-items: center;\
-  padding: 14px 16px;\
-  border-bottom: 1px solid var(--line);\
-  background: color-mix(in srgb, var(--surface-muted) 38%, var(--surface-solid));\
-}\
-\
-.prospect-action-head h3{\
-  margin: 0;\
-  color: var(--ink-strong);\
-  font-size: .98rem;\
-}\
-\
-.prospect-action-head p{\
-  margin: 3px 0 0;\
-  color: var(--ink-muted);\
-  font-size: .8rem;\
-}\
-\
-.prospect-action-tabs{\
-  display: inline-flex;\
-  gap: 4px;\
-  padding: 4px;\
-  border: 1px solid var(--line);\
-  border-radius: 8px;\
-  background: var(--surface-solid);\
-}\
-\
-.prospect-action-tabs button{\
-  min-height: 34px;\
-  display: inline-flex;\
-  align-items: center;\
-  gap: 7px;\
-  border: 0;\
-  border-radius: 6px;\
-  background: transparent;\
-  color: var(--ink-muted);\
-  padding: 0 10px;\
-  font: inherit;\
-  font-size: .8rem;\
-  font-weight: 850;\
-  cursor: pointer;\
-}\
-\
-.prospect-action-tabs button.is-active{\
-  background: var(--surface-muted);\
-  color: var(--ink-strong);\
-}\
-\
-.prospect-action-tabs svg{\
-  width: 15px;\
-  height: 15px;\
-}\
-\
-.prospect-action-body{\
-  padding: 16px;\
-}\
-\
-.prospect-action-view.is-active{\
-  display: block;\
-}\
-\
-.prospects-split-action{\
-  display: grid;\
-  grid-template-columns: minmax(280px, .92fr) minmax(0, 1.08fr);\
-  gap: 16px;\
-  align-items: start;\
-}\
-\
-.prospect-summary-actions{\
-  grid-template-columns: repeat(3, minmax(0, 1fr));\
-}\
-\
-.prospect-summary-actions button{\
-  min-height: 36px;\
-  display: inline-flex;\
-  align-items: center;\
-  justify-content: center;\
-  border: 1px solid var(--line);\
-  border-radius: 8px;\
-  color: var(--ink);\
-  background: var(--surface-solid);\
-  font: inherit;\
-  font-size: .78rem;\
-  font-weight: 850;\
-  cursor: pointer;\
-}\
-\
-.prospect-summary-actions button:hover{\
-  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));\
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));\
-}\
-\
-@media (max-width: 1180px){\
-  .prospect-action-head,\
-  .prospects-split-action{\
-    grid-template-columns: 1fr;\
-  }\
-\
-  .prospect-action-tabs{\
-    width: 100%;\
-    overflow-x: auto;\
-  }\
-}\
-\
-@media (max-width: 760px){\
-  .prospect-action-body{\
-    padding: 14px;\
-  }\
-\
-  .prospect-action-tabs button{\
-    flex: 1;\
-    justify-content: center;\
-  }\
-\
-  .prospect-summary-actions{\
-    grid-template-columns: 1fr;\
-  }\
+/* Contextual prospect workbench: one active action at a time. */
+.prospects-action-panel{
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.prospect-action-head{
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-muted) 38%, var(--surface-solid));
+}
+
+.prospect-action-head h3{
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: .98rem;
+}
+
+.prospect-action-head p{
+  margin: 3px 0 0;
+  color: var(--ink-muted);
+  font-size: .8rem;
+}
+
+.prospect-action-tabs{
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+}
+
+.prospect-action-tabs button{
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-muted);
+  padding: 0 10px;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.prospect-action-tabs button.is-active{
+  background: var(--surface-muted);
+  color: var(--ink-strong);
+}
+
+.prospect-action-tabs svg{
+  width: 15px;
+  height: 15px;
+}
+
+.prospect-action-body{
+  padding: 16px;
+}
+
+.prospect-action-view.is-active{
+  display: block;
+}
+
+.prospects-split-action{
+  display: grid;
+  grid-template-columns: minmax(280px, .92fr) minmax(0, 1.08fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.prospect-summary-actions{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.prospect-summary-actions button{
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.prospect-summary-actions button:hover{
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+}
+
+@media (max-width: 1180px){
+  .prospect-action-head,
+  .prospects-split-action{
+    grid-template-columns: 1fr;
+  }
+
+  .prospect-action-tabs{
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 760px){
+  .prospect-action-body{
+    padding: 14px;
+  }
+
+  .prospect-action-tabs button{
+    flex: 1;
+    justify-content: center;
+  }
+
+  .prospect-summary-actions{
+    grid-template-columns: 1fr;
+  }
+}
+.prospects-signal-stack{
+  display: block;
+  border-radius: 8px;
+  background: var(--surface-solid);
+  padding: 0;
+}
+
+.prospects-signal-stack summary{
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  color: var(--ink-strong);
+  font-size: .86rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.prospects-signal-stack summary strong{
+  color: var(--ink-muted);
+  font-size: .74rem;
+  font-weight: 800;
+}
+
+.prospects-signal-body{
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.prospect-action-head{
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+}
+
+.prospect-action-head .icon-close{
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+}
+
+.prospects-action-panel[hidden]{
+  display: none !important;
+}
+
+@media (max-width: 1180px){
+  .prospect-action-head{
+    grid-template-columns: 1fr auto;
+  }
+
+  .prospect-action-tabs{
+    grid-column: 1 / -1;
+    order: 2;
+  }
 }

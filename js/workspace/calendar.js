@@ -56,6 +56,9 @@
                 <p data-calendar-day-subtitle></p>
               </div>
               <span class="status-dot" data-calendar-day-count>0 tareas</span>
+              <button class="btn btn-ghost calendar-add-task" type="button" data-calendar-create-task>
+                <i data-lucide="plus"></i>Nueva
+              </button>
             </div>
             <div class="calendar-task-list" data-calendar-day-list></div>
           </div>
@@ -93,6 +96,20 @@
       if (dayButton) {
         selectedDate = dayButton.dataset.calendarDay;
         render();
+        return;
+      }
+
+      const createTask = event.target.closest("[data-calendar-create-task]");
+      if (createTask) {
+        event.preventDefault();
+        window.BCCWorkspaceProductivity?.openNewTask?.({ dueDate: selectedDate });
+        return;
+      }
+
+      const editTask = event.target.closest("[data-calendar-edit-task]");
+      if (editTask) {
+        event.preventDefault();
+        window.BCCWorkspaceProductivity?.openTaskEditor?.(editTask.dataset.taskId);
         return;
       }
 
@@ -218,11 +235,12 @@
       return;
     }
     container.innerHTML = entries.map(task => `
-      <a class="calendar-task ${task.status === "done" ? "complete" : ""}" href="#trabajo" data-calendar-task-row data-workspace-searchable>
+      <button class="calendar-task ${task.status === "done" ? "complete" : ""}" type="button" data-calendar-edit-task data-task-id="${escapeHtml(task.id)}" data-workspace-searchable>
         <span class="calendar-priority priority-${escapeHtml(task.priority || "medium")}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
         <strong>${escapeHtml(task.title)}</strong>
         <small>${escapeHtml(taskMeta(task))}</small>
-      </a>
+        <i data-lucide="pencil" aria-hidden="true"></i>
+      </button>
     `).join("");
   }
 

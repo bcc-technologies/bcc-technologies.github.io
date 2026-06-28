@@ -16,6 +16,7 @@
   let searchTerm = "";
   let phaseFilter = "";
   let activeActionView = "profile";
+  let actionPanelOpen = false;
 
   function init(account) {
     root = document.querySelector("[data-prospects-workspace]");
@@ -52,6 +53,10 @@
       activateActionView("profile");
     });
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
+    root.querySelector("[data-prospect-action-close]")?.addEventListener("click", () => {
+      actionPanelOpen = false;
+      root.querySelector("[data-prospect-action-panel]")?.setAttribute("hidden", "");
+    });
     root.querySelectorAll("[data-prospect-action]").forEach(button => {
       button.addEventListener("click", () => activateActionView(button.dataset.prospectAction || "profile"));
     });
@@ -71,6 +76,8 @@
       templates: ["Plantillas", "Administra mensajes reutilizables sin salir del flujo comercial."]
     };
     activeActionView = labels[view] ? view : "profile";
+    actionPanelOpen = true;
+    root.querySelector("[data-prospect-action-panel]")?.removeAttribute("hidden");
     root.querySelectorAll("[data-prospect-action]").forEach(button => {
       const active = button.dataset.prospectAction === activeActionView;
       button.classList.toggle("is-active", active);
@@ -116,7 +123,6 @@
     renderEmailSection();
     renderTemplateSection();
     renderActivitySection();
-    activateActionView(activeActionView);
     refreshIcons();
   }
 

@@ -276,26 +276,45 @@
               <div>
                 <span class="workspace-eyebrow">Operación diaria</span>
                 <h2>Operación</h2>
-                <p>Prioridades, calendario y formularios internos en una vista accionable, sin paneles escondidos.</p>
+                <p>Prioridades, KPIs, calendario y formularios internos en una vista accionable, sin paneles escondidos.</p>
               </div>
               <span class="status-pill enabled">Rutina activa</span>
             </article>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de operación">
-              <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas y KPIs</span></button>
+              <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas</span></button>
               <button type="button" data-work-panel-tab="agenda" aria-selected="false"><i data-lucide="calendar-days"></i><span>Calendario</span></button>
+              <button type="button" data-work-panel-tab="kpis" aria-selected="false"><i data-lucide="chart-no-axes-column-increasing"></i><span>KPIs</span></button>
               <button type="button" data-work-panel-tab="formularios" aria-selected="false"><i data-lucide="clipboard-list"></i><span>Formularios</span></button>
             </div>
             <section class="module-surface staff-work-panel active" data-work-panel="tareas">
               <div class="module-head compact">
-                <h2>Tareas y KPIs</h2>
+                <h2>Tareas</h2>
                 <span class="status-dot">Prioridad</span>
               </div>
               <div class="staff-work-panel-body flush">
-                <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
+                <section data-productivity-workspace aria-label="Tareas"></section>
               </div>
             </section>
             <section class="module-surface staff-work-panel" data-work-panel="agenda" hidden>
               <section data-calendar-workspace aria-label="Calendario operativo"></section>
+            </section>
+            <section class="module-surface staff-work-panel productivity-reports" data-work-panel="kpis" hidden>
+              <div class="module-head compact">
+                <h2>KPIs</h2>
+                <span class="status-dot">Actividad</span>
+              </div>
+              <div class="staff-work-panel-body flush">
+                <div class="report-stat-grid" data-kpi-reports></div>
+                <article class="productivity-surface workload-report">
+                  <div class="productivity-toolbar">
+                    <div>
+                      <h3>Distribucion del trabajo</h3>
+                      <p>Estado actual de tus tareas registradas.</p>
+                    </div>
+                  </div>
+                  <div class="workload-bars" data-workload-bars></div>
+                </article>
+              </div>
             </section>
             <section class="module-surface staff-work-panel" data-work-panel="formularios" hidden>
               <div class="module-head compact">

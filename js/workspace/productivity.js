@@ -16,6 +16,7 @@
   const taskSubscribers = new Set();
   let activeFilter = "all";
   let activeView = "tasks";
+  let editingTaskId = null;
   let root = null;
 
   async function init(user) {
@@ -24,6 +25,7 @@
     root.dataset.ready = "true";
     root.innerHTML = template(user);
     bindControls();
+    moveTaskDialog();
     renderAll();
     refreshIcons();
     await loadTasks();
@@ -33,28 +35,25 @@
     return `
       <div class="productivity-head">
         <div>
-          <h2>Tareas y KPIs</h2>
+          <h2>Tareas</h2>
           <p>Tareas privadas, avance visual y reportes basados en tu actividad.</p>
+          <p class="productivity-message" data-task-message hidden></p>
         </div>
         <button class="btn btn-primary productivity-new" type="button" data-task-new>
           <i data-lucide="plus"></i>Nueva tarea
         </button>
       </div>
-      <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas y KPIs">
+      <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas">
         <button class="active" type="button" role="tab" aria-selected="true" data-productivity-tab="tasks">
           <i data-lucide="list-checks"></i>Tareas
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="board">
           <i data-lucide="columns-3"></i>Tablero
         </button>
-        <button type="button" role="tab" aria-selected="false" data-productivity-tab="reports">
-          <i data-lucide="chart-no-axes-column-increasing"></i>KPIs
-        </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="matrix">
           <i data-lucide="grid-2x2"></i>Matriz
         </button>
       </div>
-      <p class="productivity-message" data-task-message hidden></p>
       <section class="productivity-panel productivity-overview" data-productivity-panel="tasks">
         <article class="productivity-surface">
           <div class="productivity-toolbar">
@@ -83,18 +82,6 @@
       <section class="productivity-panel productivity-board" data-productivity-panel="board" hidden>
         <div class="kanban-grid" data-kanban-board></div>
       </section>
-      <section class="productivity-panel productivity-reports" data-productivity-panel="reports" hidden>
-        <div class="report-stat-grid" data-kpi-reports></div>
-        <article class="productivity-surface workload-report">
-          <div class="productivity-toolbar">
-            <div>
-              <h3>Distribucion del trabajo</h3>
-              <p>Estado actual de tus tareas registradas.</p>
-            </div>
-          </div>
-          <div class="workload-bars" data-workload-bars></div>
-        </article>
-      </section>
       <section class="productivity-panel productivity-matrix" data-productivity-panel="matrix" hidden>
         <div class="eisenhower-grid" data-eisenhower-matrix></div>
       </section>
@@ -102,8 +89,8 @@
         <form class="task-form" data-task-form>
           <div class="task-dialog-head">
             <div>
-              <h2>Nueva tarea</h2>
-              <p>Agrega una actividad a tu tablero privado.</p>
+              <h2 data-task-dialog-title>Nueva tarea</h2>
+              <p data-task-dialog-copy>Agrega una actividad a tu tablero privado.</p>
             </div>
             <button class="icon-close" type="button" data-task-close aria-label="Cerrar">
               <i data-lucide="x"></i>
@@ -136,7 +123,7 @@
           </label>
           <div class="task-dialog-actions">
             <button class="btn btn-ghost" type="button" data-task-close>Cancelar</button>
-            <button class="btn btn-primary" type="submit">Crear tarea</button>
+            <button class="btn btn-primary" type="submit" data-task-submit>Crear tarea</button>
           </div>
         </form>
       </dialog>
@@ -144,11 +131,11 @@
   }
 
   function bindControls() {
-    root.querySelector("[data-task-new]")?.addEventListener("click", openTaskDialog);
+    root.querySelector("[data-task-new]")?.addEventListener("click", () => openTaskDialog());
     root.querySelectorAll("[data-task-close]").forEach(button => {
-      button.addEventListener("click", () => root.querySelector("[data-task-dialog]")?.close());
+      button.addEventListener("click", closeTaskDialog);
     });
-    root.querySelector("[data-task-form]")?.addEventListener("submit", createTask);
+    document.querySelector("[data-task-form]")?.addEventListener("submit", createTask);
     root.querySelectorAll("[name=importance], [name=urgency]").forEach(input => {
       input.addEventListener("input", syncTaskPriorityPreview);
     });
@@ -161,6 +148,11 @@
     });
     root.addEventListener("click", handleTaskAction);
     root.addEventListener("change", handleTaskToggle);
+  }
+
+  function moveTaskDialog() {
+    const dialog = document.querySelector("[data-task-dialog]");
+    if (dialog && dialog.parentElement !== document.body) document.body.append(dialog);
   }
 
   async function loadTasks() {
@@ -180,10 +172,29 @@
     }
   }
 
-  function openTaskDialog() {
-    const dialog = root.querySelector("[data-task-dialog]");
-    const form = root.querySelector("[data-task-form]");
+  function closeTaskDialog() {
+    editingTaskId = null;
+    document.querySelector("[data-task-dialog]")?.close();
+  }
+
+  function openTaskDialog(task = null, defaults = {}) {
+    const dialog = document.querySelector("[data-task-dialog]");
+    const form = document.querySelector("[data-task-form]");
+    editingTaskId = task?.id || null;
     form?.reset();
+    if (form && task) {
+      form.elements.title.value = task.title || "";
+      form.elements.description.value = task.description || "";
+      form.elements.dueDate.value = task.dueDate || "";
+      const sliderValues = taskSliderValues(task);
+      form.elements.importance.value = sliderValues.importance;
+      form.elements.urgency.value = sliderValues.urgency;
+    } else if (form && defaults?.dueDate) {
+      form.elements.dueDate.value = defaults.dueDate;
+    }
+    document.querySelector("[data-task-dialog-title]").textContent = task ? "Editar tarea" : "Nueva tarea";
+    document.querySelector("[data-task-dialog-copy]").textContent = task ? "Actualiza la actividad sin perder su estado actual." : "Agrega una actividad a tu tablero privado.";
+    document.querySelector("[data-task-submit]").textContent = task ? "Guardar cambios" : "Crear tarea";
     syncTaskPriorityPreview();
     dialog?.showModal();
     form?.elements.title.focus();
@@ -194,20 +205,27 @@
     const form = event.currentTarget;
     const title = String(form.elements.title.value || "").trim();
     if (!title) return;
+    const currentEditingTaskId = editingTaskId;
     toggleSubmitting(form, true);
     try {
-      const data = await window.BCCAuth.api("/api/workspace/tasks", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          priority: derivePriority(form.elements.importance.value, form.elements.urgency.value),
-          dueDate: form.elements.dueDate.value || null,
-          description: String(form.elements.description.value || "").trim()
-        })
+      const payload = {
+        title,
+        priority: derivePriority(form.elements.importance.value, form.elements.urgency.value),
+        dueDate: form.elements.dueDate.value || null,
+        description: String(form.elements.description.value || "").trim()
+      };
+      const data = await window.BCCAuth.api(currentEditingTaskId ? `/api/workspace/tasks/${encodeURIComponent(currentEditingTaskId)}` : "/api/workspace/tasks", {
+        method: currentEditingTaskId ? "PATCH" : "POST",
+        body: JSON.stringify(payload)
       });
-      tasks.unshift(data.task);
-      root.querySelector("[data-task-dialog]")?.close();
-      setMessage("Tarea creada.", "ok");
+      if (currentEditingTaskId) {
+        tasks = tasks.map(item => item.id === currentEditingTaskId ? data.task : item);
+      } else {
+        tasks.unshift(data.task);
+      }
+      editingTaskId = null;
+      document.querySelector("[data-task-dialog]")?.close();
+      setMessage(currentEditingTaskId ? "Tarea actualizada." : "Tarea creada.", "ok");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
@@ -231,6 +249,10 @@
     if (!button) return;
     const task = findTask(button.dataset.taskId);
     if (!task) return;
+    if (button.dataset.taskAction === "edit") {
+      openTaskDialog(task);
+      return;
+    }
     if (button.dataset.taskAction === "delete") {
       await deleteTask(task, button);
       return;
@@ -318,9 +340,14 @@
             ${task.dueDate ? `<span class="task-date ${dueTone(task)}"><i data-lucide="calendar-clock"></i>${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
           </div>
         </div>
-        <button class="task-delete" type="button" data-task-action="delete" data-task-id="${escapeHtml(task.id)}" aria-label="Eliminar tarea">
-          <i data-lucide="trash-2"></i>
-        </button>
+        <div class="task-actions">
+          <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
+            <i data-lucide="pencil"></i>
+          </button>
+          <button class="task-icon-action task-delete" type="button" data-task-action="delete" data-task-id="${escapeHtml(task.id)}" aria-label="Eliminar tarea">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
       </li>
     `).join("");
   }
@@ -345,6 +372,9 @@
                   ${task.dueDate ? `<small class="${dueTone(task)}">${escapeHtml(formatDate(task.dueDate))}</small>` : ""}
                 </div>
                 <div class="kanban-actions">
+                  <button type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
+                    <i data-lucide="pencil"></i>
+                  </button>
                   <button type="button" data-task-action="back" data-task-id="${escapeHtml(task.id)}" ${columnIndex === 0 ? "disabled" : ""} aria-label="Mover atras">
                     <i data-lucide="arrow-left"></i>
                   </button>
@@ -364,40 +394,54 @@
     const matrix = root.querySelector("[data-eisenhower-matrix]");
     if (!matrix) return;
     const quadrants = eisenhowerQuadrants();
-    matrix.innerHTML = quadrants.map(quadrant => `
-      <article class="eisenhower-quadrant ${quadrant.tone}">
-        <header>
-          <div>
-            <span>${escapeHtml(quadrant.axis)}</span>
-            <h3>${escapeHtml(quadrant.title)}</h3>
-          </div>
-          <strong>${quadrant.tasks.length}</strong>
-        </header>
-        <div class="matrix-task-list">
-          ${quadrant.tasks.length ? quadrant.tasks.map(matrixTaskCard).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
+    matrix.innerHTML = `
+      <section class="eisenhower-shell" aria-label="Matriz de Eisenhower por importancia y urgencia">
+        <div class="matrix-axis matrix-axis-urgency"><span>Menos urgente</span><strong>Urgencia</strong><span>Más urgente</span></div>
+        <div class="matrix-axis matrix-axis-importance"><span>Más importante</span><strong>Importancia</strong><span>Menos importante</span></div>
+        <div class="eisenhower-grid">
+          ${quadrants.map(quadrant => `
+            <article class="eisenhower-quadrant ${quadrant.tone}" data-matrix-quadrant="${escapeAttr(quadrant.key)}">
+              <header>
+                <div>
+                  <span>${escapeHtml(quadrant.axis)}</span>
+                  <h3>${escapeHtml(quadrant.title)}</h3>
+                  <small>${escapeHtml(quadrant.intent)}</small>
+                </div>
+                <strong>${quadrant.tasks.length}</strong>
+              </header>
+              <div class="matrix-task-list">
+                ${quadrant.tasks.length ? quadrant.tasks.map(matrixTaskCard).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
+              </div>
+            </article>
+          `).join("")}
         </div>
-      </article>
-    `).join("");
+      </section>
+    `;
   }
 
   function matrixTaskCard(task) {
     return `
       <article class="matrix-task">
-        <strong>${escapeHtml(task.title)}</strong>
-        <div>
-          <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
-          ${task.dueDate ? `<small class="${dueTone(task)}">${escapeHtml(formatDate(task.dueDate))}</small>` : `<small>Sin fecha</small>`}
+        <div class="matrix-task-copy">
+          <strong>${escapeHtml(task.title)}</strong>
+          <div>
+            <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
+            ${task.dueDate ? `<small class="${dueTone(task)}">${escapeHtml(formatDate(task.dueDate))}</small>` : `<small>Sin fecha</small>`}
+          </div>
         </div>
+        <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
+          <i data-lucide="pencil"></i>
+        </button>
       </article>
     `;
   }
 
   function eisenhowerQuadrants() {
     const quadrants = [
-      { key: "do", title: "Hacer ahora", axis: "Importante + urgente", tone: "matrix-do", tasks: [] },
-      { key: "plan", title: "Planificar", axis: "Importante + no urgente", tone: "matrix-plan", tasks: [] },
-      { key: "delegate", title: "Delegar", axis: "No importante + urgente", tone: "matrix-delegate", tasks: [] },
-      { key: "pause", title: "Pausar", axis: "No importante + no urgente", tone: "matrix-pause", tasks: [] }
+      { key: "plan", title: "Planificar", axis: "Importante + no urgente", intent: "Decidir fecha y reservar foco", tone: "matrix-plan", tasks: [] },
+      { key: "do", title: "Hacer ahora", axis: "Importante + urgente", intent: "Resolver primero", tone: "matrix-do", tasks: [] },
+      { key: "pause", title: "Pausar", axis: "No importante + no urgente", intent: "Eliminar, archivar o dejar en espera", tone: "matrix-pause", tasks: [] },
+      { key: "delegate", title: "Delegar", axis: "No importante + urgente", intent: "Mover, pedir apoyo o responder rápido", tone: "matrix-delegate", tasks: [] }
     ];
     tasks.filter(task => task.status !== "done").forEach(task => {
       const important = importanceScore(task) >= 4;
@@ -415,8 +459,8 @@
   function renderKpis() {
     const summary = calculateKpis(tasks);
     const compact = root.querySelector("[data-kpi-compact]");
-    const reports = root.querySelector("[data-kpi-reports]");
-    const bars = root.querySelector("[data-workload-bars]");
+    const reports = root.querySelector("[data-kpi-reports]") || document.querySelector("[data-kpi-reports]");
+    const bars = root.querySelector("[data-workload-bars]") || document.querySelector("[data-workload-bars]");
     if (compact) {
       compact.innerHTML = [
         ["Completadas", summary.completed],
@@ -427,31 +471,45 @@
     root.querySelector("[data-kpi-rate]").textContent = `${summary.rate}%`;
     root.querySelector("[data-kpi-progress]").value = summary.rate;
     if (reports) {
-      reports.innerHTML = [
-        ["Tareas totales", summary.total, "Registro personal"],
-        ["Completadas", summary.completed, `${summary.rate}% del total`],
-        ["En curso", summary.inProgress, "Trabajo activo"],
-        ["Vencidas", summary.overdue, summary.overdue ? "Requieren atencion" : "Sin alertas"]
-      ].map(item => `<article class="report-stat"><span>${item[0]}</span><strong>${item[1]}</strong><small>${item[2]}</small></article>`).join("");
+      if (!summary.total) {
+        reports.innerHTML = `<article class="kpi-empty-state"><i data-lucide="chart-no-axes-column-increasing"></i><strong>Sin actividad medible todavia</strong><span>Crea tareas para empezar a medir carga, vencimientos y avance.</span></article>`;
+      } else {
+        reports.innerHTML = [
+          ["Tareas totales", summary.total, "Registro personal"],
+          ["Completadas", summary.completed, `${summary.rate}% del total`],
+          ["En curso", summary.inProgress, "Trabajo activo"],
+          ["Vencidas", summary.overdue, summary.overdue ? "Requieren atencion" : "Sin alertas"]
+        ].map(item => `<article class="report-stat"><span>${item[0]}</span><strong>${item[1]}</strong><small>${item[2]}</small></article>`).join("");
+      }
     }
     if (bars) {
-      bars.innerHTML = STATUS_ORDER.map(status => {
-        const count = summary.byStatus[status];
-        const rate = summary.total ? Math.round((count / summary.total) * 100) : 0;
-        return `<div><label><span>${STATUS_LABELS[status]}</span><strong>${count}</strong></label><progress max="100" value="${rate}"></progress></div>`;
-      }).join("");
+      if (!summary.total) {
+        bars.innerHTML = `<div class="workload-empty">Sin tareas para distribuir todavia.</div>`;
+      } else {
+        bars.innerHTML = STATUS_ORDER.map(status => {
+          const count = summary.byStatus[status];
+          const rate = summary.total ? Math.round((count / summary.total) * 100) : 0;
+          return `<div><label><span>${STATUS_LABELS[status]}</span><strong>${count}</strong></label><progress max="100" value="${rate}"></progress></div>`;
+        }).join("");
+      }
     }
   }
 
+  function taskSliderValues(task) {
+    if (task.priority === "high") return { importance: 5, urgency: task.dueDate ? 4 : 3 };
+    if (task.priority === "low") return { importance: 2, urgency: 2 };
+    return { importance: 3, urgency: task.dueDate ? 4 : 3 };
+  }
+
   function syncTaskPriorityPreview() {
-    const form = root?.querySelector("[data-task-form]");
+    const form = document.querySelector("[data-task-form]");
     if (!form) return;
     const importance = Number(form.elements.importance?.value || 3);
     const urgency = Number(form.elements.urgency?.value || 3);
     const priority = derivePriority(importance, urgency);
-    const importanceOutput = root.querySelector("[data-importance-output]");
-    const urgencyOutput = root.querySelector("[data-urgency-output]");
-    const derived = root.querySelector("[data-derived-priority]");
+    const importanceOutput = document.querySelector("[data-importance-output]");
+    const urgencyOutput = document.querySelector("[data-urgency-output]");
+    const derived = document.querySelector("[data-derived-priority]");
     if (importanceOutput) importanceOutput.textContent = String(importance);
     if (urgencyOutput) urgencyOutput.textContent = String(urgency);
     if (derived) derived.textContent = `Prioridad derivada: ${PRIORITY_LABELS[priority] || "Media"}`;
@@ -528,6 +586,17 @@
     return tasks.find(task => task.id === id);
   }
 
+  function openNewTask(defaults = {}) {
+    openTaskDialog(null, defaults);
+  }
+
+  function openTaskEditor(id) {
+    const task = findTask(id);
+    if (!task) return false;
+    openTaskDialog(task);
+    return true;
+  }
+
   function getTasks() {
     return tasks.slice();
   }
@@ -552,7 +621,7 @@
   function toggleSubmitting(form, busy) {
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = busy;
-    submit.textContent = busy ? "Guardando..." : "Crear tarea";
+    submit.textContent = busy ? "Guardando..." : (editingTaskId ? "Guardar cambios" : "Crear tarea");
   }
 
   function productivityError(error) {
@@ -570,5 +639,5 @@
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
-  window.BCCWorkspaceProductivity = { init, getTasks, subscribeTasks };
+  window.BCCWorkspaceProductivity = { init, getTasks, subscribeTasks, openNewTask, openTaskEditor };
 })();
