@@ -71,8 +71,9 @@
     return a.length === b.length && a.every((value, index) => value === b[index]);
   }
 
-  function setText(selector, value, root = document) {
-    root.querySelectorAll(selector).forEach(el => {
+  function setText(target, value, root = document) {
+    const nodes = typeof target === "string" ? root.querySelectorAll(target) : [target].filter(Boolean);
+    nodes.forEach(el => {
       el.textContent = String(value);
     });
   }
