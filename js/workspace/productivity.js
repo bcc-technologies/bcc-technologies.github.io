@@ -17,6 +17,7 @@
   let activeFilter = "all";
   let activeView = "tasks";
   let editingTaskId = null;
+  let messageTimer = null;
   let root = null;
 
   async function init(user) {
@@ -83,7 +84,7 @@
         <div class="kanban-grid" data-kanban-board></div>
       </section>
       <section class="productivity-panel productivity-matrix" data-productivity-panel="matrix" hidden>
-        <div class="eisenhower-grid" data-eisenhower-matrix></div>
+        <div class="eisenhower-mount" data-eisenhower-matrix></div>
       </section>
       <dialog class="task-dialog" data-task-dialog>
         <form class="task-form" data-task-form>
@@ -298,6 +299,7 @@
   }
 
   function selectView(view) {
+    if (view === "matrix") clearTaskMessage();
     activeView = view;
     root.querySelectorAll("[data-productivity-tab]").forEach(button => {
       const selected = button.dataset.productivityTab === view;
@@ -396,19 +398,11 @@
     const quadrants = eisenhowerQuadrants();
     matrix.innerHTML = `
       <section class="eisenhower-shell" aria-label="Matriz de Eisenhower por importancia y urgencia">
-        <div class="matrix-axis matrix-axis-urgency"><span>Menos urgente</span><strong>Urgencia</strong><span>Más urgente</span></div>
-        <div class="matrix-axis matrix-axis-importance"><span>Más importante</span><strong>Importancia</strong><span>Menos importante</span></div>
+        <div class="matrix-axis matrix-axis-urgency" aria-hidden="true"><span>Urgencia</span><i></i></div>
+        <div class="matrix-axis matrix-axis-importance" aria-hidden="true"><span>Importancia</span><i></i></div>
         <div class="eisenhower-grid">
           ${quadrants.map(quadrant => `
-            <article class="eisenhower-quadrant ${quadrant.tone}" data-matrix-quadrant="${escapeAttr(quadrant.key)}">
-              <header>
-                <div>
-                  <span>${escapeHtml(quadrant.axis)}</span>
-                  <h3>${escapeHtml(quadrant.title)}</h3>
-                  <small>${escapeHtml(quadrant.intent)}</small>
-                </div>
-                <strong>${quadrant.tasks.length}</strong>
-              </header>
+            <article class="eisenhower-quadrant ${quadrant.tone}" data-matrix-quadrant="${escapeAttr(quadrant.key)}" aria-label="${escapeAttr(quadrant.title)}">
               <div class="matrix-task-list">
                 ${quadrant.tasks.length ? quadrant.tasks.map(matrixTaskCard).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
               </div>
@@ -438,10 +432,10 @@
 
   function eisenhowerQuadrants() {
     const quadrants = [
-      { key: "plan", title: "Planificar", axis: "Importante + no urgente", intent: "Decidir fecha y reservar foco", tone: "matrix-plan", tasks: [] },
-      { key: "do", title: "Hacer ahora", axis: "Importante + urgente", intent: "Resolver primero", tone: "matrix-do", tasks: [] },
-      { key: "pause", title: "Pausar", axis: "No importante + no urgente", intent: "Eliminar, archivar o dejar en espera", tone: "matrix-pause", tasks: [] },
-      { key: "delegate", title: "Delegar", axis: "No importante + urgente", intent: "Mover, pedir apoyo o responder rápido", tone: "matrix-delegate", tasks: [] }
+      { key: "plan", title: "Planificar", tone: "matrix-plan", tasks: [] },
+      { key: "do", title: "Hacer ahora", tone: "matrix-do", tasks: [] },
+      { key: "pause", title: "Pausar", tone: "matrix-pause", tasks: [] },
+      { key: "delegate", title: "Delegar", tone: "matrix-delegate", tasks: [] }
     ];
     tasks.filter(task => task.status !== "done").forEach(task => {
       const important = importanceScore(task) >= 4;
@@ -614,8 +608,20 @@
     document.dispatchEvent(new CustomEvent("bcc:workspace-tasks", { detail }));
   }
 
+  function clearTaskMessage() {
+    if (messageTimer) window.clearTimeout(messageTimer);
+    messageTimer = null;
+    window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-task-message]"), "");
+  }
+
   function setMessage(message, tone = "neutral") {
-    window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-task-message]"), message, tone);
+    if (messageTimer) window.clearTimeout(messageTimer);
+    messageTimer = null;
+    const target = root.querySelector("[data-task-message]");
+    window.BCCWorkspaceUtils.setMessage(target, message, tone);
+    if (message && tone !== "error") {
+      messageTimer = window.setTimeout(clearTaskMessage, 2400);
+    }
   }
 
   function toggleSubmitting(form, busy) {
