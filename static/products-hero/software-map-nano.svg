@@ -1,81 +1,495 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 640 480"
+  fill="none"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">MAP-Nano: Dense particle cloud to particle distribution</title>
+  <desc id="desc">
+    Ilustración SVG ligera de MAP-Nano: una nube compacta de partículas se transforma
+    en una distribución medible mostrada como histograma con ajuste estadístico.
+  </desc>
+
   <style>
-    .mesh{stroke:#c8d6e8;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-    .surface-line{stroke:#e6edf5;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.82}
-    .surface-a{fill:url(#nano-surface-a)}
-    .surface-b{fill:url(#nano-surface-b)}
-    .surface-c{fill:url(#nano-surface-c)}
-    .beam{fill:url(#nano-beam);animation:beamSweep 6.6s ease-in-out infinite;transform-origin:252px 142px;transform-box:fill-box}
-    .spark{animation:particlePulse 4.8s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
-    .drift{animation:driftY 8.2s ease-in-out infinite}
-    .glow{animation:haloPulse 5.1s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
-    @keyframes beamSweep{0%,100%{transform:translateX(-10px);opacity:.42}50%{transform:translateX(18px);opacity:.84}}
-    @keyframes particlePulse{0%,100%{transform:scale(1);opacity:.72}50%{transform:scale(1.16);opacity:1}}
-    @keyframes driftY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-    @keyframes haloPulse{0%,100%{transform:scale(1);opacity:.34}50%{transform:scale(1.18);opacity:.64}}
-    @media (prefers-reduced-motion: reduce){.beam,.spark,.drift,.glow{animation:none!important}}
+    :root{
+      --bg-0:#ffffff;
+      --bg-1:#f7fbff;
+      --bg-2:#edf4fb;
+
+      --ink-3:#324a63;
+      --ink-2:#5f7e9e;
+
+      --blue:#2563eb;
+      --accent:#ed4624;
+    }
+
+    .bg{
+      fill:url(#bg-gradient);
+    }
+
+    .label{
+      font:600 10.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-2);
+      letter-spacing:.05px;
+    }
+
+    .label-strong{
+      font:700 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-3);
+      letter-spacing:.05px;
+    }
+
+    .label-accent{
+      font:700 10.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--accent);
+      letter-spacing:.05px;
+    }
+
+    .axis-label{
+      font:600 9.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:rgba(95,126,158,.72);
+      letter-spacing:.04px;
+    }
+
+    .field-glow{
+      fill:rgba(37,99,235,.055);
+      filter:url(#field-blur);
+      animation:cloudBreathe 8s ease-in-out infinite;
+      transform-origin:center;
+      transform-box:fill-box;
+    }
+
+    .grain{
+      fill:url(#grain-gradient);
+      stroke:rgba(50,74,99,.11);
+      stroke-width:.72;
+      filter:url(#particle-soft-depth);
+      transform-origin:center;
+      transform-box:fill-box;
+    }
+
+    .grain.light{
+      fill:url(#grain-light-gradient);
+      stroke:rgba(50,74,99,.09);
+    }
+
+    .grain.mid{
+      fill:url(#grain-gradient);
+    }
+
+    .grain.dark{
+      fill:url(#grain-dark-gradient);
+      stroke:rgba(50,74,99,.13);
+    }
+
+    .grain.tiny{
+      fill:url(#grain-tiny-gradient);
+      stroke:none;
+      opacity:.72;
+      filter:url(#particle-tiny-depth);
+    }
+
+    .float-a{
+      animation:floatA 8.2s ease-in-out infinite;
+    }
+
+    .float-b{
+      animation:floatB 9.1s ease-in-out infinite;
+    }
+
+    .float-c{
+      animation:floatC 7.4s ease-in-out infinite;
+    }
+
+    .pulse-a{
+      animation:pulseA 5.8s ease-in-out infinite;
+    }
+
+    .pulse-b{
+      animation:pulseB 6.4s ease-in-out infinite;
+    }
+
+    .twinkle{
+      animation:twinkle 4.8s ease-in-out infinite;
+    }
+
+    .scale-bar{
+      stroke:rgba(50,74,99,.58);
+      stroke-width:2;
+      stroke-linecap:round;
+    }
+
+    .scale-text{
+      font:700 8.8px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:rgba(50,74,99,.66);
+    }
+
+    .extraction-line{
+      fill:none;
+      stroke:rgba(95,126,158,.25);
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:4 10;
+      animation:dataDash 7s linear infinite;
+    }
+
+    .axis{
+      stroke:rgba(95,126,158,.26);
+      stroke-width:1.35;
+      stroke-linecap:round;
+    }
+
+    .axis-grid{
+      stroke:rgba(95,126,158,.10);
+      stroke-width:1;
+      stroke-linecap:round;
+    }
+
+    .hist-bar{
+      fill:url(#bar-gradient);
+      rx:3;
+    }
+
+    .hist-bar.active{
+      fill:url(#bar-active-gradient);
+    }
+
+    .fit-fill{
+      fill:url(#fit-fill-gradient);
+      opacity:.52;
+    }
+
+    .fit-shadow{
+      fill:none;
+      stroke:rgba(237,70,36,.13);
+      stroke-width:8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .fit-curve{
+      fill:none;
+      stroke:var(--accent);
+      stroke-width:2.75;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:230;
+      stroke-dashoffset:230;
+      animation:drawFit 5.4s ease-in-out infinite;
+    }
+
+    @keyframes drawFit{
+      0%{ stroke-dashoffset:230; opacity:.38; }
+      45%{ stroke-dashoffset:0; opacity:1; }
+      100%{ stroke-dashoffset:0; opacity:.84; }
+    }
+
+    @keyframes cloudBreathe{
+      0%,100%{ transform:scale(1); opacity:.84; }
+      50%{ transform:scale(1.025); opacity:1; }
+    }
+
+    @keyframes floatA{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(3px,-2px); }
+    }
+
+    @keyframes floatB{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(-3px,2px); }
+    }
+
+    @keyframes floatC{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(2px,3px); }
+    }
+
+    @keyframes pulseA{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.035); }
+    }
+
+    @keyframes pulseB{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.025); }
+    }
+
+    @keyframes twinkle{
+      0%,100%{ opacity:.58; }
+      50%{ opacity:.90; }
+    }
+
+    @keyframes dataDash{
+      0%{ stroke-dashoffset:0; }
+      100%{ stroke-dashoffset:-84; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .field-glow,
+      .float-a,
+      .float-b,
+      .float-c,
+      .pulse-a,
+      .pulse-b,
+      .twinkle,
+      .extraction-line,
+      .fit-curve{
+        animation:none !important;
+        stroke-dashoffset:0;
+      }
+    }
   </style>
+
   <defs>
-    <linearGradient id="nano-surface-a" x1="116" y1="176" x2="364" y2="286" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#f59e0b"/>
-      <stop offset=".56" stop-color="#f97316"/>
-      <stop offset="1" stop-color="#1d4ed8"/>
-    </linearGradient>
-    <linearGradient id="nano-surface-b" x1="104" y1="236" x2="358" y2="332" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fb923c" stop-opacity=".94"/>
-      <stop offset="1" stop-color="#3b82f6" stop-opacity=".82"/>
-    </linearGradient>
-    <linearGradient id="nano-surface-c" x1="150" y1="294" x2="352" y2="364" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1e3a8a" stop-opacity=".22"/>
-      <stop offset="1" stop-color="#f59e0b" stop-opacity=".3"/>
-    </linearGradient>
-    <linearGradient id="nano-beam" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#dbeafe" stop-opacity="0"/>
-      <stop offset=".38" stop-color="#dbeafe" stop-opacity=".2"/>
-      <stop offset="1" stop-color="#93c5fd" stop-opacity=".58"/>
-    </linearGradient>
-    <radialGradient id="nano-core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 0) scale(1)">
-      <stop stop-color="#fff7ed"/>
-      <stop offset=".58" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#1d4ed8"/>
+    <radialGradient id="bg-gradient" cx="48%" cy="44%" r="76%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="72%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#edf4fb"/>
     </radialGradient>
+
+    <radialGradient id="grain-light-gradient" cx="34%" cy="25%" r="76%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="38%" stop-color="#f7fbff"/>
+      <stop offset="76%" stop-color="#dde8f4"/>
+      <stop offset="100%" stop-color="#b9cadd"/>
+    </radialGradient>
+
+    <radialGradient id="grain-gradient" cx="34%" cy="25%" r="76%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="34%" stop-color="#eef5fb"/>
+      <stop offset="74%" stop-color="#c9d8e8"/>
+      <stop offset="100%" stop-color="#92aac3"/>
+    </radialGradient>
+
+    <radialGradient id="grain-dark-gradient" cx="32%" cy="24%" r="78%">
+      <stop offset="0%" stop-color="#f5faff"/>
+      <stop offset="36%" stop-color="#d6e2ee"/>
+      <stop offset="76%" stop-color="#9eb3c9"/>
+      <stop offset="100%" stop-color="#7189a1"/>
+    </radialGradient>
+
+    <radialGradient id="grain-tiny-gradient" cx="34%" cy="25%" r="76%">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="62%" stop-color="#c8d6e5"/>
+      <stop offset="100%" stop-color="#91a8bf"/>
+    </radialGradient>
+
+    <linearGradient id="bar-gradient" x1="0" y1="205" x2="0" y2="322" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93c5fd" stop-opacity=".78"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity=".46"/>
+    </linearGradient>
+
+    <linearGradient id="bar-active-gradient" x1="0" y1="205" x2="0" y2="322" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffb8a3" stop-opacity=".82"/>
+      <stop offset="100%" stop-color="#ed4624" stop-opacity=".66"/>
+    </linearGradient>
+
+    <linearGradient id="fit-fill-gradient" x1="400" y1="166" x2="588" y2="324" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#dbeafe" stop-opacity=".04"/>
+      <stop offset="54%" stop-color="#93c5fd" stop-opacity=".13"/>
+      <stop offset="100%" stop-color="#ed4624" stop-opacity=".09"/>
+    </linearGradient>
+
+    <filter id="field-blur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+
+    <filter id="particle-soft-depth" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation=".9" flood-color="#324a63" flood-opacity=".12"/>
+    </filter>
+
+    <filter id="particle-tiny-depth" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy=".7" stdDeviation=".55" flood-color="#324a63" flood-opacity=".08"/>
+    </filter>
   </defs>
 
-  <g class="drift">
-    <path class="surface-a" d="M102 246C138 204 182 183 228 184C273 185 317 208 358 248C322 270 287 289 248 302C204 317 159 320 118 302C101 286 96 267 102 246Z"/>
-    <path class="surface-b" d="M112 290C148 261 190 248 236 250C278 252 320 268 360 300C325 324 287 339 244 346C202 352 163 344 128 322C114 312 108 301 112 290Z"/>
-    <path class="surface-c" d="M138 324C171 310 207 304 245 306C280 308 315 318 350 338C316 354 279 364 238 368C203 371 171 365 143 350C136 344 134 335 138 324Z"/>
-    <path d="M130 226C164 206 198 198 234 200C273 202 309 216 342 240" class="surface-line"/>
-    <path d="M128 292C164 272 201 264 240 266C278 269 313 282 345 305" class="surface-line" opacity=".62"/>
-  </g>
+  <rect width="640" height="480" class="bg"/>
 
-  <path class="beam" d="M238 112C246 104 258 104 266 112L292 140C296 144 296 152 292 157L256 208C252 214 244 214 240 208L204 157C200 152 200 144 204 140L238 112Z"/>
-  <circle cx="248" cy="226" r="9" fill="#fff7ed"/>
-  <circle cx="248" cy="226" r="18" stroke="#93c5fd" stroke-opacity=".48" stroke-width="3" class="glow"/>
-
-  <g opacity=".78">
-    <path class="mesh" d="M420 166L456 144L492 166L492 208L456 230L420 208Z"/>
-    <path class="mesh" d="M492 166L528 144L564 166L564 208L528 230L492 208Z"/>
-    <path class="mesh" d="M456 230L492 208L528 230L528 272L492 294L456 272Z"/>
-    <path class="mesh" d="M384 230L420 208L456 230L456 272L420 294L384 272Z"/>
-    <circle cx="456" cy="144" r="9" fill="#dbeafe" class="spark"/>
-    <circle cx="528" cy="144" r="9" fill="#bfdbfe" class="spark" style="animation-delay:-1.1s"/>
-    <circle cx="420" cy="208" r="9" fill="#93c5fd" class="spark" style="animation-delay:-1.8s"/>
-    <circle cx="492" cy="208" r="11" fill="#2563eb" class="spark" style="animation-delay:-.6s"/>
-    <circle cx="564" cy="208" r="9" fill="#60a5fa" class="spark" style="animation-delay:-2.4s"/>
-    <circle cx="456" cy="272" r="10" fill="#f59e0b" class="spark" style="animation-delay:-1.5s"/>
-    <circle cx="528" cy="272" r="10" fill="#f97316" class="spark" style="animation-delay:-2.1s"/>
-    <circle cx="420" cy="294" r="8" fill="#dbeafe" class="spark" style="animation-delay:-.9s"/>
-    <circle cx="492" cy="294" r="8" fill="#bfdbfe" class="spark" style="animation-delay:-2.7s"/>
-  </g>
-
+  <!-- Dense particle cloud, lightweight version -->
   <g>
-    <circle cx="184" cy="170" r="15" fill="#f59e0b" class="spark"/>
-    <circle cx="212" cy="152" r="10" fill="#fb923c" class="spark" style="animation-delay:-1.2s"/>
-    <circle cx="298" cy="196" r="12" fill="#60a5fa" class="spark" style="animation-delay:-2.1s"/>
-    <circle cx="330" cy="220" r="8" fill="#93c5fd" class="spark" style="animation-delay:-.8s"/>
-    <circle cx="158" cy="314" r="12" fill="#dbeafe" class="spark" style="animation-delay:-1.6s"/>
-    <circle cx="286" cy="336" r="14" fill="#f59e0b" fill-opacity=".88" class="spark" style="animation-delay:-2.8s"/>
+    <path
+      d="
+        M114 138
+        C140 112 183 101 224 106
+        C273 111 311 137 323 180
+        C336 227 317 276 272 303
+        C227 330 164 329 125 297
+        C88 266 84 181 114 138 Z"
+      class="field-glow"
+    />
+
+    <!-- core particles -->
+    <ellipse cx="132" cy="138" rx="12" ry="8" transform="rotate(-9 132 138)" class="grain light pulse-a"/>
+    <ellipse cx="158" cy="133" rx="9" ry="6" transform="rotate(12 158 133)" class="grain mid float-a"/>
+    <ellipse cx="182" cy="141" rx="14" ry="9" transform="rotate(-4 182 141)" class="grain pulse-b"/>
+    <ellipse cx="208" cy="132" rx="11" ry="7" transform="rotate(10 208 132)" class="grain light float-b"/>
+    <ellipse cx="232" cy="141" rx="9" ry="6" transform="rotate(-14 232 141)" class="grain mid twinkle"/>
+    <ellipse cx="256" cy="133" rx="13" ry="8" transform="rotate(8 256 133)" class="grain dark float-a"/>
+    <ellipse cx="281" cy="142" rx="10" ry="7" transform="rotate(-6 281 142)" class="grain light pulse-b"/>
+
+    <ellipse cx="121" cy="164" rx="8" ry="5" transform="rotate(5 121 164)" class="grain tiny twinkle"/>
+    <ellipse cx="144" cy="167" rx="12" ry="8" transform="rotate(-13 144 167)" class="grain mid float-b"/>
+    <ellipse cx="171" cy="170" rx="17" ry="11" transform="rotate(9 171 170)" class="grain dark pulse-a"/>
+    <ellipse cx="198" cy="165" rx="10" ry="7" transform="rotate(-8 198 165)" class="grain light"/>
+    <ellipse cx="223" cy="171" rx="15" ry="10" transform="rotate(11 223 171)" class="grain float-c"/>
+    <ellipse cx="249" cy="164" rx="11" ry="7" transform="rotate(-5 249 164)" class="grain mid pulse-b"/>
+    <ellipse cx="276" cy="172" rx="17" ry="11" transform="rotate(9 276 172)" class="grain dark float-a"/>
+    <ellipse cx="302" cy="166" rx="9" ry="6" transform="rotate(-10 302 166)" class="grain light"/>
+
+    <ellipse cx="116" cy="193" rx="9" ry="6" transform="rotate(-7 116 193)" class="grain mid float-a"/>
+    <ellipse cx="140" cy="195" rx="13" ry="8" transform="rotate(8 140 195)" class="grain light pulse-b"/>
+    <ellipse cx="166" cy="198" rx="10" ry="7" transform="rotate(-12 166 198)" class="grain light"/>
+    <ellipse cx="191" cy="192" rx="19" ry="12" transform="rotate(6 191 192)" class="grain dark pulse-a"/>
+    <ellipse cx="220" cy="198" rx="13" ry="8" transform="rotate(-4 220 198)" class="grain mid"/>
+    <ellipse cx="247" cy="193" rx="18" ry="11" transform="rotate(12 247 193)" class="grain dark float-c"/>
+    <ellipse cx="276" cy="199" rx="10" ry="7" transform="rotate(-11 276 199)" class="grain light pulse-b"/>
+    <ellipse cx="301" cy="193" rx="13" ry="8" transform="rotate(8 301 193)" class="grain"/>
+
+    <ellipse cx="114" cy="223" rx="8" ry="5" transform="rotate(10 114 223)" class="grain tiny twinkle"/>
+    <ellipse cx="138" cy="226" rx="12" ry="8" transform="rotate(-9 138 226)" class="grain mid float-a"/>
+    <ellipse cx="164" cy="228" rx="18" ry="11" transform="rotate(7 164 228)" class="grain dark pulse-a"/>
+    <ellipse cx="193" cy="223" rx="10" ry="7" transform="rotate(-6 193 223)" class="grain light"/>
+    <ellipse cx="218" cy="229" rx="15" ry="10" transform="rotate(12 218 229)" class="grain float-b"/>
+    <ellipse cx="246" cy="224" rx="10" ry="7" transform="rotate(-8 246 224)" class="grain mid"/>
+    <ellipse cx="271" cy="229" rx="18" ry="12" transform="rotate(8 271 229)" class="grain dark float-c"/>
+    <ellipse cx="300" cy="225" rx="11" ry="7" transform="rotate(-10 300 225)" class="grain light pulse-b"/>
+
+    <ellipse cx="121" cy="254" rx="11" ry="7" transform="rotate(-8 121 254)" class="grain mid pulse-b"/>
+    <ellipse cx="148" cy="256" rx="9" ry="6" transform="rotate(13 148 256)" class="grain light"/>
+    <ellipse cx="174" cy="258" rx="17" ry="11" transform="rotate(-5 174 258)" class="grain dark float-a"/>
+    <ellipse cx="201" cy="253" rx="11" ry="7" transform="rotate(9 201 253)" class="grain light pulse-a"/>
+    <ellipse cx="228" cy="259" rx="18" ry="11" transform="rotate(-7 228 259)" class="grain dark float-c"/>
+    <ellipse cx="258" cy="254" rx="10" ry="7" transform="rotate(14 258 254)" class="grain mid"/>
+    <ellipse cx="284" cy="261" rx="14" ry="9" transform="rotate(-9 284 261)" class="grain light pulse-b"/>
+
+    <ellipse cx="133" cy="284" rx="9" ry="6" transform="rotate(5 133 284)" class="grain tiny twinkle"/>
+    <ellipse cx="157" cy="288" rx="13" ry="8" transform="rotate(-12 157 288)" class="grain mid pulse-a"/>
+    <ellipse cx="185" cy="289" rx="10" ry="7" transform="rotate(8 185 289)" class="grain light"/>
+    <ellipse cx="212" cy="286" rx="17" ry="11" transform="rotate(-7 212 286)" class="grain dark float-a"/>
+    <ellipse cx="241" cy="290" rx="12" ry="8" transform="rotate(10 241 290)" class="grain light pulse-b"/>
+    <ellipse cx="269" cy="286" rx="10" ry="7" transform="rotate(-6 269 286)" class="grain mid"/>
+
+    <!-- small fillers -->
+    <ellipse cx="149" cy="149" rx="6.2" ry="4.2" transform="rotate(-8 149 149)" class="grain tiny twinkle"/>
+    <ellipse cx="175" cy="155" rx="7" ry="4.8" transform="rotate(7 175 155)" class="grain tiny"/>
+    <ellipse cx="203" cy="150" rx="6.4" ry="4.2" transform="rotate(-11 203 150)" class="grain tiny twinkle"/>
+    <ellipse cx="228" cy="152" rx="7.2" ry="4.9" transform="rotate(5 228 152)" class="grain tiny"/>
+    <ellipse cx="255" cy="151" rx="6.2" ry="4.1" transform="rotate(10 255 151)" class="grain tiny twinkle"/>
+    <ellipse cx="283" cy="154" rx="6.5" ry="4.3" transform="rotate(-9 283 154)" class="grain tiny"/>
+
+    <ellipse cx="128" cy="180" rx="6.8" ry="4.5" transform="rotate(8 128 180)" class="grain tiny twinkle"/>
+    <ellipse cx="156" cy="184" rx="7.4" ry="5" transform="rotate(-5 156 184)" class="grain tiny"/>
+    <ellipse cx="183" cy="181" rx="6.2" ry="4.1" transform="rotate(12 183 181)" class="grain tiny"/>
+    <ellipse cx="211" cy="183" rx="7" ry="4.8" transform="rotate(-8 211 183)" class="grain tiny twinkle"/>
+    <ellipse cx="236" cy="183" rx="6.2" ry="4.2" transform="rotate(6 236 183)" class="grain tiny"/>
+    <ellipse cx="264" cy="184" rx="7.2" ry="4.8" transform="rotate(-10 264 184)" class="grain tiny"/>
+    <ellipse cx="291" cy="181" rx="6.2" ry="4.1" transform="rotate(9 291 181)" class="grain tiny twinkle"/>
+
+    <ellipse cx="129" cy="210" rx="6.2" ry="4.1" transform="rotate(-9 129 210)" class="grain tiny"/>
+    <ellipse cx="154" cy="212" rx="7.4" ry="5" transform="rotate(8 154 212)" class="grain tiny twinkle"/>
+    <ellipse cx="180" cy="210" rx="6.4" ry="4.2" transform="rotate(-5 180 210)" class="grain tiny"/>
+    <ellipse cx="208" cy="212" rx="6.8" ry="4.4" transform="rotate(6 208 212)" class="grain tiny"/>
+    <ellipse cx="235" cy="210" rx="7.4" ry="5" transform="rotate(-8 235 210)" class="grain tiny twinkle"/>
+    <ellipse cx="262" cy="213" rx="6.2" ry="4.1" transform="rotate(7 262 213)" class="grain tiny"/>
+    <ellipse cx="289" cy="210" rx="6.5" ry="4.3" transform="rotate(-4 289 210)" class="grain tiny"/>
+
+    <ellipse cx="134" cy="239" rx="6.4" ry="4.2" transform="rotate(6 134 239)" class="grain tiny twinkle"/>
+    <ellipse cx="161" cy="241" rx="7" ry="4.8" transform="rotate(-9 161 241)" class="grain tiny"/>
+    <ellipse cx="188" cy="240" rx="6.2" ry="4.1" transform="rotate(7 188 240)" class="grain tiny"/>
+    <ellipse cx="214" cy="242" rx="6.8" ry="4.5" transform="rotate(-8 214 242)" class="grain tiny twinkle"/>
+    <ellipse cx="242" cy="241" rx="7.2" ry="4.8" transform="rotate(6 242 241)" class="grain tiny"/>
+    <ellipse cx="270" cy="242" rx="6.2" ry="4.1" transform="rotate(-7 270 242)" class="grain tiny"/>
+    <ellipse cx="296" cy="239" rx="6.5" ry="4.3" transform="rotate(9 296 239)" class="grain tiny twinkle"/>
+
+    <ellipse cx="147" cy="270" rx="6.4" ry="4.2" transform="rotate(-6 147 270)" class="grain tiny"/>
+    <ellipse cx="173" cy="272" rx="7.2" ry="4.8" transform="rotate(8 173 272)" class="grain tiny twinkle"/>
+    <ellipse cx="199" cy="271" rx="6.2" ry="4.1" transform="rotate(-9 199 271)" class="grain tiny"/>
+    <ellipse cx="226" cy="272" rx="6.8" ry="4.5" transform="rotate(6 226 272)" class="grain tiny"/>
+    <ellipse cx="253" cy="272" rx="7" ry="4.8" transform="rotate(-7 253 272)" class="grain tiny twinkle"/>
+    <ellipse cx="279" cy="271" rx="6.2" ry="4.1" transform="rotate(8 279 271)" class="grain tiny"/>
+
+    <!-- outer fringe -->
+    <ellipse cx="110" cy="149" rx="7" ry="5" transform="rotate(-6 110 149)" class="grain tiny twinkle"/>
+    <ellipse cx="101" cy="182" rx="8" ry="5" transform="rotate(9 101 182)" class="grain tiny"/>
+    <ellipse cx="100" cy="219" rx="8" ry="5" transform="rotate(-8 100 219)" class="grain tiny twinkle"/>
+    <ellipse cx="107" cy="252" rx="8" ry="5" transform="rotate(6 107 252)" class="grain tiny"/>
+    <ellipse cx="121" cy="282" rx="8" ry="5" transform="rotate(-9 121 282)" class="grain tiny twinkle"/>
+
+    <ellipse cx="311" cy="149" rx="8" ry="5" transform="rotate(6 311 149)" class="grain tiny"/>
+    <ellipse cx="320" cy="182" rx="8" ry="5" transform="rotate(-8 320 182)" class="grain tiny twinkle"/>
+    <ellipse cx="322" cy="218" rx="8" ry="5" transform="rotate(9 322 218)" class="grain tiny"/>
+    <ellipse cx="315" cy="252" rx="8" ry="5" transform="rotate(-6 315 252)" class="grain tiny twinkle"/>
+    <ellipse cx="300" cy="283" rx="8" ry="5" transform="rotate(7 300 283)" class="grain tiny"/>
+
+    <!-- scale -->
+    <path d="M212 338H272" class="scale-bar"/>
+    <text x="242" y="331" text-anchor="middle" class="scale-text">100 nm</text>
+  </g>
+
+  <path
+    d="M326 218
+       C364 221 391 238 416 260
+       C438 279 453 293 470 302"
+    class="extraction-line"
+  />
+
+  <!-- Histogram -->
+  <g>
+    <text x="408" y="176" class="label-strong">312 particles</text>
+    <text x="588" y="176" text-anchor="end" class="label-strong">mean 38 nm</text>
+
+    <path d="M408 322H588" class="axis"/>
+    <path d="M408 322V210" class="axis"/>
+    <path d="M420 292H574" class="axis-grid"/>
+    <path d="M438 262H556" class="axis-grid"/>
+    <path d="M466 232H528" class="axis-grid"/>
+
+    <text x="398" y="216" text-anchor="end" class="axis-label">frequency</text>
+    <text x="498" y="342" text-anchor="middle" class="axis-label">particle diameter</text>
+    <text x="571" y="342" class="axis-label">nm</text>
+
+    <path
+      d="
+        M408 322
+        C430 314 444 287 458 254
+        C475 215 498 202 520 236
+        C538 264 555 301 586 322
+        Z"
+      class="fit-fill"
+    />
+
+    <rect x="420" y="300" width="10" height="22" class="hist-bar"/>
+    <rect x="435" y="286" width="10" height="36" class="hist-bar"/>
+    <rect x="450" y="263" width="10" height="59" class="hist-bar"/>
+    <rect x="465" y="237" width="10" height="85" class="hist-bar active"/>
+    <rect x="480" y="219" width="10" height="103" class="hist-bar active"/>
+    <rect x="495" y="229" width="10" height="93" class="hist-bar active"/>
+    <rect x="510" y="249" width="10" height="73" class="hist-bar"/>
+    <rect x="525" y="274" width="10" height="48" class="hist-bar"/>
+    <rect x="540" y="294" width="10" height="28" class="hist-bar"/>
+    <rect x="555" y="307" width="10" height="15" class="hist-bar"/>
+
+    <path
+      d="
+        M410 312
+        C432 304 447 273 462 240
+        C479 204 502 196 520 230
+        C540 263 555 300 586 312"
+      class="fit-shadow"
+    />
+    <path
+      d="
+        M410 312
+        C432 304 447 273 462 240
+        C479 204 502 196 520 230
+        C540 263 555 300 586 312"
+      class="fit-curve"
+    />
+
+    <text x="534" y="222" class="label-accent">log-normal fit</text>
+    <text x="588" y="360" text-anchor="end" class="label">confidence 0.94</text>
   </g>
 </svg>
