@@ -250,7 +250,7 @@ function loadAuthHarness(role = "admin") {
     window: {
       location: {
         origin: "https://example.com",
-        pathname: "/admin-dashboard.html",
+        pathname: "/staff-dashboard.html",
         search: "",
         hash: "",
         replace() {},

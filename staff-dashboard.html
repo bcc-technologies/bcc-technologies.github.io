@@ -15,11 +15,18 @@
   <script src="js/workspace/utils.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
+  <script src="js/workspace/analytics.js" defer></script>
+  <script src="js/workspace/intelligence.js" defer></script>
+  <script src="js/workspace/prospects.constants.js" defer></script>
+  <script src="js/workspace/prospects.layout.js" defer></script>
+  <script src="js/workspace/prospects.api.js" defer></script>
+  <script src="js/workspace/prospects.js" defer></script>
   <script src="js/workspace/productivity.js" defer></script>
   <script src="js/workspace/calendar.js" defer></script>
   <script src="js/workspace/forms.js" defer></script>
   <script src="js/workspace/shell.js" defer></script>
   <script src="js/workspace/router.js" defer></script>
+  <script src="js/admin-dashboard.js" defer></script>
   <script src="js/staff-dashboard.js" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined staff-workspace">
@@ -40,7 +47,7 @@
       </div>
       <label class="workspace-search account-search">
         <i data-lucide="search"></i>
-        <input type="search" data-workspace-search placeholder="Buscar herramientas..." autocomplete="off" aria-label="Buscar herramientas" />
+        <input type="search" data-workspace-search data-user-search placeholder="Buscar herramientas o cuentas..." autocomplete="off" aria-label="Buscar herramientas" />
       </label>
       <div class="workspace-tools">
         <button class="workspace-icon-button" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
@@ -57,7 +64,7 @@
           </button>
           <div class="account-dropdown" data-account-dropdown hidden>
             <a href="/staff-dashboard.html" data-dashboard-link>Mi dashboard</a>
-            <a href="/admin-dashboard.html" data-admin-return hidden>Panel administrador</a>
+            <a href="#usuarios" data-admin-return hidden>Gestión interna</a>
             <a href="/cms.html" data-cms-access hidden>Content (CMS)</a>
             <a href="/dashboard.html">Vista cliente</a>
             <button type="button" data-logout>Cerrar sesión</button>
@@ -72,6 +79,14 @@
         <a href="#trabajo"><i data-lucide="workflow"></i><span>Operación</span></a>
         <a href="/cms.html" data-cms-access hidden><i data-lucide="panels-top-left"></i><span>CMS</span></a>
         <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
+        <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="command"></i><span>Gestión</span></p>
+        <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
+        <a href="#roles" data-permission-required="admin:view"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
+        <a href="#auditoria" data-permission-required="admin:view"><i data-lucide="history"></i><span>Auditoría</span></a>
+        <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="activity"></i><span>Señales</span></p>
+        <a href="#prospectos" data-permission-required="admin:view"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
+        <a href="#analytics" data-permission-required="admin:view"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
+        <a href="#intelligence" data-permission-required="admin:view"><i data-lucide="radar"></i><span>Intelligence</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
       <section class="workspace-help">
@@ -287,6 +302,140 @@
           </section>
         </section>
 
+        <section class="workspace-view" id="usuarios" data-permission-required="admin:view" data-workspace-view data-view-title="Usuarios" hidden>
+          <section class="users-surface">
+            <div class="surface-toolbar">
+              <div>
+                <h2>Usuarios</h2>
+                <p class="muted-text" data-admin-message>Cargando...</p>
+              </div>
+              <div class="surface-filters" aria-label="Filtrar usuarios">
+                <label class="surface-mobile-search">
+                  <i data-lucide="search"></i>
+                  <input type="search" data-user-search-mobile placeholder="Buscar cuentas..." autocomplete="off" />
+                </label>
+                <div class="quick-filter-group" aria-label="Vistas rápidas">
+                  <button type="button" data-quick-filter="admins">Admins</button>
+                  <button type="button" data-quick-filter="cms">Con CMS</button>
+                  <button type="button" data-quick-filter="inactive">Sin actividad</button>
+                </div>
+                <select data-role-filter aria-label="Filtrar por rol">
+                  <option value="">Todos los roles</option>
+                  <option value="client">Clientes</option>
+                  <option value="staff">Personal</option>
+                  <option value="admin">Administradores</option>
+                </select>
+                <select data-department-filter aria-label="Filtrar por departamento">
+                  <option value="">Todos los departamentos</option>
+                  <option value="technology">Tecnología</option>
+                  <option value="finance">Finanzas</option>
+                  <option value="operations">Operaciones</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="hr">Recursos humanos</option>
+                </select>
+                <label class="cms-filter"><input type="checkbox" data-cms-filter /> Solo CMS</label>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="account-table workspace-users-table">
+                <thead>
+                  <tr>
+                    <th>Cuenta</th>
+                    <th>Rol y área</th>
+                    <th>Acceso</th>
+                    <th>Última actividad</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-users-table></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="roles" data-permission-required="admin:view" data-workspace-view data-view-title="Roles y permisos" hidden>
+          <section class="role-admin-grid" aria-label="Creación y administración de roles">
+            <article class="module-surface role-builder-surface">
+              <div class="module-head">
+                <div>
+                  <h2>Crear rol personalizado</h2>
+                  <p>Define una plantilla de permisos reutilizable para documentar accesos por rol.</p>
+                </div>
+                <span class="status-pill enabled"><i data-lucide="key-round"></i>Catálogo activo</span>
+              </div>
+              <form class="role-admin-form" data-role-form>
+                <input type="hidden" name="roleId" />
+                <p class="auth-message" data-role-form-message hidden></p>
+                <label>
+                  Nombre del rol
+                  <input type="text" name="name" placeholder="Ej. Analista de inteligencia" required />
+                </label>
+                <label>
+                  Descripción
+                  <textarea name="description" rows="3" placeholder="Responsabilidad principal y alcance del rol"></textarea>
+                </label>
+                <div class="permission-picker" data-permission-picker aria-label="Permisos disponibles"></div>
+                <div class="role-form-actions">
+                  <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Guardar rol</button>
+                  <button class="btn btn-ghost" type="button" data-role-form-reset>Limpiar</button>
+                </div>
+              </form>
+            </article>
+            <aside class="module-surface permission-reference-surface">
+              <div class="module-head compact">
+                <h2>Mapa de permisos</h2>
+                <span data-permission-count>-</span>
+              </div>
+              <div class="permission-reference" data-permission-reference></div>
+            </aside>
+          </section>
+
+          <section class="module-surface role-library-surface">
+            <div class="surface-toolbar role-library-toolbar">
+              <div>
+                <h2>Roles configurados</h2>
+                <p class="muted-text" data-role-admin-message>Cargando roles...</p>
+              </div>
+              <div class="quick-filter-group" aria-label="Filtrar roles">
+                <button type="button" data-role-library-filter="all">Todos</button>
+                <button type="button" data-role-library-filter="base">Base</button>
+                <button type="button" data-role-library-filter="staff">Internos</button>
+                <button type="button" data-role-library-filter="custom">Personalizados</button>
+              </div>
+            </div>
+            <div class="role-library" data-role-library></div>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="analytics" data-permission-required="admin:view" data-workspace-view data-view-title="Analytics" hidden>
+          <section data-analytics-workspace aria-label="Analytics del sitio">
+            <p class="muted-text">Cargando analytics...</p>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="intelligence" data-permission-required="admin:view" data-workspace-view data-view-title="Intelligence" hidden>
+          <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
+            <p class="muted-text">Cargando intelligence...</p>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="prospectos" data-permission-required="admin:view" data-workspace-view data-view-title="Prospectos" hidden>
+          <section data-prospects-workspace aria-label="Gestor de prospectos">
+            <p class="muted-text">Cargando prospectos...</p>
+          </section>
+        </section>
+
+        <section class="workspace-view" id="auditoria" data-permission-required="admin:view" data-workspace-view data-view-title="Auditoría" hidden>
+          <aside class="activity-surface audit-view">
+            <div class="activity-head">
+              <h2>Actividad reciente</h2>
+              <span data-audit-count>-</span>
+            </div>
+            <p class="muted-text" data-audit-message>Cargando...</p>
+            <ol class="activity-feed" data-audit-feed></ol>
+          </aside>
+        </section>
+
         <section class="workspace-view" id="conocimiento" data-workspace-view data-view-title="Conocimiento" hidden>
           <section class="staff-hub-workspace" aria-label="Conocimiento interno">
             <article class="module-surface staff-hub-hero">
@@ -332,5 +481,52 @@
       </main>
     </div>
   </div>
+  <dialog class="access-drawer" data-access-modal data-permission-required="admin:view">
+    <form method="dialog" class="access-drawer-panel">
+      <div class="access-modal-head">
+        <div>
+          <h2>Editar accesos</h2>
+          <p class="muted-text" data-access-modal-user>Selecciona una cuenta.</p>
+        </div>
+        <button class="icon-close" type="button" data-access-modal-close aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="access-modal-body">
+        <label class="access-field">
+          <span>Rol base</span>
+          <select data-modal-role-select></select>
+          <small data-modal-role-note hidden>No puedes quitarte tu propio rol de administrador.</small>
+        </label>
+        <fieldset class="access-choice-group">
+          <legend>Roles internos</legend>
+          <div data-modal-staff-roles></div>
+        </fieldset>
+        <fieldset class="access-choice-group">
+          <legend>Departamentos</legend>
+          <div data-modal-departments></div>
+        </fieldset>
+        <fieldset class="access-choice-group">
+          <legend>Roles personalizados</legend>
+          <div data-modal-custom-roles></div>
+        </fieldset>
+        <section class="access-preview" data-access-preview>
+          <span>Acceso efectivo</span>
+          <strong>Cliente</strong>
+        </section>
+        <section class="access-confirm-panel" data-access-confirm hidden>
+          <span>Confirmación requerida</span>
+          <strong data-access-confirm-title>Vas a cambiar permisos.</strong>
+          <ul data-access-confirm-list></ul>
+          <small>Revisa el impacto antes de guardar. Los cambios quedarán registrados en auditoría.</small>
+        </section>
+      </div>
+      <p class="auth-message" data-access-modal-message hidden></p>
+      <div class="access-modal-actions">
+        <button class="btn btn-ghost" type="button" data-access-modal-close>Cancelar</button>
+        <button class="btn btn-primary" type="button" data-access-modal-save>Guardar acceso</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

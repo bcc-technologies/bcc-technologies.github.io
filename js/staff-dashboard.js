@@ -1,6 +1,10 @@
+let staffCurrentUser = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["staff", "admin"] });
   if (!user) return;
+  staffCurrentUser = user;
+  applyWorkspaceAccess(user);
 
   hydrateUser(user);
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
@@ -14,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceProductivity?.init(user);
   window.BCCWorkspaceCalendar?.init(user);
   window.BCCWorkspaceForms?.init(user);
+  await window.BCCWorkspaceAdmin?.init(user, { bindRouter: false });
   window.BCCWorkspaceUtils.refreshIcons();
 });
 
@@ -21,7 +26,7 @@ function hydrateUser(user) {
   const staffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const departments = Array.isArray(user.departments) ? user.departments : [];
   const permissions = Array.isArray(user.permissions) ? user.permissions : [];
-  const cmsEnabled = permissions.includes("cms:access");
+  const cmsEnabled = canAccess(user, "cms:access");
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = window.BCCWorkspaceUtils.roleLabel(user.role); });
@@ -46,6 +51,7 @@ function bindStaffWorkspaceRouter() {
     panelAliases,
     onShow({ nextId, panelId }) {
       if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");
+      window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(nextId, staffCurrentUser);
     }
   });
 }
@@ -82,4 +88,21 @@ function openStaffWorkPanel(panelId = "tareas") {
 function updateAccountUser(user) {
   hydrateUser(user);
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
+}
+function applyWorkspaceAccess(user) {
+  document.body.classList.toggle("admin-workspace", canAccess(user, "admin:view"));
+  document.querySelectorAll("[data-permission-required]").forEach(el => {
+    if (canAccess(user, el.dataset.permissionRequired)) return;
+    if (el.matches("[data-workspace-view]")) {
+      el.remove();
+      return;
+    }
+    el.hidden = true;
+  });
+}
+
+function canAccess(user, permission) {
+  if (!permission) return true;
+  if (user?.role === "admin") return true;
+  return Array.isArray(user?.permissions) && user.permissions.includes(permission);
 }

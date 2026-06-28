@@ -554,7 +554,7 @@ async function handleApi(req, res, url) {
       writeJson(USERS_PATH, users);
 
       const token = createSession(user.id);
-      return sendJson(res, 201, { ok: true, user: publicUser(user), redirectTo: role === "admin" ? "/admin-dashboard.html" : "/dashboard.html" }, {
+      return sendJson(res, 201, { ok: true, user: publicUser(user), redirectTo: role === "admin" ? "/staff-dashboard.html" : role === "staff" ? "/staff-dashboard.html" : "/dashboard.html" }, {
         "Set-Cookie": cookieHeader(SESSION_COOKIE, token, { maxAge: Math.floor(SESSION_TTL_MS / 1000) })
       });
     }
@@ -571,7 +571,7 @@ async function handleApi(req, res, url) {
       writeJson(USERS_PATH, updated);
       const nextUser = updated.find(u => u.id === user.id);
       const token = createSession(user.id);
-      return sendJson(res, 200, { ok: true, user: publicUser(nextUser), redirectTo: can(nextUser, "admin:view") ? "/admin-dashboard.html" : "/dashboard.html" }, {
+      return sendJson(res, 200, { ok: true, user: publicUser(nextUser), redirectTo: can(nextUser, "staff:view") ? "/staff-dashboard.html" : "/dashboard.html" }, {
         "Set-Cookie": cookieHeader(SESSION_COOKIE, token, { maxAge: Math.floor(SESSION_TTL_MS / 1000) })
       });
     }

@@ -128,7 +128,7 @@ There are two supported ways to run the radar manually.
 
 Go to:
 
-- `admin-dashboard.html#intelligence`
+- `staff-dashboard.html#intelligence`
 
 Then use:
 

@@ -1,6 +1,6 @@
 # Workspace JavaScript modules
 
-Shared dashboard modules live here. Page-level controllers remain in `js/dashboard.js`, `js/staff-dashboard.js` and `js/admin-dashboard.js`.
+Shared dashboard modules live here. Page-level controllers remain in `js/dashboard.js` and `js/staff-dashboard.js`; `js/admin-dashboard.js` now provides the internal management module mounted by staff.
 
 - `icons.js`: local Lucide-compatible icon subset and renderer.
 - `utils.js`: shared formatting, escaping, labels, timeouts, message rendering and icon refresh helpers.
@@ -10,6 +10,7 @@ Shared dashboard modules live here. Page-level controllers remain in `js/dashboa
 - `forms.js`: workspace forms module.
 - `productivity.js`: private tasks and KPI module.
 - `calendar.js`: operational calendar view subscribed to workspace tasks.
+- `admin-dashboard.js`: internal management module for users, roles, audit and admin-only workspace sections.
 - `analytics.js`: admin analytics module.
 - `intelligence.js`: technology/scientific intelligence module.
 - `prospects.constants.js`, `prospects.layout.js`, `prospects.api.js`, `prospects.js`: prospect CRM constants, shell layout, API boundary and state/render controller.

@@ -9,23 +9,26 @@ let activeRoleFilter = "all";
 const FALLBACK_BASE_ROLES = window.BCCWorkspaceUtils.BASE_ROLE_OPTIONS;
 const FALLBACK_STAFF_ROLES = window.BCCWorkspaceUtils.STAFF_ROLE_OPTIONS;
 const FALLBACK_DEPARTMENTS = window.BCCWorkspaceUtils.DEPARTMENT_OPTIONS;
+let adminWorkspaceReady = false;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const user = await window.BCCAuth.requireAuth({ admin: true });
-  if (!user) return;
+async function initAdminWorkspace(user, options = {}) {
+  if (!hasInternalAdminAccess(user) || adminWorkspaceReady) return;
+  adminWorkspaceReady = true;
   window.BCCAdminCurrentUser = user;
-
-  window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel });
 
   hydrateLocalCmsLinks();
   bindWorkspaceControls();
-  bindAdminWorkspaceRouter(user);
+  if (options.bindRouter !== false) bindAdminWorkspaceRouter(user);
   bindAccessModal();
   bindRoleAdminControls();
   window.BCCWorkspaceUtils.refreshIcons();
   await loadRoleDefinitions();
   await Promise.all([loadUsers(), loadAuditLogs()]);
-});
+}
+
+function hasInternalAdminAccess(user) {
+  return user?.role === "admin" || user?.permissions?.includes("admin:view");
+}
 
 async function loadUsers() {
   const message = document.querySelector("[data-admin-message]");
@@ -794,3 +797,8 @@ function hydrateLocalCmsLinks() {
   const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
   document.querySelectorAll("[data-local-cms-link]").forEach(el => { el.hidden = !isLocal; });
 }
+window.BCCWorkspaceAdmin = {
+  init: initAdminWorkspace,
+  initializeWorkspaceModule,
+  hasInternalAdminAccess
+};

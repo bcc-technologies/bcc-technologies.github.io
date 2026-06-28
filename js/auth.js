@@ -396,7 +396,7 @@ function authMessage(text, tone = "error") {
 }
 
 function routeForUser(user) {
-  if (user?.permissions?.includes("admin:view")) return "/admin-dashboard.html";
+  if (user?.permissions?.includes("admin:view")) return "/staff-dashboard.html";
   if (user?.permissions?.includes("staff:view")) return "/staff-dashboard.html";
   return "/dashboard.html";
 }

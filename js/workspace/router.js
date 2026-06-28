@@ -3,7 +3,7 @@
     const views = [...document.querySelectorAll("[data-workspace-view]")];
     if (!views.length) return null;
 
-    const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"]')];
+    const links = [...document.querySelectorAll('.workspace-nav a[href^="#"], .workspace-main a[href^="#"], .account-dropdown a[href^="#"]')];
     const sidebarLinks = [...document.querySelectorAll('.workspace-nav a[href^="#"]')];
     const title = document.querySelector("[data-workspace-view-title]");
     const viewIds = new Set(views.map(view => view.id));

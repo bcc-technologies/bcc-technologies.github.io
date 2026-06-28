@@ -1629,7 +1629,7 @@
   }
 
   function dashboardUrlForRole(role) {
-    if (role === 'admin') return '/admin-dashboard.html';
+    if (role === 'admin') return '/staff-dashboard.html';
     if (role === 'staff') return '/staff-dashboard.html';
     return '/dashboard.html';
   }
