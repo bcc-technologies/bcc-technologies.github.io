@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 640 480"
+  viewBox="55 80 570 325"
   fill="none"
   role="img"
   aria-labelledby="title desc"
@@ -15,10 +15,6 @@
 
   <style>
     :root{
-      --bg-0:#ffffff;
-      --bg-1:#f6faff;
-      --bg-2:#eaf2fb;
-
       --blue-0:#f8fbff;
       --blue-1:#dcecff;
       --blue-2:#acd4ff;
@@ -38,22 +34,14 @@
 
       --soft-blue:rgba(59,130,246,.14);
       --soft-coral:rgba(237,70,36,.15);
+
       --line-blue:rgba(59,130,246,.84);
       --line-coral:rgba(237,70,36,.92);
 
       --pipeline:rgba(95,126,158,.28);
+
       --panel-fill:rgba(255,255,255,.84);
       --panel-stroke:rgba(50,74,99,.14);
-      --grid:rgba(95,126,158,.06);
-    }
-
-    .bg{
-      fill:url(#bg-gradient);
-    }
-
-    .ambient-grid{
-      stroke:var(--grid);
-      stroke-width:1;
     }
 
     .pipeline{
@@ -291,12 +279,6 @@
   </style>
 
   <defs>
-    <radialGradient id="bg-gradient" cx="52%" cy="44%" r="72%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="72%" stop-color="#f6faff"/>
-      <stop offset="100%" stop-color="#eaf2fb"/>
-    </radialGradient>
-
     <radialGradient id="cell-normal-fill" cx="34%" cy="28%" r="78%">
       <stop offset="0%" stop-color="#f8fbff"/>
       <stop offset="60%" stop-color="#dcecff"/>
@@ -355,16 +337,6 @@
       C421 249 419 243 423 236 Z" />
   </defs>
 
-  <rect width="640" height="480" class="bg"/>
-
-  <g opacity=".48">
-    <path d="M74 92H570" class="ambient-grid"/>
-    <path d="M74 166H570" class="ambient-grid"/>
-    <path d="M74 240H570" class="ambient-grid"/>
-    <path d="M74 314H570" class="ambient-grid"/>
-    <path d="M74 388H570" class="ambient-grid"/>
-  </g>
-
   <path
     d="M208 221
        C240 228 263 243 281 264
@@ -377,10 +349,12 @@
   <g>
     <use href="#cell-reference-shape" class="contour-soft normal"/>
     <use href="#cell-reference-shape" class="contour-trace normal"/>
+
     <g class="pulse">
       <use href="#cell-reference-shape" class="cell-normal"/>
       <ellipse cx="149" cy="217" rx="38" ry="28" class="nucleus-normal"/>
     </g>
+
     <text x="96" y="314" class="micro-label">Reference</text>
     <text x="96" y="329" class="panel-label">Normal morphology</text>
   </g>
@@ -421,10 +395,8 @@
       />
 
       <circle cx="311" cy="309" r="5.5" class="centroid"/>
-
       <circle cx="260" cy="290" r="4.4" class="measure-node"/>
       <circle cx="362" cy="328" r="4.4" class="measure-node"/>
-
       <circle cx="334" cy="274" r="3.8" class="landmark"/>
       <circle cx="288" cy="344" r="3.8" class="landmark"/>
     </g>
@@ -441,6 +413,7 @@
       <ellipse cx="491" cy="203" rx="41" ry="29" class="nucleus-defect"/>
 
       <use href="#defect-hotspot-region" class="hotspot-fill"/>
+
       <path
         d="M423 236
            C432 231 442 233 450 241
@@ -448,6 +421,7 @@
            C421 249 419 243 423 236 Z"
         class="hotspot-ring"
       />
+
       <circle cx="429" cy="240" r="4.2" class="hotspot-landmark"/>
       <circle cx="444" cy="242" r="4.2" class="hotspot-landmark"/>
       <circle cx="435" cy="249" r="4.2" class="hotspot-landmark"/>
