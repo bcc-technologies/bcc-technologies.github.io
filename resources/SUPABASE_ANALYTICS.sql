@@ -32,6 +32,18 @@ alter table public.analytics_events add column if not exists user_id uuid refere
 alter table public.analytics_events add column if not exists actor_role text not null default '';
 alter table public.analytics_events add column if not exists is_internal boolean not null default false;
 
+create index if not exists analytics_events_public_event_created_idx
+on public.analytics_events (event_name, created_at desc)
+where coalesce(is_internal, false) = false;
+
+create index if not exists analytics_events_public_visitor_created_idx
+on public.analytics_events (visitor_id, created_at desc)
+where coalesce(is_internal, false) = false;
+
+create index if not exists analytics_events_internal_event_created_idx
+on public.analytics_events (event_name, created_at desc)
+where coalesce(is_internal, false) = true;
+
 create index if not exists analytics_events_internal_created_idx
 on public.analytics_events (is_internal, created_at desc);
 

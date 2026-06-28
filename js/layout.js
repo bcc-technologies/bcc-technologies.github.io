@@ -17,6 +17,7 @@
   let supabaseJsPromise = null;
   let analyticsSupabaseClientPromise = null;
   let analyticsIdentityPromise = null;
+  let analyticsAuthListenerBound = false;
 
   function updateTopState() {
     const atTop = (window.scrollY || window.pageYOffset || 0) <= THRESHOLD_PX;
@@ -188,20 +189,30 @@
     if (window.BCCAuth?.loadSupabaseClient) {
       return window.BCCAuth.loadSupabaseClient();
     }
+    if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
     if (window.BCCAnalyticsSupabaseClient) return window.BCCAnalyticsSupabaseClient;
     if (analyticsSupabaseClientPromise) return analyticsSupabaseClientPromise;
     analyticsSupabaseClientPromise = Promise.all([loadSupabaseConfig(), loadSupabaseJs()]).then(([config]) => {
       if (!config?.url || !config?.anonKey || !window.supabase?.createClient) {
         throw new Error("No fue posible inicializar Supabase para analytics.");
       }
-      window.BCCAnalyticsSupabaseClient = window.supabase.createClient(
+      window.BCCSupabaseClient = window.BCCSupabaseClient || window.supabase.createClient(
         config.url,
         config.anonKey,
         { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
       );
+      window.BCCAnalyticsSupabaseClient = window.BCCSupabaseClient;
       return window.BCCAnalyticsSupabaseClient;
     });
     return analyticsSupabaseClientPromise;
+  }
+
+  function bindAnalyticsAuthListener(supabase) {
+    if (analyticsAuthListenerBound || !supabase?.auth?.onAuthStateChange) return;
+    analyticsAuthListenerBound = true;
+    supabase.auth.onAuthStateChange(() => {
+      analyticsIdentityPromise = null;
+    });
   }
 
   async function resolveAnalyticsIdentity() {
@@ -209,6 +220,7 @@
     analyticsIdentityPromise = (async () => {
       try {
         const supabase = await loadAnalyticsSupabaseClient();
+        bindAnalyticsAuthListener(supabase);
         const { data: sessionData } = await supabase.auth.getSession();
         const session = sessionData?.session || null;
         const accessToken = safeTrim(session?.access_token, 4096);

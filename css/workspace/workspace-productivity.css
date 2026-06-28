@@ -591,3 +591,167 @@
     grid-template-columns: 1fr;
   }
 }
+.task-slider-control{
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-muted);
+}
+
+.task-slider-control label{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-slider-control strong{
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 24px;
+  border-radius: 5px;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  font-size: .78rem;
+}
+
+.task-form input[type="range"]{
+  height: 18px;
+  padding: 0;
+  border: 0;
+  accent-color: var(--accent);
+  background: transparent;
+}
+
+.task-form-row-date{
+  align-items: end;
+}
+
+.task-derived-priority{
+  min-height: 39px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-muted);
+  background: var(--surface-solid);
+  font-size: .82rem;
+  font-weight: 650;
+}
+.eisenhower-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.eisenhower-quadrant{
+  min-height: 248px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  overflow: hidden;
+}
+
+.eisenhower-quadrant header{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 15px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.eisenhower-quadrant header span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.eisenhower-quadrant h3{
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: .93rem;
+}
+
+.eisenhower-quadrant header strong{
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  font-size: .8rem;
+}
+
+.matrix-do header{
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface-solid));
+}
+
+.matrix-plan header{
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-solid));
+}
+
+.matrix-delegate header{
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface-solid));
+}
+
+.matrix-pause header{
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-solid));
+}
+.matrix-task-list{
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+}
+
+.matrix-task{
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-solid);
+}
+
+.matrix-task strong{
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: .84rem;
+}
+
+.matrix-task div{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.matrix-task small{
+  color: var(--ink-muted);
+  font-size: .73rem;
+}
+
+.matrix-task small.overdue{
+  color: #b1362c;
+}
+
+.matrix-empty{
+  display: grid;
+  place-items: center;
+  min-height: 116px;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: .82rem;
+  text-align: center;
+}
+
+@media (max-width: 700px){
+  .eisenhower-grid{
+    grid-template-columns: 1fr;
+  }
+}

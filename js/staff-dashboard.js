@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
   bindStaffWorkPanels();
   bindStaffWorkspaceRouter();
+  bindAdminViewSimulator(user);
   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
   window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser });
   window.BCCWorkspaceAccount?.renderPermissions(user, {
@@ -85,15 +86,56 @@ function openStaffWorkPanel(panelId = "tareas") {
   window.BCCWorkspaceUtils.refreshIcons();
 }
 
+function bindAdminViewSimulator(user) {
+  const select = document.querySelector("[data-admin-preview-mode]");
+  if (!select || !canAccess(user, "admin:view")) return;
+  select.addEventListener("change", () => {
+    const previewUser = previewUserForMode(user, select.value);
+    applyWorkspaceAccess(previewUser, { preview: true });
+    ensureVisibleWorkspaceView(previewUser);
+    window.BCCWorkspaceUtils.refreshIcons();
+  });
+}
+
+function previewUserForMode(user, mode) {
+  const base = { ...user, role: "staff", staffRoles: [], departments: [], customRoles: [], permissions: [] };
+  if (mode === "admin") return user;
+  if (mode === "author") {
+    base.staffRoles = ["author"];
+    base.permissions = ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "content:write", "cms:access"];
+    return base;
+  }
+  if (mode === "director") {
+    base.staffRoles = ["department_director"];
+    base.departments = ["operations"];
+    base.permissions = ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "content:write", "cms:access", "department:manage", "forms:manage", "department:operations"];
+    return base;
+  }
+  base.permissions = ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"];
+  return base;
+}
+
+function ensureVisibleWorkspaceView(user) {
+  const current = document.querySelector(".workspace-view:not([hidden])");
+  const required = current?.dataset.permissionRequired;
+  if (current && (!required || canAccess(user, required))) return;
+  document.querySelector('.workspace-nav a[href="#resumen"]')?.click();
+}
+
 function updateAccountUser(user) {
   hydrateUser(user);
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
 }
-function applyWorkspaceAccess(user) {
-  document.body.classList.toggle("admin-workspace", canAccess(user, "admin:view"));
+function applyWorkspaceAccess(user, options = {}) {
+  const previewMode = Boolean(options.preview);
+  const realAdmin = canAccess(staffCurrentUser || user, "admin:view");
+  document.body.classList.toggle("admin-workspace", realAdmin && canAccess(user, "admin:view"));
   document.querySelectorAll("[data-permission-required]").forEach(el => {
-    if (canAccess(user, el.dataset.permissionRequired)) return;
-    if (el.matches("[data-workspace-view]")) {
+    if (canAccess(user, el.dataset.permissionRequired)) {
+      el.hidden = false;
+      return;
+    }
+    if (!previewMode && !realAdmin && el.matches("[data-workspace-view]")) {
       el.remove();
       return;
     }

@@ -1587,7 +1587,7 @@
 
     if (!window.supabase?.createClient) {
       await new Promise((resolve, reject) => {
-        const existing = document.querySelector('script[data-supabase-js]');
+        const existing = document.querySelector('script[data-supabase-js], script[data-bcc-supabase-js="true"]');
         if (existing) {
           existing.addEventListener('load', resolve, { once: true });
           existing.addEventListener('error', reject, { once: true });
@@ -1602,26 +1602,28 @@
       });
     }
 
-    const client = window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
+    const client = window.BCCSupabaseClient || window.BCCAnalyticsSupabaseClient || window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
+    window.BCCSupabaseClient = window.BCCSupabaseClient || client;
     window.BCCNavSupabaseClient = client;
 
-    const { data: userData } = await client.auth.getUser();
-    if (!userData?.user) return null;
+    const { data: sessionData } = await client.auth.getSession();
+    const sessionUser = sessionData?.session?.user;
+    if (!sessionUser) return null;
 
     const { data: profile } = await client
       .from('profiles')
       .select('id, full_name, display_name, role')
-      .eq('id', userData.user.id)
+      .eq('id', sessionUser.id)
       .maybeSingle();
 
-    const fullName = profile?.full_name || userData.user.user_metadata?.full_name || userData.user.email || 'Cuenta';
+    const fullName = profile?.full_name || sessionUser.user_metadata?.full_name || sessionUser.email || 'Cuenta';
     const displayName = profile?.display_name || fullName.split(/\s+/)[0] || 'Cuenta';
     const role = profile?.role || 'client';
 
     return {
-      id: userData.user.id,
+      id: sessionUser.id,
       name: fullName,
       displayName,
       role

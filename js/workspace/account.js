@@ -21,10 +21,10 @@
       el.href = window.BCCAuth.routeForUser(user);
     });
     document.querySelectorAll("[data-admin-return]").forEach(el => {
-      el.hidden = !permissions.includes("admin:view");
+      el.hidden = !(user.role === "admin" || permissions.includes("admin:view"));
     });
     document.querySelectorAll("[data-cms-access]").forEach(el => {
-      el.hidden = !permissions.includes("cms:access");
+      el.hidden = !(user.role === "admin" || permissions.includes("cms:access"));
     });
   }
 

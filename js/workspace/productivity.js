@@ -50,6 +50,9 @@
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="reports">
           <i data-lucide="chart-no-axes-column-increasing"></i>KPIs
         </button>
+        <button type="button" role="tab" aria-selected="false" data-productivity-tab="matrix">
+          <i data-lucide="grid-2x2"></i>Matriz
+        </button>
       </div>
       <p class="productivity-message" data-task-message hidden></p>
       <section class="productivity-panel productivity-overview" data-productivity-panel="tasks">
@@ -92,6 +95,9 @@
           <div class="workload-bars" data-workload-bars></div>
         </article>
       </section>
+      <section class="productivity-panel productivity-matrix" data-productivity-panel="matrix" hidden>
+        <div class="eisenhower-grid" data-eisenhower-matrix></div>
+      </section>
       <dialog class="task-dialog" data-task-dialog>
         <form class="task-form" data-task-form>
           <div class="task-dialog-head">
@@ -108,18 +114,21 @@
             <input type="text" name="title" maxlength="160" required placeholder="Que necesitas completar?" />
           </label>
           <div class="task-form-row">
-            <label>
-              Prioridad
-              <select name="priority">
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
-                <option value="low">Baja</option>
-              </select>
-            </label>
+            <div class="task-slider-control">
+              <label for="task-importance">Importancia <strong data-importance-output>3</strong></label>
+              <input id="task-importance" type="range" name="importance" min="1" max="5" value="3" />
+            </div>
+            <div class="task-slider-control">
+              <label for="task-urgency">Urgencia <strong data-urgency-output>3</strong></label>
+              <input id="task-urgency" type="range" name="urgency" min="1" max="5" value="3" />
+            </div>
+          </div>
+          <div class="task-form-row task-form-row-date">
             <label>
               Fecha limite
               <input type="date" name="dueDate" />
             </label>
+            <p class="task-derived-priority" data-derived-priority>Prioridad derivada: Media</p>
           </div>
           <label>
             Detalle
@@ -140,6 +149,9 @@
       button.addEventListener("click", () => root.querySelector("[data-task-dialog]")?.close());
     });
     root.querySelector("[data-task-form]")?.addEventListener("submit", createTask);
+    root.querySelectorAll("[name=importance], [name=urgency]").forEach(input => {
+      input.addEventListener("input", syncTaskPriorityPreview);
+    });
     root.querySelector("[data-task-filter]")?.addEventListener("change", event => {
       activeFilter = event.target.value;
       renderTaskList();
@@ -172,6 +184,7 @@
     const dialog = root.querySelector("[data-task-dialog]");
     const form = root.querySelector("[data-task-form]");
     form?.reset();
+    syncTaskPriorityPreview();
     dialog?.showModal();
     form?.elements.title.focus();
   }
@@ -187,7 +200,7 @@
         method: "POST",
         body: JSON.stringify({
           title,
-          priority: form.elements.priority.value,
+          priority: derivePriority(form.elements.importance.value, form.elements.urgency.value),
           dueDate: form.elements.dueDate.value || null,
           description: String(form.elements.description.value || "").trim()
         })
@@ -277,6 +290,7 @@
   function renderAll() {
     renderTaskList();
     renderBoard();
+    renderMatrix();
     renderKpis();
     selectView(activeView);
     refreshIcons();
@@ -346,6 +360,58 @@
     }).join("");
   }
 
+  function renderMatrix() {
+    const matrix = root.querySelector("[data-eisenhower-matrix]");
+    if (!matrix) return;
+    const quadrants = eisenhowerQuadrants();
+    matrix.innerHTML = quadrants.map(quadrant => `
+      <article class="eisenhower-quadrant ${quadrant.tone}">
+        <header>
+          <div>
+            <span>${escapeHtml(quadrant.axis)}</span>
+            <h3>${escapeHtml(quadrant.title)}</h3>
+          </div>
+          <strong>${quadrant.tasks.length}</strong>
+        </header>
+        <div class="matrix-task-list">
+          ${quadrant.tasks.length ? quadrant.tasks.map(matrixTaskCard).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
+        </div>
+      </article>
+    `).join("");
+  }
+
+  function matrixTaskCard(task) {
+    return `
+      <article class="matrix-task">
+        <strong>${escapeHtml(task.title)}</strong>
+        <div>
+          <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
+          ${task.dueDate ? `<small class="${dueTone(task)}">${escapeHtml(formatDate(task.dueDate))}</small>` : `<small>Sin fecha</small>`}
+        </div>
+      </article>
+    `;
+  }
+
+  function eisenhowerQuadrants() {
+    const quadrants = [
+      { key: "do", title: "Hacer ahora", axis: "Importante + urgente", tone: "matrix-do", tasks: [] },
+      { key: "plan", title: "Planificar", axis: "Importante + no urgente", tone: "matrix-plan", tasks: [] },
+      { key: "delegate", title: "Delegar", axis: "No importante + urgente", tone: "matrix-delegate", tasks: [] },
+      { key: "pause", title: "Pausar", axis: "No importante + no urgente", tone: "matrix-pause", tasks: [] }
+    ];
+    tasks.filter(task => task.status !== "done").forEach(task => {
+      const important = importanceScore(task) >= 4;
+      const urgent = urgencyScore(task) >= 4;
+      const key = important && urgent ? "do" : important ? "plan" : urgent ? "delegate" : "pause";
+      quadrants.find(quadrant => quadrant.key === key)?.tasks.push(task);
+    });
+    quadrants.forEach(quadrant => {
+      quadrant.tasks.sort((first, second) => urgencyScore(second) - urgencyScore(first) || importanceScore(second) - importanceScore(first));
+    });
+    return quadrants;
+  }
+
+
   function renderKpis() {
     const summary = calculateKpis(tasks);
     const compact = root.querySelector("[data-kpi-compact]");
@@ -376,6 +442,47 @@
       }).join("");
     }
   }
+
+  function syncTaskPriorityPreview() {
+    const form = root?.querySelector("[data-task-form]");
+    if (!form) return;
+    const importance = Number(form.elements.importance?.value || 3);
+    const urgency = Number(form.elements.urgency?.value || 3);
+    const priority = derivePriority(importance, urgency);
+    const importanceOutput = root.querySelector("[data-importance-output]");
+    const urgencyOutput = root.querySelector("[data-urgency-output]");
+    const derived = root.querySelector("[data-derived-priority]");
+    if (importanceOutput) importanceOutput.textContent = String(importance);
+    if (urgencyOutput) urgencyOutput.textContent = String(urgency);
+    if (derived) derived.textContent = `Prioridad derivada: ${PRIORITY_LABELS[priority] || "Media"}`;
+  }
+
+  function derivePriority(importance, urgency) {
+    const importanceValue = Number(importance || 3);
+    const urgencyValue = Number(urgency || 3);
+    if (importanceValue >= 4 || (importanceValue >= 3 && urgencyValue >= 5)) return "high";
+    if (importanceValue >= 3 || urgencyValue >= 4) return "medium";
+    return "low";
+  }
+
+  function importanceScore(task) {
+    if (task.priority === "high") return 5;
+    if (task.priority === "medium") return 3;
+    return 2;
+  }
+
+  function urgencyScore(task) {
+    if (task.status === "done") return 0;
+    if (!task.dueDate) return 2;
+    const today = new Date(`${localDate()}T00:00:00`);
+    const due = new Date(`${task.dueDate}T00:00:00`);
+    const days = Math.ceil((due - today) / 86400000);
+    if (days <= 0) return 5;
+    if (days <= 2) return 4;
+    if (days <= 7) return 3;
+    return 1;
+  }
+
 
   function calculateKpis(entries) {
     const today = localDate();

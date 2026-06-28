@@ -58,6 +58,7 @@ const ROLE_LABELS = {
 };
 
 let currentPageUser = null;
+let currentUserPromise = null;
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
 function normalizeList(value, allowed) {
@@ -196,11 +197,17 @@ function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
 async function loadSupabaseClient() {
   if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
   if (!window.BCC_SUPABASE) throw new Error("Falta configuración de Supabase.");
-
   if (!window.supabase?.createClient) {
     await new Promise((resolve, reject) => {
+      const existing = document.querySelector("script[data-bcc-supabase-js=\"true\"], script[data-supabase-js]");
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", () => reject(new Error("No se pudo cargar Supabase.")), { once: true });
+        return;
+      }
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.dataset.bccSupabaseJs = "true";
       script.onload = resolve;
       script.onerror = () => reject(new Error("No se pudo cargar Supabase."));
       document.head.appendChild(script);
@@ -324,64 +331,75 @@ function publicProfile(profile, authUser = null, customRoleDefinitions = []) {
     lastLoginAt: authUser?.last_sign_in_at || ""
   };
 }
-
 async function currentUser() {
-  try {
-    const supabase = await loadSupabaseClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (!userError && userData?.user) {
-      let { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userData.user.id)
-        .maybeSingle();
+  if (currentPageUser) return currentPageUser;
+  if (currentUserPromise) return currentUserPromise;
 
-      if (error) throw error;
+  currentUserPromise = (async () => {
+    try {
+      const supabase = await loadSupabaseClient();
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (!userError && userData?.user) {
+        let { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userData.user.id)
+          .maybeSingle();
 
-      if (!profile) {
-        const metadata = userData.user.user_metadata || {};
-        const parsed = parsePersonName(metadata.full_name || metadata.name || "");
-        const payload = {
-          id: userData.user.id,
-          email: userData.user.email || "",
-          full_name: parsed.fullName,
-          first_name: parsed.firstName,
-          middle_names: parsed.middleNames,
-          first_last_name: parsed.firstLastName,
-          second_last_name: parsed.secondLastName,
-          display_name: parsed.displayName,
-          company: metadata.company || "",
-          title: metadata.title || "",
-          role: "client",
-          staff_roles: [],
-          departments: [],
-          custom_roles: []
-        };
-        const created = await supabase.from("profiles").insert(payload).select("*").single();
-        if (!created.error) profile = created.data;
+        if (error) throw error;
+
+        if (!profile) {
+          const metadata = userData.user.user_metadata || {};
+          const parsed = parsePersonName(metadata.full_name || metadata.name || "");
+          const payload = {
+            id: userData.user.id,
+            email: userData.user.email || "",
+            full_name: parsed.fullName,
+            first_name: parsed.firstName,
+            middle_names: parsed.middleNames,
+            first_last_name: parsed.firstLastName,
+            second_last_name: parsed.secondLastName,
+            display_name: parsed.displayName,
+            company: metadata.company || "",
+            title: metadata.title || "",
+            role: "client",
+            staff_roles: [],
+            departments: [],
+            custom_roles: []
+          };
+          const created = await supabase.from("profiles").insert(payload).select("*").single();
+          if (!created.error) profile = created.data;
+        }
+
+        currentPageUser = publicProfile(profile, userData.user);
+        return currentPageUser;
       }
-
-      currentPageUser = publicProfile(profile, userData.user);
-      return currentPageUser;
+    } catch (_error) {
+      // Fall back to local account server when Supabase auth is unavailable.
     }
-  } catch (_error) {
-    // Fall back to local account server when Supabase auth is unavailable.
-  }
+
+    try {
+      const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+      if (!res.ok) return null;
+      const payload = await res.json().catch(() => null);
+      if (payload?.ok && payload?.user) {
+        currentPageUser = payload.user;
+        return payload.user;
+      }
+    } catch (_error) {
+      // Ignore and continue with a null user.
+    }
+
+    return null;
+  })();
 
   try {
-    const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
-    if (!res.ok) return null;
-    const payload = await res.json().catch(() => null);
-    if (payload?.ok && payload?.user) {
-      currentPageUser = payload.user;
-      return payload.user;
-    }
-  } catch (_error) {
-    // Ignore and continue with a null user.
+    return await currentUserPromise;
+  } finally {
+    currentUserPromise = null;
   }
-
-  return null;
 }
+
 
 async function authorizedUser() {
   return currentPageUser || currentUser();
@@ -437,6 +455,7 @@ async function logout() {
   const supabase = await loadSupabaseClient();
   await supabase.auth.signOut();
   currentPageUser = null;
+  currentUserPromise = null;
   window.location.assign("/login.html");
 }
 
@@ -606,6 +625,7 @@ async function bccApi(path, options = {}) {
   if (path === "/api/auth/logout") {
     await supabase.auth.signOut();
     currentPageUser = null;
+    currentUserPromise = null;
     return { ok: true };
   }
 

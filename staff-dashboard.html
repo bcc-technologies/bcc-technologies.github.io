@@ -65,7 +65,7 @@
           <div class="account-dropdown" data-account-dropdown hidden>
             <a href="/staff-dashboard.html" data-dashboard-link>Mi dashboard</a>
             <a href="#usuarios" data-admin-return hidden>Gestión interna</a>
-            <a href="/cms.html" data-cms-access hidden>Content (CMS)</a>
+            <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden>Content (CMS)</a>
             <a href="/dashboard.html">Vista cliente</a>
             <button type="button" data-logout>Cerrar sesión</button>
           </div>
@@ -77,7 +77,7 @@
         <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Personal</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#trabajo"><i data-lucide="workflow"></i><span>Operación</span></a>
-        <a href="/cms.html" data-cms-access hidden><i data-lucide="panels-top-left"></i><span>CMS</span></a>
+        <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="panels-top-left"></i><span>CMS</span></a>
         <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
         <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="command"></i><span>Gestión</span></p>
         <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
@@ -92,6 +92,18 @@
       <section class="workspace-help">
         <strong>Acceso interno</strong>
         <p>Tus herramientas dependen de los roles asignados.</p>
+        <div class="workspace-view-switcher" data-admin-view-simulator data-permission-required="admin:view">
+          <label>
+            <span>Vista como</span>
+            <select data-admin-preview-mode aria-label="Simular vista del workspace">
+              <option value="admin">Administrador</option>
+              <option value="staff">Personal base</option>
+              <option value="author">Autor CMS</option>
+              <option value="director">Director departamental</option>
+            </select>
+          </label>
+          <a href="/dashboard.html" data-admin-preview-client><i data-lucide="monitor"></i><span>Ver cliente</span></a>
+        </div>
       </section>
       <div class="workspace-sidebar-foot">
         <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
@@ -99,7 +111,6 @@
       </div>
     </aside>
     <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegación"></button>
-
     <div class="workspace-content">
       <main class="workspace-main">
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
@@ -159,7 +170,7 @@
                 <span class="status-pill" data-cms-pill>CMS no asignado</span>
               </div>
               <div class="tool-rows">
-                <div data-cms-tool>
+                <div data-cms-tool data-permission-required="cms:access">
                   <i data-lucide="panels-top-left"></i>
                   <div><strong>Sistema de contenido</strong><span data-cms-description>Necesitas un rol autorizado para ingresar.</span></div>
                 </div>
@@ -187,7 +198,6 @@
             </aside>
           </section>
         </section>
-
         <section class="workspace-view" id="perfil" data-workspace-view data-view-title="Mi perfil" hidden>
           <div class="account-workspace-grid staff-grid">
             <section class="account-primary">
@@ -270,13 +280,11 @@
               </div>
               <span class="status-pill enabled">Rutina activa</span>
             </article>
-
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de operación">
               <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas y KPIs</span></button>
               <button type="button" data-work-panel-tab="agenda" aria-selected="false"><i data-lucide="calendar-days"></i><span>Calendario</span></button>
               <button type="button" data-work-panel-tab="formularios" aria-selected="false"><i data-lucide="clipboard-list"></i><span>Formularios</span></button>
             </div>
-
             <section class="module-surface staff-work-panel active" data-work-panel="tareas">
               <div class="module-head compact">
                 <h2>Tareas y KPIs</h2>
@@ -286,7 +294,6 @@
                 <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
               </div>
             </section>
-
             <section class="module-surface staff-work-panel" data-work-panel="agenda" hidden>
               <section data-calendar-workspace aria-label="Calendario operativo"></section>
             </section>
@@ -301,7 +308,6 @@
             </section>
           </section>
         </section>
-
         <section class="workspace-view" id="usuarios" data-permission-required="admin:view" data-workspace-view data-view-title="Usuarios" hidden>
           <section class="users-surface">
             <div class="surface-toolbar">
@@ -352,7 +358,6 @@
             </div>
           </section>
         </section>
-
         <section class="workspace-view" id="roles" data-permission-required="admin:view" data-workspace-view data-view-title="Roles y permisos" hidden>
           <section class="role-admin-grid" aria-label="Creación y administración de roles">
             <article class="module-surface role-builder-surface">
@@ -389,7 +394,6 @@
               <div class="permission-reference" data-permission-reference></div>
             </aside>
           </section>
-
           <section class="module-surface role-library-surface">
             <div class="surface-toolbar role-library-toolbar">
               <div>
@@ -406,25 +410,21 @@
             <div class="role-library" data-role-library></div>
           </section>
         </section>
-
         <section class="workspace-view" id="analytics" data-permission-required="admin:view" data-workspace-view data-view-title="Analytics" hidden>
           <section data-analytics-workspace aria-label="Analytics del sitio">
             <p class="muted-text">Cargando analytics...</p>
           </section>
         </section>
-
         <section class="workspace-view" id="intelligence" data-permission-required="admin:view" data-workspace-view data-view-title="Intelligence" hidden>
           <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
             <p class="muted-text">Cargando intelligence...</p>
           </section>
         </section>
-
         <section class="workspace-view" id="prospectos" data-permission-required="admin:view" data-workspace-view data-view-title="Prospectos" hidden>
           <section data-prospects-workspace aria-label="Gestor de prospectos">
             <p class="muted-text">Cargando prospectos...</p>
           </section>
         </section>
-
         <section class="workspace-view" id="auditoria" data-permission-required="admin:view" data-workspace-view data-view-title="Auditoría" hidden>
           <aside class="activity-surface audit-view">
             <div class="activity-head">
@@ -435,7 +435,6 @@
             <ol class="activity-feed" data-audit-feed></ol>
           </aside>
         </section>
-
         <section class="workspace-view" id="conocimiento" data-workspace-view data-view-title="Conocimiento" hidden>
           <section class="staff-hub-workspace" aria-label="Conocimiento interno">
             <article class="module-surface staff-hub-hero">
@@ -456,7 +455,7 @@
                   <a href="/blog.html"><i data-lucide="newspaper"></i><span>Blog</span><strong>Contenido publicado</strong></a>
                   <a href="/science.html"><i data-lucide="microscope"></i><span>Ciencia</span><strong>Investigacion y referencias</strong></a>
                   <a href="/products.html"><i data-lucide="boxes"></i><span>Productos</span><strong>Soluciones y capacidades</strong></a>
-                  <a href="/cms.html" data-cms-access hidden><i data-lucide="file-text"></i><span>CMS</span><strong>Gestion editorial interna</strong></a>
+                  <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-text"></i><span>CMS</span><strong>Gestion editorial interna</strong></a>
                 </div>
               </article>
               <article class="module-surface staff-hub-panel">

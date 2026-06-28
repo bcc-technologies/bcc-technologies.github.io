@@ -39,3 +39,54 @@
 .workspace-collapsed .workspace-nav-label svg{
   display: none;
 }
+.workspace-view-switcher{
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.workspace-view-switcher label{
+  display: grid;
+  gap: 6px;
+}
+
+.workspace-view-switcher span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.workspace-view-switcher select{
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  padding: 0 9px;
+  font: inherit;
+  font-size: .82rem;
+}
+
+.workspace-view-switcher a{
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  text-decoration: none;
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.workspace-view-switcher svg{
+  width: 15px;
+  height: 15px;
+}

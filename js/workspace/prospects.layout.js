@@ -4,7 +4,7 @@
       <section class="prospects-workspace">
         <section class="module-surface prospects-hero">
           <div class="prospects-hero-copy">
-            <h2>Prospectos y correos</h2>
+            <h2>Prospectos</h2>
             <p class="muted-text" data-prospects-message>Cargando CRM...</p>
           </div>
           <div class="prospects-toolbar-actions">
@@ -31,28 +31,28 @@
         <section class="prospects-command-grid">
           <article class="module-surface prospects-pipeline-panel">
             <div class="module-head compact">
-              <h2>Pipeline</h2>
+              <h2>Trabajo comercial</h2>
             </div>
             <section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section>
           </article>
           <aside class="prospects-signal-stack" aria-label="Señales comerciales">
             <article class="module-surface prospects-panel prospects-panel-compact">
               <div class="activity-head">
-                <h3>Señales comerciales</h3>
+                <h3>Señales</h3>
                 <span data-prospect-sent-count>0</span>
               </div>
               <div class="prospect-insight-grid" data-prospect-insight-grid></div>
             </article>
             <article class="module-surface prospects-panel prospects-panel-compact">
               <div class="activity-head">
-                <h3>Correos por fase</h3>
+                <h3>Correos</h3>
                 <span data-prospect-phase-email-count>0</span>
               </div>
               <div class="prospect-insight-list" data-prospect-phase-email-list></div>
             </article>
             <article class="module-surface prospects-panel prospects-panel-compact">
               <div class="activity-head">
-                <h3>Avance entre etapas</h3>
+                <h3>Conversión</h3>
                 <span data-prospect-conversion-count>0</span>
               </div>
               <div class="prospect-insight-list" data-prospect-conversion-list></div>

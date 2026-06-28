@@ -501,7 +501,8 @@ function requireUser(req, res) {
 }
 
 function can(user, permission) {
-  return (ROLE_PERMISSIONS[user?.role] || []).includes(permission);
+  if (!permission) return true;
+  return permissionsForUser(user?.role, user?.staffRoles || [], user?.departments || [], user?.customRoles || []).includes(permission);
 }
 
 async function handleApi(req, res, url) {

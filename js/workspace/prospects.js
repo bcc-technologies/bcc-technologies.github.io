@@ -225,29 +225,116 @@
   function renderBoard() {
     const board = root.querySelector("[data-prospects-board]");
     if (!board) return;
-    const currentItems = filteredProspects();
-    board.innerHTML = PHASES.map(phase => {
-      const items = currentItems.filter(item => item.phase === phase.id);
-      return `
-        <section class="prospect-column">
-          <header>
-            <strong>${escapeHtml(phase.label)}</strong>
-            <span>${number(items.length)}</span>
-          </header>
-          <div class="prospect-column-list">
-            ${items.length ? items.map(item => `
-              <button class="prospect-card ${item.id === selectedProspectId ? "is-active" : ""}" type="button" data-prospect-open="${escapeHtml(item.id)}">
-                <strong>${escapeHtml(item.fullName)}</strong>
-                <span>${escapeHtml(item.company || item.email)}</span>
-                <small>${escapeHtml(prospectMeta(item))}</small>
-                <div class="prospect-tag-row">${(item.tags || []).slice(0, 3).map(tag => `<em>${escapeHtml(tag)}</em>`).join("")}</div>
-              </button>
-            `).join("") : `<div class="prospect-empty">Sin prospectos en esta fase.</div>`}
+    const currentItems = sortedProspects(filteredProspects());
+    const counts = new Map(PHASES.map(phase => [phase.id, prospects.filter(item => item.phase === phase.id).length]));
+    const selected = selectedProspect();
+    board.innerHTML = `
+      <div class="prospect-stage-strip" role="list" aria-label="Fases del pipeline">
+        <button class="prospect-stage-chip ${phaseFilter ? "" : "is-active"}" type="button" data-phase-chip="">
+          <span>Todos</span><strong>${number(prospects.length)}</strong>
+        </button>
+        ${PHASES.map(phase => `
+          <button class="prospect-stage-chip ${phaseFilter === phase.id ? "is-active" : ""}" type="button" data-phase-chip="${escapeAttr(phase.id)}">
+            <span>${escapeHtml(phase.label)}</span><strong>${number(counts.get(phase.id) || 0)}</strong>
+          </button>
+        `).join("")}
+      </div>
+      <div class="prospect-focus-layout">
+        <section class="prospect-queue" aria-label="Cola de prospectos">
+          <div class="prospect-queue-head">
+            <div><h3>Cola priorizada</h3><p>${number(currentItems.length)} prospecto(s) visibles</p></div>
+            <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Nuevo</button>
+          </div>
+          <div class="prospect-list">
+            ${currentItems.length ? currentItems.map(item => prospectListItem(item)).join("") : `<div class="prospect-empty">No hay prospectos que coincidan con esta búsqueda.</div>`}
           </div>
         </section>
-      `;
-    }).join("");
+        <aside class="prospect-selected-summary" aria-label="Resumen del prospecto seleccionado">
+          ${selected ? selectedProspectSummary(selected) : emptyProspectSummary()}
+        </aside>
+      </div>
+    `;
+    refreshIcons();
   }
+
+
+  function sortedProspects(entries) {
+    const phaseRank = { negotiation: 0, proposal: 1, contacted: 2, qualified: 3, lead: 4, won: 5, lost: 6 };
+    return entries.slice().sort((left, right) => {
+      const leftScore = prospectPriorityScore(left);
+      const rightScore = prospectPriorityScore(right);
+      if (leftScore !== rightScore) return leftScore - rightScore;
+      const phaseDiff = (phaseRank[left.phase] ?? 8) - (phaseRank[right.phase] ?? 8);
+      if (phaseDiff) return phaseDiff;
+      return String(right.updatedAt || right.createdAt || "").localeCompare(String(left.updatedAt || left.createdAt || ""));
+    });
+  }
+
+  function prospectPriorityScore(item) {
+    const today = todayIso();
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn && item.nextFollowUpOn < today) return 0;
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn === today) return 1;
+    if (["proposal", "negotiation"].includes(item.phase)) return 2;
+    if (!item.lastContactAt && !["won", "lost"].includes(item.phase)) return 3;
+    if (item.nextFollowUpOn) return 4;
+    return 5;
+  }
+
+  function prospectListItem(item) {
+    const tone = prospectTone(item);
+    return `
+      <button class="prospect-list-item ${item.id === selectedProspectId ? "is-active" : ""} ${tone}" type="button" data-prospect-open="${escapeAttr(item.id)}">
+        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
+        <strong>${escapeHtml(item.fullName)}</strong>
+        <small>${escapeHtml(item.company || item.email)}</small>
+        <em>${escapeHtml(nextActionLabel(item))}</em>
+      </button>
+    `;
+  }
+
+  function selectedProspectSummary(item) {
+    const prospectEmails = emails.filter(email => email.prospectId === item.id);
+    const prospectActivities = activities.filter(activity => activity.prospectId === item.id);
+    return `
+      <div class="prospect-summary-head">
+        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
+        <strong>${escapeHtml(item.fullName)}</strong>
+        <small>${escapeHtml(item.company || item.email)}</small>
+      </div>
+      <dl class="prospect-summary-grid">
+        <div><dt>Seguimiento</dt><dd>${escapeHtml(item.nextFollowUpOn ? formatDate(item.nextFollowUpOn) : "Sin fecha")}</dd></div>
+        <div><dt>Último contacto</dt><dd>${escapeHtml(item.lastContactAt ? formatDate(item.lastContactAt) : "Sin contacto")}</dd></div>
+        <div><dt>Correos</dt><dd>${number(prospectEmails.length)}</dd></div>
+        <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
+      </dl>
+      <div class="prospect-summary-actions">
+        <a href="#prospect-form" data-prospect-focus-form>Editar ficha</a>
+        <a href="#prospect-email" data-prospect-focus-email>Correo</a>
+      </div>
+    `;
+  }
+
+  function emptyProspectSummary() {
+    return `<div class="prospect-empty">Selecciona un prospecto para ver contexto y acciones.</div>`;
+  }
+
+  function prospectTone(item) {
+    const today = todayIso();
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn && item.nextFollowUpOn < today) return "is-overdue";
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn === today) return "is-due";
+    if (["won", "lost"].includes(item.phase)) return "is-closed";
+    return "";
+  }
+
+  function nextActionLabel(item) {
+    const today = todayIso();
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn && item.nextFollowUpOn < today) return `Vencido · ${formatDate(item.nextFollowUpOn)}`;
+    if (!["won", "lost"].includes(item.phase) && item.nextFollowUpOn === today) return "Seguimiento hoy";
+    if (item.nextFollowUpOn) return `Próximo · ${formatDate(item.nextFollowUpOn)}`;
+    if (!item.lastContactAt && !["won", "lost"].includes(item.phase)) return "Sin contacto registrado";
+    return prospectMeta(item);
+  }
+
 
   function renderProspectForm() {
     const form = root.querySelector("[data-prospect-form]");
@@ -299,6 +386,7 @@
         ${prospect.id ? `<button class="btn btn-ghost" type="button" data-prospect-delete="${escapeAttr(prospect.id)}">Eliminar</button>` : ""}
       </div>
     `;
+    refreshIcons();
     form.querySelector("[data-prospect-delete]")?.addEventListener("click", deleteProspect);
   }
 
@@ -369,6 +457,7 @@
         `).join("") : `<div class="prospect-empty">Todavía no hay correos registrados para este prospecto.</div>`}
       </div>
     `;
+    refreshIcons();
     section.querySelector("[data-email-template-select]")?.addEventListener("change", event => {
       selectedTemplateId = String(event.target.value || "");
     });
@@ -422,6 +511,7 @@
         ${activity.id ? `<button class="btn btn-ghost" type="button" data-activity-delete="${escapeAttr(activity.id)}">Eliminar</button>` : ""}
       </div>
     `;
+    refreshIcons();
     form.querySelector("[data-activity-delete]")?.addEventListener("click", deleteActivity);
     list.innerHTML = prospectActivities.length ? prospectActivities.map(item => `
       <button class="prospect-activity-item ${item.id === selectedActivityId ? "is-active" : ""}" type="button" data-activity-open="${escapeAttr(item.id)}">
@@ -466,6 +556,7 @@
         ${template.id ? `<button class="btn btn-ghost" type="button" data-template-delete="${escapeAttr(template.id)}">Eliminar</button>` : ""}
       </div>
     `;
+    refreshIcons();
     form.querySelector("[data-template-delete]")?.addEventListener("click", deleteTemplate);
     list.innerHTML = `
       <button class="prospect-template-item ${selectedTemplateId ? "" : "is-active"}" type="button" data-template-open="">
@@ -479,9 +570,45 @@
         </button>
       `).join("")}
     `;
+    refreshIcons();
   }
 
   function handleBoardClick(event) {
+    const phaseButton = event.target.closest("[data-phase-chip]");
+    if (phaseButton) {
+      phaseFilter = phaseButton.dataset.phaseChip || "";
+      const select = root.querySelector("[data-prospect-phase-filter]");
+      if (select) select.value = phaseFilter;
+      renderBoard();
+      return;
+    }
+
+    const newButton = event.target.closest("[data-prospect-new-inline]");
+    if (newButton) {
+      selectedProspectId = "";
+      selectedEmailId = "";
+      selectedActivityId = "";
+      renderProspectForm();
+      renderEmailSection();
+      renderActivitySection();
+      document.querySelector("[data-prospect-form]")?.scrollIntoView({ block: "start" });
+      return;
+    }
+
+    const focusForm = event.target.closest("[data-prospect-focus-form]");
+    if (focusForm) {
+      event.preventDefault();
+      document.querySelector("[data-prospect-form]")?.scrollIntoView({ block: "start" });
+      return;
+    }
+
+    const focusEmail = event.target.closest("[data-prospect-focus-email]");
+    if (focusEmail) {
+      event.preventDefault();
+      document.querySelector("[data-prospect-email-section]")?.scrollIntoView({ block: "start" });
+      return;
+    }
+
     const button = event.target.closest("[data-prospect-open]");
     if (!button) return;
     selectedProspectId = button.dataset.prospectOpen || "";
