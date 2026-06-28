@@ -180,32 +180,32 @@ create policy "Admins manage workspace prospects"
 on public.workspace_prospects
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage workspace prospect templates" on public.workspace_prospect_templates;
 create policy "Admins manage workspace prospect templates"
 on public.workspace_prospect_templates
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage workspace prospect emails" on public.workspace_prospect_emails;
 create policy "Admins manage workspace prospect emails"
 on public.workspace_prospect_emails
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage workspace prospect activities" on public.workspace_prospect_activities;
 create policy "Admins manage workspace prospect activities"
 on public.workspace_prospect_activities
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 comment on table public.workspace_prospects is
 'Admin-only prospect CRM table used for acquisition and follow-up tracking.';

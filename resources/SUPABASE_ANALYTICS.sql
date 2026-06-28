@@ -71,7 +71,7 @@ create policy "Admins read analytics events"
 on public.analytics_events
 for select
 to authenticated
-using (private.is_admin());
+using (private.can_manage_signals());
 
 create or replace function public.record_analytics_event(
   event_name text,
@@ -170,7 +170,7 @@ declare
   days integer := greatest(1, least(coalesce(range_days, 30), 365));
   result_payload jsonb;
 begin
-  if not private.is_admin() then
+  if not private.can_manage_signals() then
     raise exception 'Permiso insuficiente.';
   end if;
 

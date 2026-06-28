@@ -134,6 +134,26 @@ $$;
 
 revoke all on function private.is_admin() from public, anon;
 grant execute on function private.is_admin() to authenticated, service_role;
+create or replace function private.can_manage_signals()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and (
+        role = 'admin'
+        or 'department_director' = any(coalesce(staff_roles, array[]::text[]))
+      )
+  );
+$$;
+
+revoke all on function private.can_manage_signals() from public, anon;
+grant execute on function private.can_manage_signals() to authenticated, service_role;
 
 drop policy if exists "Users can read own profile" on public.profiles;
 create policy "Users can read own profile"

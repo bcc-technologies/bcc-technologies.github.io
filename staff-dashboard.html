@@ -83,10 +83,10 @@
         <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
         <a href="#roles" data-permission-required="admin:view"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
         <a href="#auditoria" data-permission-required="admin:view"><i data-lucide="history"></i><span>Auditoría</span></a>
-        <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="activity"></i><span>Señales</span></p>
-        <a href="#prospectos" data-permission-required="admin:view"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
-        <a href="#analytics" data-permission-required="admin:view"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
-        <a href="#intelligence" data-permission-required="admin:view"><i data-lucide="radar"></i><span>Intelligence</span></a>
+        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="activity"></i><span>Señales</span></p>
+        <a href="#prospectos" data-permission-required="department:manage"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
+        <a href="#analytics" data-permission-required="department:manage"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
+        <a href="#intelligence" data-permission-required="department:manage"><i data-lucide="radar"></i><span>Intelligence</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
       <section class="workspace-help">
@@ -410,17 +410,17 @@
             <div class="role-library" data-role-library></div>
           </section>
         </section>
-        <section class="workspace-view" id="analytics" data-permission-required="admin:view" data-workspace-view data-view-title="Analytics" hidden>
+        <section class="workspace-view" id="analytics" data-permission-required="department:manage" data-workspace-view data-view-title="Analytics" hidden>
           <section data-analytics-workspace aria-label="Analytics del sitio">
             <p class="muted-text">Cargando analytics...</p>
           </section>
         </section>
-        <section class="workspace-view" id="intelligence" data-permission-required="admin:view" data-workspace-view data-view-title="Intelligence" hidden>
+        <section class="workspace-view" id="intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Intelligence" hidden>
           <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
             <p class="muted-text">Cargando intelligence...</p>
           </section>
         </section>
-        <section class="workspace-view" id="prospectos" data-permission-required="admin:view" data-workspace-view data-view-title="Prospectos" hidden>
+        <section class="workspace-view" id="prospectos" data-permission-required="department:manage" data-workspace-view data-view-title="Prospectos" hidden>
           <section data-prospects-workspace aria-label="Gestor de prospectos">
             <p class="muted-text">Cargando prospectos...</p>
           </section>

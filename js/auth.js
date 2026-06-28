@@ -401,6 +401,11 @@ async function currentUser() {
 }
 
 
+function canManageSignalWorkspace(user) {
+  const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
+  return permissions.includes("admin:view") || permissions.includes("department:manage");
+}
+
 async function authorizedUser() {
   return currentPageUser || currentUser();
 }
@@ -795,7 +800,7 @@ async function bccApi(path, options = {}) {
 
   if (path === "/api/admin/prospects/dashboard" && (!options.method || options.method === "GET")) {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const [{ data: prospects, error: prospectsError }, { data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
       supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_COLUMNS).order("updated_at", { ascending: false }),
       supabase.from("workspace_prospect_templates").select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS).order("updated_at", { ascending: false }),
@@ -817,7 +822,7 @@ async function bccApi(path, options = {}) {
 
   if (path === "/api/admin/prospects" && options.method === "POST") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"), true);
     const { data, error } = await supabase
       .from("workspace_prospects")
@@ -831,7 +836,7 @@ async function bccApi(path, options = {}) {
   const adminProspectMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)$/);
   if (adminProspectMatch && options.method === "PATCH") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_prospects")
@@ -845,7 +850,7 @@ async function bccApi(path, options = {}) {
 
   if (adminProspectMatch && options.method === "DELETE") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const { error } = await supabase
       .from("workspace_prospects")
       .delete()
@@ -856,7 +861,7 @@ async function bccApi(path, options = {}) {
 
   if (path === "/api/admin/prospect-templates" && options.method === "POST") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"), true);
     const { data, error } = await supabase
       .from("workspace_prospect_templates")
@@ -870,7 +875,7 @@ async function bccApi(path, options = {}) {
   const templateMatch = path.match(/^\/api\/admin\/prospect-templates\/([^/]+)$/);
   if (templateMatch && options.method === "PATCH") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_prospect_templates")
@@ -884,7 +889,7 @@ async function bccApi(path, options = {}) {
 
   if (templateMatch && options.method === "DELETE") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const { error } = await supabase
       .from("workspace_prospect_templates")
       .delete()
@@ -896,7 +901,7 @@ async function bccApi(path, options = {}) {
   const createEmailMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/emails$/);
   if (createEmailMatch && options.method === "POST") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const prospectId = decodeURIComponent(createEmailMatch[1]);
     const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"), true);
     body.prospect_id = prospectId;
@@ -912,7 +917,7 @@ async function bccApi(path, options = {}) {
   const prospectEmailMatch = path.match(/^\/api\/admin\/prospect-emails\/([^/]+)$/);
   if (prospectEmailMatch && options.method === "PATCH") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_prospect_emails")
@@ -926,7 +931,7 @@ async function bccApi(path, options = {}) {
 
   if (prospectEmailMatch && options.method === "DELETE") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const { error } = await supabase
       .from("workspace_prospect_emails")
       .delete()
@@ -938,7 +943,7 @@ async function bccApi(path, options = {}) {
   const createActivityMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/activities$/);
   if (createActivityMatch && options.method === "POST") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const prospectId = decodeURIComponent(createActivityMatch[1]);
     const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"), true);
     body.prospect_id = prospectId;
@@ -954,7 +959,7 @@ async function bccApi(path, options = {}) {
   const prospectActivityMatch = path.match(/^\/api\/admin\/prospect-activities\/([^/]+)$/);
   if (prospectActivityMatch && options.method === "PATCH") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_prospect_activities")
@@ -968,7 +973,7 @@ async function bccApi(path, options = {}) {
 
   if (prospectActivityMatch && options.method === "DELETE") {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const { error } = await supabase
       .from("workspace_prospect_activities")
       .delete()
@@ -1399,7 +1404,7 @@ async function bccApi(path, options = {}) {
 
   if (path.startsWith("/api/admin/analytics/overview")) {
     const me = await authorizedUser();
-    if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const requestUrl = new URL(path, window.location.origin);
     const days = normalizeAnalyticsRange(requestUrl.searchParams.get("days"));
     const { data, error } = await supabase.rpc("get_admin_analytics_dashboard", { range_days: days });
@@ -1982,7 +1987,7 @@ function normalizeIntelligenceSettingsInput(value) {
 
 async function requireAdminViewUser() {
   const me = await authorizedUser();
-  if (!me?.permissions.includes("admin:view")) throw new Error("Permiso insuficiente.");
+  if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
   return me;
 }
 

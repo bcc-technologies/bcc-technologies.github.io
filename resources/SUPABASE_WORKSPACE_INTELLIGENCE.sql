@@ -505,80 +505,80 @@ create policy "Admins manage intelligence sources"
 on public.intelligence_sources
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence topics" on public.intelligence_topics;
 create policy "Admins manage intelligence topics"
 on public.intelligence_topics
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence institutions" on public.intelligence_institutions;
 create policy "Admins manage intelligence institutions"
 on public.intelligence_institutions
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence papers" on public.intelligence_papers;
 create policy "Admins manage intelligence papers"
 on public.intelligence_papers
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence grants" on public.intelligence_grants;
 create policy "Admins manage intelligence grants"
 on public.intelligence_grants
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence patents" on public.intelligence_patents;
 create policy "Admins manage intelligence patents"
 on public.intelligence_patents
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence trials" on public.intelligence_trials;
 create policy "Admins manage intelligence trials"
 on public.intelligence_trials
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence signals" on public.intelligence_signals;
 create policy "Admins manage intelligence signals"
 on public.intelligence_signals
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence runs" on public.intelligence_runs;
 create policy "Admins manage intelligence runs"
 on public.intelligence_runs
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 drop policy if exists "Admins manage intelligence settings" on public.intelligence_settings;
 create policy "Admins manage intelligence settings"
 on public.intelligence_settings
 for all
 to authenticated
-using (private.is_admin())
-with check (private.is_admin());
+using (private.can_manage_signals())
+with check (private.can_manage_signals());
 
 comment on table public.intelligence_sources is
 'Admin-only registry of external scientific and technology intelligence sources used by BCC.';

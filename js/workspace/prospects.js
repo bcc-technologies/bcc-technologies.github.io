@@ -15,6 +15,7 @@
   let selectedActivityId = "";
   let searchTerm = "";
   let phaseFilter = "";
+  let activeActionView = "profile";
 
   function init(account) {
     root = document.querySelector("[data-prospects-workspace]");
@@ -46,11 +47,14 @@
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
-      renderProspectForm();
-      renderEmailSection();
-      renderActivitySection();
+      activeActionView = "profile";
+      renderAll();
+      activateActionView("profile");
     });
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
+    root.querySelectorAll("[data-prospect-action]").forEach(button => {
+      button.addEventListener("click", () => activateActionView(button.dataset.prospectAction || "profile"));
+    });
     root.querySelector("[data-template-list]")?.addEventListener("click", handleTemplateClick);
     root.querySelector("[data-prospect-email-section]")?.addEventListener("click", handleEmailClick);
     root.querySelector("[data-activity-list]")?.addEventListener("click", handleActivityClick);
@@ -58,6 +62,33 @@
     root.querySelector("[data-template-form]")?.addEventListener("submit", saveTemplate);
     root.querySelector("[data-activity-form]")?.addEventListener("submit", saveActivity);
   }
+
+  function activateActionView(view = "profile") {
+    const labels = {
+      profile: ["Ficha del prospecto", "Actualiza datos clave, seguimiento y contexto comercial."],
+      email: ["Correos y seguimiento", "Prepara, programa o registra comunicaciones del prospecto activo."],
+      activity: ["Timeline", "Registra llamadas, reuniones, notas y próximos pasos."],
+      templates: ["Plantillas", "Administra mensajes reutilizables sin salir del flujo comercial."]
+    };
+    activeActionView = labels[view] ? view : "profile";
+    root.querySelectorAll("[data-prospect-action]").forEach(button => {
+      const active = button.dataset.prospectAction === activeActionView;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    root.querySelectorAll("[data-prospect-action-view]").forEach(panel => {
+      const active = panel.dataset.prospectActionView === activeActionView;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+    });
+    const [title, subtitle] = labels[activeActionView];
+    const titleEl = root.querySelector("[data-prospect-action-title]");
+    const subtitleEl = root.querySelector("[data-prospect-action-subtitle]");
+    if (titleEl) titleEl.textContent = title;
+    if (subtitleEl) subtitleEl.textContent = subtitle;
+    refreshIcons();
+  }
+
 
   async function loadDashboard() {
     setMessage("Cargando prospectos...", "neutral");
@@ -85,6 +116,7 @@
     renderEmailSection();
     renderTemplateSection();
     renderActivitySection();
+    activateActionView(activeActionView);
     refreshIcons();
   }
 
@@ -308,8 +340,9 @@
         <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
       </dl>
       <div class="prospect-summary-actions">
-        <a href="#prospect-form" data-prospect-focus-form>Editar ficha</a>
-        <a href="#prospect-email" data-prospect-focus-email>Correo</a>
+        <button type="button" data-prospect-open-action="profile">Editar ficha</button>
+        <button type="button" data-prospect-open-action="email">Correo</button>
+        <button type="button" data-prospect-open-action="activity">Timeline</button>
       </div>
     `;
   }
@@ -588,24 +621,17 @@
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
-      renderProspectForm();
-      renderEmailSection();
-      renderActivitySection();
-      document.querySelector("[data-prospect-form]")?.scrollIntoView({ block: "start" });
+      activeActionView = "profile";
+      renderAll();
+      activateActionView("profile");
       return;
     }
 
-    const focusForm = event.target.closest("[data-prospect-focus-form]");
-    if (focusForm) {
+    const actionButton = event.target.closest("[data-prospect-open-action]");
+    if (actionButton) {
       event.preventDefault();
-      document.querySelector("[data-prospect-form]")?.scrollIntoView({ block: "start" });
-      return;
-    }
-
-    const focusEmail = event.target.closest("[data-prospect-focus-email]");
-    if (focusEmail) {
-      event.preventDefault();
-      document.querySelector("[data-prospect-email-section]")?.scrollIntoView({ block: "start" });
+      activateActionView(actionButton.dataset.prospectOpenAction || "profile");
+      root.querySelector("[data-prospect-action-view].is-active")?.scrollIntoView({ block: "nearest" });
       return;
     }
 
