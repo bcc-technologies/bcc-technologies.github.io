@@ -16,6 +16,7 @@
   <script src="js/auth.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
   <script src="js/workspace/productivity.js" defer></script>
+  <script src="js/workspace/calendar.js" defer></script>
   <script src="js/workspace/forms.js" defer></script>
   <script src="js/workspace/shell.js" defer></script>
   <script src="js/workspace/router.js" defer></script>
@@ -68,7 +69,8 @@
       <nav class="workspace-nav" aria-label="Secciones de personal">
         <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Personal</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#trabajo"><i data-lucide="briefcase-business"></i><span>Trabajo</span></a>
+        <a href="#trabajo"><i data-lucide="workflow"></i><span>Operación</span></a>
+        <a href="/cms.html" data-cms-access hidden><i data-lucide="panels-top-left"></i><span>CMS</span></a>
         <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
@@ -93,7 +95,7 @@
               <p>Gestiona tareas, formularios internos y herramientas habilitadas para tus funciones.</p>
             </div>
             <div class="dashboard-actions">
-              <a class="btn btn-primary" href="#trabajo" data-work-panel-link="tareas"><i data-lucide="briefcase-business"></i>Trabajo</a>
+              <a class="btn btn-primary" href="#trabajo" data-work-panel-link="tareas"><i data-lucide="workflow"></i>Operación</a>
               <a class="btn btn-ghost" href="#conocimiento"><i data-lucide="notebook-tabs"></i>Conocimiento</a>
             </div>
           </section>
@@ -101,7 +103,7 @@
             <article class="priority-card primary">
               <i data-lucide="clipboard-check"></i>
               <div>
-                <span>Trabajo</span>
+                <span>Operación</span>
                 <strong>Revisar tareas y KPIs</strong>
                 <p>Organiza prioridades, estado y avance de actividades privadas.</p>
               </div>
@@ -132,11 +134,11 @@
             <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignación</small></div>
             <div><span>CMS</span><strong data-cms-status>-</strong><small>Según permisos actuales</small></div>
           </section>
-          <section class="workspace-section staff-work-section" aria-label="Trabajo">
+          <section class="workspace-section staff-work-section" aria-label="Operación">
             <article class="module-surface staff-access-surface">
               <div class="module-head">
                 <div>
-                  <h2>Accesos de trabajo</h2>
+                  <h2>Accesos de operación</h2>
                   <p>Herramientas disponibles segun tus funciones actuales.</p>
                 </div>
                 <span class="status-pill" data-cms-pill>CMS no asignado</span>
@@ -243,80 +245,45 @@
             </aside>
           </div>
         </section>
-        <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Trabajo" hidden>
-          <section class="staff-work-hub" aria-label="Trabajo de personal">
+        <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Operación" hidden>
+          <section class="staff-work-hub" aria-label="Operación de personal">
             <article class="module-surface staff-hub-hero staff-work-hub-hero">
               <div>
-                <span class="workspace-eyebrow">Operacion diaria</span>
-                <h2>Trabajo</h2>
-                <p>Unifica tareas, agenda y formularios en una sola vista para reducir saltos de navegacion y dejar espacio para crecer por subsecciones.</p>
+                <span class="workspace-eyebrow">Operación diaria</span>
+                <h2>Operación</h2>
+                <p>Prioridades, calendario y formularios internos en una vista accionable, sin paneles escondidos.</p>
               </div>
               <span class="status-pill enabled">Rutina activa</span>
             </article>
 
-            <div class="staff-work-accordion">
-              <details class="module-surface staff-work-panel" data-work-panel="tareas" open>
-                <summary>
-                  <span><i data-lucide="clipboard-check"></i><strong>Tareas y KPIs</strong></span>
-                  <small>Prioridades, estado y avance</small>
-                  <i data-lucide="chevron-down"></i>
-                </summary>
-                <div class="staff-work-panel-body">
-                  <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
-                </div>
-              </details>
-
-              <details class="module-surface staff-work-panel" data-work-panel="agenda">
-                <summary>
-                  <span><i data-lucide="calendar-days"></i><strong>Calendario</strong></span>
-                  <small>Hoy, hitos y atajos</small>
-                  <i data-lucide="chevron-down"></i>
-                </summary>
-                <div class="staff-work-panel-body">
-                  <div class="staff-hub-grid compact">
-                    <article class="staff-hub-panel inline">
-                      <div class="module-head compact">
-                        <h2>Hoy</h2>
-                        <span class="status-dot">Activo</span>
-                      </div>
-                      <div class="staff-schedule-list">
-                        <div><i data-lucide="clipboard-check"></i><span>Prioridad</span><strong>Actualizar avance de tareas</strong></div>
-                        <div><i data-lucide="file-pen-line"></i><span>Operacion</span><strong>Revisar formularios pendientes</strong></div>
-                        <div><i data-lucide="badge-check"></i><span>Cuenta</span><strong>Validar permisos activos</strong></div>
-                      </div>
-                    </article>
-                    <article class="staff-hub-panel inline">
-                      <div class="module-head compact">
-                        <h2>Proximos hitos</h2>
-                        <span class="status-dot">Semanal</span>
-                      </div>
-                      <div class="staff-timeline-list">
-                        <a href="#trabajo" data-work-panel-link="tareas"><span>Tareas y KPIs</span><strong>Seguimiento de avance operativo</strong></a>
-                        <a href="#trabajo" data-work-panel-link="formularios"><span>Formularios</span><strong>Respuestas y reportes internos</strong></a>
-                        <a href="#conocimiento"><span>Conocimiento</span><strong>Actualizacion de recursos del equipo</strong></a>
-                      </div>
-                    </article>
-                    <aside class="staff-hub-panel inline staff-hub-actions">
-                      <h2>Atajos</h2>
-                      <a href="#trabajo" data-work-panel-link="tareas"><i data-lucide="list-checks"></i><span>Tareas y KPIs</span></a>
-                      <a href="#trabajo" data-work-panel-link="formularios"><i data-lucide="clipboard-list"></i><span>Formularios</span></a>
-                      <a href="/cms.html" data-cms-access hidden><i data-lucide="panels-top-left"></i><span>Content (CMS)</span></a>
-                    </aside>
-                  </div>
-                </div>
-              </details>
-
-              <details class="module-surface staff-work-panel" data-work-panel="formularios">
-                <summary>
-                  <span><i data-lucide="file-pen-line"></i><strong>Formularios</strong></span>
-                  <small>Solicitudes y reportes internos</small>
-                  <i data-lucide="chevron-down"></i>
-                </summary>
-                <div class="staff-work-panel-body">
-                  <section data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
-                </div>
-              </details>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de operación">
+              <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas y KPIs</span></button>
+              <button type="button" data-work-panel-tab="agenda" aria-selected="false"><i data-lucide="calendar-days"></i><span>Calendario</span></button>
+              <button type="button" data-work-panel-tab="formularios" aria-selected="false"><i data-lucide="clipboard-list"></i><span>Formularios</span></button>
             </div>
+
+            <section class="module-surface staff-work-panel active" data-work-panel="tareas">
+              <div class="module-head compact">
+                <h2>Tareas y KPIs</h2>
+                <span class="status-dot">Prioridad</span>
+              </div>
+              <div class="staff-work-panel-body flush">
+                <section data-productivity-workspace aria-label="Tareas y KPIs"></section>
+              </div>
+            </section>
+
+            <section class="module-surface staff-work-panel" data-work-panel="agenda" hidden>
+              <section data-calendar-workspace aria-label="Calendario operativo"></section>
+            </section>
+            <section class="module-surface staff-work-panel" data-work-panel="formularios" hidden>
+              <div class="module-head compact">
+                <h2>Formularios</h2>
+                <span class="status-dot">Interno</span>
+              </div>
+              <div class="staff-work-panel-body flush">
+                <section data-forms-workspace data-forms-view="staff" aria-label="Formularios internos"></section>
+              </div>
+            </section>
           </section>
         </section>
 
@@ -350,7 +317,7 @@
                 </div>
                 <div class="staff-guide-list">
                   <div><span>Accesos</span><strong>Valida tus permisos desde Mi perfil.</strong></div>
-                  <div><span>Operacion</span><strong>Gestiona avance y formularios desde las vistas de trabajo.</strong></div>
+                  <div><span>Operación</span><strong>Gestiona avance y formularios desde la vista de operación.</strong></div>
                   <div><span>Contenido</span><strong>El acceso al CMS depende de roles internos asignados.</strong></div>
                 </div>
               </article>

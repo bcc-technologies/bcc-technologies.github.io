@@ -75,10 +75,11 @@
   }
 
   const workspaceSearch = document.querySelector("[data-workspace-search]");
-  const searchableRows = [...document.querySelectorAll(".priority-card, .resource-rows > a, .tool-rows > div")];
+  const searchableSelector = "[data-workspace-searchable], .priority-card, .resource-rows > a, .tool-rows > div, .status-list > a, .admin-action-list > a, .staff-hub-actions > a, .staff-timeline-list > a, .staff-resource-list > a";
+  const getSearchableRows = () => [...document.querySelectorAll(searchableSelector)];
   workspaceSearch?.addEventListener("input", () => {
     const query = workspaceSearch.value.trim().toLocaleLowerCase();
-    searchableRows.forEach(row => {
+    getSearchableRows().forEach(row => {
       row.hidden = Boolean(query) && !row.textContent.toLocaleLowerCase().includes(query);
     });
   });

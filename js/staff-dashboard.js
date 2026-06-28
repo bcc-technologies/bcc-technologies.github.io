@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   });
   window.BCCWorkspaceProductivity?.init(user);
+  window.BCCWorkspaceCalendar?.init(user);
   window.BCCWorkspaceForms?.init(user);
   window.BCCWorkspaceUtils.refreshIcons();
 });
@@ -50,24 +51,31 @@ function bindStaffWorkspaceRouter() {
 }
 
 function bindStaffWorkPanels() {
-  document.querySelectorAll("[data-work-panel]").forEach(panel => {
-    panel.addEventListener("toggle", () => {
-      if (!panel.open) return;
-      document.querySelectorAll("[data-work-panel]").forEach(other => {
-        if (other !== panel) other.open = false;
-      });
-      window.BCCWorkspaceUtils.refreshIcons();
+  document.querySelectorAll("[data-work-panel-tab]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      openStaffWorkPanel(tab.dataset.workPanelTab || "tareas");
     });
   });
 }
 
 function openStaffWorkPanel(panelId = "tareas") {
   const panels = [...document.querySelectorAll("[data-work-panel]")];
-  const panel = panels.find(item => item.dataset.workPanel === panelId);
+  const tabs = [...document.querySelectorAll("[data-work-panel-tab]")];
+  const panel = panels.find(item => item.dataset.workPanel === panelId) || panels[0];
   if (!panel) return;
+
   panels.forEach(item => {
-    item.open = item === panel;
+    const active = item === panel;
+    item.hidden = !active;
+    item.classList.toggle("active", active);
   });
+
+  tabs.forEach(tab => {
+    const active = tab.dataset.workPanelTab === panel.dataset.workPanel;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
+  });
+
   window.BCCWorkspaceUtils.refreshIcons();
 }
 

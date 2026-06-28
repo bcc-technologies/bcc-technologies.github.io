@@ -12,6 +12,8 @@
   };
 
   let tasks = [];
+  let tasksLoaded = false;
+  const taskSubscribers = new Set();
   let activeFilter = "all";
   let activeView = "tasks";
   let root = null;
@@ -154,11 +156,15 @@
     try {
       const data = await window.BCCAuth.api("/api/workspace/tasks");
       tasks = Array.isArray(data.tasks) ? data.tasks : [];
+      tasksLoaded = true;
       setMessage("");
       renderAll();
+      notifyTasksChanged();
     } catch (error) {
       setMessage(productivityError(error), "error");
+      tasksLoaded = true;
       renderAll();
+      notifyTasksChanged();
     }
   }
 
@@ -190,6 +196,7 @@
       root.querySelector("[data-task-dialog]")?.close();
       setMessage("Tarea creada.", "ok");
       renderAll();
+      notifyTasksChanged();
     } catch (error) {
       setMessage(productivityError(error), "error");
     } finally {
@@ -231,9 +238,11 @@
       tasks = tasks.map(item => item.id === task.id ? data.task : item);
       setMessage("Tarea actualizada.", "ok");
       renderAll();
+      notifyTasksChanged();
     } catch (error) {
       setMessage(productivityError(error), "error");
       renderAll();
+      notifyTasksChanged();
     }
   }
 
@@ -245,9 +254,11 @@
       tasks = tasks.filter(item => item.id !== task.id);
       setMessage("Tarea eliminada.", "ok");
       renderAll();
+      notifyTasksChanged();
     } catch (error) {
       setMessage(productivityError(error), "error");
       renderAll();
+      notifyTasksChanged();
     }
   }
 
@@ -410,6 +421,23 @@
     return tasks.find(task => task.id === id);
   }
 
+  function getTasks() {
+    return tasks.slice();
+  }
+
+  function subscribeTasks(callback) {
+    if (typeof callback !== "function") return () => {};
+    taskSubscribers.add(callback);
+    callback(getTasks(), { loaded: tasksLoaded });
+    return () => taskSubscribers.delete(callback);
+  }
+
+  function notifyTasksChanged() {
+    const detail = { tasks: getTasks(), loaded: tasksLoaded };
+    taskSubscribers.forEach(callback => callback(detail.tasks, { loaded: tasksLoaded }));
+    document.dispatchEvent(new CustomEvent("bcc:workspace-tasks", { detail }));
+  }
+
   function setMessage(message, tone = "neutral") {
     window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-task-message]"), message, tone);
   }
@@ -435,5 +463,5 @@
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
-  window.BCCWorkspaceProductivity = { init };
+  window.BCCWorkspaceProductivity = { init, getTasks, subscribeTasks };
 })();

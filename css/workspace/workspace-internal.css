@@ -183,69 +183,63 @@
 .staff-work-hub-hero{
   padding: 22px 24px;
 }
+.staff-work-tabs{
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 46%, var(--surface-solid));
+  padding: 5px;
+}
 
-.staff-work-accordion{
-  display: grid;
-  gap: 10px;
+.staff-work-tabs button{
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 0 max-content;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 0 12px;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.staff-work-tabs button:hover,
+.staff-work-tabs button.active{
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: 0 6px 16px rgba(15, 17, 21, .055);
+}
+
+.staff-work-tabs svg{
+  width: 17px;
+  height: 17px;
 }
 
 .staff-work-panel{
   overflow: hidden;
-  padding: 0;
+  padding: 18px;
 }
 
-.staff-work-panel summary{
-  min-height: 76px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 28px;
-  gap: 8px 14px;
-  align-items: center;
-  cursor: pointer;
-  list-style: none;
-  padding: 16px 18px;
-}
-
-.staff-work-panel summary::-webkit-details-marker{
-  display: none;
-}
-
-.staff-work-panel summary > span{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.staff-work-panel summary svg{
-  width: 20px;
-  height: 20px;
-  color: var(--accent-strong);
-  transition: transform 140ms ease;
-}
-
-.staff-work-panel summary > svg{
-  justify-self: end;
-  color: var(--ink-muted);
-}
-
-.staff-work-panel[open] summary > svg{
-  transform: rotate(180deg);
-}
-
-.staff-work-panel summary strong{
-  color: var(--ink);
-  font-size: 1rem;
-}
-
-.staff-work-panel summary small{
-  color: var(--ink-muted);
-  font-size: .82rem;
-  text-align: right;
+.staff-work-panel[hidden]{
+  display: none !important;
 }
 
 .staff-work-panel-body{
   border-top: 1px solid var(--line);
-  padding: 16px;
+  padding-top: 16px;
+}
+
+.staff-work-panel-body.flush{
+  border-top: 0;
+  padding-top: 0;
 }
 
 .staff-hub-grid.compact{
@@ -461,16 +455,16 @@
     padding: 18px;
   }
 
-  .staff-work-panel summary{
-    grid-template-columns: minmax(0, 1fr) 24px;
+  .staff-work-tabs{
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
-  .staff-work-panel summary small{
-    grid-column: 1 / -1;
-    text-align: left;
+  .staff-work-tabs button{
+    justify-content: flex-start;
   }
 
-  .staff-work-panel-body{
+  .staff-work-panel{
     padding: 12px;
   }
 

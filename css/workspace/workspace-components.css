@@ -29,6 +29,29 @@
   font-size: 1.03rem;
 }
 
+.surface-toolbar{
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 19px 20px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.surface-toolbar > *{
+  min-width: 0;
+}
+
+.surface-toolbar h2{
+  margin: 0 0 5px;
+  font-size: 1.03rem;
+}
+
+.surface-toolbar p{
+  margin: 0;
+  font-size: .84rem;
+}
+
 .module-head{
   display: flex;
   align-items: flex-start;
@@ -554,6 +577,15 @@
 }
 
 @media (max-width: 900px){
+  .surface-toolbar{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .workspace-refined .workspace-intro{
+    flex-direction: column;
+  }
+
   .workspace-metrics{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

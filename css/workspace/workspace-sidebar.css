@@ -1,4 +1,4 @@
-/* Sidebar taxonomy and potential views */
+/* Sidebar taxonomy */
 .workspace-refined .workspace-nav{
   flex: 1 1 auto;
   min-height: 0;
@@ -28,50 +28,6 @@
   color: var(--ink-faint);
 }
 
-.workspace-nav-item{
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  border-radius: 7px;
-  color: var(--ink-soft);
-  padding: 0 10px;
-  font-size: .9rem;
-  font-weight: 600;
-}
-
-.workspace-nav-item svg{
-  width: 17px;
-  height: 17px;
-  flex: 0 0 auto;
-}
-
-.workspace-nav-item small{
-  margin-left: auto;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface-muted);
-  color: var(--ink-muted);
-  padding: 2px 6px;
-  font-size: .62rem;
-  font-weight: 850;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.workspace-nav-item.disabled{
-  opacity: .72;
-  cursor: not-allowed;
-}
-
-.workspace-nav-item.disabled svg{
-  color: var(--ink-faint);
-}
-
-.workspace-nav-item.disabled span{
-  color: var(--ink-muted);
-}
-
 .workspace-nav a[href="#roles"]{
   color: var(--ink);
 }
@@ -80,23 +36,6 @@
   color: var(--accent-strong);
 }
 
-.workspace-collapsed .workspace-nav-label svg,
-.workspace-collapsed .workspace-nav-item span,
-.workspace-collapsed .workspace-nav-item small{
+.workspace-collapsed .workspace-nav-label svg{
   display: none;
-}
-
-.workspace-collapsed .workspace-nav-item{
-  width: 42px;
-  min-height: 42px;
-  margin-inline: auto;
-  justify-content: center;
-  padding: 0;
-  border-radius: 9px;
-}
-
-@media (max-width: 900px){
-  .workspace-nav-item{
-    min-height: 38px;
-  }
 }
