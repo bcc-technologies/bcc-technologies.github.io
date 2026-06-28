@@ -635,6 +635,10 @@
     window.BCCWorkspaceUtils.refreshIcons(root);
   }
 
+  function escapeAttr(value) {
+    return window.BCCWorkspaceUtils.escapeAttr(value);
+  }
+
   function escapeHtml(value) {
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
