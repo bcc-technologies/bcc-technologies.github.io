@@ -17,35 +17,47 @@
           <div><span>En propuesta</span><strong data-prospect-metric="pipeline">-</strong><small>Propuesta y negociación</small></div>
           <div><span>Ganados</span><strong data-prospect-metric="won">-</strong><small>Cierres registrados</small></div>
         </section>
-        <nav class="prospects-main-tabs" role="tablist" aria-label="Vistas de prospectos">
-          <button class="is-active" type="button" role="tab" aria-selected="true" data-prospects-main-tab="pipeline"><i data-lucide="folder-kanban"></i>Pipeline</button>
-          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="profile"><i data-lucide="contact-round"></i>Ficha</button>
-          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="activity"><i data-lucide="clock-3"></i>Timeline</button>
-          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="email"><i data-lucide="send"></i>Correos</button>
-          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="templates"><i data-lucide="file-text"></i>Plantillas</button>
-          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="signals"><i data-lucide="radar"></i>Señales</button>
-        </nav>
-        <section class="prospects-command-grid" data-prospects-main-panel="pipeline">
-          <article class="module-surface prospects-pipeline-panel"><div class="module-head compact"><h2>Trabajo comercial</h2></div><section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section></article>
+        <div class="prospects-flow-tabs" role="tablist" aria-label="Subsecciones de prospectos">
+          <button class="active" type="button" role="tab" aria-selected="true" data-prospects-tab="pipeline"><i data-lucide="folder-kanban"></i><span>Pipeline</span></button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-tab="directory"><i data-lucide="contact-round"></i><span>Directorio</span></button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-tab="communication"><i data-lucide="send"></i><span>Comunicación</span></button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-tab="activity"><i data-lucide="clock-3"></i><span>Actividad</span></button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-tab="templates"><i data-lucide="file-text"></i><span>Plantillas</span></button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-tab="intelligence"><i data-lucide="radar"></i><span>Inteligencia</span></button>
+        </div>
+        <section class="module-surface prospects-flow-panel active" data-prospects-panel="pipeline">
+          <div class="module-head compact"><h2>Pipeline comercial</h2><span class="status-dot">Priorizado</span></div>
+          <section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section>
         </section>
-        <section class="prospects-signals-view" data-prospects-main-panel="signals" hidden>
+        <section class="module-surface prospects-flow-panel" data-prospects-panel="directory" hidden>
+          <div class="module-head compact"><h2>Directorio y ficha</h2><span class="status-dot">Datos base</span></div>
+          <div class="prospects-directory-layout">
+            <aside class="prospects-directory-list" data-prospects-directory-list aria-label="Lista de prospectos"></aside>
+            <article class="prospect-profile-panel"><form class="prospects-form" data-prospect-form></form></article>
+          </div>
+        </section>
+        <section class="module-surface prospects-flow-panel" data-prospects-panel="communication" hidden>
+          <div class="module-head compact"><h2>Comunicación</h2><span class="status-dot" data-prospect-email-count>0</span></div>
+          <div class="prospects-two-column-flow">
+            <aside class="prospects-context-card" data-prospect-context="communication"></aside>
+            <section class="prospects-email" data-prospect-email-section></section>
+          </div>
+        </section>
+        <section class="module-surface prospects-flow-panel" data-prospects-panel="activity" hidden>
+          <div class="module-head compact"><h2>Actividad</h2><span class="status-dot" data-prospect-activity-count>0</span></div>
+          <div class="prospects-two-column-flow">
+            <aside class="prospects-context-card" data-prospect-context="activity"></aside>
+            <div class="prospects-split-action"><form class="prospects-form prospects-form-compact" data-activity-form></form><div class="prospect-activity-list" data-activity-list></div></div>
+          </div>
+        </section>
+        <section class="module-surface prospects-flow-panel" data-prospects-panel="templates" hidden>
+          <div class="module-head compact"><h2>Plantillas</h2><span class="status-dot" data-prospect-template-count>0</span></div>
+          <div class="prospects-template-layout"><form class="prospects-form prospects-form-compact" data-template-form></form><div class="prospect-template-list" data-template-list></div></div>
+        </section>
+        <section class="prospects-intelligence-grid" data-prospects-panel="intelligence" hidden>
           <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Señales</h3><span data-prospect-sent-count>0</span></div><div class="prospect-insight-grid" data-prospect-insight-grid></div></article>
           <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Correos por fase</h3><span data-prospect-phase-email-count>0</span></div><div class="prospect-insight-list" data-prospect-phase-email-list></div></article>
           <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Conversión</h3><span data-prospect-conversion-count>0</span></div><div class="prospect-insight-list" data-prospect-conversion-list></div></article>
-        </section>
-        <section class="prospects-action-panel module-surface" data-prospects-main-panel="actions" data-prospect-action-panel hidden>
-          <div class="prospect-action-head"><div><h3 data-prospect-action-title>Ficha del prospecto</h3><p data-prospect-action-subtitle>Actualiza datos clave, seguimiento y contexto comercial.</p></div><div class="prospect-action-tabs" role="tablist" aria-label="Acciones de prospectos">
-            <button class="is-active" type="button" data-prospect-action="profile"><i data-lucide="contact-round"></i>Ficha</button>
-            <button type="button" data-prospect-action="email"><i data-lucide="send"></i>Correo</button>
-            <button type="button" data-prospect-action="activity"><i data-lucide="clock-3"></i>Timeline</button>
-            <button type="button" data-prospect-action="templates"><i data-lucide="file-text"></i>Plantillas</button>
-          </div><button class="icon-close" type="button" data-prospect-action-close aria-label="Cerrar panel"><i data-lucide="x"></i></button></div>
-          <div class="prospect-action-body">
-            <section class="prospect-action-view is-active" data-prospect-action-view="profile"><form class="prospects-form" data-prospect-form></form></section>
-            <section class="prospect-action-view" data-prospect-action-view="email" hidden><section class="prospects-email" data-prospect-email-section></section></section>
-            <section class="prospect-action-view" data-prospect-action-view="activity" hidden><div class="prospects-split-action"><form class="prospects-form prospects-form-compact" data-activity-form></form><div class="prospect-activity-list" data-activity-list></div></div></section>
-            <section class="prospect-action-view" data-prospect-action-view="templates" hidden><div class="prospects-split-action"><form class="prospects-form prospects-form-compact" data-template-form></form><div class="prospect-template-list" data-template-list></div></div></section>
-          </div>
         </section>
       </section>
     `;
