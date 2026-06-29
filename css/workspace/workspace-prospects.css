@@ -1141,7 +1141,7 @@
   width: 100%;
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(170px, 1.35fr) minmax(120px, .9fr) minmax(92px, .68fr) minmax(135px, .92fr) minmax(76px, .56fr) 28px;
+  grid-template-columns: minmax(160px, 1.22fr) minmax(110px, .82fr) minmax(88px, .62fr) minmax(118px, .82fr) minmax(128px, .86fr) minmax(76px, .5fr) 28px;
   gap: 8px;
   align-items: center;
   border: 1px solid var(--line);
@@ -1775,6 +1775,95 @@
   }
 
   .prospect-automation-card{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.prospect-card-meta-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.prospect-assignment-pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  padding: 4px 8px;
+  font-size: .7rem;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.prospect-assignment-pill svg{
+  width: 13px;
+  height: 13px;
+}
+
+.prospect-assignment-pill.is-assigned,
+.prospect-assignment-pill.is-accepted{
+  background: color-mix(in srgb, var(--success, #22c55e) 13%, var(--surface-solid));
+  color: color-mix(in srgb, var(--success, #16a34a) 70%, var(--ink-strong));
+}
+
+.prospect-assignment-pill.is-declined,
+.prospect-assignment-pill.is-needs_reassignment{
+  background: color-mix(in srgb, var(--warning, #f59e0b) 15%, var(--surface-solid));
+  color: color-mix(in srgb, var(--warning, #d97706) 68%, var(--ink-strong));
+}
+
+.prospect-assignment-editor{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, .72fr);
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-muted) 36%, var(--surface-solid));
+  padding: 11px;
+}
+
+.prospect-assignment-editor label{
+  display: grid;
+  gap: 5px;
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.prospect-assignment-editor .is-wide,
+.prospect-assignment-editor .btn{
+  grid-column: 1 / -1;
+}
+
+.prospect-assignment-editor input,
+.prospect-assignment-editor select{
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  padding: 8px 9px;
+  font: inherit;
+  font-size: .8rem;
+  text-transform: none;
+}
+
+.prospect-directory-notes strong{
+  color: var(--ink-strong);
+}
+
+@media (max-width: 760px){
+  .prospect-assignment-editor{
     grid-template-columns: 1fr;
   }
 }

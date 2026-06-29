@@ -32,11 +32,20 @@
     { id: "follow_up", label: "Follow-up" }
   ];
 
+  const ASSIGNMENT_STATUSES = [
+    { id: "unassigned", label: "Sin responsable" },
+    { id: "assigned", label: "Asignado" },
+    { id: "accepted", label: "Aceptado" },
+    { id: "declined", label: "Rechazado" },
+    { id: "needs_reassignment", label: "Reasignar" }
+  ];
+
   window.BCCWorkspaceProspectsConstants = {
     PHASES,
     EMAIL_STATUSES,
     TEMPLATE_HINTS,
     ACTIVITY_TYPES,
+    ASSIGNMENT_STATUSES,
     PROSPECTS_TIMEOUT_MS: 12000
   };
 })();

@@ -1,5 +1,5 @@
 (() => {
-  const { PHASES, EMAIL_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
+  const { PHASES, EMAIL_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
   const ProspectsApi = window.BCCWorkspaceProspectsApi;
   const ProspectsLayout = window.BCCWorkspaceProspectsLayout;
 
@@ -21,6 +21,7 @@
   let phaseFilter = "";
   let directoryStatusFilter = "all";
   let directorySourceFilter = "";
+  let directoryAssignmentFilter = "all";
   let directorySort = "priority";
   let directoryMode = "view";
   let directorySection = "profile";
@@ -281,7 +282,7 @@
     return prospects.filter(item => {
       if (phaseFilter && item.phase !== phaseFilter) return false;
       if (!searchTerm) return true;
-      const haystack = [item.fullName, item.company, item.email, item.phone, item.source, (item.tags || []).join(" ")].join(" ").toLowerCase();
+      const haystack = [item.fullName, item.company, item.email, item.phone, item.source, item.ownerLabel, assignmentStatusLabel(item.assignmentStatus), (item.tags || []).join(" ")].join(" ").toLowerCase();
       return haystack.includes(searchTerm);
     });
   }
@@ -356,7 +357,7 @@
           ${phases.map(phase => {
             const phaseItems = sortedProspects(currentItems.filter(item => item.phase === phase.id));
             const phaseValue = phaseItems.reduce((total, item) => total + Number(item.valueEstimate || 0), 0);
-            const blocked = phaseItems.filter(item => prospectFollowStatus(item) === "overdue" || prospectFollowStatus(item) === "no_contact").length;
+            const blocked = phaseItems.filter(item => needsPipelineDesignation(item)).length;
             return `
               <article class="prospect-pipeline-column" data-pipeline-phase="${escapeAttr(phase.id)}">
                 <header>
@@ -422,8 +423,8 @@
       <article class="prospect-opportunity-card ${item.id === selectedProspectId ? "is-active" : ""} ${tone}" data-prospect-open="${escapeAttr(item.id)}">
         <button class="prospect-opportunity-main" type="button" data-prospect-open="${escapeAttr(item.id)}">
           <strong>${escapeHtml(item.company || item.fullName)}</strong>
-          <span>${escapeHtml(item.fullName)} · ${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "Sin monto")}</span>
-          <small>${escapeHtml(nextActionLabel(item))}</small>
+          <span>${escapeHtml(item.fullName)} · ${escapeHtml(ownerLabel(item))}</span>
+          <small>${escapeHtml(nextActionLabel(item))} · ${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "Sin monto")}</small>
         </button>
         <div class="prospect-opportunity-actions">
           ${previousPhase ? `<button type="button" title="Mover a ${escapeAttr(previousPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(previousPhase.id)}"><i data-lucide="arrow-left"></i></button>` : ""}
@@ -432,7 +433,10 @@
           <button type="button" title="Enviar correo" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="communication"><i data-lucide="send"></i></button>
           <button type="button" title="Registrar actividad" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="activity"><i data-lucide="clock-3"></i></button>
         </div>
-        <span class="prospect-automation-hint"><i data-lucide="zap"></i>${escapeHtml(automation)}</span>
+        <div class="prospect-card-meta-row">
+          <span class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}"><i data-lucide="user-check"></i>${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</span>
+          <span class="prospect-automation-hint"><i data-lucide="zap"></i>${escapeHtml(automation)}</span>
+        </div>
       </article>
     `;
   }
@@ -449,6 +453,8 @@
       <dl class="prospect-summary-grid">
         <div><dt>Siguiente acción</dt><dd>${escapeHtml(nextActionLabel(item))}</dd></div>
         <div><dt>Valor</dt><dd>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</dd></div>
+        <div><dt>Responsable</dt><dd>${escapeHtml(ownerLabel(item))}</dd></div>
+        <div><dt>Asignación</dt><dd>${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</dd></div>
         <div><dt>Automatización</dt><dd>${escapeHtml(pipelineAutomationHint(item))}</dd></div>
         <div><dt>Fase siguiente</dt><dd>${escapeHtml(nextPhase?.label || "Cierre")}</dd></div>
       </dl>
@@ -457,6 +463,20 @@
         <button type="button" data-directory-open="profile"><i data-lucide="contact-round"></i>Ficha</button>
         <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
         <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
+      </div>
+      <div class="prospect-assignment-editor">
+        <label>Responsable
+          <input data-pipeline-owner-field value="${escapeAttr(item.ownerLabel || "")}" maxlength="120" placeholder="Nombre, rol o equipo" />
+        </label>
+        <label>Estado
+          <select data-pipeline-assignment-field>
+            ${ASSIGNMENT_STATUSES.map(status => `<option value="${escapeAttr(status.id)}" ${status.id === (item.assignmentStatus || "unassigned") ? "selected" : ""}>${escapeHtml(status.label)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="is-wide">Nota
+          <input data-pipeline-note-field value="${escapeAttr(item.assignmentNote || "")}" maxlength="240" placeholder="Contexto de designación" />
+        </label>
+        <button class="btn btn-primary btn-compact" type="button" data-pipeline-save-assignment="${escapeAttr(item.id)}"><i data-lucide="save"></i>Guardar</button>
       </div>
       <div class="prospect-pipeline-next-step">
         <span><i data-lucide="workflow"></i>Acción sugerida</span>
@@ -471,7 +491,7 @@
 
   function pipelineAutomations() {
     return [
-      { scope: "Entrada", title: "Nuevo prospecto -> asignar dueño", description: "Marca prospectos sin contacto para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
+      { scope: "Entrada", title: "Nuevo prospecto -> asignar responsable", description: "Marca prospectos sin dueño para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
       { scope: "Seguimiento", title: "Fecha vencida -> actividad pendiente", description: "Detecta oportunidades vencidas y las empuja a la cola de designación del pipeline.", icon: "calendar-clock", enabled: true },
       { scope: "Propuesta", title: "Propuesta sin respuesta -> correo", description: "Sugiere comunicación desde plantillas cuando una propuesta queda sin próximo paso claro.", icon: "send", enabled: true },
       { scope: "Cierre", title: "Ganado o perdido -> congelar acciones", description: "Evita que los cierres sigan apareciendo como trabajo operativo activo.", icon: "lock", enabled: false }
@@ -480,8 +500,7 @@
 
   function automationCandidates(items) {
     return sortedProspects(items.filter(item => {
-      const status = prospectFollowStatus(item);
-      return !["won", "lost"].includes(item.phase) && (status === "overdue" || status === "no_contact" || !item.nextFollowUpOn);
+      return needsPipelineDesignation(item);
     }));
   }
 
@@ -490,7 +509,7 @@
       <button class="prospect-list-item ${item.id === selectedProspectId ? "is-active" : ""} ${prospectTone(item)}" type="button" data-prospect-open="${escapeAttr(item.id)}">
         <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
         <strong>${escapeHtml(item.company || item.fullName)}</strong>
-        <small>${escapeHtml(item.fullName)} · ${escapeHtml(pipelineAutomationHint(item))}</small>
+        <small>${escapeHtml(item.fullName)} · ${escapeHtml(ownerLabel(item))} · ${escapeHtml(pipelineAutomationHint(item))}</small>
         <em>${escapeHtml(nextActionLabel(item))}</em>
       </button>
     `;
@@ -498,6 +517,8 @@
 
   function pipelineAutomationHint(item) {
     const status = prospectFollowStatus(item);
+    if (item.assignmentStatus === "needs_reassignment" || item.assignmentStatus === "declined") return "Reasignar responsable";
+    if (!item.ownerLabel || item.assignmentStatus === "unassigned") return "Designar responsable";
     if (status === "overdue") return "Reasignar seguimiento";
     if (status === "today") return "Ejecutar hoy";
     if (status === "no_contact") return "Designar primer contacto";
@@ -508,6 +529,8 @@
 
   function pipelineNextStep(item) {
     const status = prospectFollowStatus(item);
+    if (!item.ownerLabel || item.assignmentStatus === "unassigned") return "Asignar responsable, definir estado y abrir comunicación inicial desde una plantilla.";
+    if (item.assignmentStatus === "declined" || item.assignmentStatus === "needs_reassignment") return "Reasignar la oportunidad y dejar una nota clara para el siguiente responsable.";
     if (status === "overdue") return "Crear actividad inmediata o reasignar la oportunidad a una persona responsable.";
     if (status === "no_contact") return "Designar responsable y abrir comunicación inicial desde una plantilla.";
     if (["proposal", "negotiation"].includes(item.phase)) return "Confirmar siguiente hito, registrar actividad y preparar automatización de seguimiento.";
@@ -515,22 +538,22 @@
     return "Mantener el avance por fase y registrar el próximo seguimiento operativo.";
   }
 
+
+  function needsPipelineDesignation(item) {
+    const status = prospectFollowStatus(item);
+    return !["won", "lost"].includes(item.phase) && (
+      !item.ownerLabel ||
+      ["unassigned", "declined", "needs_reassignment"].includes(item.assignmentStatus || "unassigned") ||
+      status === "overdue" ||
+      status === "no_contact" ||
+      !item.nextFollowUpOn
+    );
+  }
+
   async function moveProspectPhase(prospectId, targetPhase) {
     const prospect = prospects.find(item => item.id === prospectId);
     if (!prospect || !PHASES.some(phase => phase.id === targetPhase) || prospect.phase === targetPhase) return;
-    const payload = {
-      fullName: prospect.fullName || "",
-      company: prospect.company || "",
-      email: prospect.email || "",
-      phone: prospect.phone || "",
-      phase: targetPhase,
-      tags: (prospect.tags || []).join(", "),
-      source: prospect.source || "",
-      valueEstimate: prospect.valueEstimate ?? "",
-      nextFollowUpOn: prospect.nextFollowUpOn || "",
-      lastContactAt: prospect.lastContactAt || null,
-      notes: prospect.notes || ""
-    };
+    const payload = prospectPayload(prospect, { phase: targetPhase });
     try {
       const data = await ProspectsApi.saveProspect(prospect.id, payload);
       upsertStateItem(prospects, data.prospect);
@@ -545,6 +568,49 @@
   }
 
 
+  async function updateProspectAssignment(prospectId, ownerLabelValue, assignmentStatusValue, assignmentNoteValue) {
+    const prospect = prospects.find(item => item.id === prospectId);
+    if (!prospect) return;
+    const owner = String(ownerLabelValue || "").trim();
+    const status = owner ? String(assignmentStatusValue || "assigned") : "unassigned";
+    const payload = prospectPayload(prospect, {
+      ownerLabel: owner,
+      assignmentStatus: status,
+      assignmentNote: assignmentNoteValue || ""
+    });
+    try {
+      const data = await ProspectsApi.saveProspect(prospect.id, payload);
+      upsertStateItem(prospects, data.prospect);
+      selectedProspectId = data.prospect.id;
+      setMessage(`${data.prospect.fullName} actualizado para ${assignmentStatusLabel(data.prospect.assignmentStatus)}.`, "ok");
+      renderBoard();
+      renderDirectoryList();
+    } catch (error) {
+      setMessage(error.message || "No fue posible actualizar la asignación.", "error");
+    }
+  }
+
+  function prospectPayload(prospect, overrides = {}) {
+    return {
+      fullName: prospect.fullName || "",
+      company: prospect.company || "",
+      email: prospect.email || "",
+      phone: prospect.phone || "",
+      phase: prospect.phase || "lead",
+      tags: (prospect.tags || []).join(", "),
+      source: prospect.source || "",
+      valueEstimate: prospect.valueEstimate ?? "",
+      nextFollowUpOn: prospect.nextFollowUpOn || "",
+      lastContactAt: prospect.lastContactAt || null,
+      ownerLabel: prospect.ownerLabel || "",
+      assignmentStatus: prospect.assignmentStatus || "unassigned",
+      assignmentNote: prospect.assignmentNote || "",
+      notes: prospect.notes || "",
+      ...overrides
+    };
+  }
+
+
   function renderDirectoryList() {
     const list = root.querySelector("[data-prospects-directory-list]");
     const controls = root.querySelector("[data-directory-controls]");
@@ -553,6 +619,7 @@
     const currentItems = directoryProspects();
     const selected = selectedProspect();
     const sources = Array.from(new Set(prospects.map(item => String(item.source || "Sin fuente").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const owners = Array.from(new Set(prospects.map(item => ownerLabel(item)).filter(owner => owner && owner !== "Sin responsable"))).sort((a, b) => a.localeCompare(b));
 
     controls.innerHTML = `
       <div class="prospects-directory-filterbar">
@@ -568,6 +635,11 @@
           <option value="">Todas las fuentes</option>
           ${sources.map(source => `<option value="${escapeAttr(source)}" ${source === directorySourceFilter ? "selected" : ""}>${escapeHtml(source)}</option>`).join("")}
         </select>
+        <select data-directory-assignment-filter aria-label="Filtrar por responsable">
+          <option value="all" ${directoryAssignmentFilter === "all" ? "selected" : ""}>Todos los responsables</option>
+          <option value="unassigned" ${directoryAssignmentFilter === "unassigned" ? "selected" : ""}>Sin responsable</option>
+          ${owners.map(owner => `<option value="${escapeAttr(owner)}" ${owner === directoryAssignmentFilter ? "selected" : ""}>${escapeHtml(owner)}</option>`).join("")}
+        </select>
         <select data-directory-sort aria-label="Ordenar prospectos">
           <option value="priority" ${directorySort === "priority" ? "selected" : ""}>Prioridad</option>
           <option value="follow_up" ${directorySort === "follow_up" ? "selected" : ""}>Próximo seguimiento</option>
@@ -581,13 +653,14 @@
         <span><strong>${number(currentItems.length)}</strong>Visibles</span>
         <span><strong>${number(prospects.filter(item => prospectFollowStatus(item) === "overdue").length)}</strong>Vencidos</span>
         <span><strong>${number(prospects.filter(item => prospectFollowStatus(item) === "no_contact").length)}</strong>Sin contacto</span>
+        <span><strong>${number(prospects.filter(item => !item.ownerLabel || item.assignmentStatus === "unassigned").length)}</strong>Sin responsable</span>
       </div>
     `;
 
     list.innerHTML = `
       <div class="prospect-directory-table" role="table" aria-label="Prospectos filtrados">
         <div class="prospect-directory-row prospect-directory-row-head" role="row">
-          <span>Prospecto</span><span>Empresa</span><span>Fase</span><span>Seguimiento</span><span>Valor</span><span></span>
+          <span>Prospecto</span><span>Empresa</span><span>Fase</span><span>Responsable</span><span>Seguimiento</span><span>Valor</span><span></span>
         </div>
         ${currentItems.length ? currentItems.map(item => directoryRow(item)).join("") : `<div class="prospect-empty">No hay prospectos con estos filtros.</div>`}
       </div>
@@ -607,6 +680,10 @@
       directorySourceFilter = String(event.target.value || "");
       renderDirectoryList();
     });
+    controls.querySelector("[data-directory-assignment-filter]")?.addEventListener("change", event => {
+      directoryAssignmentFilter = String(event.target.value || "all");
+      renderDirectoryList();
+    });
     controls.querySelector("[data-directory-sort]")?.addEventListener("change", event => {
       directorySort = String(event.target.value || "priority");
       renderDirectoryList();
@@ -619,6 +696,8 @@
         const status = prospectFollowStatus(item);
         if (directoryStatusFilter !== "all" && status !== directoryStatusFilter) return false;
         if (directorySourceFilter && String(item.source || "Sin fuente").trim() !== directorySourceFilter) return false;
+        if (directoryAssignmentFilter === "unassigned" && item.ownerLabel) return false;
+        if (!["all", "unassigned"].includes(directoryAssignmentFilter) && ownerLabel(item) !== directoryAssignmentFilter) return false;
         return true;
       })
       .slice()
@@ -647,6 +726,7 @@
         <span><strong>${escapeHtml(item.fullName)}</strong><small>${escapeHtml(item.email || item.phone || "Sin contacto")}</small></span>
         <span>${escapeHtml(item.company || "Sin empresa")}</span>
         <span><em class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</em></span>
+        <span><em class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}">${escapeHtml(ownerLabel(item))}</em></span>
         <span>${escapeHtml(nextActionLabel(item))}</span>
         <span>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</span>
         <span class="prospect-directory-actions"><i data-lucide="chevron-right"></i></span>
@@ -667,11 +747,14 @@
         <div><dt>Seguimiento</dt><dd>${escapeHtml(item.nextFollowUpOn ? formatDate(item.nextFollowUpOn) : "Sin fecha")}</dd></div>
         <div><dt>Último contacto</dt><dd>${escapeHtml(item.lastContactAt ? formatDate(item.lastContactAt) : "Sin contacto")}</dd></div>
         <div><dt>Valor</dt><dd>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</dd></div>
+        <div><dt>Responsable</dt><dd>${escapeHtml(ownerLabel(item))}</dd></div>
+        <div><dt>Asignación</dt><dd>${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</dd></div>
         <div><dt>Fuente</dt><dd>${escapeHtml(item.source || "Sin fuente")}</dd></div>
         <div><dt>Correos</dt><dd>${number(prospectEmails.length)}</dd></div>
         <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
       </dl>
       ${(item.tags || []).length ? `<div class="prospect-tag-row">${item.tags.map(tag => `<em>${escapeHtml(tag)}</em>`).join("")}</div>` : ""}
+      ${item.assignmentNote ? `<p class="prospect-directory-notes"><strong>Asignación:</strong> ${escapeHtml(item.assignmentNote.slice(0, 220))}</p>` : ""}
       ${item.notes ? `<p class="prospect-directory-notes">${escapeHtml(item.notes.slice(0, 260))}</p>` : ""}
       <div class="prospect-summary-actions">
         <button type="button" data-directory-edit="${escapeAttr(item.id)}"><i data-lucide="pencil"></i>Editar</button>
@@ -826,7 +909,18 @@
         <label>Último contacto
           <input name="lastContactAt" type="datetime-local" value="${escapeAttr(datetimeLocalValue(prospect.lastContactAt))}" />
         </label>
+        <label>Responsable
+          <input name="ownerLabel" maxlength="120" value="${escapeAttr(prospect.ownerLabel || "")}" placeholder="Persona, equipo o rol" />
+        </label>
+        <label>Estado de asignación
+          <select name="assignmentStatus">
+            ${ASSIGNMENT_STATUSES.map(status => `<option value="${escapeHtml(status.id)}" ${status.id === (prospect.assignmentStatus || "unassigned") ? "selected" : ""}>${escapeHtml(status.label)}</option>`).join("")}
+          </select>
+        </label>
       </div>
+      <label>Nota de asignación
+        <input name="assignmentNote" maxlength="240" value="${escapeAttr(prospect.assignmentNote || "")}" placeholder="Contexto para quien recibe o reasigna" />
+      </label>
       <label>Notas
         <textarea name="notes" rows="7" maxlength="4000" placeholder="Contexto comercial, necesidades, objeciones, próximos pasos...">${escapeHtml(prospect.notes || "")}</textarea>
       </label>
@@ -1152,6 +1246,18 @@
   }
 
   function handleBoardClick(event) {
+    const saveAssignmentButton = event.target.closest("[data-pipeline-save-assignment]");
+    if (saveAssignmentButton) {
+      const panel = saveAssignmentButton.closest(".prospect-pipeline-focus");
+      void updateProspectAssignment(
+        saveAssignmentButton.dataset.pipelineSaveAssignment || "",
+        panel?.querySelector("[data-pipeline-owner-field]")?.value || "",
+        panel?.querySelector("[data-pipeline-assignment-field]")?.value || "unassigned",
+        panel?.querySelector("[data-pipeline-note-field]")?.value || ""
+      );
+      return;
+    }
+
     const moveButton = event.target.closest("[data-pipeline-move-phase]");
     if (moveButton) {
       void moveProspectPhase(moveButton.dataset.pipelineMovePhase || "", moveButton.dataset.pipelineTargetPhase || "");
@@ -1327,6 +1433,9 @@
       valueEstimate: fieldValue(form, "valueEstimate"),
       nextFollowUpOn: fieldValue(form, "nextFollowUpOn"),
       lastContactAt: fieldValue(form, "lastContactAt") ? new Date(fieldValue(form, "lastContactAt")).toISOString() : null,
+      ownerLabel: fieldValue(form, "ownerLabel"),
+      assignmentStatus: fieldValue(form, "assignmentStatus") || "unassigned",
+      assignmentNote: fieldValue(form, "assignmentNote"),
       notes: fieldValue(form, "notes")
     };
     try {
@@ -1556,6 +1665,9 @@
       tags: splitTags(fieldValue(form, "tags")),
       valueEstimate: fieldValue(form, "valueEstimate"),
       nextFollowUpOn: fieldValue(form, "nextFollowUpOn"),
+      ownerLabel: fieldValue(form, "ownerLabel"),
+      assignmentStatus: fieldValue(form, "assignmentStatus") || "unassigned",
+      assignmentNote: fieldValue(form, "assignmentNote"),
       notes: fieldValue(form, "notes")
     };
   }
@@ -1599,7 +1711,10 @@
       notes: "",
       valueEstimate: null,
       nextFollowUpOn: "",
-      lastContactAt: null
+      lastContactAt: null,
+      ownerLabel: "",
+      assignmentStatus: "unassigned",
+      assignmentNote: ""
     };
   }
 
@@ -1655,6 +1770,14 @@
     if (item.company) parts.push(item.company);
     if (item.nextFollowUpOn) parts.push(`seg. ${item.nextFollowUpOn}`);
     return parts.join(" · ") || item.email;
+  }
+
+  function ownerLabel(item) {
+    return String(item?.ownerLabel || "").trim() || "Sin responsable";
+  }
+
+  function assignmentStatusLabel(status) {
+    return ASSIGNMENT_STATUSES.find(item => item.id === status)?.label || "Sin responsable";
   }
 
   function phaseLabel(phaseId) {

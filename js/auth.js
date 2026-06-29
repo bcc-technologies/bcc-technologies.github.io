@@ -904,12 +904,16 @@ async function bccApi(path, options = {}) {
   if (path === "/api/admin/prospects/dashboard" && (!options.method || options.method === "GET")) {
     const me = await authorizedUser();
     if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const [{ data: prospects, error: prospectsError }, { data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
-      supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_COLUMNS).order("updated_at", { ascending: false }),
+    let prospectsResult = await supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_COLUMNS).order("updated_at", { ascending: false });
+    if (isMissingProspectAssignmentSchema(prospectsResult.error)) {
+      prospectsResult = await supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_BASE_COLUMNS).order("updated_at", { ascending: false });
+    }
+    const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
       supabase.from("workspace_prospect_templates").select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS).order("updated_at", { ascending: false }),
       supabase.from("workspace_prospect_emails").select(WORKSPACE_PROSPECT_EMAIL_COLUMNS).order("created_at", { ascending: false }).limit(200),
       supabase.from("workspace_prospect_activities").select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400)
     ]);
+    const { data: prospects, error: prospectsError } = prospectsResult;
     if (prospectsError) throw prospectsError;
     if (templatesError) throw templatesError;
     if (emailsError) throw emailsError;
@@ -927,11 +931,21 @@ async function bccApi(path, options = {}) {
     const me = await authorizedUser();
     if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"), true);
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("workspace_prospects")
       .insert(body)
       .select(WORKSPACE_PROSPECT_COLUMNS)
       .single();
+    if (isMissingProspectAssignmentSchema(error)) {
+      const fallbackBody = workspaceProspectWithoutAssignment(body);
+      const fallback = await supabase
+        .from("workspace_prospects")
+        .insert(fallbackBody)
+        .select(WORKSPACE_PROSPECT_BASE_COLUMNS)
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
     return { ok: true, prospect: publicWorkspaceProspect(data) };
   }
@@ -941,12 +955,23 @@ async function bccApi(path, options = {}) {
     const me = await authorizedUser();
     if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
     const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("workspace_prospects")
       .update({ ...body, updated_at: new Date().toISOString() })
       .eq("id", decodeURIComponent(adminProspectMatch[1]))
       .select(WORKSPACE_PROSPECT_COLUMNS)
       .single();
+    if (isMissingProspectAssignmentSchema(error)) {
+      const fallbackBody = workspaceProspectWithoutAssignment(body);
+      const fallback = await supabase
+        .from("workspace_prospects")
+        .update({ ...fallbackBody, updated_at: new Date().toISOString() })
+        .eq("id", decodeURIComponent(adminProspectMatch[1]))
+        .select(WORKSPACE_PROSPECT_BASE_COLUMNS)
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
     return { ok: true, prospect: publicWorkspaceProspect(data) };
   }
@@ -1728,13 +1753,15 @@ const WORKSPACE_RESPONSE_COLUMNS = "id, form_id, respondent_id, answers, submitt
 const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
 const WORKSPACE_FORM_STATUSES = ["draft", "published"];
 const WORKSPACE_QUESTION_TYPES = ["short_text", "long_text", "scale", "choice"];
-const WORKSPACE_PROSPECT_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, created_at, updated_at";
+const WORKSPACE_PROSPECT_BASE_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, created_at, updated_at";
+const WORKSPACE_PROSPECT_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, owner_label, assignment_status, assignment_note, created_at, updated_at";
 const WORKSPACE_PROSPECT_TEMPLATE_COLUMNS = "id, name, category, tags, subject, body, is_active, created_at, updated_at";
 const WORKSPACE_PROSPECT_EMAIL_COLUMNS = "id, prospect_id, template_id, recipient_email, subject, body, attachments, status, scheduled_for, sent_at, provider_message_id, created_at, updated_at";
 const WORKSPACE_PROSPECT_ACTIVITY_COLUMNS = "id, prospect_id, activity_type, title, details, due_at, occurred_at, meta, created_at, updated_at";
 const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal", "negotiation", "won", "lost"];
 const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
 const WORKSPACE_PROSPECT_ACTIVITY_TYPES = ["note", "call", "meeting", "email", "follow_up"];
+const WORKSPACE_PROSPECT_ASSIGNMENT_STATUSES = ["unassigned", "assigned", "accepted", "declined", "needs_reassignment"];
 const INTELLIGENCE_TOPIC_CATEGORIES = ["nano", "bio", "med", "ing", "general"];
 const INTELLIGENCE_SOURCE_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "clinicaltrials", "epo_ops", "cordis", "uspto", "custom"];
 const INTELLIGENCE_SIGNAL_TYPES = ["product_opportunity", "market_trend", "research_trend", "partnership", "content_idea", "competitive_risk", "grant_opportunity"];
@@ -2532,6 +2559,19 @@ function publicWorkspaceResponse(response) {
   };
 }
 
+function isMissingProspectAssignmentSchema(error) {
+  const message = String(error?.message || error?.details || "");
+  return /owner_label|assignment_status|assignment_note|column .* does not exist|schema cache/i.test(message);
+}
+
+function workspaceProspectWithoutAssignment(value) {
+  const payload = { ...(value || {}) };
+  delete payload.owner_label;
+  delete payload.assignment_status;
+  delete payload.assignment_note;
+  return payload;
+}
+
 function normalizeWorkspaceProspectInput(value, requireContent = false) {
   const payload = value && typeof value === "object" ? value : {};
   const prospect = {};
@@ -2591,6 +2631,21 @@ function normalizeWorkspaceProspectInput(value, requireContent = false) {
     if (lastContactAt && Number.isNaN(lastContactAt.getTime())) throw new Error("Fecha de ultimo contacto invalida.");
     prospect.last_contact_at = lastContactAt ? lastContactAt.toISOString() : null;
   }
+  if (Object.prototype.hasOwnProperty.call(payload, "ownerLabel")) {
+    const ownerLabel = String(payload.ownerLabel || "").trim();
+    if (ownerLabel.length > 120) throw new Error("El responsable es demasiado largo.");
+    prospect.owner_label = ownerLabel;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "assignmentStatus")) {
+    const assignmentStatus = String(payload.assignmentStatus || "unassigned").trim();
+    if (!WORKSPACE_PROSPECT_ASSIGNMENT_STATUSES.includes(assignmentStatus)) throw new Error("Estado de asignacion invalido.");
+    prospect.assignment_status = assignmentStatus;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "assignmentNote")) {
+    const assignmentNote = String(payload.assignmentNote || "").trim();
+    if (assignmentNote.length > 240) throw new Error("La nota de asignacion es demasiado larga.");
+    prospect.assignment_note = assignmentNote;
+  }
   return prospect;
 }
 
@@ -2608,6 +2663,9 @@ function publicWorkspaceProspect(prospect) {
     valueEstimate: prospect.value_estimate ?? null,
     nextFollowUpOn: prospect.next_follow_up_on || null,
     lastContactAt: prospect.last_contact_at || null,
+    ownerLabel: prospect.owner_label || "",
+    assignmentStatus: prospect.assignment_status || "unassigned",
+    assignmentNote: prospect.assignment_note || "",
     createdAt: prospect.created_at,
     updatedAt: prospect.updated_at
   };

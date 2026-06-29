@@ -15,6 +15,9 @@ create table if not exists public.workspace_prospects (
   value_estimate numeric(12, 2),
   next_follow_up_on date,
   last_contact_at timestamptz,
+  owner_label text not null default '',
+  assignment_status text not null default 'unassigned',
+  assignment_note text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint workspace_prospects_full_name_check check (char_length(btrim(full_name)) between 1 and 120),
@@ -25,8 +28,35 @@ create table if not exists public.workspace_prospects (
   constraint workspace_prospects_source_check check (char_length(source) <= 80),
   constraint workspace_prospects_notes_check check (char_length(notes) <= 4000),
   constraint workspace_prospects_value_check check (value_estimate is null or value_estimate >= 0),
-  constraint workspace_prospects_tags_check check (coalesce(array_length(tags, 1), 0) <= 12)
+  constraint workspace_prospects_tags_check check (coalesce(array_length(tags, 1), 0) <= 12),
+  constraint workspace_prospects_owner_label_check check (char_length(owner_label) <= 120),
+  constraint workspace_prospects_assignment_status_check check (assignment_status in ('unassigned', 'assigned', 'accepted', 'declined', 'needs_reassignment')),
+  constraint workspace_prospects_assignment_note_check check (char_length(assignment_note) <= 240)
 );
+
+alter table public.workspace_prospects add column if not exists owner_label text not null default '';
+alter table public.workspace_prospects add column if not exists assignment_status text not null default 'unassigned';
+alter table public.workspace_prospects add column if not exists assignment_note text not null default '';
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'workspace_prospects_owner_label_check') then
+    alter table public.workspace_prospects
+      add constraint workspace_prospects_owner_label_check
+      check (char_length(owner_label) <= 120);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'workspace_prospects_assignment_status_check') then
+    alter table public.workspace_prospects
+      add constraint workspace_prospects_assignment_status_check
+      check (assignment_status in ('unassigned', 'assigned', 'accepted', 'declined', 'needs_reassignment'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'workspace_prospects_assignment_note_check') then
+    alter table public.workspace_prospects
+      add constraint workspace_prospects_assignment_note_check
+      check (char_length(assignment_note) <= 240);
+  end if;
+end;
+$$;
 
 create table if not exists public.workspace_prospect_templates (
   id uuid primary key default gen_random_uuid(),
@@ -108,6 +138,9 @@ alter table public.workspace_prospect_activities alter column actor_id drop not 
 
 create index if not exists workspace_prospects_phase_follow_up_idx
 on public.workspace_prospects (phase, next_follow_up_on, updated_at desc);
+
+create index if not exists workspace_prospects_assignment_idx
+on public.workspace_prospects (assignment_status, owner_label, updated_at desc);
 
 create index if not exists workspace_prospect_templates_active_updated_idx
 on public.workspace_prospect_templates (is_active, updated_at desc);
