@@ -17,15 +17,23 @@
           <div><span>En propuesta</span><strong data-prospect-metric="pipeline">-</strong><small>Propuesta y negociación</small></div>
           <div><span>Ganados</span><strong data-prospect-metric="won">-</strong><small>Cierres registrados</small></div>
         </section>
-        <section class="prospects-command-grid">
+        <nav class="prospects-main-tabs" role="tablist" aria-label="Vistas de prospectos">
+          <button class="is-active" type="button" role="tab" aria-selected="true" data-prospects-main-tab="pipeline"><i data-lucide="folder-kanban"></i>Pipeline</button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="profile"><i data-lucide="contact-round"></i>Ficha</button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="activity"><i data-lucide="clock-3"></i>Timeline</button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="email"><i data-lucide="send"></i>Correos</button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="templates"><i data-lucide="file-text"></i>Plantillas</button>
+          <button type="button" role="tab" aria-selected="false" data-prospects-main-tab="signals"><i data-lucide="radar"></i>Señales</button>
+        </nav>
+        <section class="prospects-command-grid" data-prospects-main-panel="pipeline">
           <article class="module-surface prospects-pipeline-panel"><div class="module-head compact"><h2>Trabajo comercial</h2></div><section class="prospects-board" data-prospects-board aria-label="Pipeline de prospectos"></section></article>
-          <details class="prospects-signal-stack" aria-label="Señales comerciales"><summary><span>Señales comerciales</span><strong>Ver contexto</strong></summary><div class="prospects-signal-body">
-            <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Señales</h3><span data-prospect-sent-count>0</span></div><div class="prospect-insight-grid" data-prospect-insight-grid></div></article>
-            <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Correos</h3><span data-prospect-phase-email-count>0</span></div><div class="prospect-insight-list" data-prospect-phase-email-list></div></article>
-            <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Conversión</h3><span data-prospect-conversion-count>0</span></div><div class="prospect-insight-list" data-prospect-conversion-list></div></article>
-          </div></details>
         </section>
-        <section class="prospects-action-panel module-surface" data-prospect-action-panel hidden>
+        <section class="prospects-signals-view" data-prospects-main-panel="signals" hidden>
+          <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Señales</h3><span data-prospect-sent-count>0</span></div><div class="prospect-insight-grid" data-prospect-insight-grid></div></article>
+          <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Correos por fase</h3><span data-prospect-phase-email-count>0</span></div><div class="prospect-insight-list" data-prospect-phase-email-list></div></article>
+          <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Conversión</h3><span data-prospect-conversion-count>0</span></div><div class="prospect-insight-list" data-prospect-conversion-list></div></article>
+        </section>
+        <section class="prospects-action-panel module-surface" data-prospects-main-panel="actions" data-prospect-action-panel hidden>
           <div class="prospect-action-head"><div><h3 data-prospect-action-title>Ficha del prospecto</h3><p data-prospect-action-subtitle>Actualiza datos clave, seguimiento y contexto comercial.</p></div><div class="prospect-action-tabs" role="tablist" aria-label="Acciones de prospectos">
             <button class="is-active" type="button" data-prospect-action="profile"><i data-lucide="contact-round"></i>Ficha</button>
             <button type="button" data-prospect-action="email"><i data-lucide="send"></i>Correo</button>

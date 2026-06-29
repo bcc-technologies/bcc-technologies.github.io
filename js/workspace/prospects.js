@@ -15,8 +15,8 @@
   let selectedActivityId = "";
   let searchTerm = "";
   let phaseFilter = "";
+  let activeMainView = "pipeline";
   let activeActionView = "profile";
-  let actionPanelOpen = false;
 
   function init(account) {
     root = document.querySelector("[data-prospects-workspace]");
@@ -44,18 +44,21 @@
     root.querySelector("[data-prospects-refresh]")?.addEventListener("click", () => {
       void loadDashboard();
     });
+    root.querySelectorAll("[data-prospects-main-tab]").forEach(button => {
+      button.addEventListener("click", () => activateMainView(button.dataset.prospectsMainTab || "pipeline"));
+    });
     root.querySelector("[data-prospect-new]")?.addEventListener("click", () => {
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
+      activeMainView = "profile";
       activeActionView = "profile";
       renderAll();
-      activateActionView("profile");
+      activateMainView("profile");
     });
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
     root.querySelector("[data-prospect-action-close]")?.addEventListener("click", () => {
-      actionPanelOpen = false;
-      root.querySelector("[data-prospect-action-panel]")?.setAttribute("hidden", "");
+      activateMainView("pipeline");
     });
     root.querySelectorAll("[data-prospect-action]").forEach(button => {
       button.addEventListener("click", () => activateActionView(button.dataset.prospectAction || "profile"));
@@ -68,7 +71,28 @@
     root.querySelector("[data-activity-form]")?.addEventListener("submit", saveActivity);
   }
 
-  function activateActionView(view = "profile") {
+  function activateMainView(view = "pipeline") {
+    const actionViews = new Set(["profile", "email", "activity", "templates"]);
+    activeMainView = ["pipeline", "signals", ...actionViews].includes(view) ? view : "pipeline";
+    root.querySelectorAll("[data-prospects-main-tab]").forEach(button => {
+      const active = button.dataset.prospectsMainTab === activeMainView;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    root.querySelectorAll("[data-prospects-main-panel]").forEach(panel => {
+      if (panel.dataset.prospectsMainPanel === "actions") {
+        panel.hidden = !actionViews.has(activeMainView);
+      } else {
+        panel.hidden = panel.dataset.prospectsMainPanel !== activeMainView;
+      }
+    });
+    if (actionViews.has(activeMainView)) {
+      activateActionView(activeMainView, { syncMain: false });
+    }
+    refreshIcons();
+  }
+
+  function activateActionView(view = "profile", options = {}) {
     const labels = {
       profile: ["Ficha del prospecto", "Actualiza datos clave, seguimiento y contexto comercial."],
       email: ["Correos y seguimiento", "Prepara, programa o registra comunicaciones del prospecto activo."],
@@ -76,7 +100,7 @@
       templates: ["Plantillas", "Administra mensajes reutilizables sin salir del flujo comercial."]
     };
     activeActionView = labels[view] ? view : "profile";
-    actionPanelOpen = true;
+    if (options.syncMain !== false) activeMainView = activeActionView;
     root.querySelector("[data-prospect-action-panel]")?.removeAttribute("hidden");
     root.querySelectorAll("[data-prospect-action]").forEach(button => {
       const active = button.dataset.prospectAction === activeActionView;
@@ -87,6 +111,15 @@
       const active = panel.dataset.prospectActionView === activeActionView;
       panel.hidden = !active;
       panel.classList.toggle("is-active", active);
+    });
+    root.querySelectorAll("[data-prospects-main-tab]").forEach(button => {
+      const active = button.dataset.prospectsMainTab === activeMainView;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    root.querySelectorAll("[data-prospects-main-panel]").forEach(panel => {
+      if (panel.dataset.prospectsMainPanel === "actions") panel.hidden = false;
+      else panel.hidden = panel.dataset.prospectsMainPanel !== activeMainView;
     });
     const [title, subtitle] = labels[activeActionView];
     const titleEl = root.querySelector("[data-prospect-action-title]");
@@ -123,6 +156,7 @@
     renderEmailSection();
     renderTemplateSection();
     renderActivitySection();
+    activateMainView(activeMainView);
     refreshIcons();
   }
 
@@ -627,17 +661,18 @@
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
+      activeMainView = "profile";
       activeActionView = "profile";
       renderAll();
-      activateActionView("profile");
+      activateMainView("profile");
       return;
     }
 
     const actionButton = event.target.closest("[data-prospect-open-action]");
     if (actionButton) {
       event.preventDefault();
-      activateActionView(actionButton.dataset.prospectOpenAction || "profile");
-      root.querySelector("[data-prospect-action-view].is-active")?.scrollIntoView({ block: "nearest" });
+      activateMainView(actionButton.dataset.prospectOpenAction || "profile");
+      root.querySelector("[data-prospect-action-panel]")?.scrollIntoView({ block: "nearest" });
       return;
     }
 
