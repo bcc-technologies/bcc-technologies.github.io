@@ -32,28 +32,38 @@
   }
 
   function bindControls() {
-    root.querySelector("[data-prospect-search]")?.addEventListener("input", event => {
-      searchTerm = String(event.target.value || "").trim().toLowerCase();
-      renderBoard();
-      renderDirectoryList();
+    root.querySelectorAll("[data-prospect-search]").forEach(input => {
+      input.addEventListener("input", event => {
+        searchTerm = String(event.target.value || "").trim().toLowerCase();
+        syncProspectSearchControls(event.target);
+        renderBoard();
+        renderDirectoryList();
+      });
     });
-    root.querySelector("[data-prospect-phase-filter]")?.addEventListener("change", event => {
-      phaseFilter = String(event.target.value || "");
-      renderBoard();
-      renderDirectoryList();
+    root.querySelectorAll("[data-prospect-phase-filter]").forEach(select => {
+      select.addEventListener("change", event => {
+        phaseFilter = String(event.target.value || "");
+        syncProspectPhaseControls(event.target);
+        renderBoard();
+        renderDirectoryList();
+      });
     });
-    root.querySelector("[data-prospects-refresh]")?.addEventListener("click", () => {
-      void loadDashboard();
+    root.querySelectorAll("[data-prospects-refresh]").forEach(button => {
+      button.addEventListener("click", () => {
+        void loadDashboard();
+      });
     });
     root.querySelectorAll("[data-prospects-tab]").forEach(button => {
       button.addEventListener("click", () => activateProspectsTab(button.dataset.prospectsTab || "pipeline"));
     });
-    root.querySelector("[data-prospect-new]")?.addEventListener("click", () => {
-      selectedProspectId = "";
-      selectedEmailId = "";
-      selectedActivityId = "";
-      renderAll();
-      activateProspectsTab("directory");
+    root.querySelectorAll("[data-prospect-new]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectedProspectId = "";
+        selectedEmailId = "";
+        selectedActivityId = "";
+        renderAll();
+        activateProspectsTab("directory");
+      });
     });
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
     root.querySelector("[data-prospects-directory-list]")?.addEventListener("click", handleDirectoryClick);
@@ -80,6 +90,18 @@
       panel.classList.toggle("active", active);
     });
     refreshIcons();
+  }
+
+  function syncProspectSearchControls(source) {
+    root.querySelectorAll("[data-prospect-search]").forEach(input => {
+      if (input !== source) input.value = source.value;
+    });
+  }
+
+  function syncProspectPhaseControls(source) {
+    root.querySelectorAll("[data-prospect-phase-filter]").forEach(select => {
+      if (select !== source) select.value = source.value;
+    });
   }
 
   async function loadDashboard() {
@@ -115,11 +137,13 @@
   }
 
   function setMessage(text, tone = "neutral") {
-    const message = root.querySelector("[data-prospects-message]");
-    if (!message) return;
+    const messages = root.querySelectorAll("[data-prospects-message]");
+    if (!messages.length) return;
     const content = String(text || "").trim();
-    message.hidden = !content;
-    renderMessageBlock(message, content, tone);
+    messages.forEach(message => {
+      message.hidden = !content;
+      renderMessageBlock(message, content, tone);
+    });
   }
 
   function renderMessageBlock(target, text, tone = "neutral") {
@@ -627,8 +651,9 @@
     const phaseButton = event.target.closest("[data-phase-chip]");
     if (phaseButton) {
       phaseFilter = phaseButton.dataset.phaseChip || "";
-      const select = root.querySelector("[data-prospect-phase-filter]");
-      if (select) select.value = phaseFilter;
+      root.querySelectorAll("[data-prospect-phase-filter]").forEach(select => {
+        select.value = phaseFilter;
+      });
       renderBoard();
       return;
     }
@@ -643,12 +668,6 @@
       return;
     }
 
-    const jumpButton = event.target.closest("[data-prospect-jump]");
-    if (jumpButton) {
-      event.preventDefault();
-      activateProspectsTab(jumpButton.dataset.prospectJump || "directory");
-      return;
-    }
 
     const button = event.target.closest("[data-prospect-open]");
     if (!button) return;
