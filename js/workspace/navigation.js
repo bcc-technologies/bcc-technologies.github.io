@@ -23,6 +23,7 @@
       { type: "label", label: "External Intelligence", permission: "department:manage" },
       { href: "#science-radar", label: "Science Radar", icon: "radar", permission: "department:manage" },
       { href: "#business-radar", label: "Business Radar", icon: "scan-search", permission: "department:manage" },
+      { href: "#dominican-intelligence", label: "Dominican Intelligence", icon: "map", permission: "department:manage" },
       { type: "label", label: "Internal Intelligence", permission: "department:manage" },
       { href: "#product-intelligence", label: "Product Intelligence", icon: "chart-no-axes-column-increasing", permission: "department:manage" },
       { href: "#performance-intelligence", label: "Performance Intelligence", icon: "gauge", permission: "department:manage" },

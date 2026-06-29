@@ -202,6 +202,17 @@ function initializeWorkspaceModule(viewId, user) {
     return;
   }
 
+  if (viewId === "dominican-intelligence") {
+    mountWorkspaceModule({
+      rootSelector: "[data-dominican-intelligence-workspace]",
+      module: window.BCCWorkspaceDominicanIntelligence,
+      key: "dominican-intelligence",
+      loadingText: "Cargando Dominican Intelligence...",
+      errorText: "No fue posible cargar el modulo de Dominican Intelligence. Recarga la pagina."
+    }, user);
+    return;
+  }
+
   if (viewId === "productividad") {
     mountWorkspaceModule({
       rootSelector: "[data-productivity-workspace]",

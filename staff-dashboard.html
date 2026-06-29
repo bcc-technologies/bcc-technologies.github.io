@@ -19,6 +19,14 @@
   <script src="js/workspace/navigation.js" defer></script>
   <script src="js/workspace/analytics.js" defer></script>
   <script src="js/workspace/intelligence.js" defer></script>
+  <script src="js/workspace/dominican-intelligence.data.js" defer></script>
+  <script src="js/services/dominican-intelligence/sourceRegistry.js" defer></script>
+  <script src="js/services/dominican-intelligence/scoring.js" defer></script>
+  <script src="js/services/dominican-intelligence/connectors/ckanConnector.js" defer></script>
+  <script src="js/services/dominican-intelligence/connectors/dgcpConnector.js" defer></script>
+  <script src="js/services/dominican-intelligence/connectors/bcrdConnector.js" defer></script>
+  <script src="js/services/dominican-intelligence/connectors/iderdConnector.js" defer></script>
+  <script src="js/workspace/dominican-intelligence.js" defer></script>
   <script src="js/workspace/prospects.constants.js" defer></script>
   <script src="js/workspace/prospects.layout.js" defer></script>
   <script src="js/workspace/prospects.api.js" defer></script>
@@ -439,6 +447,17 @@
               <div class="staff-work-panel-body flush">
                 <section data-intelligence-workspace aria-label="Science Radar">
                   <p class="muted-text">Cargando Science Radar...</p>
+                </section>
+              </div>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="dominican-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Dominican Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Dominican Intelligence">
+            <section class="module-surface staff-work-panel active">
+              <div class="staff-work-panel-body flush">
+                <section data-dominican-intelligence-workspace aria-label="Dominican Intelligence">
+                  <p class="muted-text">Cargando Dominican Intelligence...</p>
                 </section>
               </div>
             </section>
