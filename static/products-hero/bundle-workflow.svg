@@ -1,36 +1,485 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="65 105 530 250"
+  fill="none"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">Complete EIS workflow service</title>
+  <desc id="desc">
+    Clean SVG infographic showing a complete EIS workflow service:
+    sample setup, AquaSpecter EIS measurement, impedance analysis, and actionable report.
+  </desc>
+
   <style>
-    .packet{animation:packetA 4.2s linear infinite}
-    .curve{animation:curveA 4.8s ease-in-out infinite}
-    .fill{animation:fillA 4.8s ease-in-out infinite;transform-origin:left center;transform-box:fill-box}
-    .check{animation:checkA 3s ease-in-out infinite}
-    @keyframes packetA{0%{transform:translateX(0);opacity:.15}20%{opacity:1}100%{transform:translateX(58px);opacity:.15}}
-    @keyframes curveA{0%,100%{opacity:.56}50%{opacity:1}}
-    @keyframes fillA{0%,100%{transform:scaleX(.62)}50%{transform:scaleX(1)}}
-    @keyframes checkA{0%,100%{opacity:.38}50%{opacity:1}}
-    @media (prefers-reduced-motion: reduce){.packet,.curve,.fill,.check{animation:none!important}}
+    :root{
+      --ink-1:#9bb2ca;
+      --ink-2:#5f7e9e;
+      --ink-3:#324a63;
+
+      --blue-0:#f8fbff;
+      --blue-1:#dbeafe;
+      --blue-2:#93c5fd;
+      --blue-3:#60a5fa;
+      --blue-4:#2563eb;
+
+      --amber-1:#fde68a;
+      --amber-2:#f59e0b;
+
+      --panel-fill:rgba(255,255,255,.95);
+      --panel-stroke:rgba(50,74,99,.14);
+      --grid:rgba(95,126,158,.08);
+    }
+
+    .label{
+      font:600 10px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-2);
+      letter-spacing:.06px;
+    }
+
+    .label-strong{
+      font:700 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-3);
+      letter-spacing:.06px;
+    }
+
+    .small{
+      font:600 8.7px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:rgba(95,126,158,.78);
+      letter-spacing:.03px;
+    }
+
+    .tiny{
+      font:700 7.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:rgba(95,126,158,.72);
+      letter-spacing:.03px;
+    }
+
+    .step{
+      font:800 8px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:#ffffff;
+      letter-spacing:.04px;
+    }
+
+    .module{
+      fill:var(--panel-fill);
+      stroke:var(--panel-stroke);
+      stroke-width:1.5;
+      filter:url(#shadow-soft);
+    }
+
+    .module-dark{
+      fill:#0f172a;
+      filter:url(#shadow-soft);
+    }
+
+    .chip{
+      fill:#2563eb;
+      opacity:.95;
+    }
+
+    .chip.amber{
+      fill:#f59e0b;
+    }
+
+    .screen{
+      fill:#eff6ff;
+      stroke:#d8e3ef;
+      stroke-width:1.1;
+    }
+
+    .screen-track{
+      stroke:#d7e2ee;
+      stroke-width:2.6;
+      stroke-linecap:round;
+    }
+
+    .screen-fill-blue{
+      stroke:var(--blue-4);
+      stroke-width:2.6;
+      stroke-linecap:round;
+      transform-origin:left center;
+      transform-box:fill-box;
+      animation:screenMove 4.8s ease-in-out infinite;
+    }
+
+    .screen-fill-amber{
+      stroke:var(--amber-2);
+      stroke-width:2.6;
+      stroke-linecap:round;
+      transform-origin:left center;
+      transform-box:fill-box;
+      animation:screenMove 4.8s ease-in-out infinite;
+      animation-delay:-1.1s;
+    }
+
+    .connector{
+      fill:none;
+      stroke:rgba(95,126,158,.24);
+      stroke-width:2.2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:4 10;
+      animation:flow 7.4s linear infinite;
+    }
+
+    .arrow-head{
+      fill:rgba(95,126,158,.42);
+    }
+
+    .cell{
+      fill:#ffffff;
+      stroke:#bfd7ee;
+      stroke-width:2.2;
+    }
+
+    .liquid{
+      fill:url(#liquid-fill);
+    }
+
+    .liquid-surface{
+      fill:none;
+      stroke:rgba(37,99,235,.26);
+      stroke-width:1.6;
+      stroke-linecap:round;
+    }
+
+    .electrode{
+      fill:url(#electrode-fill);
+      stroke:#8aa4bf;
+      stroke-width:.95;
+      opacity:.86;
+    }
+
+    .port{
+      fill:#ffffff;
+      stroke:#8aa4bf;
+      stroke-width:1.1;
+    }
+
+    .axis{
+      stroke:rgba(95,126,158,.24);
+      stroke-width:1.05;
+      stroke-linecap:round;
+    }
+
+    .grid{
+      stroke:var(--grid);
+      stroke-width:1;
+    }
+
+    .nyquist-shadow{
+      fill:none;
+      stroke:rgba(37,99,235,.10);
+      stroke-width:6;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .nyquist-main{
+      fill:none;
+      stroke:var(--blue-4);
+      stroke-width:2.4;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:120;
+      stroke-dashoffset:120;
+      animation:drawCurve 5.4s ease-in-out infinite;
+    }
+
+    .nyquist-tail{
+      fill:none;
+      stroke:var(--amber-2);
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:80;
+      stroke-dashoffset:80;
+      animation:drawCurve 5.4s ease-in-out infinite;
+      animation-delay:-.7s;
+    }
+
+    .bode-blue{
+      fill:none;
+      stroke:var(--blue-4);
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      animation:pulse 4.8s ease-in-out infinite;
+    }
+
+    .bode-amber{
+      fill:none;
+      stroke:var(--amber-2);
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      animation:pulse 4.8s ease-in-out infinite;
+      animation-delay:-1.1s;
+    }
+
+    .metric-track{
+      fill:#e7edf4;
+    }
+
+    .metric-blue{
+      fill:var(--blue-4);
+      animation:metricPulse 4.8s ease-in-out infinite;
+      transform-origin:left center;
+      transform-box:fill-box;
+    }
+
+    .metric-amber{
+      fill:var(--amber-2);
+      animation:metricPulse 4.8s ease-in-out infinite;
+      animation-delay:-1.2s;
+      transform-origin:left center;
+      transform-box:fill-box;
+    }
+
+    .check-box{
+      fill:#ffffff;
+      stroke:#d7e2ee;
+      stroke-width:1.6;
+    }
+
+    .check{
+      fill:none;
+      stroke:#2563eb;
+      stroke-width:2.2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      animation:pulse 3.8s ease-in-out infinite;
+    }
+
+    .divider{
+      stroke:rgba(50,74,99,.10);
+      stroke-width:1;
+    }
+
+    @keyframes pulse{
+      0%,100%{ opacity:.58; }
+      50%{ opacity:1; }
+    }
+
+    @keyframes flow{
+      0%{ stroke-dashoffset:0; }
+      100%{ stroke-dashoffset:-64; }
+    }
+
+    @keyframes drawCurve{
+      0%{ stroke-dashoffset:120; opacity:.42; }
+      45%{ stroke-dashoffset:0; opacity:1; }
+      100%{ stroke-dashoffset:0; opacity:.88; }
+    }
+
+    @keyframes metricPulse{
+      0%,100%{ transform:scaleX(.72); opacity:.76; }
+      50%{ transform:scaleX(1); opacity:1; }
+    }
+
+    @keyframes screenMove{
+      0%,100%{ transform:scaleX(.72) translateX(0); opacity:.82; }
+      50%{ transform:scaleX(1) translateX(2px); opacity:1; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .connector,
+      .screen-fill-blue,
+      .screen-fill-amber,
+      .nyquist-main,
+      .nyquist-tail,
+      .bode-blue,
+      .bode-amber,
+      .metric-blue,
+      .metric-amber,
+      .check{
+        animation:none !important;
+        stroke-dashoffset:0;
+      }
+    }
   </style>
-  <path d="M170 236H276" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
-  <path d="M380 236H490" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 10"/>
-  <circle cx="186" cy="236" r="6" fill="#2563eb" class="packet"/>
-  <circle cx="396" cy="236" r="6" fill="#2563eb" class="packet" style="animation-delay:-2s"/>
-  <rect x="70" y="148" width="108" height="176" rx="28" fill="#0f172a"/>
-  <rect x="92" y="170" width="64" height="50" rx="14" fill="#eff6ff"/>
-  <path d="M100 258H148" stroke="#cfd8e3" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="124" cy="290" r="18" fill="#111827"/>
-  <circle cx="124" cy="290" r="6" fill="#94a3b8"/>
-  <rect x="276" y="122" width="112" height="228" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
-  <rect x="300" y="160" width="64" height="86" rx="16" fill="#eef5ff"/>
-  <path d="M308 228C318 206 330 194 342 194C354 194 365 206 374 228" stroke="#2563eb" stroke-width="6" stroke-linecap="round" class="curve"/>
-  <path d="M308 228C320 218 331 214 343 214C355 214 366 218 374 228" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" class="curve"/>
-  <rect x="308" y="276" width="56" height="10" rx="5" fill="#dbe4ee"/>
-  <rect x="308" y="276" width="56" height="10" rx="5" fill="#2563eb" class="fill"/>
-  <rect x="492" y="138" width="116" height="196" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
-  <rect x="516" y="170" width="68" height="34" rx="14" fill="#fff" stroke="#d7e2ee" stroke-width="3"/>
-  <path d="M530 188L538 196L552 180" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="check"/>
-  <rect x="516" y="222" width="68" height="34" rx="14" fill="#fff" stroke="#d7e2ee" stroke-width="3"/>
-  <path d="M530 240L538 248L552 232" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="check" style="animation-delay:-1.2s"/>
-  <rect x="516" y="286" width="54" height="10" rx="5" fill="#dbe4ee"/>
-  <rect x="516" y="286" width="54" height="10" rx="5" fill="#2563eb" class="fill" style="animation-delay:-1.3s"/>
+
+  <defs>
+    <linearGradient id="liquid-fill" x1="0" y1="160" x2="0" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="62%" stop-color="#eaf3ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+
+    <linearGradient id="electrode-fill" x1="0" y1="145" x2="0" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+
+    <filter id="shadow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#93c5fd" flood-opacity=".11"/>
+    </filter>
+  </defs>
+
+  <!-- 01 Sample setup -->
+  <g>
+    <rect x="76" y="140" width="108" height="162" rx="24" class="module"/>
+
+    <rect x="92" y="156" width="22" height="14" rx="7" class="chip"/>
+    <text x="99" y="166" class="step">01</text>
+
+    <text x="94" y="190" class="label-strong">Sample setup</text>
+    <text x="94" y="204" class="small">cell + electrodes</text>
+
+    <rect x="104" y="224" width="54" height="50" rx="14" class="cell"/>
+    <path
+      d="M110 242
+         C120 238 129 244 139 240
+         C147 237 153 240 154 239
+         V268H110Z"
+      class="liquid"
+    />
+    <path
+      d="M110 242
+         C120 238 129 244 139 240
+         C147 237 153 240 154 239"
+      class="liquid-surface"
+    />
+
+    <rect x="116" y="217" width="5" height="48" rx="2.5" class="electrode"/>
+    <rect x="130" y="221" width="4" height="38" rx="2" class="electrode" opacity=".68"/>
+    <rect x="144" y="217" width="5" height="48" rx="2.5" class="electrode"/>
+
+    <circle cx="118.5" cy="217" r="2.1" class="port"/>
+    <circle cx="132" cy="221" r="1.8" class="port"/>
+    <circle cx="146.5" cy="217" r="2.1" class="port"/>
+
+    <text x="100" y="289" class="tiny">prepared interface</text>
+  </g>
+
+  <!-- connector 01-02 -->
+  <g>
+    <path
+      d="M184 222
+         C198 222 209 222 222 222"
+      class="connector"
+    />
+    <path d="M224 222L216 217V227Z" class="arrow-head"/>
+  </g>
+
+  <!-- 02 AquaSpecter EIS measure -->
+  <g>
+    <rect x="224" y="128" width="112" height="186" rx="24" class="module-dark"/>
+
+    <rect x="242" y="144" width="22" height="14" rx="7" class="chip amber"/>
+    <text x="249" y="154" class="step">02</text>
+
+    <text x="242" y="177" class="label-strong" fill="#ffffff">AquaSpecter</text>
+    <text x="242" y="191" class="tiny" fill="#9bb2ca">EIS sweep</text>
+
+    <rect x="244" y="210" width="72" height="38" rx="10" class="screen"/>
+    <path d="M254 223H305" class="screen-track"/>
+    <path d="M254 223H292" class="screen-fill-blue"/>
+    <path d="M254 234H305" class="screen-track"/>
+    <path d="M254 234H283" class="screen-fill-amber"/>
+
+    <circle cx="254" cy="270" r="4.2" fill="#22c55e"/>
+    <circle cx="306" cy="270" r="4.2" fill="#f59e0b"/>
+
+    <circle cx="280" cy="292" r="15" fill="#111827"/>
+    <circle cx="280" cy="292" r="5" fill="#94a3b8"/>
+  </g>
+
+  <!-- connector 02-03 -->
+  <g>
+    <path
+      d="M336 222
+         C351 222 360 222 374 222"
+      class="connector"
+    />
+    <path d="M376 222L368 217V227Z" class="arrow-head"/>
+  </g>
+
+  <!-- 03 Analysis pipeline -->
+  <g>
+    <rect x="376" y="128" width="112" height="186" rx="24" class="module"/>
+
+    <rect x="394" y="144" width="22" height="14" rx="7" class="chip"/>
+    <text x="401" y="154" class="step">03</text>
+
+    <text x="394" y="177" class="label-strong">Analysis</text>
+    <text x="394" y="191" class="small">model + fit</text>
+
+    <text x="394" y="209" class="tiny">Nyquist</text>
+    <path d="M396 259H468" class="axis"/>
+    <path d="M396 259V216" class="axis"/>
+    <path d="M408 246H466" class="grid"/>
+    <path d="M408 233H466" class="grid"/>
+
+    <path
+      d="M401 258
+         C408 232 421 222 434 222
+         C448 222 459 238 464 253
+         C466 258 468 259 470 259"
+      class="nyquist-shadow"
+    />
+    <path
+      d="M401 258
+         C408 232 421 222 434 222
+         C448 222 459 238 464 253
+         C466 258 468 259 470 259"
+      class="nyquist-main"
+    />
+    <path
+      d="M401 258
+         C418 255 442 255 470 259"
+      class="nyquist-tail"
+    />
+
+    <text x="394" y="279" class="tiny">Bode</text>
+    <path
+      d="M424 281
+         C435 281 445 283 455 287
+         C462 290 468 292 474 293"
+      class="bode-blue"
+    />
+    <path
+      d="M424 298
+         C435 295 445 291 455 287
+         C462 284 468 282 474 281"
+      class="bode-amber"
+    />
+  </g>
+
+  <!-- connector 03-04 -->
+  <g>
+    <path
+      d="M488 222
+         C502 222 511 222 524 222"
+      class="connector"
+    />
+    <path d="M526 222L518 217V227Z" class="arrow-head"/>
+  </g>
+
+  <!-- 04 Actionable report -->
+  <g>
+    <rect x="526" y="132" width="66" height="178" rx="22" class="module"/>
+
+    <rect x="540" y="148" width="22" height="14" rx="7" class="chip"/>
+    <text x="547" y="158" class="step">04</text>
+
+    <text x="540" y="182" class="label-strong">Report</text>
+    <line x1="540" y1="190" x2="578" y2="190" class="divider"/>
+
+    <rect x="540" y="203" width="38" height="24" rx="9" class="check-box"/>
+    <path d="M551 216L557 222L568 209" class="check"/>
+
+    <rect x="540" y="237" width="38" height="24" rx="9" class="check-box"/>
+    <path d="M551 250L557 256L568 243" class="check" style="animation-delay:-1.1s"/>
+
+    <text x="540" y="275" class="tiny">diagnosis</text>
+
+    <rect x="540" y="283" width="38" height="6" rx="3" class="metric-track"/>
+    <rect x="540" y="283" width="30" height="6" rx="3" class="metric-blue"/>
+
+    <rect x="540" y="294" width="38" height="6" rx="3" class="metric-track"/>
+    <rect x="540" y="294" width="23" height="6" rx="3" class="metric-amber"/>
+  </g>
 </svg>

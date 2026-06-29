@@ -1,40 +1,484 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" fill="none">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="70 100 525 275"
+  fill="none"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">DLS flow: laser, scattering sample, detector, autocorrelation and size distribution</title>
+  <desc id="desc">
+    SVG illustrating the flow of a dynamic light scattering measurement:
+    a laser enters a particle suspension, scattered light is detected at an angle,
+    and the signal is transformed into an autocorrelation curve and a particle size distribution.
+  </desc>
+
   <style>
-    .beam{animation:beamA 3.2s ease-in-out infinite}
-    .dot{animation:dotA 4.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
-    .bar{animation:barA 5s ease-in-out infinite;transform-origin:center bottom;transform-box:fill-box}
-    @keyframes beamA{0%,100%{opacity:.46}50%{opacity:1}}
-    @keyframes dotA{0%,100%{transform:translate(0,0)}50%{transform:translate(2px,-3px)}}
-    @keyframes barA{0%,100%{transform:scaleY(.76)}50%{transform:scaleY(1)}}
-    @media (prefers-reduced-motion: reduce){.beam,.dot,.bar{animation:none!important}}
+    :root{
+      --ink-0:#d9e5f1;
+      --ink-1:#9bb2ca;
+      --ink-2:#5f7e9e;
+      --ink-3:#324a63;
+
+      --blue-0:#f8fbff;
+      --blue-1:#dbeafe;
+      --blue-2:#93c5fd;
+      --blue-3:#60a5fa;
+      --blue-4:#2563eb;
+      --blue-5:#1e3a8a;
+
+      --amber-1:#fde68a;
+      --amber-2:#f59e0b;
+
+      --panel-fill:rgba(255,255,255,.90);
+      --panel-stroke:rgba(50,74,99,.14);
+      --grid:rgba(95,126,158,.08);
+    }
+
+    .label{
+      font:600 10.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-2);
+      letter-spacing:.08px;
+    }
+
+    .label-strong{
+      font:700 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:var(--ink-3);
+      letter-spacing:.08px;
+    }
+
+    .small{
+      font:600 9px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      fill:rgba(95,126,158,.78);
+      letter-spacing:.05px;
+    }
+
+    .source-body{
+      fill:#0f172a;
+    }
+
+    .beam-core{
+      stroke:url(#beam-gradient);
+      stroke-width:10;
+      stroke-linecap:round;
+      animation:beamPulse 3.6s ease-in-out infinite;
+    }
+
+    .beam-soft{
+      stroke:url(#beam-soft-gradient);
+      stroke-width:18;
+      stroke-linecap:round;
+      opacity:.55;
+      animation:beamPulse 3.6s ease-in-out infinite;
+    }
+
+    .cuvette{
+      fill:#ffffff;
+      stroke:#bfd7ee;
+      stroke-width:3;
+      filter:url(#shadow-soft);
+    }
+
+    .liquid{
+      fill:url(#liquid-fill);
+    }
+
+    .sample-halo{
+      fill:rgba(37,99,235,.08);
+      filter:url(#blur-soft);
+      animation:haloPulse 4.8s ease-in-out infinite;
+      transform-origin:center;
+      transform-box:fill-box;
+    }
+
+    .particle{
+      fill:url(#particle-fill);
+      stroke:rgba(50,74,99,.08);
+      stroke-width:.5;
+      filter:url(#particle-shadow);
+      transform-origin:center;
+      transform-box:fill-box;
+    }
+
+    .particle.alt{
+      fill:url(#particle-fill-alt);
+    }
+
+    .drift-a{ animation:driftA 6.2s ease-in-out infinite; }
+    .drift-b{ animation:driftB 5.5s ease-in-out infinite; }
+    .drift-c{ animation:driftC 7.1s ease-in-out infinite; }
+
+    .scatter-soft{
+      stroke:rgba(37,99,235,.12);
+      stroke-width:14;
+      stroke-linecap:round;
+    }
+
+    .scatter-line{
+      stroke:rgba(37,99,235,.88);
+      stroke-width:3;
+      stroke-linecap:round;
+      stroke-dasharray:4 8;
+      animation:scatterFlow 5.8s linear infinite;
+    }
+
+    .scatter-line.secondary{
+      stroke:rgba(96,165,250,.78);
+      stroke-dasharray:3 10;
+      animation-duration:6.8s;
+    }
+
+    .detector{
+      fill:#ffffff;
+      stroke:#bfd7ee;
+      stroke-width:3;
+      filter:url(#shadow-soft);
+    }
+
+    .detector-lens{
+      fill:url(#detector-lens-fill);
+      stroke:#93c5fd;
+      stroke-width:2;
+    }
+
+    .detector-core{
+      fill:#2563eb;
+      animation:detectorPulse 3.2s ease-in-out infinite;
+      transform-origin:center;
+      transform-box:fill-box;
+    }
+
+    .connector{
+      fill:none;
+      stroke:rgba(95,126,158,.24);
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:3 9;
+      animation:dataFlow 8s linear infinite;
+    }
+
+    .panel{
+      fill:var(--panel-fill);
+      stroke:var(--panel-stroke);
+      stroke-width:1.5;
+      filter:url(#shadow-panel);
+    }
+
+    .axis{
+      stroke:rgba(95,126,158,.24);
+      stroke-width:1.2;
+      stroke-linecap:round;
+    }
+
+    .grid{
+      stroke:var(--grid);
+      stroke-width:1;
+    }
+
+    .curve-shadow{
+      fill:none;
+      stroke:rgba(37,99,235,.10);
+      stroke-width:7;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .curve-main{
+      fill:none;
+      stroke:#2563eb;
+      stroke-width:2.6;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:210;
+      stroke-dashoffset:210;
+      animation:drawCurve 5.5s ease-in-out infinite;
+    }
+
+    .dist-fill{
+      fill:url(#dist-fill);
+      opacity:.56;
+    }
+
+    .dist-curve{
+      fill:none;
+      stroke:#2563eb;
+      stroke-width:2.6;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:190;
+      stroke-dashoffset:190;
+      animation:drawCurve 5.5s ease-in-out infinite;
+      animation-delay:-.7s;
+    }
+
+    .dist-curve.accent{
+      stroke:#60a5fa;
+      stroke-width:1.6;
+      opacity:.82;
+    }
+
+    .panel-divider{
+      stroke:rgba(50,74,99,.10);
+      stroke-width:1;
+    }
+
+    @keyframes beamPulse{
+      0%,100%{ opacity:.52; }
+      50%{ opacity:1; }
+    }
+
+    @keyframes haloPulse{
+      0%,100%{ opacity:.72; transform:scale(1); }
+      50%{ opacity:1; transform:scale(1.04); }
+    }
+
+    @keyframes driftA{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(1.6px,-2.4px); }
+    }
+
+    @keyframes driftB{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(-2px,1.8px); }
+    }
+
+    @keyframes driftC{
+      0%,100%{ transform:translate(0,0); }
+      50%{ transform:translate(1.3px,2.2px); }
+    }
+
+    @keyframes scatterFlow{
+      0%{ stroke-dashoffset:0; }
+      100%{ stroke-dashoffset:-80; }
+    }
+
+    @keyframes dataFlow{
+      0%{ stroke-dashoffset:0; }
+      100%{ stroke-dashoffset:-72; }
+    }
+
+    @keyframes detectorPulse{
+      0%,100%{ opacity:.70; transform:scale(1); }
+      50%{ opacity:1; transform:scale(1.12); }
+    }
+
+    @keyframes drawCurve{
+      0%{ stroke-dashoffset:210; opacity:.42; }
+      45%{ stroke-dashoffset:0; opacity:1; }
+      100%{ stroke-dashoffset:0; opacity:.86; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .beam-core,
+      .beam-soft,
+      .sample-halo,
+      .particle,
+      .scatter-line,
+      .detector-core,
+      .connector,
+      .curve-main,
+      .dist-curve{
+        animation:none !important;
+        stroke-dashoffset:0;
+      }
+    }
   </style>
+
   <defs>
-    <linearGradient id="dls-beam" x1="198" y1="224" x2="344" y2="224" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#f59e0b" stop-opacity="0"/>
-      <stop offset=".34" stop-color="#f59e0b" stop-opacity=".95"/>
-      <stop offset="1" stop-color="#2563eb" stop-opacity=".88"/>
+    <linearGradient id="beam-gradient" x1="174" y1="221" x2="250" y2="221" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#f59e0b" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity=".92"/>
     </linearGradient>
+
+    <linearGradient id="beam-soft-gradient" x1="174" y1="221" x2="250" y2="221" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#f59e0b" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#93c5fd" stop-opacity=".34"/>
+    </linearGradient>
+
+    <radialGradient id="liquid-fill" cx="35%" cy="18%" r="90%">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="58%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
+    </radialGradient>
+
+    <radialGradient id="particle-fill" cx="35%" cy="25%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="68%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
+    </radialGradient>
+
+    <radialGradient id="particle-fill-alt" cx="35%" cy="25%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#e7f1fb"/>
+      <stop offset="100%" stop-color="#c2d7ea"/>
+    </radialGradient>
+
+    <radialGradient id="detector-lens-fill" cx="35%" cy="25%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="62%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </radialGradient>
+
+    <linearGradient id="dist-fill" x1="445" y1="258" x2="560" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#dbeafe" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity=".22"/>
+    </linearGradient>
+
+    <filter id="shadow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#93c5fd" flood-opacity=".12"/>
+    </filter>
+
+    <filter id="shadow-panel" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2563eb" flood-opacity=".08"/>
+    </filter>
+
+    <filter id="particle-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy=".7" stdDeviation=".5" flood-color="#324a63" flood-opacity=".10"/>
+    </filter>
+
+    <filter id="blur-soft" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
   </defs>
-  <rect x="88" y="146" width="96" height="38" rx="18" fill="#0f172a"/>
-  <rect x="104" y="224" width="30" height="112" rx="14" fill="#e2e8f0"/>
-  <rect x="156" y="206" width="42" height="148" rx="20" fill="#dbeafe"/>
-  <rect x="164" y="224" width="26" height="94" rx="13" fill="#fff"/>
-  <path d="M134 224H156" stroke="#9aa9bb" stroke-width="6" stroke-linecap="round"/>
-  <path d="M198 224H344" stroke="url(#dls-beam)" stroke-width="14" stroke-linecap="round" class="beam"/>
-  <circle cx="372" cy="224" r="36" fill="#dbeafe" fill-opacity=".5"/>
-  <rect x="356" y="176" width="30" height="96" rx="14" fill="#fff" stroke="#93c5fd" stroke-width="4"/>
-  <circle cx="372" cy="208" r="7" fill="#2563eb" class="dot"/>
-  <circle cx="384" cy="224" r="6" fill="#60a5fa" class="dot" style="animation-delay:-1s"/>
-  <circle cx="370" cy="238" r="5" fill="#93c5fd" class="dot" style="animation-delay:-1.8s"/>
-  <rect x="420" y="128" width="138" height="184" rx="28" fill="#f7fbff" stroke="#d7e2ee" stroke-width="3"/>
-  <path d="M444 278H534" stroke="#e1e8f0" stroke-width="8" stroke-linecap="round"/>
-  <path d="M458 280V164" stroke="#e1e8f0" stroke-width="8" stroke-linecap="round"/>
-  <path d="M458 180C474 188 490 201 506 220C516 233 526 244 534 248" stroke="#2563eb" stroke-width="7" stroke-linecap="round" class="beam"/>
+
+  <!-- laser source -->
   <g>
-    <rect x="444" y="336" width="16" height="20" rx="6" fill="#bfdbfe" class="bar"/>
-    <rect x="470" y="320" width="16" height="36" rx="6" fill="#93c5fd" class="bar" style="animation-delay:-.8s"/>
-    <rect x="496" y="298" width="16" height="58" rx="6" fill="#60a5fa" class="bar" style="animation-delay:-1.6s"/>
-    <rect x="522" y="314" width="16" height="42" rx="6" fill="#2563eb" class="bar" style="animation-delay:-.4s"/>
+    <rect x="86" y="195" width="86" height="52" rx="16" class="source-body"/>
+    <rect x="100" y="207" width="42" height="28" rx="8" fill="#1e293b"/>
+    <circle cx="160" cy="221" r="13" fill="#ffffff" stroke="#93c5fd" stroke-width="3"/>
+    <circle cx="160" cy="221" r="5.5" fill="#f59e0b"/>
+    <text x="95" y="282" class="label">Laser source</text>
+  </g>
+
+  <!-- incident beam -->
+  <path d="M174 221H250" class="beam-soft"/>
+  <path d="M174 221H250" class="beam-core"/>
+
+  <!-- sample -->
+  <g>
+    <ellipse cx="278" cy="221" rx="56" ry="72" class="sample-halo"/>
+    <rect x="250" y="155" width="56" height="132" rx="16" class="cuvette"/>
+    <rect x="257" y="175" width="42" height="92" rx="12" class="liquid"/>
+
+    <!-- particles in suspension -->
+    <circle cx="269" cy="191" r="5.2" class="particle drift-a"/>
+    <circle cx="283" cy="186" r="4.4" class="particle alt drift-b"/>
+    <circle cx="289" cy="198" r="3.8" class="particle drift-c"/>
+    <circle cx="273" cy="206" r="4.8" class="particle alt drift-b"/>
+    <circle cx="291" cy="211" r="4.4" class="particle drift-a"/>
+    <circle cx="265" cy="220" r="3.9" class="particle drift-c"/>
+    <circle cx="282" cy="223" r="5.1" class="particle alt drift-a"/>
+    <circle cx="294" cy="229" r="4.1" class="particle drift-b"/>
+    <circle cx="272" cy="235" r="3.7" class="particle alt drift-c"/>
+    <circle cx="286" cy="241" r="5.3" class="particle drift-a"/>
+    <circle cx="266" cy="249" r="4.2" class="particle alt drift-b"/>
+    <circle cx="292" cy="255" r="3.8" class="particle drift-c"/>
+    <circle cx="279" cy="259" r="4.5" class="particle alt drift-a"/>
+
+    <text x="243" y="323" class="label">Sample</text>
+    <text x="234" y="338" class="small">Brownian motion</text>
+  </g>
+
+  <!-- scattered light -->
+  <g>
+    <path d="M280 214C301 192 323 178 355 168" class="scatter-soft"/>
+    <path d="M280 214C301 192 323 178 355 168" class="scatter-line"/>
+
+    <path d="M281 223C304 206 327 193 358 177" class="scatter-soft" opacity=".55"/>
+    <path d="M281 223C304 206 327 193 358 177" class="scatter-line secondary"/>
+
+    <path d="M281 232C306 223 331 213 360 189" class="scatter-soft" opacity=".42"/>
+    <path d="M281 232C306 223 331 213 360 189" class="scatter-line secondary" style="animation-delay:-1.1s"/>
+  </g>
+
+  <!-- detector -->
+  <g>
+    <text x="320" y="126" class="label">Detector</text>
+    <text x="306" y="138" class="small">Scattered intensity</text>
+
+    <g transform="rotate(-14 364 174)">
+      <rect x="342" y="145" width="44" height="58" rx="18" class="detector"/>
+      <circle cx="364" cy="174" r="12" class="detector-lens"/>
+      <circle cx="364" cy="174" r="4.6" class="detector-core"/>
+    </g>
+  </g>
+
+  <!-- connector to analytics -->
+  <path
+    d="M378 173
+       C391 175 401 180 409 188
+       C417 196 425 201 433 206"
+    class="connector"
+  />
+
+  <!-- analysis panel -->
+  <g>
+    <rect x="420" y="130" width="148" height="220" rx="22" class="panel"/>
+
+    <text x="438" y="154" class="label-strong">DLS analysis</text>
+    <line x1="438" y1="162" x2="550" y2="162" class="panel-divider"/>
+
+    <!-- autocorrelation block -->
+    <text x="438" y="178" class="label">Autocorrelation</text>
+    <text x="544" y="178" text-anchor="end" class="small">g²(τ)</text>
+
+    <path d="M440 244H548" class="axis"/>
+    <path d="M440 244V188" class="axis"/>
+    <path d="M456 230H544" class="grid"/>
+    <path d="M456 214H544" class="grid"/>
+
+    <path
+      d="M444 196
+         C459 196 469 198 480 204
+         C492 212 500 221 510 228
+         C521 235 533 240 546 242"
+      class="curve-shadow"
+    />
+    <path
+      d="M444 196
+         C459 196 469 198 480 204
+         C492 212 500 221 510 228
+         C521 235 533 240 546 242"
+      class="curve-main"
+    />
+
+    <!-- size distribution block -->
+    <text x="438" y="270" class="label">Size distribution</text>
+    <text x="544" y="270" text-anchor="end" class="small">nm</text>
+
+    <path d="M440 316H548" class="axis"/>
+    <path d="M440 316V280" class="axis"/>
+    <path d="M456 302H544" class="grid"/>
+
+    <path
+      d="M440 316
+         C454 316 463 314 472 309
+         C482 303 489 293 497 289
+         C506 285 514 286 523 293
+         C532 300 539 309 548 316
+         Z"
+      class="dist-fill"
+    />
+    <path
+      d="M442 316
+         C456 316 465 314 474 308
+         C484 301 491 291 499 287
+         C508 283 516 285 525 292
+         C534 299 541 309 548 316"
+      class="dist-curve"
+    />
+    <path
+      d="M442 316
+         C458 315 470 309 479 299
+         C488 290 497 286 506 288
+         C518 291 529 302 548 316"
+      class="dist-curve accent"
+    />
+
+    <text x="438" y="334" class="small">Hydrodynamic size from</text>
+    <text x="438" y="346" class="small">fluctuating scattering</text>
   </g>
 </svg>
