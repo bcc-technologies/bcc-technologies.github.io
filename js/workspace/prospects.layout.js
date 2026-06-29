@@ -34,10 +34,14 @@
             <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button></div>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
-          <div class="prospects-directory-layout">
-            <aside class="prospects-directory-list" data-prospects-directory-list aria-label="Lista de prospectos"></aside>
-            <article class="prospect-profile-panel"><form class="prospects-form" data-prospect-form></form></article>
-          </div>
+          <section class="prospects-directory-workspace" aria-label="Directorio comercial">
+            <div class="prospects-directory-controls" data-directory-controls></div>
+            <div class="prospects-directory-layout">
+              <section class="prospects-directory-list" data-prospects-directory-list aria-label="Directorio de prospectos"></section>
+              <aside class="prospect-directory-detail" data-directory-detail aria-label="Ficha compacta del prospecto"></aside>
+              <article class="prospect-profile-panel" data-directory-editor><form class="prospects-form" data-prospect-form></form></article>
+            </div>
+          </section>
           </div>
         </section>
         <section id="prospects-panel-communication" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-communication" data-prospects-panel="communication" hidden>
@@ -70,7 +74,14 @@
             <span class="status-dot" data-prospect-template-count>0</span>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
-          <div class="prospects-template-layout"><form class="prospects-form prospects-form-compact" data-template-form></form><div class="prospect-template-list" data-template-list></div></div>
+          <section class="prospects-template-workspace" aria-label="Biblioteca de plantillas">
+            <div class="prospects-template-controls" data-template-controls></div>
+            <div class="prospects-template-layout">
+              <section class="prospect-template-library" data-template-list aria-label="Biblioteca de plantillas"></section>
+              <aside class="prospect-template-preview" data-template-preview aria-label="Vista previa de plantilla"></aside>
+              <form class="prospects-form prospects-form-compact prospect-template-editor" data-template-form></form>
+            </div>
+          </section>
           </div>
         </section>
         <section id="prospects-panel-intelligence" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-intelligence" data-prospects-panel="intelligence" hidden>

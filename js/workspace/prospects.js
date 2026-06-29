@@ -11,10 +11,18 @@
   let activities = [];
   let selectedProspectId = "";
   let selectedTemplateId = "";
+  let templateDraft = null;
+  let templateSearchTerm = "";
+  let templateStatusFilter = "all";
+  let templateCategoryFilter = "";
   let selectedEmailId = "";
   let selectedActivityId = "";
   let searchTerm = "";
   let phaseFilter = "";
+  let directoryStatusFilter = "all";
+  let directorySourceFilter = "";
+  let directorySort = "priority";
+  let directoryMode = "view";
   let activeTab = "pipeline";
 
   function init(account) {
@@ -61,6 +69,7 @@
         selectedProspectId = "";
         selectedEmailId = "";
         selectedActivityId = "";
+        directoryMode = "edit";
         renderAll();
         activateProspectsTab("directory");
       });
@@ -68,7 +77,7 @@
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
     root.querySelector("[data-prospects-directory-list]")?.addEventListener("click", handleDirectoryClick);
     root.addEventListener("click", handleProspectJump);
-    root.querySelector("[data-template-list]")?.addEventListener("click", handleTemplateClick);
+    root.addEventListener("click", handleTemplateClick);
     root.querySelector("[data-prospect-email-section]")?.addEventListener("click", handleEmailClick);
     root.querySelector("[data-activity-list]")?.addEventListener("click", handleActivityClick);
     root.querySelector("[data-prospect-form]")?.addEventListener("submit", saveProspect);
@@ -310,18 +319,148 @@
 
   function renderDirectoryList() {
     const list = root.querySelector("[data-prospects-directory-list]");
-    if (!list) return;
-    const currentItems = sortedProspects(filteredProspects());
-    list.innerHTML = `
-      <div class="prospects-directory-head">
-        <div><h3>Prospectos</h3><p>${number(currentItems.length)} resultado(s)</p></div>
-        <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Nuevo</button>
+    const controls = root.querySelector("[data-directory-controls]");
+    const detail = root.querySelector("[data-directory-detail]");
+    if (!list || !controls || !detail) return;
+    const currentItems = directoryProspects();
+    const selected = selectedProspect();
+    const sources = Array.from(new Set(prospects.map(item => String(item.source || "Sin fuente").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+    controls.innerHTML = `
+      <div class="prospects-directory-filterbar">
+        <select data-directory-status-filter aria-label="Filtrar por seguimiento">
+          <option value="all" ${directoryStatusFilter === "all" ? "selected" : ""}>Todos los seguimientos</option>
+          <option value="overdue" ${directoryStatusFilter === "overdue" ? "selected" : ""}>Vencidos</option>
+          <option value="today" ${directoryStatusFilter === "today" ? "selected" : ""}>Para hoy</option>
+          <option value="upcoming" ${directoryStatusFilter === "upcoming" ? "selected" : ""}>Próximos</option>
+          <option value="no_contact" ${directoryStatusFilter === "no_contact" ? "selected" : ""}>Sin contacto</option>
+          <option value="closed" ${directoryStatusFilter === "closed" ? "selected" : ""}>Cerrados</option>
+        </select>
+        <select data-directory-source-filter aria-label="Filtrar por fuente">
+          <option value="">Todas las fuentes</option>
+          ${sources.map(source => `<option value="${escapeAttr(source)}" ${source === directorySourceFilter ? "selected" : ""}>${escapeHtml(source)}</option>`).join("")}
+        </select>
+        <select data-directory-sort aria-label="Ordenar prospectos">
+          <option value="priority" ${directorySort === "priority" ? "selected" : ""}>Prioridad</option>
+          <option value="follow_up" ${directorySort === "follow_up" ? "selected" : ""}>Próximo seguimiento</option>
+          <option value="last_contact" ${directorySort === "last_contact" ? "selected" : ""}>Último contacto</option>
+          <option value="value" ${directorySort === "value" ? "selected" : ""}>Valor estimado</option>
+          <option value="name" ${directorySort === "name" ? "selected" : ""}>Nombre</option>
+          <option value="company" ${directorySort === "company" ? "selected" : ""}>Empresa</option>
+        </select>
       </div>
-      <div class="prospect-list compact">
-        ${currentItems.length ? currentItems.map(item => prospectListItem(item)).join("") : `<div class="prospect-empty">No hay prospectos con estos filtros.</div>`}
+      <div class="prospects-directory-stats" aria-label="Resumen del directorio">
+        <span><strong>${number(currentItems.length)}</strong>Visibles</span>
+        <span><strong>${number(prospects.filter(item => prospectFollowStatus(item) === "overdue").length)}</strong>Vencidos</span>
+        <span><strong>${number(prospects.filter(item => prospectFollowStatus(item) === "no_contact").length)}</strong>Sin contacto</span>
       </div>
     `;
+
+    list.innerHTML = `
+      <div class="prospect-directory-table" role="table" aria-label="Prospectos filtrados">
+        <div class="prospect-directory-row prospect-directory-row-head" role="row">
+          <span>Prospecto</span><span>Empresa</span><span>Fase</span><span>Seguimiento</span><span>Valor</span><span></span>
+        </div>
+        ${currentItems.length ? currentItems.map(item => directoryRow(item)).join("") : `<div class="prospect-empty">No hay prospectos con estos filtros.</div>`}
+      </div>
+    `;
+
+    detail.innerHTML = selected ? directoryDetail(selected) : emptyProspectSummary();
+    bindDirectoryControls(controls);
     refreshIcons();
+  }
+
+  function bindDirectoryControls(controls) {
+    controls.querySelector("[data-directory-status-filter]")?.addEventListener("change", event => {
+      directoryStatusFilter = String(event.target.value || "all");
+      renderDirectoryList();
+    });
+    controls.querySelector("[data-directory-source-filter]")?.addEventListener("change", event => {
+      directorySourceFilter = String(event.target.value || "");
+      renderDirectoryList();
+    });
+    controls.querySelector("[data-directory-sort]")?.addEventListener("change", event => {
+      directorySort = String(event.target.value || "priority");
+      renderDirectoryList();
+    });
+  }
+
+  function directoryProspects() {
+    return filteredProspects()
+      .filter(item => {
+        const status = prospectFollowStatus(item);
+        if (directoryStatusFilter !== "all" && status !== directoryStatusFilter) return false;
+        if (directorySourceFilter && String(item.source || "Sin fuente").trim() !== directorySourceFilter) return false;
+        return true;
+      })
+      .slice()
+      .sort(directorySortComparator);
+  }
+
+  function directorySortComparator(left, right) {
+    if (directorySort === "follow_up") return nullableDate(left.nextFollowUpOn) - nullableDate(right.nextFollowUpOn);
+    if (directorySort === "last_contact") return nullableDate(right.lastContactAt) - nullableDate(left.lastContactAt);
+    if (directorySort === "value") return Number(right.valueEstimate || 0) - Number(left.valueEstimate || 0);
+    if (directorySort === "name") return String(left.fullName || "").localeCompare(String(right.fullName || ""));
+    if (directorySort === "company") return String(left.company || "").localeCompare(String(right.company || ""));
+    return sortedProspects([left, right])[0] === left ? -1 : 1;
+  }
+
+  function nullableDate(value) {
+    if (!value) return Number.MAX_SAFE_INTEGER;
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+  }
+
+  function directoryRow(item) {
+    const status = prospectFollowStatus(item);
+    return `
+      <button class="prospect-directory-row ${item.id === selectedProspectId ? "is-active" : ""} is-${escapeAttr(status)}" type="button" role="row" data-prospect-open="${escapeAttr(item.id)}">
+        <span><strong>${escapeHtml(item.fullName)}</strong><small>${escapeHtml(item.email || item.phone || "Sin contacto")}</small></span>
+        <span>${escapeHtml(item.company || "Sin empresa")}</span>
+        <span><em class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</em></span>
+        <span>${escapeHtml(nextActionLabel(item))}</span>
+        <span>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</span>
+        <span class="prospect-directory-actions"><i data-lucide="chevron-right"></i></span>
+      </button>
+    `;
+  }
+
+  function directoryDetail(item) {
+    const prospectEmails = emails.filter(email => email.prospectId === item.id);
+    const prospectActivities = activities.filter(activity => activity.prospectId === item.id);
+    return `
+      <div class="prospect-directory-detail-head">
+        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
+        <h3>${escapeHtml(item.fullName)}</h3>
+        <p>${escapeHtml(item.company || item.email || "Sin empresa")}</p>
+      </div>
+      <dl class="prospect-summary-grid">
+        <div><dt>Seguimiento</dt><dd>${escapeHtml(item.nextFollowUpOn ? formatDate(item.nextFollowUpOn) : "Sin fecha")}</dd></div>
+        <div><dt>Último contacto</dt><dd>${escapeHtml(item.lastContactAt ? formatDate(item.lastContactAt) : "Sin contacto")}</dd></div>
+        <div><dt>Valor</dt><dd>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</dd></div>
+        <div><dt>Fuente</dt><dd>${escapeHtml(item.source || "Sin fuente")}</dd></div>
+        <div><dt>Correos</dt><dd>${number(prospectEmails.length)}</dd></div>
+        <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
+      </dl>
+      ${(item.tags || []).length ? `<div class="prospect-tag-row">${item.tags.map(tag => `<em>${escapeHtml(tag)}</em>`).join("")}</div>` : ""}
+      ${item.notes ? `<p class="prospect-directory-notes">${escapeHtml(item.notes.slice(0, 260))}</p>` : ""}
+      <div class="prospect-summary-actions">
+        <button type="button" data-directory-edit="${escapeAttr(item.id)}"><i data-lucide="pencil"></i>Editar</button>
+        <button type="button" data-prospect-jump="communication"><i data-lucide="send"></i>Correo</button>
+        <button type="button" data-prospect-jump="activity"><i data-lucide="clock-3"></i>Actividad</button>
+      </div>
+    `;
+  }
+
+  function prospectFollowStatus(item) {
+    const today = todayIso();
+    if (["won", "lost"].includes(item.phase)) return "closed";
+    if (!item.lastContactAt) return "no_contact";
+    if (item.nextFollowUpOn && item.nextFollowUpOn < today) return "overdue";
+    if (item.nextFollowUpOn === today) return "today";
+    if (item.nextFollowUpOn) return "upcoming";
+    return "no_date";
   }
 
   function renderContextCards() {
@@ -414,9 +553,17 @@
 
   function renderProspectForm() {
     const form = root.querySelector("[data-prospect-form]");
+    const editor = root.querySelector("[data-directory-editor]");
     if (!form) return;
+    const editing = directoryMode === "edit";
+    if (editor) editor.hidden = !editing;
+    if (!editing) {
+      form.innerHTML = "";
+      return;
+    }
     const prospect = selectedProspect() || emptyProspect();
     form.innerHTML = `
+      <div class="prospect-editor-head"><div><h3>${prospect.id ? "Editar prospecto" : "Nuevo prospecto"}</h3><p>${prospect.id ? "Actualiza la ficha comercial." : "Crea un nuevo registro en la base comercial."}</p></div><button class="icon-close" type="button" data-directory-editor-close aria-label="Cerrar editor"><i data-lucide="x"></i></button></div>
       <input type="hidden" name="id" value="${escapeAttr(prospect.id || "")}" />
       <div class="prospects-form-grid">
         <label>Nombre
@@ -462,6 +609,11 @@
     `;
     refreshIcons();
     form.querySelector("[data-prospect-delete]")?.addEventListener("click", deleteProspect);
+    form.querySelector("[data-directory-editor-close]")?.addEventListener("click", () => {
+      directoryMode = "view";
+      renderDirectoryList();
+      renderProspectForm();
+    });
   }
 
   function renderEmailSection() {
@@ -600,51 +752,175 @@
   function renderTemplateSection() {
     const form = root.querySelector("[data-template-form]");
     const list = root.querySelector("[data-template-list]");
+    const preview = root.querySelector("[data-template-preview]");
+    const controls = root.querySelector("[data-template-controls]");
     const count = root.querySelector("[data-prospect-template-count]");
-    if (!form || !list) return;
-    const template = selectedTemplate() || emptyTemplate();
-    if (count) count.textContent = String(templates.length);
+    if (!form || !list || !preview || !controls) return;
+
+    const categories = Array.from(new Set(templates.map(item => String(item.category || "Sin categoría").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const visibleTemplates = filteredTemplates();
+    const selected = templateDraft || selectedTemplate() || emptyTemplate();
+    const activeCount = templates.filter(item => item.isActive !== false).length;
+    if (count) count.textContent = `${number(activeCount)}/${number(templates.length)}`;
+
+    controls.innerHTML = `
+      <div class="prospects-template-filterbar">
+        <label class="workspace-search prospects-search"><i data-lucide="search"></i><input type="search" data-template-search placeholder="Buscar plantillas..." value="${escapeAttr(templateSearchTerm)}" autocomplete="off" aria-label="Buscar plantillas" /></label>
+        <select data-template-category-filter aria-label="Filtrar plantillas por categoría">
+          <option value="">Todas las categorías</option>
+          ${categories.map(category => `<option value="${escapeAttr(category)}" ${category === templateCategoryFilter ? "selected" : ""}>${escapeHtml(category)}</option>`).join("")}
+        </select>
+        <select data-template-status-filter aria-label="Filtrar plantillas por estado">
+          <option value="all" ${templateStatusFilter === "all" ? "selected" : ""}>Todas</option>
+          <option value="active" ${templateStatusFilter === "active" ? "selected" : ""}>Activas</option>
+          <option value="paused" ${templateStatusFilter === "paused" ? "selected" : ""}>Pausadas</option>
+        </select>
+        <button class="btn btn-primary btn-compact" type="button" data-template-new><i data-lucide="plus"></i>Nueva plantilla</button>
+      </div>
+      <div class="prospects-template-stats" aria-label="Resumen de plantillas">
+        <span><strong>${number(templates.length)}</strong>Total</span>
+        <span><strong>${number(activeCount)}</strong>Activas</span>
+        <span><strong>${number(categories.length)}</strong>Categorías</span>
+      </div>
+    `;
+
     form.innerHTML = `
-      <input type="hidden" name="id" value="${escapeAttr(template.id || "")}" />
+      <div class="prospect-template-editor-head">
+        <div><h3>${selected.id ? "Editar plantilla" : templateDraft ? "Duplicar plantilla" : "Nueva plantilla"}</h3><p>${selected.id ? "Actualiza contenido y estado." : "Crea un mensaje reutilizable."}</p></div>
+        <span class="status-dot">${selected.isActive !== false ? "Activa" : "Pausada"}</span>
+      </div>
+      <input type="hidden" name="id" value="${escapeAttr(selected.id || "")}" />
       <label>Nombre
-        <input name="name" maxlength="120" required value="${escapeAttr(template.name || "")}" />
+        <input name="name" maxlength="120" required value="${escapeAttr(selected.name || "")}" />
       </label>
-      <label>Categoría
-        <input name="category" maxlength="80" value="${escapeAttr(template.category || "")}" placeholder="Primer contacto, seguimiento, propuesta..." />
-      </label>
-      <label>Tags
-        <input name="tags" maxlength="220" value="${escapeAttr((template.tags || []).join(", "))}" />
-      </label>
+      <div class="prospects-form-grid">
+        <label>Categoría
+          <input name="category" maxlength="80" value="${escapeAttr(selected.category || "")}" placeholder="Primer contacto, seguimiento, propuesta..." />
+        </label>
+        <label>Tags
+          <input name="tags" maxlength="220" value="${escapeAttr((selected.tags || []).join(", "))}" />
+        </label>
+      </div>
       <label>Asunto
-        <input name="subject" maxlength="180" required value="${escapeAttr(template.subject || "")}" />
+        <input name="subject" maxlength="180" required value="${escapeAttr(selected.subject || "")}" />
       </label>
       <label>Cuerpo
-        <textarea name="body" rows="8" maxlength="12000" required>${escapeHtml(template.body || "")}</textarea>
+        <textarea name="body" rows="8" maxlength="12000" required>${escapeHtml(selected.body || "")}</textarea>
       </label>
+      <div class="prospect-template-hints">
+        ${TEMPLATE_HINTS.map(item => `<span>${escapeHtml(item)}</span>`).join("")}
+      </div>
       <label class="prospects-checkbox">
-        <input name="isActive" type="checkbox" ${template.isActive !== false ? "checked" : ""} />
+        <input name="isActive" type="checkbox" ${selected.isActive !== false ? "checked" : ""} />
         <span>Plantilla activa</span>
       </label>
       <div class="prospects-form-actions">
-        <button class="btn btn-primary" type="submit">${template.id ? "Guardar plantilla" : "Crear plantilla"}</button>
-        ${template.id ? `<button class="btn btn-ghost" type="button" data-template-delete="${escapeAttr(template.id)}">Eliminar</button>` : ""}
+        <button class="btn btn-primary" type="submit">${selected.id ? "Guardar cambios" : "Crear plantilla"}</button>
+        ${selected.id ? `<button class="btn btn-ghost" type="button" data-template-delete="${escapeAttr(selected.id)}">Eliminar</button>` : ""}
+        ${selected.id ? `<button class="btn btn-ghost" type="button" data-template-duplicate="${escapeAttr(selected.id)}"><i data-lucide="copy"></i>Duplicar</button>` : ""}
       </div>
     `;
+
+    preview.innerHTML = selected.name || selected.subject || selected.body ? templatePreviewMarkup(selected) : `
+      <div class="prospect-empty">Selecciona una plantilla o crea una nueva para ver su preview.</div>
+    `;
+
+    list.innerHTML = visibleTemplates.length ? visibleTemplates.map(item => templateLibraryItem(item)).join("") : `
+      <div class="prospect-empty">No hay plantillas que coincidan con estos filtros.</div>
+    `;
+
     refreshIcons();
-    form.querySelector("[data-template-delete]")?.addEventListener("click", deleteTemplate);
-    list.innerHTML = `
-      <button class="prospect-template-item ${selectedTemplateId ? "" : "is-active"}" type="button" data-template-open="">
-        <strong>Nueva plantilla</strong>
-        <span>Limpiar formulario</span>
-      </button>
-      ${templates.map(item => `
-        <button class="prospect-template-item ${item.id === selectedTemplateId ? "is-active" : ""}" type="button" data-template-open="${escapeAttr(item.id)}">
-          <strong>${escapeHtml(item.name)}</strong>
-          <span>${escapeHtml(item.category || "Sin categoría")} · ${item.isActive ? "Activa" : "Pausada"}</span>
-        </button>
-      `).join("")}
+    bindTemplateControls(controls, form);
+  }
+
+  function renderTemplateLibrary() {
+    const list = root.querySelector("[data-template-list]");
+    if (!list) return;
+    const visibleTemplates = filteredTemplates();
+    list.innerHTML = visibleTemplates.length ? visibleTemplates.map(item => templateLibraryItem(item)).join("") : `
+      <div class="prospect-empty">No hay plantillas que coincidan con estos filtros.</div>
     `;
     refreshIcons();
+  }
+
+  function filteredTemplates() {
+    return templates.filter(item => {
+      const category = String(item.category || "Sin categoría").trim();
+      if (templateCategoryFilter && category !== templateCategoryFilter) return false;
+      if (templateStatusFilter === "active" && item.isActive === false) return false;
+      if (templateStatusFilter === "paused" && item.isActive !== false) return false;
+      if (!templateSearchTerm) return true;
+      const haystack = [item.name, item.category, item.subject, item.body, (item.tags || []).join(" ")].join(" ").toLowerCase();
+      return haystack.includes(templateSearchTerm);
+    }).slice().sort((left, right) => {
+      const activeDiff = Number(right.isActive !== false) - Number(left.isActive !== false);
+      if (activeDiff) return activeDiff;
+      return String(left.name || "").localeCompare(String(right.name || ""));
+    });
+  }
+
+  function bindTemplateControls(controls, form) {
+    controls.querySelector("[data-template-search]")?.addEventListener("input", event => {
+      templateSearchTerm = String(event.target.value || "").trim().toLowerCase();
+      renderTemplateLibrary();
+    });
+    controls.querySelector("[data-template-category-filter]")?.addEventListener("change", event => {
+      templateCategoryFilter = String(event.target.value || "");
+      renderTemplateLibrary();
+    });
+    controls.querySelector("[data-template-status-filter]")?.addEventListener("change", event => {
+      templateStatusFilter = String(event.target.value || "all");
+      renderTemplateLibrary();
+    });
+    controls.querySelector("[data-template-new]")?.addEventListener("click", () => {
+      selectedTemplateId = "";
+      templateDraft = null;
+      renderTemplateSection();
+    });
+    form.querySelector("[data-template-delete]")?.addEventListener("click", deleteTemplate);
+  }
+
+  function templateLibraryItem(item) {
+    const status = item.isActive !== false ? "Activa" : "Pausada";
+    const category = item.category || "Sin categoría";
+    return `
+      <article class="prospect-template-card ${item.id === selectedTemplateId ? "is-active" : ""}" data-template-open="${escapeAttr(item.id)}">
+        <button class="prospect-template-card-main" type="button" data-template-open="${escapeAttr(item.id)}">
+          <span class="prospect-template-state ${item.isActive !== false ? "is-enabled" : "is-paused"}">${escapeHtml(status)}</span>
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>${escapeHtml(category)} · ${escapeHtml(item.subject || "Sin asunto")}</small>
+          ${(item.tags || []).length ? `<span class="prospect-template-tags">${item.tags.slice(0, 3).map(tag => `<em>${escapeHtml(tag)}</em>`).join("")}</span>` : ""}
+        </button>
+        <div class="prospect-template-card-actions">
+          <button type="button" title="Editar" data-template-open="${escapeAttr(item.id)}"><i data-lucide="pencil"></i></button>
+          <button type="button" title="Duplicar" data-template-duplicate="${escapeAttr(item.id)}"><i data-lucide="copy"></i></button>
+          <button type="button" title="Usar en comunicación" data-template-use="${escapeAttr(item.id)}"><i data-lucide="send"></i></button>
+        </div>
+      </article>
+    `;
+  }
+
+  function templatePreviewMarkup(template) {
+    const prospect = selectedProspect() || collectProspectDraft();
+    const hydratedSubject = hydrateTemplate(template.subject || "", prospect);
+    const hydratedBody = hydrateTemplate(template.body || "", prospect);
+    return `
+      <div class="prospect-template-preview-head">
+        <span class="prospect-template-state ${template.isActive !== false ? "is-enabled" : "is-paused"}">${template.isActive !== false ? "Activa" : "Pausada"}</span>
+        <h3>${escapeHtml(template.name || "Plantilla sin nombre")}</h3>
+        <p>${escapeHtml(template.category || "Sin categoría")}</p>
+      </div>
+      <div class="prospect-template-preview-message">
+        <span>Asunto</span>
+        <strong>${escapeHtml(hydratedSubject || "Sin asunto")}</strong>
+        <span>Cuerpo</span>
+        <p>${escapeHtml(hydratedBody || "Sin contenido")}</p>
+      </div>
+      <div class="prospect-template-preview-actions">
+        ${template.id ? `<button class="btn btn-ghost btn-compact" type="button" data-template-duplicate="${escapeAttr(template.id)}"><i data-lucide="copy"></i>Duplicar</button>` : ""}
+        ${template.id ? `<button class="btn btn-primary btn-compact" type="button" data-template-use="${escapeAttr(template.id)}"><i data-lucide="send"></i>Usar</button>` : ""}
+      </div>
+    `;
   }
 
   function handleBoardClick(event) {
@@ -663,6 +939,7 @@
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
+      directoryMode = "edit";
       renderAll();
       activateProspectsTab("directory");
       return;
@@ -690,8 +967,18 @@
       selectedProspectId = "";
       selectedEmailId = "";
       selectedActivityId = "";
+      directoryMode = "edit";
       renderAll();
       activateProspectsTab("directory");
+      return;
+    }
+
+    const editButton = event.target.closest("[data-directory-edit]");
+    if (editButton) {
+      selectedProspectId = editButton.dataset.directoryEdit || selectedProspectId;
+      directoryMode = "edit";
+      renderDirectoryList();
+      renderProspectForm();
       return;
     }
 
@@ -700,14 +987,34 @@
     selectedProspectId = button.dataset.prospectOpen || "";
     selectedEmailId = "";
     selectedActivityId = "";
+    directoryMode = "view";
     renderAll();
     activateProspectsTab("directory");
   }
 
   function handleTemplateClick(event) {
+    const useButton = event.target.closest("[data-template-use]");
+    if (useButton && root.contains(useButton)) {
+      event.preventDefault();
+      selectedTemplateId = useButton.dataset.templateUse || "";
+      templateDraft = null;
+      renderEmailSection();
+      applySelectedTemplate();
+      activateProspectsTab("communication");
+      return;
+    }
+
+    const duplicateButton = event.target.closest("[data-template-duplicate]");
+    if (duplicateButton && root.contains(duplicateButton)) {
+      event.preventDefault();
+      duplicateTemplate({ currentTarget: duplicateButton });
+      return;
+    }
+
     const button = event.target.closest("[data-template-open]");
-    if (!button) return;
+    if (!button || !root.contains(button)) return;
     selectedTemplateId = button.dataset.templateOpen || "";
+    templateDraft = null;
     renderTemplateSection();
   }
 
@@ -747,6 +1054,7 @@
       upsertStateItem(prospects, data.prospect);
       selectedProspectId = data.prospect.id;
       selectedEmailId = "";
+      directoryMode = "view";
       setMessage(`Prospecto ${data.prospect.fullName} guardado.`, "ok");
       renderAll();
     } catch (error) {
@@ -774,6 +1082,20 @@
     }
   }
 
+  function duplicateTemplate(event) {
+    const id = event.currentTarget.dataset.templateDuplicate || "";
+    const template = templates.find(item => item.id === id);
+    if (!template) return;
+    selectedTemplateId = "";
+    templateDraft = {
+      ...template,
+      id: "",
+      name: `${template.name || "Plantilla"} copia`,
+      isActive: true
+    };
+    renderTemplateSection();
+  }
+
   async function saveTemplate(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -790,6 +1112,7 @@
       const data = await ProspectsApi.saveTemplate(templateId, payload);
       upsertStateItem(templates, data.template);
       selectedTemplateId = data.template.id;
+      templateDraft = null;
       setMessage(`Plantilla ${data.template.name} guardada.`, "ok");
       renderTemplateSection();
       renderEmailSection();
@@ -805,6 +1128,7 @@
       await ProspectsApi.deleteTemplate(id);
       templates = templates.filter(item => item.id !== id);
       if (selectedTemplateId === id) selectedTemplateId = templates[0]?.id || "";
+      templateDraft = null;
       setMessage("Plantilla eliminada.", "ok");
       renderTemplateSection();
       renderEmailSection();
@@ -1127,6 +1451,10 @@
 
   function number(value) {
     return new Intl.NumberFormat("es-DO").format(Number(value || 0));
+  }
+
+  function currency(value) {
+    return new Intl.NumberFormat("es-DO", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(value || 0));
   }
 
   function withTimeout(promise, timeoutMs, message) {
