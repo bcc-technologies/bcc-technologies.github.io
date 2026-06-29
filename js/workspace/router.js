@@ -47,7 +47,7 @@
         if (!viewIds.has(nextId)) return;
 
         event.preventDefault();
-        const panelId = link.dataset.workPanelLink || panelAliases[id] || "";
+        const panelId = link.dataset.workspacePanelLink || link.dataset.workPanelLink || link.dataset.businessPanelLink || panelAliases[id] || "";
         if (window.location.hash !== `#${nextId}`) {
           window.history.pushState(null, "", `#${nextId}`);
         }

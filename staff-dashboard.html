@@ -14,6 +14,7 @@
   <script src="js/workspace/icons.js" defer></script>
   <script src="js/workspace/utils.js" defer></script>
   <script src="js/auth.js" defer></script>
+  <script src="js/layout.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
   <script src="js/workspace/analytics.js" defer></script>
   <script src="js/workspace/intelligence.js" defer></script>
@@ -87,10 +88,8 @@
         <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
         <a href="#roles" data-permission-required="admin:view"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
         <a href="#auditoria" data-permission-required="admin:view"><i data-lucide="history"></i><span>Auditoría</span></a>
-        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="activity"></i><span>Señales</span></p>
-        <a href="#prospectos" data-permission-required="department:manage"><i data-lucide="mail-plus"></i><span>Prospectos</span></a>
-        <a href="#analytics" data-permission-required="department:manage"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></a>
-        <a href="#intelligence" data-permission-required="department:manage"><i data-lucide="radar"></i><span>Intelligence</span></a>
+        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="briefcase-business"></i><span>Business</span></p>
+        <a href="#business" data-permission-required="department:manage"><i data-lucide="chart-network"></i><span>Business</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
       <section class="workspace-help">
@@ -438,19 +437,42 @@
             <div class="role-library" data-role-library></div>
           </section>
         </section>
-        <section class="workspace-view" id="analytics" data-permission-required="department:manage" data-workspace-view data-view-title="Analytics" hidden>
-          <section data-analytics-workspace aria-label="Analytics del sitio">
-            <p class="muted-text">Cargando analytics...</p>
-          </section>
-        </section>
-        <section class="workspace-view" id="intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Intelligence" hidden>
-          <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
-            <p class="muted-text">Cargando intelligence...</p>
-          </section>
-        </section>
-        <section class="workspace-view" id="prospectos" data-permission-required="department:manage" data-workspace-view data-view-title="Prospectos" hidden>
-          <section data-prospects-workspace aria-label="Gestor de prospectos">
-            <p class="muted-text">Cargando prospectos...</p>
+        <section class="workspace-view" id="business" data-permission-required="department:manage" data-workspace-view data-view-title="Business" hidden>
+          <section class="staff-work-hub business-work-hub" aria-label="Business Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Business Intelligence</span>
+                <h2>Business</h2>
+                <p>Analiza señales comerciales, tráfico del sitio, inteligencia externa y operación de prospectos desde una sola estructura.</p>
+              </div>
+              <span class="status-pill enabled">BI activo</span>
+            </article>
+            <div class="staff-work-tabs business-tabs" role="tablist" aria-label="Subsecciones de Business">
+              <button class="active" type="button" data-business-panel-tab="analytics" aria-selected="true"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></button>
+              <button type="button" data-business-panel-tab="intelligence" aria-selected="false"><i data-lucide="radar"></i><span>Intelligence</span></button>
+              <button type="button" data-business-panel-tab="prospectos" aria-selected="false"><i data-lucide="mail-plus"></i><span>Prospectos</span></button>
+            </div>
+            <section class="module-surface staff-work-panel active" data-business-panel="analytics">
+              <div class="staff-work-panel-body flush">
+                <section data-analytics-workspace aria-label="Analytics del sitio">
+                  <p class="muted-text">Cargando analytics...</p>
+                </section>
+              </div>
+            </section>
+            <section class="module-surface staff-work-panel" data-business-panel="intelligence" hidden>
+              <div class="staff-work-panel-body flush">
+                <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
+                  <p class="muted-text">Cargando intelligence...</p>
+                </section>
+              </div>
+            </section>
+            <section class="module-surface staff-work-panel" data-business-panel="prospectos" hidden>
+              <div class="staff-work-panel-body flush">
+                <section data-prospects-workspace aria-label="Gestor de prospectos">
+                  <p class="muted-text">Cargando prospectos...</p>
+                </section>
+              </div>
+            </section>
           </section>
         </section>
         <section class="workspace-view" id="auditoria" data-permission-required="admin:view" data-workspace-view data-view-title="Auditoría" hidden>

@@ -12,6 +12,9 @@
   const CUSTOM_CONFIG = window.BCC_ANALYTICS || {};
   const CONFIG = { ...ANALYTICS_CONFIG, ...CUSTOM_CONFIG };
   const SESSION_ONCE_PREFIX = "bcc-analytics-once:";
+  const SESSION_ID_KEY = "bcc-session-id";
+  const VISITOR_ID_KEY = "bcc-visitor-id";
+  const RECONCILE_PREFIX = "bcc-analytics-reconciled:";
   let ticking = false;
   let supabaseConfigPromise = null;
   let supabaseJsPromise = null;
@@ -60,6 +63,14 @@
     const created = randomId(prefix);
     setStorage(storage, key, created);
     return created;
+  }
+
+  function currentSessionId() {
+    return ensurePersistentId(SESSION_ID_KEY, window.sessionStorage, "sess");
+  }
+
+  function currentVisitorId() {
+    return ensurePersistentId(VISITOR_ID_KEY, window.localStorage, "visitor");
   }
 
   function safeTrim(value, max = 160) {
@@ -210,36 +221,82 @@
   function bindAnalyticsAuthListener(supabase) {
     if (analyticsAuthListenerBound || !supabase?.auth?.onAuthStateChange) return;
     analyticsAuthListenerBound = true;
-    supabase.auth.onAuthStateChange(() => {
+    supabase.auth.onAuthStateChange((_event, session) => {
       analyticsIdentityPromise = null;
+      if (session?.access_token && session?.user?.id) {
+        void resolveAnalyticsIdentity({ force: true });
+      }
     });
   }
 
-  async function resolveAnalyticsIdentity() {
-    if (analyticsIdentityPromise) return analyticsIdentityPromise;
+  async function getSessionForAnalytics(supabase) {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session) return data.session;
+    if (!/dashboard|cms\.html|login|auth-callback/i.test(location.pathname)) return null;
+    const deadline = Date.now() + 1800;
+    while (Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const retry = await supabase.auth.getSession();
+      if (retry.data?.session) return retry.data.session;
+    }
+    return null;
+  }
+
+  async function roleForAnalyticsUser(supabase, userId) {
+    if (window.BCCAuth?.currentUser) {
+      try {
+        const user = await window.BCCAuth.currentUser();
+        if (user?.id === userId && user.role) return safeTrim(user.role, 20).toLowerCase();
+      } catch (_error) {}
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+    return safeTrim(profile?.role || "client", 20).toLowerCase();
+  }
+
+  function reconciliationKey(identity) {
+    return `${RECONCILE_PREFIX}${identity.userId}:${currentVisitorId()}`;
+  }
+
+  async function reconcileAnalyticsIdentity(supabase, identity) {
+    if (!identity?.accessToken || !identity?.userId) return;
+    const key = reconciliationKey(identity);
+    if (inStorage(window.sessionStorage, key)) return;
+    try {
+      const { error } = await supabase.rpc("reconcile_analytics_identity", {
+        session_id: currentSessionId(),
+        visitor_id: currentVisitorId()
+      });
+      if (!error) setStorage(window.sessionStorage, key, "1");
+    } catch (_error) {
+      // Reconciliation is best-effort and must never block analytics.
+    }
+  }
+
+  async function resolveAnalyticsIdentity(options = {}) {
+    if (analyticsIdentityPromise && !options.force) return analyticsIdentityPromise;
     analyticsIdentityPromise = (async () => {
       try {
         const supabase = await loadAnalyticsSupabaseClient();
         bindAnalyticsAuthListener(supabase);
-        const { data: sessionData } = await supabase.auth.getSession();
-        const session = sessionData?.session || null;
+        const session = await getSessionForAnalytics(supabase);
         const accessToken = safeTrim(session?.access_token, 4096);
         const userId = safeTrim(session?.user?.id, 80);
         if (!accessToken || !userId) {
           return { accessToken: "", userId: "", role: "", isInternal: false };
         }
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", userId)
-          .maybeSingle();
-        const role = safeTrim(profile?.role || "client", 20).toLowerCase();
-        return {
+        const role = await roleForAnalyticsUser(supabase, userId);
+        const identity = {
           accessToken,
           userId,
           role,
           isInternal: role === "staff" || role === "admin"
         };
+        void reconcileAnalyticsIdentity(supabase, identity);
+        return identity;
       } catch (_error) {
         return { accessToken: "", userId: "", role: "", isInternal: false };
       }
@@ -308,8 +365,8 @@
     const payload = {
       event_name: cleanEvent,
       event_source: "frontend",
-      session_id: ensurePersistentId("bcc-session-id", window.sessionStorage, "sess"),
-      visitor_id: ensurePersistentId("bcc-visitor-id", window.localStorage, "visitor"),
+      session_id: currentSessionId(),
+      visitor_id: currentVisitorId(),
       page_path: context.pagePath,
       page_url: context.pageUrl,
       page_title: context.pageTitle,

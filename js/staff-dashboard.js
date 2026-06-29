@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateUser(user);
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
   bindStaffWorkPanels();
+  bindBusinessPanels();
   bindStaffWorkspaceRouter();
   bindAdminViewSimulator(user);
   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
@@ -47,13 +48,30 @@ function hydrateUser(user) {
 }
 
 function bindStaffWorkspaceRouter() {
-  const panelAliases = { productividad: "tareas", calendario: "agenda", kpis: "kpis", formularios: "formularios" };
+  const panelAliases = {
+    productividad: "tareas",
+    calendario: "agenda",
+    kpis: "kpis",
+    formularios: "formularios",
+    analytics: "analytics",
+    intelligence: "intelligence",
+    prospectos: "prospectos"
+  };
   window.BCCWorkspaceRouter?.bind({
-    aliases: { productividad: "trabajo", calendario: "trabajo", kpis: "trabajo", formularios: "trabajo" },
+    aliases: {
+      productividad: "trabajo",
+      calendario: "trabajo",
+      kpis: "trabajo",
+      formularios: "trabajo",
+      analytics: "business",
+      intelligence: "business",
+      prospectos: "business"
+    },
     panelAliases,
     onShow({ nextId, panelId }) {
       if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");
-      window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(nextId, staffCurrentUser);
+      if (nextId === "business") openBusinessPanel(panelId || "analytics");
+      else window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(nextId, staffCurrentUser);
     }
   });
 }
@@ -62,6 +80,14 @@ function bindStaffWorkPanels() {
   document.querySelectorAll("[data-work-panel-tab]").forEach(tab => {
     tab.addEventListener("click", () => {
       openStaffWorkPanel(tab.dataset.workPanelTab || "tareas");
+    });
+  });
+}
+
+function bindBusinessPanels() {
+  document.querySelectorAll("[data-business-panel-tab]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      openBusinessPanel(tab.dataset.businessPanelTab || "analytics");
     });
   });
 }
@@ -84,6 +110,29 @@ function openStaffWorkPanel(panelId = "tareas") {
     tab.setAttribute("aria-selected", active ? "true" : "false");
   });
 
+  window.BCCWorkspaceUtils.refreshIcons();
+}
+
+
+function openBusinessPanel(panelId = "analytics") {
+  const panels = [...document.querySelectorAll("[data-business-panel]")];
+  const tabs = [...document.querySelectorAll("[data-business-panel-tab]")];
+  const panel = panels.find(item => item.dataset.businessPanel === panelId) || panels[0];
+  if (!panel) return;
+
+  panels.forEach(item => {
+    const active = item === panel;
+    item.hidden = !active;
+    item.classList.toggle("active", active);
+  });
+
+  tabs.forEach(tab => {
+    const active = tab.dataset.businessPanelTab === panel.dataset.businessPanel;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
+  });
+
+  window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(panel.dataset.businessPanel, staffCurrentUser);
   window.BCCWorkspaceUtils.refreshIcons();
 }
 
