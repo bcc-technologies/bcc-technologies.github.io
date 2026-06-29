@@ -546,8 +546,8 @@
   function renderKpis() {
     const summary = calculateKpis(tasks);
     const compact = root.querySelector("[data-kpi-compact]");
-    const reports = root.querySelector("[data-kpi-reports]") || document.querySelector("[data-kpi-reports]");
-    const bars = root.querySelector("[data-workload-bars]") || document.querySelector("[data-workload-bars]");
+    const reports = [...document.querySelectorAll("[data-kpi-reports]")];
+    const bars = [...document.querySelectorAll("[data-workload-bars]")];
     if (compact) {
       compact.innerHTML = [
         ["Completadas", summary.completed],
@@ -557,29 +557,29 @@
     }
     root.querySelector("[data-kpi-rate]").textContent = `${summary.rate}%`;
     root.querySelector("[data-kpi-progress]").value = summary.rate;
-    if (reports) {
+    reports.forEach(report => {
       if (!summary.total) {
-        reports.innerHTML = `<article class="kpi-empty-state"><i data-lucide="chart-no-axes-column-increasing"></i><strong>Sin actividad medible todavia</strong><span>Crea tareas para empezar a medir carga, vencimientos y avance.</span></article>`;
+        report.innerHTML = `<article class="kpi-empty-state"><i data-lucide="chart-no-axes-column-increasing"></i><strong>Sin actividad medible todavia</strong><span>Crea tareas para empezar a medir carga, vencimientos y avance.</span></article>`;
       } else {
-        reports.innerHTML = [
+        report.innerHTML = [
           ["Tareas totales", summary.total, "Registro personal"],
           ["Completadas", summary.completed, `${summary.rate}% del total`],
           ["En curso", summary.inProgress, "Trabajo activo"],
           ["Vencidas", summary.overdue, summary.overdue ? "Requieren atencion" : "Sin alertas"]
         ].map(item => `<article class="report-stat"><span>${item[0]}</span><strong>${item[1]}</strong><small>${item[2]}</small></article>`).join("");
       }
-    }
-    if (bars) {
+    });
+    bars.forEach(bar => {
       if (!summary.total) {
-        bars.innerHTML = `<div class="workload-empty">Sin tareas para distribuir todavia.</div>`;
+        bar.innerHTML = `<div class="workload-empty">Sin tareas para distribuir todavia.</div>`;
       } else {
-        bars.innerHTML = STATUS_ORDER.map(status => {
+        bar.innerHTML = STATUS_ORDER.map(status => {
           const count = summary.byStatus[status];
           const rate = summary.total ? Math.round((count / summary.total) * 100) : 0;
           return `<div><label><span>${STATUS_LABELS[status]}</span><strong>${count}</strong></label><progress max="100" value="${rate}"></progress></div>`;
         }).join("");
       }
-    }
+    });
   }
 
   function taskSliderValues(task) {

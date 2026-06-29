@@ -16,6 +16,7 @@
   <script src="js/auth.js" defer></script>
   <script src="js/layout.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
+  <script src="js/workspace/navigation.js" defer></script>
   <script src="js/workspace/forms.js" defer></script>
   <script src="js/workspace/shell.js" defer></script>
   <script src="js/workspace/router.js" defer></script>
@@ -64,14 +65,7 @@
       </div>
     </header>
     <aside class="workspace-sidebar">
-      <nav class="workspace-nav" aria-label="Secciones de cuenta">
-        <p class="workspace-nav-label"><i data-lucide="layout-dashboard"></i><span>Panel</span></p>
-        <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#cuenta"><i data-lucide="user-round-cog"></i><span>Cuenta</span></a>
-        <a href="#operacion"><i data-lucide="inbox"></i><span>Operación</span></a>
-        <a href="#comercial"><i data-lucide="briefcase-business"></i><span>Comercial</span></a>
-        <a href="/staff-dashboard.html" data-admin-return hidden><i data-lucide="shield-check"></i><span>Administración</span></a>
-      </nav>
+      <nav class="workspace-nav" aria-label="Secciones de cuenta" data-workspace-nav="client"></nav>
       <section class="workspace-help">
         <strong>Necesitas ayuda?</strong>
         <p>Contacta al equipo para iniciar una consulta.</p>

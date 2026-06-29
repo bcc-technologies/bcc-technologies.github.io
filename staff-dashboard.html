@@ -16,6 +16,7 @@
   <script src="js/auth.js" defer></script>
   <script src="js/layout.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
+  <script src="js/workspace/navigation.js" defer></script>
   <script src="js/workspace/analytics.js" defer></script>
   <script src="js/workspace/intelligence.js" defer></script>
   <script src="js/workspace/prospects.constants.js" defer></script>
@@ -78,30 +79,7 @@
       </div>
     </header>
     <aside class="workspace-sidebar">
-      <nav class="workspace-nav" aria-label="Secciones de personal">
-        <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Personal</span></p>
-        <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="#trabajo"><i data-lucide="workflow"></i><span>Operación</span></a>
-        <p class="workspace-nav-label" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="panels-top-left"></i><span>CMS</span></p>
-        <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><span>Editorial</span></a>
-        <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
-        <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="command"></i><span>Gestión</span></p>
-        <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
-        <a href="#roles" data-permission-required="admin:view"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
-        <a href="#auditoria" data-permission-required="admin:view"><i data-lucide="history"></i><span>Auditoría</span></a>
-        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="satellite"></i><span>External Intelligence</span></p>
-        <a href="#science-radar" data-permission-required="department:manage"><i data-lucide="radar"></i><span>Science Radar</span></a>
-        <a href="#business-radar" data-permission-required="department:manage"><i data-lucide="scan-search"></i><span>Business Radar</span></a>
-        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="brain-circuit"></i><span>Internal Intelligence</span></p>
-        <a href="#product-intelligence" data-permission-required="department:manage"><i data-lucide="chart-no-axes-column-increasing"></i><span>Product Intelligence</span></a>
-        <a href="#performance-intelligence" data-permission-required="department:manage"><i data-lucide="gauge"></i><span>Performance Intelligence</span></a>
-        <a href="#financial-intelligence" data-permission-required="department:manage"><i data-lucide="circle-dollar-sign"></i><span>Financial Intelligence</span></a>
-        <a href="#bureaucracy-intelligence" data-permission-required="department:manage"><i data-lucide="file-cog"></i><span>Bureaucracy Intelligence</span></a>
-        <a href="#marketing-intelligence" data-permission-required="department:manage"><i data-lucide="megaphone"></i><span>Marketing Intelligence</span></a>
-        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="contact-round"></i><span>CRM</span></p>
-        <a href="#crm-correos" data-permission-required="department:manage"><i data-lucide="mail-plus"></i><span>Correos</span></a>
-        <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
-      </nav>
+      <nav class="workspace-nav" aria-label="Secciones de personal" data-workspace-nav="staff"></nav>
       <section class="workspace-help">
         <strong>Acceso interno</strong>
         <p>Tus herramientas dependen de los roles asignados.</p>
@@ -528,12 +506,23 @@
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Performance Intelligence">
               <button class="active" type="button" data-intel-panel-tab="general-kpis" aria-selected="true"><i data-lucide="gauge"></i><span>General KPIs</span></button>
             </div>
-            <section class="module-surface staff-work-panel active" data-intel-panel="general-kpis">
+            <section class="module-surface staff-work-panel active productivity-reports" data-intel-panel="general-kpis">
               <div class="module-head compact">
                 <h2>General KPIs</h2>
-                <span class="status-dot">Preparado</span>
+                <span class="status-dot">Operación</span>
               </div>
-              <p class="muted-text">Vista reservada para indicadores ejecutivos, rendimiento por área y seguimiento transversal.</p>
+              <div class="staff-work-panel-body flush">
+                <div class="report-stat-grid" data-kpi-reports></div>
+                <article class="productivity-surface workload-report">
+                  <div class="productivity-toolbar">
+                    <div>
+                      <h3>Distribucion del trabajo</h3>
+                      <p>Estado actual de las tareas registradas en Operación.</p>
+                    </div>
+                  </div>
+                  <div class="workload-bars" data-workload-bars></div>
+                </article>
+              </div>
             </section>
           </section>
         </section>
