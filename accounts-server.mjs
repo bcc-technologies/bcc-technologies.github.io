@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
+import { loadDominicanDashboard, runDominicanSync } from "./scripts/dominican-intelligence/sync.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -768,6 +769,28 @@ async function handleApi(req, res, url) {
           createdAt: log.createdAt || ""
         }));
       return sendJson(res, 200, { ok: true, logs });
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/admin/dominican-intelligence/dashboard") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "department:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const dashboard = await loadDominicanDashboard({ dataDir: DATA_DIR });
+      return sendJson(res, 200, { ok: true, dashboard });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/admin/dominican-intelligence/sync") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "department:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const body = await readBody(req);
+      const result = await runDominicanSync({
+        dataDir: DATA_DIR,
+        target: body.target || "all",
+        limit: body.limit || 50,
+        limitPerTerm: body.limitPerTerm || 8
+      });
+      return sendJson(res, result.ok ? 200 : 207, { ok: result.ok, ...result });
     }
 
     const roleMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
