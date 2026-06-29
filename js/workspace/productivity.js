@@ -15,6 +15,7 @@
   let tasksLoaded = false;
   const taskSubscribers = new Set();
   let activeFilter = "all";
+  let activeSort = "smart";
   let activeView = "tasks";
   let editingTaskId = null;
   let messageTimer = null;
@@ -59,15 +60,29 @@
         <article class="productivity-surface">
           <div class="productivity-toolbar">
             <h3>Mis tareas</h3>
-            <label>
-              <span class="sr-only">Filtrar tareas</span>
-              <select data-task-filter>
-                <option value="all">Todas</option>
-                <option value="active">Activas</option>
-                <option value="due">Por vencer</option>
-                <option value="done">Completadas</option>
-              </select>
-            </label>
+            <div class="productivity-list-controls">
+              <label>
+                <span>Filtro</span>
+                <select data-task-filter>
+                  <option value="all">Todas</option>
+                  <option value="active">Activas</option>
+                  <option value="due">Por vencer</option>
+                  <option value="done">Completadas</option>
+                </select>
+              </label>
+              <label>
+                <span>Orden</span>
+                <select data-task-sort>
+                  <option value="smart">Activas primero</option>
+                  <option value="due">Fecha limite</option>
+                  <option value="importance">Importancia</option>
+                  <option value="urgency">Urgencia</option>
+                  <option value="newest">Mas recientes</option>
+                  <option value="title">Titulo</option>
+                  <option value="done_first">Completadas primero</option>
+                </select>
+              </label>
+            </div>
           </div>
           <ul class="task-list" data-task-list></ul>
         </article>
@@ -142,6 +157,10 @@
     });
     root.querySelector("[data-task-filter]")?.addEventListener("change", event => {
       activeFilter = event.target.value;
+      renderTaskList();
+    });
+    root.querySelector("[data-task-sort]")?.addEventListener("change", event => {
+      activeSort = event.target.value;
       renderTaskList();
     });
     root.querySelectorAll("[data-productivity-tab]").forEach(button => {
@@ -325,7 +344,7 @@
   function renderTaskList() {
     const list = root.querySelector("[data-task-list]");
     if (!list) return;
-    const visible = filterTasks(tasks);
+    const visible = sortTasksForList(filterTasks(tasks));
     if (!visible.length) {
       list.innerHTML = `<li class="task-empty">${tasks.length ? "No hay tareas en este filtro." : "Aun no tienes tareas. Crea la primera para iniciar tu seguimiento."}</li>`;
       return;
@@ -569,6 +588,45 @@
       byStatus
     };
   }
+
+  function sortTasksForList(entries) {
+    return entries.slice().sort((a, b) => {
+      const group = completionGroup(a, b);
+      if (group) return group;
+      if (activeSort === "due" || activeSort === "smart" || activeSort === "done_first") return compareDueDate(a, b) || compareUrgency(a, b) || compareNewest(a, b);
+      if (activeSort === "importance") return compareImportance(a, b) || compareUrgency(a, b) || compareDueDate(a, b);
+      if (activeSort === "urgency") return compareUrgency(a, b) || compareImportance(a, b) || compareDueDate(a, b);
+      if (activeSort === "newest") return compareNewest(a, b);
+      if (activeSort === "title") return String(a.title || "").localeCompare(String(b.title || ""), "es", { sensitivity: "base" });
+      return compareDueDate(a, b) || compareNewest(a, b);
+    });
+  }
+
+  function completionGroup(a, b) {
+    const aDone = a.status === "done";
+    const bDone = b.status === "done";
+    if (aDone === bDone) return 0;
+    return activeSort === "done_first" ? (aDone ? -1 : 1) : (aDone ? 1 : -1);
+  }
+
+  function compareDueDate(a, b) {
+    const left = a.dueDate || "9999-12-31";
+    const right = b.dueDate || "9999-12-31";
+    return left.localeCompare(right);
+  }
+
+  function compareImportance(a, b) {
+    return importanceScore(b) - importanceScore(a);
+  }
+
+  function compareUrgency(a, b) {
+    return clampTaskScore(b.urgency, priorityUrgencyFallback(b.priority, b.dueDate)) - clampTaskScore(a.urgency, priorityUrgencyFallback(a.priority, a.dueDate));
+  }
+
+  function compareNewest(a, b) {
+    return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+  }
+
 
   function filterTasks(entries) {
     const today = localDate();

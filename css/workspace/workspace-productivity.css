@@ -135,6 +135,23 @@
   font-weight: 700;
 }
 
+.productivity-list-controls{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.productivity-list-controls label{
+  display: grid;
+  gap: 4px;
+  color: var(--ink-muted);
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .productivity-toolbar select{
   height: 36px;
   min-width: 126px;
@@ -145,6 +162,19 @@
   background: var(--surface-solid);
   font: inherit;
   font-size: .82rem;
+}
+
+@media (max-width: 680px){
+  .productivity-toolbar{
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .productivity-list-controls,
+  .productivity-list-controls label,
+  .productivity-toolbar select{
+    width: 100%;
+  }
 }
 
 .task-list{
