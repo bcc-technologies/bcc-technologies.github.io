@@ -23,7 +23,9 @@
   let directorySourceFilter = "";
   let directorySort = "priority";
   let directoryMode = "view";
-  let activeTab = "pipeline";
+  let directorySection = "profile";
+  let activeTab = "home";
+  let pipelineMode = "board";
 
   function init(account) {
     root = document.querySelector("[data-prospects-workspace]");
@@ -76,6 +78,7 @@
     });
     root.querySelector("[data-prospects-board]")?.addEventListener("click", handleBoardClick);
     root.querySelector("[data-prospects-directory-list]")?.addEventListener("click", handleDirectoryClick);
+    root.querySelector(".prospect-directory-side")?.addEventListener("click", handleDirectorySideClick);
     root.addEventListener("click", handleProspectJump);
     root.addEventListener("click", handleTemplateClick);
     root.querySelector("[data-prospect-email-section]")?.addEventListener("click", handleEmailClick);
@@ -86,8 +89,8 @@
   }
 
   function activateProspectsTab(tab = "pipeline") {
-    const allowedTabs = new Set(["pipeline", "directory", "communication", "activity", "templates", "intelligence"]);
-    activeTab = allowedTabs.has(tab) ? tab : "pipeline";
+    const allowedTabs = new Set(["home", "pipeline", "directory", "inbox", "templates", "intelligence"]);
+    activeTab = allowedTabs.has(tab) ? tab : "home";
     root.querySelectorAll("[data-prospects-tab]").forEach(button => {
       const active = button.dataset.prospectsTab === activeTab;
       button.classList.toggle("active", active);
@@ -134,13 +137,15 @@
   function renderAll() {
     renderMetrics();
     renderInsights();
+    renderHomeSection();
     renderBoard();
     renderDirectoryList();
-    renderContextCards();
     renderProspectForm();
     renderEmailSection();
+    renderInboxSection();
     renderTemplateSection();
     renderActivitySection();
+    activateDirectorySection(directorySection);
     activateProspectsTab(activeTab);
     refreshIcons();
   }
@@ -281,39 +286,262 @@
     });
   }
 
+  function renderHomeSection() {
+    const target = root.querySelector("[data-prospects-home]");
+    if (!target) return;
+    const recentActivities = activities.slice().sort((left, right) => {
+      const leftTime = Date.parse(left.occurredAt || left.dueAt || left.createdAt || "") || 0;
+      const rightTime = Date.parse(right.occurredAt || right.dueAt || right.createdAt || "") || 0;
+      return rightTime - leftTime;
+    }).slice(0, 8);
+    const dueProspects = sortedProspects(prospects.filter(item => prospectFollowStatus(item) === "overdue" || prospectFollowStatus(item) === "today")).slice(0, 8);
+    target.innerHTML = `
+      <section class="prospects-home-grid">
+        <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Seguimientos críticos</h3><span>${number(dueProspects.length)}</span></div><div class="prospect-home-list">${dueProspects.length ? dueProspects.map(item => `<button type="button" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="profile"><strong>${escapeHtml(item.fullName)}</strong><span>${escapeHtml(nextActionLabel(item))}</span></button>`).join("") : `<div class="prospect-empty">No hay seguimientos críticos.</div>`}</div></article>
+        <article class="module-surface prospects-panel prospects-panel-compact"><div class="activity-head"><h3>Actividad reciente</h3><span>${number(recentActivities.length)}</span></div><div class="prospect-home-list">${recentActivities.length ? recentActivities.map(item => `<button type="button" data-prospect-open="${escapeAttr(item.prospectId || "")}" data-directory-open="activity"><strong>${escapeHtml(activityTypeLabel(item.activityType))} · ${escapeHtml(item.title || "Actividad")}</strong><span>${escapeHtml(formatDate(item.occurredAt || item.dueAt || item.createdAt))}</span></button>`).join("") : `<div class="prospect-empty">Todavía no hay actividad registrada.</div>`}</div></article>
+      </section>
+    `;
+    refreshIcons();
+  }
+
+  function renderInboxSection() {
+    const target = root.querySelector("[data-prospect-inbox]");
+    const count = root.querySelector("[data-prospect-inbox-count]");
+    if (!target) return;
+    const inboxItems = emails.slice().sort((left, right) => {
+      const leftTime = Date.parse(left.scheduledFor || left.sentAt || left.createdAt || "") || 0;
+      const rightTime = Date.parse(right.scheduledFor || right.sentAt || right.createdAt || "") || 0;
+      return rightTime - leftTime;
+    });
+    const pendingCount = inboxItems.filter(item => ["draft", "scheduled"].includes(item.status)).length;
+    if (count) count.textContent = number(pendingCount);
+    target.innerHTML = `
+      <div class="prospect-inbox-list">
+        ${inboxItems.length ? inboxItems.map(item => {
+          const prospect = prospects.find(prospect => prospect.id === item.prospectId);
+          return `<button class="prospect-inbox-item" type="button" data-prospect-open="${escapeAttr(item.prospectId || "")}" data-directory-open="communication"><span class="prospect-template-state ${item.status === "sent" ? "is-enabled" : "is-paused"}">${escapeHtml(emailStatusLabel(item.status))}</span><strong>${escapeHtml(item.subject || "Sin asunto")}</strong><small>${escapeHtml(prospect?.fullName || item.recipientEmail || "Sin prospecto")} · ${escapeHtml(formatDate(item.scheduledFor || item.sentAt || item.createdAt))}</small></button>`;
+        }).join("") : `<div class="prospect-empty">No hay correos registrados.</div>`}
+      </div>
+    `;
+  }
+
   function renderBoard() {
     const board = root.querySelector("[data-prospects-board]");
     if (!board) return;
-    const currentItems = sortedProspects(filteredProspects());
-    const counts = new Map(PHASES.map(phase => [phase.id, prospects.filter(item => item.phase === phase.id).length]));
+    const currentItems = filteredProspects();
     const selected = selectedProspect();
+    const automatedCount = pipelineAutomations().filter(item => item.enabled).length;
     board.innerHTML = `
-      <div class="prospect-stage-strip" role="list" aria-label="Fases del pipeline">
-        <button class="prospect-stage-chip ${phaseFilter ? "" : "is-active"}" type="button" data-phase-chip="">
-          <span>Todos</span><strong>${number(prospects.length)}</strong>
-        </button>
-        ${PHASES.map(phase => `
-          <button class="prospect-stage-chip ${phaseFilter === phase.id ? "is-active" : ""}" type="button" data-phase-chip="${escapeAttr(phase.id)}">
-            <span>${escapeHtml(phase.label)}</span><strong>${number(counts.get(phase.id) || 0)}</strong>
-          </button>
-        `).join("")}
+      <div class="prospects-pipeline-toolbar" aria-label="Modo de pipeline">
+        <div class="prospects-pipeline-mode" role="tablist" aria-label="Vistas del pipeline">
+          <button class="${pipelineMode === "board" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "board" ? "true" : "false"}" data-pipeline-mode="board"><i data-lucide="columns-3"></i>Flujo</button>
+          <button class="${pipelineMode === "rules" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "rules" ? "true" : "false"}" data-pipeline-mode="rules"><i data-lucide="workflow"></i>Automatizaciones</button>
+        </div>
+        <div class="prospects-pipeline-stats" aria-label="Resumen operativo del pipeline">
+          <span><strong>${number(currentItems.length)}</strong>En flujo</span>
+          <span><strong>${number(automationCandidates(currentItems).length)}</strong>Por designar</span>
+          <span><strong>${number(automatedCount)}</strong>Reglas activas</span>
+        </div>
       </div>
-      <div class="prospect-focus-layout">
-        <section class="prospect-queue" aria-label="Cola de prospectos">
-          <div class="prospect-queue-head">
-            <div><h3>Cola priorizada</h3><p>${number(currentItems.length)} prospecto(s) visibles</p></div>
-            <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Nuevo</button>
-          </div>
-          <div class="prospect-list">
-            ${currentItems.length ? currentItems.map(item => prospectListItem(item)).join("") : `<div class="prospect-empty">No hay prospectos que coincidan con esta búsqueda.</div>`}
-          </div>
+      ${pipelineMode === "rules" ? renderPipelineAutomationView(currentItems) : renderPipelineFlowView(currentItems, selected)}
+    `;
+    refreshIcons();
+  }
+
+  function renderPipelineFlowView(currentItems, selected) {
+    const phases = PHASES.filter(phase => !phaseFilter || phase.id === phaseFilter);
+    return `
+      <div class="prospects-pipeline-layout">
+        <section class="prospects-pipeline-flow" aria-label="Fases operativas del pipeline">
+          ${phases.map(phase => {
+            const phaseItems = sortedProspects(currentItems.filter(item => item.phase === phase.id));
+            const phaseValue = phaseItems.reduce((total, item) => total + Number(item.valueEstimate || 0), 0);
+            const blocked = phaseItems.filter(item => prospectFollowStatus(item) === "overdue" || prospectFollowStatus(item) === "no_contact").length;
+            return `
+              <article class="prospect-pipeline-column" data-pipeline-phase="${escapeAttr(phase.id)}">
+                <header>
+                  <button class="prospect-stage-chip ${phaseFilter === phase.id ? "is-active" : ""}" type="button" data-phase-chip="${escapeAttr(phase.id)}">
+                    <span>${escapeHtml(phase.label)}</span><strong>${number(phaseItems.length)}</strong>
+                  </button>
+                  <small>${escapeHtml(currency(phaseValue))} · ${number(blocked)} requiere acción</small>
+                </header>
+                <div class="prospect-pipeline-card-list">
+                  ${phaseItems.length ? phaseItems.map(item => pipelineOpportunityCard(item)).join("") : `<button class="prospect-pipeline-empty" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Crear oportunidad en ${escapeHtml(phase.label)}</button>`}
+                </div>
+              </article>
+            `;
+          }).join("")}
         </section>
-        <aside class="prospect-selected-summary" aria-label="Resumen del prospecto seleccionado">
-          ${selected ? selectedProspectSummary(selected) : emptyProspectSummary()}
+        <aside class="prospect-pipeline-focus" aria-label="Administración de oportunidad seleccionada">
+          ${selected ? pipelineFocusPanel(selected) : emptyPipelineFocus()}
         </aside>
       </div>
     `;
-    refreshIcons();
+  }
+
+  function renderPipelineAutomationView(currentItems) {
+    const rules = pipelineAutomations();
+    const candidates = automationCandidates(currentItems);
+    return `
+      <div class="prospects-pipeline-layout is-rules">
+        <section class="prospect-automation-list" aria-label="Automatizaciones del pipeline">
+          <div class="prospect-queue-head">
+            <div><h3>Reglas operativas</h3><p>Automatizaciones visibles desde el pipeline para reducir trabajo manual.</p></div>
+            <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Crear prospecto</button>
+          </div>
+          ${rules.map(rule => `
+            <article class="prospect-automation-card ${rule.enabled ? "is-enabled" : "is-paused"}">
+              <div>
+                <span><i data-lucide="${escapeAttr(rule.icon)}"></i>${escapeHtml(rule.scope)}</span>
+                <strong>${escapeHtml(rule.title)}</strong>
+                <p>${escapeHtml(rule.description)}</p>
+              </div>
+              <em>${rule.enabled ? "Activa" : "Pausada"}</em>
+            </article>
+          `).join("")}
+        </section>
+        <aside class="prospect-automation-queue" aria-label="Prospectos que requieren designación">
+          <div class="prospect-queue-head">
+            <div><h3>Designación pendiente</h3><p>${number(candidates.length)} oportunidad(es) sin dueño claro o sin siguiente acción.</p></div>
+          </div>
+          <div class="prospect-list compact">
+            ${candidates.length ? candidates.map(item => pipelineAutomationCandidate(item)).join("") : `<div class="prospect-empty">No hay oportunidades pendientes de designación con estos filtros.</div>`}
+          </div>
+        </aside>
+      </div>
+    `;
+  }
+
+  function pipelineOpportunityCard(item) {
+    const tone = prospectTone(item);
+    const automation = pipelineAutomationHint(item);
+    const currentPhaseIndex = PHASES.findIndex(phase => phase.id === item.phase);
+    const previousPhase = PHASES[currentPhaseIndex - 1];
+    const nextPhase = PHASES[currentPhaseIndex + 1];
+    return `
+      <article class="prospect-opportunity-card ${item.id === selectedProspectId ? "is-active" : ""} ${tone}" data-prospect-open="${escapeAttr(item.id)}">
+        <button class="prospect-opportunity-main" type="button" data-prospect-open="${escapeAttr(item.id)}">
+          <strong>${escapeHtml(item.company || item.fullName)}</strong>
+          <span>${escapeHtml(item.fullName)} · ${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "Sin monto")}</span>
+          <small>${escapeHtml(nextActionLabel(item))}</small>
+        </button>
+        <div class="prospect-opportunity-actions">
+          ${previousPhase ? `<button type="button" title="Mover a ${escapeAttr(previousPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(previousPhase.id)}"><i data-lucide="arrow-left"></i></button>` : ""}
+          ${nextPhase ? `<button type="button" title="Mover a ${escapeAttr(nextPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}"><i data-lucide="arrow-right"></i></button>` : ""}
+          <button type="button" title="Abrir ficha" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="profile"><i data-lucide="contact-round"></i></button>
+          <button type="button" title="Enviar correo" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="communication"><i data-lucide="send"></i></button>
+          <button type="button" title="Registrar actividad" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="activity"><i data-lucide="clock-3"></i></button>
+        </div>
+        <span class="prospect-automation-hint"><i data-lucide="zap"></i>${escapeHtml(automation)}</span>
+      </article>
+    `;
+  }
+
+  function pipelineFocusPanel(item) {
+    const currentPhaseIndex = PHASES.findIndex(phase => phase.id === item.phase);
+    const nextPhase = PHASES[currentPhaseIndex + 1];
+    return `
+      <div class="prospect-summary-head">
+        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
+        <strong>${escapeHtml(item.company || item.fullName)}</strong>
+        <small>${escapeHtml(item.fullName)} · ${escapeHtml(item.email || item.phone || "sin contacto")}</small>
+      </div>
+      <dl class="prospect-summary-grid">
+        <div><dt>Siguiente acción</dt><dd>${escapeHtml(nextActionLabel(item))}</dd></div>
+        <div><dt>Valor</dt><dd>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</dd></div>
+        <div><dt>Automatización</dt><dd>${escapeHtml(pipelineAutomationHint(item))}</dd></div>
+        <div><dt>Fase siguiente</dt><dd>${escapeHtml(nextPhase?.label || "Cierre")}</dd></div>
+      </dl>
+      <div class="prospect-summary-actions">
+        ${nextPhase ? `<button type="button" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}"><i data-lucide="arrow-right"></i>Mover</button>` : ""}
+        <button type="button" data-directory-open="profile"><i data-lucide="contact-round"></i>Ficha</button>
+        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
+        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
+      </div>
+      <div class="prospect-pipeline-next-step">
+        <span><i data-lucide="workflow"></i>Acción sugerida</span>
+        <p>${escapeHtml(pipelineNextStep(item))}</p>
+      </div>
+    `;
+  }
+
+  function emptyPipelineFocus() {
+    return `<div class="prospect-empty">Selecciona una oportunidad para administrar su siguiente acción, comunicación o automatización.</div>`;
+  }
+
+  function pipelineAutomations() {
+    return [
+      { scope: "Entrada", title: "Nuevo prospecto -> asignar dueño", description: "Marca prospectos sin contacto para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
+      { scope: "Seguimiento", title: "Fecha vencida -> actividad pendiente", description: "Detecta oportunidades vencidas y las empuja a la cola de designación del pipeline.", icon: "calendar-clock", enabled: true },
+      { scope: "Propuesta", title: "Propuesta sin respuesta -> correo", description: "Sugiere comunicación desde plantillas cuando una propuesta queda sin próximo paso claro.", icon: "send", enabled: true },
+      { scope: "Cierre", title: "Ganado o perdido -> congelar acciones", description: "Evita que los cierres sigan apareciendo como trabajo operativo activo.", icon: "lock", enabled: false }
+    ];
+  }
+
+  function automationCandidates(items) {
+    return sortedProspects(items.filter(item => {
+      const status = prospectFollowStatus(item);
+      return !["won", "lost"].includes(item.phase) && (status === "overdue" || status === "no_contact" || !item.nextFollowUpOn);
+    }));
+  }
+
+  function pipelineAutomationCandidate(item) {
+    return `
+      <button class="prospect-list-item ${item.id === selectedProspectId ? "is-active" : ""} ${prospectTone(item)}" type="button" data-prospect-open="${escapeAttr(item.id)}">
+        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
+        <strong>${escapeHtml(item.company || item.fullName)}</strong>
+        <small>${escapeHtml(item.fullName)} · ${escapeHtml(pipelineAutomationHint(item))}</small>
+        <em>${escapeHtml(nextActionLabel(item))}</em>
+      </button>
+    `;
+  }
+
+  function pipelineAutomationHint(item) {
+    const status = prospectFollowStatus(item);
+    if (status === "overdue") return "Reasignar seguimiento";
+    if (status === "today") return "Ejecutar hoy";
+    if (status === "no_contact") return "Designar primer contacto";
+    if (["proposal", "negotiation"].includes(item.phase) && !item.nextFollowUpOn) return "Programar respuesta";
+    if (["won", "lost"].includes(item.phase)) return "Cerrar automatizaciones";
+    return "Mantener en flujo";
+  }
+
+  function pipelineNextStep(item) {
+    const status = prospectFollowStatus(item);
+    if (status === "overdue") return "Crear actividad inmediata o reasignar la oportunidad a una persona responsable.";
+    if (status === "no_contact") return "Designar responsable y abrir comunicación inicial desde una plantilla.";
+    if (["proposal", "negotiation"].includes(item.phase)) return "Confirmar siguiente hito, registrar actividad y preparar automatización de seguimiento.";
+    if (["won", "lost"].includes(item.phase)) return "Revisar ficha, documentar cierre y evitar seguimientos activos innecesarios.";
+    return "Mantener el avance por fase y registrar el próximo seguimiento operativo.";
+  }
+
+  async function moveProspectPhase(prospectId, targetPhase) {
+    const prospect = prospects.find(item => item.id === prospectId);
+    if (!prospect || !PHASES.some(phase => phase.id === targetPhase) || prospect.phase === targetPhase) return;
+    const payload = {
+      fullName: prospect.fullName || "",
+      company: prospect.company || "",
+      email: prospect.email || "",
+      phone: prospect.phone || "",
+      phase: targetPhase,
+      tags: (prospect.tags || []).join(", "),
+      source: prospect.source || "",
+      valueEstimate: prospect.valueEstimate ?? "",
+      nextFollowUpOn: prospect.nextFollowUpOn || "",
+      lastContactAt: prospect.lastContactAt || null,
+      notes: prospect.notes || ""
+    };
+    try {
+      const data = await ProspectsApi.saveProspect(prospect.id, payload);
+      upsertStateItem(prospects, data.prospect);
+      selectedProspectId = data.prospect.id;
+      setMessage(`${data.prospect.fullName} movido a ${phaseLabel(targetPhase)}.`, "ok");
+      renderMetrics();
+      renderBoard();
+      renderDirectoryList();
+    } catch (error) {
+      setMessage(error.message || "No fue posible mover la oportunidad.", "error");
+    }
   }
 
 
@@ -447,8 +675,8 @@
       ${item.notes ? `<p class="prospect-directory-notes">${escapeHtml(item.notes.slice(0, 260))}</p>` : ""}
       <div class="prospect-summary-actions">
         <button type="button" data-directory-edit="${escapeAttr(item.id)}"><i data-lucide="pencil"></i>Editar</button>
-        <button type="button" data-prospect-jump="communication"><i data-lucide="send"></i>Correo</button>
-        <button type="button" data-prospect-jump="activity"><i data-lucide="clock-3"></i>Actividad</button>
+        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
+        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
       </div>
     `;
   }
@@ -522,9 +750,9 @@
         <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
       </dl>
       <div class="prospect-summary-actions">
-        <button type="button" data-prospect-jump="directory"><i data-lucide="contact-round"></i>Ficha</button>
-        <button type="button" data-prospect-jump="communication"><i data-lucide="send"></i>Correo</button>
-        <button type="button" data-prospect-jump="activity"><i data-lucide="clock-3"></i>Actividad</button>
+        <button type="button" data-directory-open="profile"><i data-lucide="contact-round"></i>Ficha</button>
+        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
+        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
       </div>
     `;
   }
@@ -924,6 +1152,19 @@
   }
 
   function handleBoardClick(event) {
+    const moveButton = event.target.closest("[data-pipeline-move-phase]");
+    if (moveButton) {
+      void moveProspectPhase(moveButton.dataset.pipelineMovePhase || "", moveButton.dataset.pipelineTargetPhase || "");
+      return;
+    }
+
+    const modeButton = event.target.closest("[data-pipeline-mode]");
+    if (modeButton) {
+      pipelineMode = modeButton.dataset.pipelineMode || "board";
+      renderBoard();
+      return;
+    }
+
     const phaseButton = event.target.closest("[data-phase-chip]");
     if (phaseButton) {
       phaseFilter = phaseButton.dataset.phaseChip || "";
@@ -945,7 +1186,6 @@
       return;
     }
 
-
     const button = event.target.closest("[data-prospect-open]");
     if (!button) return;
     selectedProspectId = button.dataset.prospectOpen || "";
@@ -955,10 +1195,47 @@
   }
 
   function handleProspectJump(event) {
+    const directoryButton = event.target.closest("[data-directory-open]");
+    if (directoryButton && root.contains(directoryButton)) {
+      event.preventDefault();
+      const prospectButton = event.target.closest("[data-prospect-open]");
+      if (prospectButton?.dataset?.prospectOpen) selectedProspectId = prospectButton.dataset.prospectOpen;
+      directorySection = directoryButton.dataset.directoryOpen || "profile";
+      directoryMode = "view";
+      renderAll();
+      activateProspectsTab("directory");
+      activateDirectorySection(directorySection);
+      return;
+    }
+
     const jumpButton = event.target.closest("[data-prospect-jump]");
     if (!jumpButton || !root.contains(jumpButton)) return;
     event.preventDefault();
     activateProspectsTab(jumpButton.dataset.prospectJump || "directory");
+  }
+
+  function handleDirectorySideClick(event) {
+    const sectionButton = event.target.closest("[data-directory-section]");
+    if (sectionButton) {
+      directoryMode = "view";
+      directorySection = sectionButton.dataset.directorySection || "profile";
+      renderProspectForm();
+      activateDirectorySection(directorySection);
+      return;
+    }
+  }
+
+  function activateDirectorySection(section = "profile") {
+    const allowed = new Set(["profile", "communication", "activity"]);
+    directorySection = allowed.has(section) ? section : "profile";
+    root.querySelectorAll("[data-directory-section]").forEach(button => {
+      const active = button.dataset.directorySection === directorySection;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    root.querySelectorAll("[data-directory-panel]").forEach(panel => {
+      panel.hidden = panel.dataset.directoryPanel !== directorySection;
+    });
   }
 
   function handleDirectoryClick(event) {
@@ -977,6 +1254,7 @@
     if (editButton) {
       selectedProspectId = editButton.dataset.directoryEdit || selectedProspectId;
       directoryMode = "edit";
+      directorySection = "profile";
       renderDirectoryList();
       renderProspectForm();
       return;
@@ -988,6 +1266,7 @@
     selectedEmailId = "";
     selectedActivityId = "";
     directoryMode = "view";
+    directorySection = "profile";
     renderAll();
     activateProspectsTab("directory");
   }
@@ -998,9 +1277,11 @@
       event.preventDefault();
       selectedTemplateId = useButton.dataset.templateUse || "";
       templateDraft = null;
+      directorySection = "communication";
       renderEmailSection();
       applySelectedTemplate();
-      activateProspectsTab("communication");
+      activateProspectsTab("directory");
+      activateDirectorySection("communication");
       return;
     }
 
