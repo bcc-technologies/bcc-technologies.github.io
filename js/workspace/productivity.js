@@ -46,13 +46,13 @@
       </div>
       <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas">
         <button class="active" type="button" role="tab" aria-selected="true" data-productivity-tab="tasks">
-          <i data-lucide="list-checks"></i>Tareas
+          <i data-lucide="list-checks"></i>Lista
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="board">
           <i data-lucide="columns-3"></i>Tablero
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="matrix">
-          <i data-lucide="grid-2x2"></i>Matriz
+          <i data-lucide="layout-grid"></i>Matriz
         </button>
       </div>
       <section class="productivity-panel productivity-overview" data-productivity-panel="tasks">
@@ -212,6 +212,8 @@
       const payload = {
         title,
         priority: derivePriority(form.elements.importance.value, form.elements.urgency.value),
+        importance: Number(form.elements.importance.value || 3),
+        urgency: Number(form.elements.urgency.value || 3),
         dueDate: form.elements.dueDate.value || null,
         description: String(form.elements.description.value || "").trim()
       };
@@ -403,8 +405,12 @@
         <div class="eisenhower-grid">
           ${quadrants.map(quadrant => `
             <article class="eisenhower-quadrant ${quadrant.tone}" data-matrix-quadrant="${escapeAttr(quadrant.key)}" aria-label="${escapeAttr(quadrant.title)}">
+              <div class="matrix-quadrant-action">
+                <strong>${escapeHtml(quadrant.title)}</strong>
+                <span>${escapeHtml(quadrant.action)}</span>
+              </div>
               <div class="matrix-task-list">
-                ${quadrant.tasks.length ? quadrant.tasks.map(matrixTaskCard).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
+                ${quadrant.tasks.length ? quadrant.tasks.map(task => matrixTaskCard(task, quadrant)).join("") : `<p class="matrix-empty">Sin tareas activas</p>`}
               </div>
             </article>
           `).join("")}
@@ -413,13 +419,14 @@
     `;
   }
 
-  function matrixTaskCard(task) {
+  function matrixTaskCard(task, quadrant) {
     return `
       <article class="matrix-task">
         <div class="matrix-task-copy">
           <strong>${escapeHtml(task.title)}</strong>
           <div>
             <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
+            <span class="matrix-action-tag">${escapeHtml(quadrant.title)}</span>
             ${task.dueDate ? `<small class="${dueTone(task)}">${escapeHtml(formatDate(task.dueDate))}</small>` : `<small>Sin fecha</small>`}
           </div>
         </div>
@@ -432,10 +439,10 @@
 
   function eisenhowerQuadrants() {
     const quadrants = [
-      { key: "plan", title: "Planificar", tone: "matrix-plan", tasks: [] },
-      { key: "do", title: "Hacer ahora", tone: "matrix-do", tasks: [] },
-      { key: "pause", title: "Pausar", tone: "matrix-pause", tasks: [] },
-      { key: "delegate", title: "Delegar", tone: "matrix-delegate", tasks: [] }
+      { key: "plan", title: "Planificar", action: "Agendar foco antes de que escale", tone: "matrix-plan", tasks: [] },
+      { key: "do", title: "Hacer ahora", action: "Resolver primero", tone: "matrix-do", tasks: [] },
+      { key: "pause", title: "Pausar", action: "Eliminar, archivar o dejar en espera", tone: "matrix-pause", tasks: [] },
+      { key: "delegate", title: "Delegar", action: "Mover, pedir apoyo o responder rapido", tone: "matrix-delegate", tasks: [] }
     ];
     tasks.filter(task => task.status !== "done").forEach(task => {
       const important = importanceScore(task) >= 4;
@@ -490,9 +497,16 @@
   }
 
   function taskSliderValues(task) {
-    if (task.priority === "high") return { importance: 5, urgency: task.dueDate ? 4 : 3 };
-    if (task.priority === "low") return { importance: 2, urgency: 2 };
-    return { importance: 3, urgency: task.dueDate ? 4 : 3 };
+    return {
+      importance: clampTaskScore(task.importance, priorityImportanceFallback(task.priority)),
+      urgency: clampTaskScore(task.urgency, priorityUrgencyFallback(task.priority, task.dueDate))
+    };
+  }
+
+  function clampTaskScore(value, fallback = 3) {
+    const score = Number(value);
+    if (!Number.isFinite(score)) return fallback;
+    return Math.min(5, Math.max(1, Math.round(score)));
   }
 
   function syncTaskPriorityPreview() {
@@ -517,22 +531,26 @@
     return "low";
   }
 
-  function importanceScore(task) {
-    if (task.priority === "high") return 5;
-    if (task.priority === "medium") return 3;
+  function priorityImportanceFallback(priority) {
+    if (priority === "high") return 5;
+    if (priority === "medium") return 3;
     return 2;
+  }
+
+  function priorityUrgencyFallback(priority, dueDate) {
+    if (dueDate) return priority === "high" ? 4 : 3;
+    if (priority === "high") return 3;
+    if (priority === "medium") return 3;
+    return 2;
+  }
+
+  function importanceScore(task) {
+    return clampTaskScore(task.importance, priorityImportanceFallback(task.priority));
   }
 
   function urgencyScore(task) {
     if (task.status === "done") return 0;
-    if (!task.dueDate) return 2;
-    const today = new Date(`${localDate()}T00:00:00`);
-    const due = new Date(`${task.dueDate}T00:00:00`);
-    const days = Math.ceil((due - today) / 86400000);
-    if (days <= 0) return 5;
-    if (days <= 2) return 4;
-    if (days <= 7) return 3;
-    return 1;
+    return clampTaskScore(task.urgency, priorityUrgencyFallback(task.priority, task.dueDate));
   }
 
 

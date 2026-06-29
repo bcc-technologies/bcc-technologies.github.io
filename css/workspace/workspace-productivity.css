@@ -826,6 +826,36 @@
   transform: translateX(-50%);
 }
 
+.matrix-quadrant-action{
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px 0;
+}
+
+.matrix-quadrant-action strong{
+  color: var(--ink);
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.matrix-quadrant-action span{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.matrix-action-tag{
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 0 8px;
+  border-radius: 4px;
+  color: var(--ink-muted);
+  background: color-mix(in srgb, var(--surface-muted) 68%, var(--surface-solid));
+  font-size: .72rem;
+  font-weight: 650;
+}
+
 .matrix-task-list{
   display: grid;
   align-content: start;

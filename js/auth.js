@@ -703,6 +703,50 @@ async function bccApi(path, options = {}) {
     return { ok: true };
   }
 
+  if (path === "/api/workspace/events" && (!options.method || options.method === "GET")) {
+    const { data, error } = await supabase
+      .from("workspace_events")
+      .select(WORKSPACE_EVENT_COLUMNS)
+      .order("event_date", { ascending: true })
+      .order("start_time", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return { ok: true, events: data.map(publicWorkspaceEvent) };
+  }
+
+  if (path === "/api/workspace/events" && options.method === "POST") {
+    const body = normalizeWorkspaceEventInput(JSON.parse(options.body || "{}"), true);
+    const { data, error } = await supabase
+      .from("workspace_events")
+      .insert(body)
+      .select(WORKSPACE_EVENT_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, event: publicWorkspaceEvent(data) };
+  }
+
+  const workspaceEventMatch = path.match(/^\/api\/workspace\/events\/([^/]+)$/);
+  if (workspaceEventMatch && options.method === "PATCH") {
+    const body = normalizeWorkspaceEventInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_events")
+      .update({ ...body, updated_at: new Date().toISOString() })
+      .eq("id", decodeURIComponent(workspaceEventMatch[1]))
+      .select(WORKSPACE_EVENT_COLUMNS)
+      .single();
+    if (error) throw error;
+    return { ok: true, event: publicWorkspaceEvent(data) };
+  }
+
+  if (workspaceEventMatch && options.method === "DELETE") {
+    const { error } = await supabase
+      .from("workspace_events")
+      .delete()
+      .eq("id", decodeURIComponent(workspaceEventMatch[1]));
+    if (error) throw error;
+    return { ok: true };
+  }
+
   if (path === "/api/workspace/forms" && (!options.method || options.method === "GET")) {
     const { data, error } = await supabase
       .from("workspace_forms")
@@ -1576,9 +1620,12 @@ function normalizeAnalyticsDashboard(value, fallbackDays = 30) {
   };
 }
 
-const WORKSPACE_TASK_COLUMNS = "id, title, description, status, priority, due_date, completed_at, created_at, updated_at";
+const WORKSPACE_TASK_COLUMNS = "id, title, description, status, priority, importance, urgency, due_date, completed_at, created_at, updated_at";
 const WORKSPACE_TASK_STATUSES = ["backlog", "in_progress", "done"];
 const WORKSPACE_TASK_PRIORITIES = ["low", "medium", "high"];
+const WORKSPACE_EVENT_COLUMNS = "id, title, type, event_date, start_time, end_time, description, location, link, visibility, related_task_id, created_at, updated_at";
+const WORKSPACE_EVENT_TYPES = ["meeting", "call", "milestone", "blocker", "reminder", "availability", "review"];
+const WORKSPACE_EVENT_VISIBILITIES = ["private", "team", "client"];
 const WORKSPACE_FORM_COLUMNS = "id, title, purpose, audience, questions, status, created_at, updated_at";
 const WORKSPACE_RESPONSE_COLUMNS = "id, form_id, respondent_id, answers, submitted_at";
 const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
@@ -1648,6 +1695,16 @@ function normalizeWorkspaceTaskInput(value, requireTitle = false) {
     if (!WORKSPACE_TASK_PRIORITIES.includes(payload.priority)) throw new Error("Prioridad invalida.");
     task.priority = payload.priority;
   }
+  if (Object.prototype.hasOwnProperty.call(payload, "importance")) {
+    const importance = Number(payload.importance);
+    if (!Number.isInteger(importance) || importance < 1 || importance > 5) throw new Error("Importancia invalida.");
+    task.importance = importance;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "urgency")) {
+    const urgency = Number(payload.urgency);
+    if (!Number.isInteger(urgency) || urgency < 1 || urgency > 5) throw new Error("Urgencia invalida.");
+    task.urgency = urgency;
+  }
   if (Object.prototype.hasOwnProperty.call(payload, "dueDate")) {
     const dueDate = payload.dueDate ? String(payload.dueDate) : null;
     if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) throw new Error("Fecha limite invalida.");
@@ -1661,6 +1718,102 @@ function normalizeWorkspaceTaskInput(value, requireTitle = false) {
   return task;
 }
 
+function normalizeWorkspaceEventInput(value, requireTitle = false) {
+  const payload = value && typeof value === "object" ? value : {};
+  const event = {};
+
+  if (requireTitle || Object.prototype.hasOwnProperty.call(payload, "title")) {
+    const title = String(payload.title || "").trim();
+    if (!title || title.length > 160) throw new Error("Escribe un titulo valido para el evento.");
+    event.title = title;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "type")) {
+    const type = String(payload.type || "").trim();
+    if (!WORKSPACE_EVENT_TYPES.includes(type)) throw new Error("Tipo de evento invalido.");
+    event.type = type;
+  }
+  if (requireTitle || Object.prototype.hasOwnProperty.call(payload, "date")) {
+    const date = String(payload.date || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Fecha de evento invalida.");
+    event.event_date = date;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "startTime")) {
+    const startTime = payload.startTime ? String(payload.startTime) : null;
+    if (startTime && !/^\d{2}:\d{2}$/.test(startTime)) throw new Error("Hora de inicio invalida.");
+    event.start_time = startTime;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "endTime")) {
+    const endTime = payload.endTime ? String(payload.endTime) : null;
+    if (endTime && !/^\d{2}:\d{2}$/.test(endTime)) throw new Error("Hora de cierre invalida.");
+    event.end_time = endTime;
+  }
+  if (event.start_time && event.end_time && event.end_time < event.start_time) {
+    throw new Error("La hora de cierre no puede ser anterior al inicio.");
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "description")) {
+    const description = String(payload.description || "").trim();
+    if (description.length > 700) throw new Error("La descripcion del evento es demasiado larga.");
+    event.description = description;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "location")) {
+    const location = String(payload.location || "").trim();
+    if (location.length > 180) throw new Error("La ubicacion del evento es demasiado larga.");
+    event.location = location;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "link")) {
+    const link = String(payload.link || "").trim();
+    if (link && !/^https?:\/\//i.test(link)) throw new Error("El enlace del evento debe ser una URL valida.");
+    if (link.length > 300) throw new Error("El enlace del evento es demasiado largo.");
+    event.link = link;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "visibility")) {
+    const visibility = String(payload.visibility || "private").trim();
+    if (!WORKSPACE_EVENT_VISIBILITIES.includes(visibility)) throw new Error("Visibilidad invalida.");
+    event.visibility = visibility;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "relatedTaskId")) {
+    const relatedTaskId = payload.relatedTaskId ? String(payload.relatedTaskId) : null;
+    if (relatedTaskId && !/^[0-9a-f-]{36}$/i.test(relatedTaskId)) throw new Error("Tarea relacionada invalida.");
+    event.related_task_id = relatedTaskId;
+  }
+  if (requireTitle) {
+    if (!Object.prototype.hasOwnProperty.call(event, "type")) event.type = "meeting";
+    if (!Object.prototype.hasOwnProperty.call(event, "visibility")) event.visibility = "private";
+  }
+  return event;
+}
+
+function publicWorkspaceEvent(event) {
+  return {
+    id: event.id,
+    title: event.title,
+    type: event.type,
+    date: event.event_date,
+    startTime: event.start_time || "",
+    endTime: event.end_time || "",
+    description: event.description || "",
+    location: event.location || "",
+    link: event.link || "",
+    visibility: event.visibility || "private",
+    relatedTaskId: event.related_task_id || "",
+    createdAt: event.created_at,
+    updatedAt: event.updated_at
+  };
+}
+
+function priorityImportanceFallback(priority) {
+  if (priority === "high") return 5;
+  if (priority === "medium") return 3;
+  return 2;
+}
+
+function priorityUrgencyFallback(priority, dueDate) {
+  if (dueDate) return priority === "high" ? 4 : 3;
+  if (priority === "high") return 3;
+  if (priority === "medium") return 3;
+  return 2;
+}
+
 function publicWorkspaceTask(task) {
   return {
     id: task.id,
@@ -1668,6 +1821,8 @@ function publicWorkspaceTask(task) {
     description: task.description || "",
     status: task.status,
     priority: task.priority,
+    importance: Number(task.importance || priorityImportanceFallback(task.priority)),
+    urgency: Number(task.urgency || priorityUrgencyFallback(task.priority, task.due_date)),
     dueDate: task.due_date || null,
     completedAt: task.completed_at || null,
     createdAt: task.created_at,

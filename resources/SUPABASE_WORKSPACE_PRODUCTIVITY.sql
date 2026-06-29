@@ -8,6 +8,8 @@ create table if not exists public.workspace_tasks (
   description text not null default '',
   status text not null default 'backlog',
   priority text not null default 'medium',
+  importance integer not null default 3,
+  urgency integer not null default 3,
   due_date date,
   completed_at timestamptz,
   created_at timestamptz not null default now(),
@@ -15,11 +17,34 @@ create table if not exists public.workspace_tasks (
   constraint workspace_tasks_title_check check (char_length(btrim(title)) between 1 and 160),
   constraint workspace_tasks_description_check check (char_length(description) <= 500),
   constraint workspace_tasks_status_check check (status in ('backlog', 'in_progress', 'done')),
-  constraint workspace_tasks_priority_check check (priority in ('low', 'medium', 'high'))
+  constraint workspace_tasks_priority_check check (priority in ('low', 'medium', 'high')),
+  constraint workspace_tasks_importance_check check (importance between 1 and 5),
+  constraint workspace_tasks_urgency_check check (urgency between 1 and 5)
 );
+
+alter table public.workspace_tasks
+  add column if not exists importance integer not null default 3,
+  add column if not exists urgency integer not null default 3;
+
+do $$
+begin
+  alter table public.workspace_tasks
+    add constraint workspace_tasks_importance_check check (importance between 1 and 5);
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter table public.workspace_tasks
+    add constraint workspace_tasks_urgency_check check (urgency between 1 and 5);
+exception when duplicate_object then null;
+end $$;
 
 create index if not exists workspace_tasks_user_status_due_idx
 on public.workspace_tasks (user_id, status, due_date, created_at desc);
+
+create index if not exists workspace_tasks_user_matrix_idx
+on public.workspace_tasks (user_id, status, importance desc, urgency desc, created_at desc);
 
 create or replace function public.set_workspace_task_timestamps()
 returns trigger
