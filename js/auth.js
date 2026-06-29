@@ -687,6 +687,28 @@ async function bccApi(path, options = {}) {
     return deleteAccountEmail(decodeURIComponent(deleteEmailMatch[1]));
   }
 
+  if (path === "/api/workspace/push-subscriptions" && options.method === "POST") {
+    const me = await authorizedUser();
+    const body = normalizeWorkspacePushSubscriptionInput(JSON.parse(options.body || "{}"));
+    const { data, error } = await supabase
+      .from("workspace_push_subscriptions")
+      .upsert({ ...body, user_id: me.id, updated_at: new Date().toISOString() }, { onConflict: "endpoint" })
+      .select("id")
+      .single();
+    if (error) throw error;
+    return { ok: true, subscriptionId: data.id };
+  }
+
+  if (path === "/api/workspace/push-subscriptions" && options.method === "DELETE") {
+    const body = normalizeWorkspacePushSubscriptionInput(JSON.parse(options.body || "{}"), { allowMissingKeys: true });
+    const { error } = await supabase
+      .from("workspace_push_subscriptions")
+      .delete()
+      .eq("endpoint", body.endpoint);
+    if (error) throw error;
+    return { ok: true };
+  }
+
   if (path === "/api/workspace/task-collaborators" && (!options.method || options.method === "GET")) {
     const collaborators = await loadWorkspaceTaskCollaborators(supabase);
     return { ok: true, collaborators };
@@ -1801,6 +1823,22 @@ function normalizeWorkspaceTaskInput(value, requireTitle = false) {
     task.completed_at = payload.status === "done" ? new Date().toISOString() : null;
   }
   return task;
+}
+
+function normalizeWorkspacePushSubscriptionInput(value, options = {}) {
+  const payload = value && typeof value === "object" ? value : {};
+  const endpoint = String(payload.endpoint || "").trim();
+  if (!/^https:\/\//i.test(endpoint) || endpoint.length > 600) throw new Error("Suscripcion push invalida.");
+  const keys = payload.keys && typeof payload.keys === "object" ? payload.keys : {};
+  const p256dh = String(keys.p256dh || payload.p256dh || "").trim();
+  const auth = String(keys.auth || payload.auth || "").trim();
+  if (!options.allowMissingKeys && (!p256dh || !auth)) throw new Error("Faltan claves de suscripcion push.");
+  return {
+    endpoint,
+    p256dh,
+    auth,
+    user_agent: navigator.userAgent || ""
+  };
 }
 
 function normalizeWorkspaceEventInput(value, requireTitle = false) {

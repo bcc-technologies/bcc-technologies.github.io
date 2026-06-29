@@ -248,6 +248,7 @@
       events = Array.isArray(data.events) ? data.events : [];
       eventsLoaded = true;
       render();
+      notifyEventsChanged();
     } catch (error) {
       eventsLoaded = true;
       setEventMessage(calendarError(error), "error");
@@ -320,6 +321,7 @@
       editingEventId = null;
       closeEventDialog();
       render();
+      notifyEventsChanged();
     } catch (error) {
       setEventMessage(calendarError(error), "error");
     } finally {
@@ -339,11 +341,18 @@
       editingEventId = null;
       closeEventDialog();
       render();
+      notifyEventsChanged();
     } catch (error) {
       setEventMessage(calendarError(error), "error");
     } finally {
       button.disabled = false;
     }
+  }
+
+  function notifyEventsChanged() {
+    document.dispatchEvent(new CustomEvent("bcc:workspace-events", {
+      detail: { events: events.slice(), loaded: eventsLoaded }
+    }));
   }
 
   function subscribeToTasks() {

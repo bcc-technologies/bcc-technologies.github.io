@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   });
+  window.BCCWorkspaceNotifications?.init(user);
   window.BCCWorkspaceProductivity?.init(user);
   window.BCCWorkspaceCalendar?.init(user);
   window.BCCWorkspaceForms?.init(user);
