@@ -1,5 +1,11 @@
 let staffCurrentUser = null;
 
+const WORKSPACE_MODULE_BY_VIEW = {
+  "science-radar": "intelligence",
+  "product-intelligence": "analytics",
+  "crm-correos": "prospectos"
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["staff", "admin"] });
   if (!user) return;
@@ -9,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateUser(user);
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
   bindStaffWorkPanels();
-  bindBusinessPanels();
+  bindIntelligencePanels();
   bindStaffWorkspaceRouter();
   bindAdminViewSimulator(user);
   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
@@ -53,9 +59,9 @@ function bindStaffWorkspaceRouter() {
     calendario: "agenda",
     kpis: "kpis",
     formularios: "formularios",
-    analytics: "analytics",
-    intelligence: "intelligence",
-    prospectos: "prospectos"
+    analytics: "website",
+    business: "website",
+    prospectos: "correos"
   };
   window.BCCWorkspaceRouter?.bind({
     aliases: {
@@ -63,15 +69,19 @@ function bindStaffWorkspaceRouter() {
       calendario: "trabajo",
       kpis: "trabajo",
       formularios: "trabajo",
-      analytics: "business",
-      intelligence: "business",
-      prospectos: "business"
+      business: "product-intelligence",
+      analytics: "product-intelligence",
+      intelligence: "science-radar",
+      prospectos: "crm-correos"
     },
     panelAliases,
-    onShow({ nextId, panelId }) {
-      if (nextId === "trabajo") openStaffWorkPanel(panelId || "tareas");
-      if (nextId === "business") openBusinessPanel(panelId || "analytics");
-      else window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(nextId, staffCurrentUser);
+    onShow({ nextId, panelId, activeView }) {
+      if (nextId === "trabajo") {
+        openStaffWorkPanel(panelId || "tareas");
+        return;
+      }
+      if (activeView?.querySelector("[data-intel-panel]")) openIntelligencePanel(activeView, panelId);
+      initializeWorkspaceView(nextId);
     }
   });
 }
@@ -84,10 +94,12 @@ function bindStaffWorkPanels() {
   });
 }
 
-function bindBusinessPanels() {
-  document.querySelectorAll("[data-business-panel-tab]").forEach(tab => {
+function bindIntelligencePanels() {
+  document.querySelectorAll("[data-intel-panel-tab]").forEach(tab => {
     tab.addEventListener("click", () => {
-      openBusinessPanel(tab.dataset.businessPanelTab || "analytics");
+      const view = tab.closest("[data-workspace-view]");
+      openIntelligencePanel(view, tab.dataset.intelPanelTab);
+      initializeWorkspaceView(view?.id);
     });
   });
 }
@@ -114,10 +126,12 @@ function openStaffWorkPanel(panelId = "tareas") {
 }
 
 
-function openBusinessPanel(panelId = "analytics") {
-  const panels = [...document.querySelectorAll("[data-business-panel]")];
-  const tabs = [...document.querySelectorAll("[data-business-panel-tab]")];
-  const panel = panels.find(item => item.dataset.businessPanel === panelId) || panels[0];
+function openIntelligencePanel(view, panelId = "") {
+  if (!view) return;
+  const panels = [...view.querySelectorAll("[data-intel-panel]")];
+  if (!panels.length) return;
+  const tabs = [...view.querySelectorAll("[data-intel-panel-tab]")];
+  const panel = panels.find(item => item.dataset.intelPanel === panelId) || panels[0];
   if (!panel) return;
 
   panels.forEach(item => {
@@ -127,13 +141,17 @@ function openBusinessPanel(panelId = "analytics") {
   });
 
   tabs.forEach(tab => {
-    const active = tab.dataset.businessPanelTab === panel.dataset.businessPanel;
+    const active = tab.dataset.intelPanelTab === panel.dataset.intelPanel;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", active ? "true" : "false");
   });
 
-  window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(panel.dataset.businessPanel, staffCurrentUser);
   window.BCCWorkspaceUtils.refreshIcons();
+}
+
+function initializeWorkspaceView(viewId) {
+  const moduleId = WORKSPACE_MODULE_BY_VIEW[viewId] || viewId;
+  window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(moduleId, staffCurrentUser);
 }
 
 function bindAdminViewSimulator(user) {

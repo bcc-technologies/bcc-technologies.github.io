@@ -70,7 +70,7 @@
           <div class="account-dropdown" data-account-dropdown hidden>
             <a href="/staff-dashboard.html" data-dashboard-link>Mi dashboard</a>
             <a href="#usuarios" data-admin-return hidden>Gestión interna</a>
-            <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden>Content (CMS)</a>
+            <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden>Editorial</a>
             <a href="/dashboard.html">Vista cliente</a>
             <button type="button" data-logout>Cerrar sesión</button>
           </div>
@@ -82,14 +82,24 @@
         <p class="workspace-nav-label"><i data-lucide="briefcase-business"></i><span>Personal</span></p>
         <a href="#resumen" class="active"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="#trabajo"><i data-lucide="workflow"></i><span>Operación</span></a>
-        <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="panels-top-left"></i><span>CMS</span></a>
+        <p class="workspace-nav-label" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="panels-top-left"></i><span>CMS</span></p>
+        <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><span>Editorial</span></a>
         <a href="#conocimiento"><i data-lucide="notebook-tabs"></i><span>Conocimiento</span></a>
         <p class="workspace-nav-label" data-permission-required="admin:view"><i data-lucide="command"></i><span>Gestión</span></p>
         <a href="#usuarios" data-permission-required="admin:view"><i data-lucide="users-round"></i><span>Usuarios</span></a>
         <a href="#roles" data-permission-required="admin:view"><i data-lucide="key-round"></i><span>Roles y permisos</span></a>
         <a href="#auditoria" data-permission-required="admin:view"><i data-lucide="history"></i><span>Auditoría</span></a>
-        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="briefcase-business"></i><span>Business</span></p>
-        <a href="#business" data-permission-required="department:manage"><i data-lucide="chart-network"></i><span>Business</span></a>
+        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="satellite"></i><span>External Intelligence</span></p>
+        <a href="#science-radar" data-permission-required="department:manage"><i data-lucide="radar"></i><span>Science Radar</span></a>
+        <a href="#business-radar" data-permission-required="department:manage"><i data-lucide="scan-search"></i><span>Business Radar</span></a>
+        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="brain-circuit"></i><span>Internal Intelligence</span></p>
+        <a href="#product-intelligence" data-permission-required="department:manage"><i data-lucide="chart-no-axes-column-increasing"></i><span>Product Intelligence</span></a>
+        <a href="#performance-intelligence" data-permission-required="department:manage"><i data-lucide="gauge"></i><span>Performance Intelligence</span></a>
+        <a href="#financial-intelligence" data-permission-required="department:manage"><i data-lucide="circle-dollar-sign"></i><span>Financial Intelligence</span></a>
+        <a href="#bureaucracy-intelligence" data-permission-required="department:manage"><i data-lucide="file-cog"></i><span>Bureaucracy Intelligence</span></a>
+        <a href="#marketing-intelligence" data-permission-required="department:manage"><i data-lucide="megaphone"></i><span>Marketing Intelligence</span></a>
+        <p class="workspace-nav-label" data-permission-required="department:manage"><i data-lucide="contact-round"></i><span>CRM</span></p>
+        <a href="#crm-correos" data-permission-required="department:manage"><i data-lucide="mail-plus"></i><span>Correos</span></a>
         <a href="#perfil"><i data-lucide="user-round"></i><span>Cuenta</span></a>
       </nav>
       <section class="workspace-help">
@@ -437,39 +447,200 @@
             <div class="role-library" data-role-library></div>
           </section>
         </section>
-        <section class="workspace-view" id="business" data-permission-required="department:manage" data-workspace-view data-view-title="Business" hidden>
-          <section class="staff-work-hub business-work-hub" aria-label="Business Intelligence">
+        <section class="workspace-view" id="science-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Science Radar" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Science Radar">
             <article class="module-surface staff-hub-hero staff-work-hub-hero">
               <div>
-                <span class="workspace-eyebrow">Business Intelligence</span>
-                <h2>Business</h2>
-                <p>Analiza señales comerciales, tráfico del sitio, inteligencia externa y operación de prospectos desde una sola estructura.</p>
+                <span class="workspace-eyebrow">External Intelligence</span>
+                <h2>Science Radar</h2>
+                <p>Radar de señales científicas y tecnológicas externas para detectar tendencias, publicaciones y oportunidades de investigación.</p>
               </div>
-              <span class="status-pill enabled">BI activo</span>
+              <span class="status-pill enabled">Radar activo</span>
             </article>
-            <div class="staff-work-tabs business-tabs" role="tablist" aria-label="Subsecciones de Business">
-              <button class="active" type="button" data-business-panel-tab="analytics" aria-selected="true"><i data-lucide="chart-no-axes-column-increasing"></i><span>Analytics</span></button>
-              <button type="button" data-business-panel-tab="intelligence" aria-selected="false"><i data-lucide="radar"></i><span>Intelligence</span></button>
-              <button type="button" data-business-panel-tab="prospectos" aria-selected="false"><i data-lucide="mail-plus"></i><span>Prospectos</span></button>
+            <section class="module-surface staff-work-panel active">
+              <div class="staff-work-panel-body flush">
+                <section data-intelligence-workspace aria-label="Science Radar">
+                  <p class="muted-text">Cargando Science Radar...</p>
+                </section>
+              </div>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="business-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Business Radar" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Business Radar">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">External Intelligence</span>
+                <h2>Business Radar</h2>
+                <p>Seguimiento de mercado, competidores, señales comerciales y cambios externos relevantes para la estrategia.</p>
+              </div>
+              <span class="status-pill">Preparado</span>
+            </article>
+            <article class="module-surface">
+              <div class="module-head compact">
+                <h2>Radar comercial</h2>
+                <span class="status-dot">Próximo</span>
+              </div>
+              <p class="muted-text">Esta vista queda lista para conectar fuentes externas, alertas de mercado y reportes comparativos.</p>
+            </article>
+          </section>
+        </section>
+        <section class="workspace-view" id="product-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Product Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Product Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Internal Intelligence</span>
+                <h2>Product Intelligence</h2>
+                <p>Lectura interna de producto: comportamiento del sitio, adopción, señales de uso y salud de propiedades digitales.</p>
+              </div>
+              <span class="status-pill enabled">Datos internos</span>
+            </article>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Product Intelligence">
+              <button class="active" type="button" data-intel-panel-tab="website" aria-selected="true"><i data-lucide="globe"></i><span>Website</span></button>
+              <button type="button" data-intel-panel-tab="maps" aria-selected="false"><i data-lucide="map"></i><span>MAPs</span></button>
             </div>
-            <section class="module-surface staff-work-panel active" data-business-panel="analytics">
+            <section class="module-surface staff-work-panel active" data-intel-panel="website">
               <div class="staff-work-panel-body flush">
-                <section data-analytics-workspace aria-label="Analytics del sitio">
-                  <p class="muted-text">Cargando analytics...</p>
+                <section data-analytics-workspace aria-label="Website Analytics">
+                  <p class="muted-text">Cargando Website Analytics...</p>
                 </section>
               </div>
             </section>
-            <section class="module-surface staff-work-panel" data-business-panel="intelligence" hidden>
-              <div class="staff-work-panel-body flush">
-                <section data-intelligence-workspace aria-label="Scientific and technology intelligence">
-                  <p class="muted-text">Cargando intelligence...</p>
-                </section>
+            <section class="module-surface staff-work-panel" data-intel-panel="maps" hidden>
+              <div class="module-head compact">
+                <h2>MAPs</h2>
+                <span class="status-dot">Próximo</span>
               </div>
+              <p class="muted-text">Espacio preparado para métricas, adopción y rendimiento de MAPs cuando el módulo se conecte.</p>
             </section>
-            <section class="module-surface staff-work-panel" data-business-panel="prospectos" hidden>
+          </section>
+        </section>
+        <section class="workspace-view" id="performance-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Performance Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Performance Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Internal Intelligence</span>
+                <h2>Performance Intelligence</h2>
+                <p>KPIs generales para leer desempeño, carga operativa y resultados internos sin mezclarlo con analytics de producto.</p>
+              </div>
+              <span class="status-pill">KPIs</span>
+            </article>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Performance Intelligence">
+              <button class="active" type="button" data-intel-panel-tab="general-kpis" aria-selected="true"><i data-lucide="gauge"></i><span>General KPIs</span></button>
+            </div>
+            <section class="module-surface staff-work-panel active" data-intel-panel="general-kpis">
+              <div class="module-head compact">
+                <h2>General KPIs</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Vista reservada para indicadores ejecutivos, rendimiento por área y seguimiento transversal.</p>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="financial-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Financial Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Financial Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Internal Intelligence</span>
+                <h2>Financial Intelligence</h2>
+                <p>Panel financiero para lectura de ingresos, costos, forecast y señales de salud económica.</p>
+              </div>
+              <span class="status-pill">Finanzas</span>
+            </article>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Financial Intelligence">
+              <button class="active" type="button" data-intel-panel-tab="finance-dashboard" aria-selected="true"><i data-lucide="circle-dollar-sign"></i><span>Finance Dashboard</span></button>
+            </div>
+            <section class="module-surface staff-work-panel active" data-intel-panel="finance-dashboard">
+              <div class="module-head compact">
+                <h2>Finance Dashboard</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Estructura lista para conectar facturación, cashflow y reportes financieros internos.</p>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="bureaucracy-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Bureaucracy Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Bureaucracy Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Internal Intelligence</span>
+                <h2>Bureaucracy Intelligence</h2>
+                <p>Lectura de documentos, procesos, bloqueos administrativos y flujo burocrático interno.</p>
+              </div>
+              <span class="status-pill">Documentos</span>
+            </article>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Bureaucracy Intelligence">
+              <button class="active" type="button" data-intel-panel-tab="documents" aria-selected="true"><i data-lucide="files"></i><span>Documents</span></button>
+              <button type="button" data-intel-panel-tab="processes" aria-selected="false"><i data-lucide="route"></i><span>Processes</span></button>
+            </div>
+            <section class="module-surface staff-work-panel active" data-intel-panel="documents">
+              <div class="module-head compact">
+                <h2>Documents</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Aquí vivirá la inteligencia sobre documentos, estados, tiempos y fricción administrativa.</p>
+            </section>
+            <section class="module-surface staff-work-panel" data-intel-panel="processes" hidden>
+              <div class="module-head compact">
+                <h2>Processes</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Espacio para seguimiento de procesos, responsables, cuellos de botella y automatizaciones internas.</p>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="marketing-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Marketing Intelligence" hidden>
+          <section class="staff-work-hub intelligence-work-hub" aria-label="Marketing Intelligence">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">Internal Intelligence</span>
+                <h2>Marketing Intelligence</h2>
+                <p>Rendimiento de audiencia, campañas y contenido sin mezclar correo operativo de CRM.</p>
+              </div>
+              <span class="status-pill">Marketing</span>
+            </article>
+            <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Marketing Intelligence">
+              <button class="active" type="button" data-intel-panel-tab="audience" aria-selected="true"><i data-lucide="users-round"></i><span>Audience</span></button>
+              <button type="button" data-intel-panel-tab="campaigns" aria-selected="false"><i data-lucide="megaphone"></i><span>Campaigns</span></button>
+              <button type="button" data-intel-panel-tab="content-performance" aria-selected="false"><i data-lucide="bar-chart-3"></i><span>Content Performance</span></button>
+            </div>
+            <section class="module-surface staff-work-panel active" data-intel-panel="audience">
+              <div class="module-head compact">
+                <h2>Audience</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Lectura futura de segmentos, intención, fuentes y calidad de audiencia.</p>
+            </section>
+            <section class="module-surface staff-work-panel" data-intel-panel="campaigns" hidden>
+              <div class="module-head compact">
+                <h2>Campaigns</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Espacio para campañas, canales, resultados y aprendizaje por iniciativa.</p>
+            </section>
+            <section class="module-surface staff-work-panel" data-intel-panel="content-performance" hidden>
+              <div class="module-head compact">
+                <h2>Content Performance</h2>
+                <span class="status-dot">Preparado</span>
+              </div>
+              <p class="muted-text">Vista preparada para rendimiento editorial, piezas, temas y conversión de contenido.</p>
+            </section>
+          </section>
+        </section>
+        <section class="workspace-view" id="crm-correos" data-permission-required="department:manage" data-workspace-view data-view-title="CRM · Correos" hidden>
+          <section class="staff-work-hub crm-work-hub" aria-label="CRM de correos">
+            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+              <div>
+                <span class="workspace-eyebrow">CRM</span>
+                <h2>Correos</h2>
+                <p>Gestión de comunicación comercial: directorio, bandeja, plantillas, automatizaciones y seguimiento por contacto.</p>
+              </div>
+              <span class="status-pill enabled">CRM activo</span>
+            </article>
+            <section class="module-surface staff-work-panel active">
               <div class="staff-work-panel-body flush">
-                <section data-prospects-workspace aria-label="Gestor de prospectos">
-                  <p class="muted-text">Cargando prospectos...</p>
+                <section data-prospects-workspace aria-label="CRM de correos">
+                  <p class="muted-text">Cargando CRM de correos...</p>
                 </section>
               </div>
             </section>
@@ -505,7 +676,7 @@
                   <a href="/blog.html"><i data-lucide="newspaper"></i><span>Blog</span><strong>Contenido publicado</strong></a>
                   <a href="/science.html"><i data-lucide="microscope"></i><span>Ciencia</span><strong>Investigacion y referencias</strong></a>
                   <a href="/products.html"><i data-lucide="boxes"></i><span>Productos</span><strong>Soluciones y capacidades</strong></a>
-                  <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-text"></i><span>CMS</span><strong>Gestion editorial interna</strong></a>
+                  <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><span>Editorial</span><strong>Gestion editorial interna</strong></a>
                 </div>
               </article>
               <article class="module-surface staff-hub-panel">

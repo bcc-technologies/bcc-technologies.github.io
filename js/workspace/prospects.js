@@ -118,7 +118,7 @@
   }
 
   async function loadDashboard() {
-    setMessage("Cargando prospectos...", "neutral");
+    setMessage("Cargando contactos...", "neutral");
     try {
       const data = await ProspectsApi.loadDashboard({ timeoutMs: PROSPECTS_TIMEOUT_MS, withTimeout });
       prospects = Array.isArray(data.prospects) ? data.prospects : [];
@@ -219,8 +219,8 @@
 
     insightGrid.innerHTML = [
       { label: "Correos enviados", value: number(sentEmails.length), note: "Historial total" },
-      { label: "Seguimientos vencidos", value: number(overdue + dueFollowUps), note: "Prospectos y follow-ups" },
-      { label: "Sin contacto", value: number(noTouch), note: "Prospectos sin toque" },
+      { label: "Seguimientos vencidos", value: number(overdue + dueFollowUps), note: "Contactos y follow-ups" },
+      { label: "Sin contacto", value: number(noTouch), note: "Contactos sin toque" },
       { label: "Win rate actual", value: `${winRate}%`, note: `${scheduledEmails} correos programados · ${avgSentPerProspect} por prospecto` }
     ].map(item => `
       <div class="prospect-insight-card">
@@ -491,7 +491,7 @@
 
   function pipelineAutomations() {
     return [
-      { scope: "Entrada", title: "Nuevo prospecto -> asignar responsable", description: "Marca prospectos sin dueño para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
+      { scope: "Entrada", title: "Nuevo contacto -> asignar responsable", description: "Marca contactos sin dueño para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
       { scope: "Seguimiento", title: "Fecha vencida -> actividad pendiente", description: "Detecta oportunidades vencidas y las empuja a la cola de designación del pipeline.", icon: "calendar-clock", enabled: true },
       { scope: "Propuesta", title: "Propuesta sin respuesta -> correo", description: "Sugiere comunicación desde plantillas cuando una propuesta queda sin próximo paso claro.", icon: "send", enabled: true },
       { scope: "Cierre", title: "Ganado o perdido -> congelar acciones", description: "Evita que los cierres sigan apareciendo como trabajo operativo activo.", icon: "lock", enabled: false }
@@ -874,7 +874,7 @@
     }
     const prospect = selectedProspect() || emptyProspect();
     form.innerHTML = `
-      <div class="prospect-editor-head"><div><h3>${prospect.id ? "Editar prospecto" : "Nuevo prospecto"}</h3><p>${prospect.id ? "Actualiza la ficha comercial." : "Crea un nuevo registro en la base comercial."}</p></div><button class="icon-close" type="button" data-directory-editor-close aria-label="Cerrar editor"><i data-lucide="x"></i></button></div>
+      <div class="prospect-editor-head"><div><h3>${prospect.id ? "Editar contacto" : "Nuevo contacto"}</h3><p>${prospect.id ? "Actualiza la ficha comercial." : "Crea un nuevo registro en la base comercial."}</p></div><button class="icon-close" type="button" data-directory-editor-close aria-label="Cerrar editor"><i data-lucide="x"></i></button></div>
       <input type="hidden" name="id" value="${escapeAttr(prospect.id || "")}" />
       <div class="prospects-form-grid">
         <label>Nombre
@@ -1445,16 +1445,16 @@
       selectedProspectId = data.prospect.id;
       selectedEmailId = "";
       directoryMode = "view";
-      setMessage(`Prospecto ${data.prospect.fullName} guardado.`, "ok");
+      setMessage(`Contacto ${data.prospect.fullName} guardado.`, "ok");
       renderAll();
     } catch (error) {
-      setMessage(error.message || "No fue posible guardar el prospecto.", "error");
+      setMessage(error.message || "No fue posible guardar el contacto.", "error");
     }
   }
 
   async function deleteProspect(event) {
     const id = event.currentTarget.dataset.prospectDelete || "";
-    if (!id || !window.confirm("¿Eliminar este prospecto y su historial de correos?")) return;
+    if (!id || !window.confirm("¿Eliminar este contacto y su historial de correos?")) return;
     try {
       await ProspectsApi.deleteProspect(id);
       prospects = prospects.filter(item => item.id !== id);
@@ -1468,7 +1468,7 @@
       setMessage("Prospecto eliminado.", "ok");
       renderAll();
     } catch (error) {
-      setMessage(error.message || "No fue posible eliminar el prospecto.", "error");
+      setMessage(error.message || "No fue posible eliminar el contacto.", "error");
     }
   }
 
@@ -1868,12 +1868,12 @@
   function prospectsError(error) {
     const message = String(error?.message || "");
     if (/no respondio a tiempo|timeout/i.test(message)) {
-      return "Prospectos tardo demasiado en responder. Revisa Supabase o intenta de nuevo.";
+      return "CRM tardo demasiado en responder. Revisa Supabase o intenta de nuevo.";
     }
     if (/workspace_prospect_|relation .* does not exist|column .* does not exist/i.test(message)) {
-      return "Falta aplicar la ultima actualizacion del esquema de Prospectos en Supabase.";
+      return "Falta aplicar la ultima actualizacion del esquema de CRM en Supabase.";
     }
-    return message || "No fue posible cargar prospectos.";
+    return message || "No fue posible cargar contactos.";
   }
 
   async function edgeFunctionError(error, fallback) {

@@ -1,11 +1,11 @@
 (() => {
   function renderShell(root, { phases, escapeHtml, refreshIcons }) {
     const phaseOptions = phases.map(phase => `<option value="${escapeHtml(phase.id)}">${escapeHtml(phase.label)}</option>`).join("");
-    const searchControl = `<label class="workspace-search prospects-search"><i data-lucide="search"></i><input type="search" data-prospect-search placeholder="Buscar prospectos..." autocomplete="off" aria-label="Buscar prospectos" /></label>`;
+    const searchControl = `<label class="workspace-search prospects-search"><i data-lucide="search"></i><input type="search" data-prospect-search placeholder="Buscar contactos..." autocomplete="off" aria-label="Buscar contactos" /></label>`;
     const phaseControl = `<select data-prospect-phase-filter aria-label="Filtrar por fase"><option value="">Todas las fases</option>${phaseOptions}</select>`;
     root.innerHTML = `
       <section class="prospects-workspace">
-        <div class="staff-work-tabs prospects-tabs" role="tablist" aria-label="Subsecciones de prospectos">
+        <div class="staff-work-tabs prospects-tabs" role="tablist" aria-label="Subsecciones de CRM">
           <button id="prospects-tab-home" class="active" type="button" role="tab" aria-selected="true" aria-controls="prospects-panel-home" data-prospects-tab="home"><i data-lucide="layout-dashboard"></i><span>Inicio</span></button>
           <button id="prospects-tab-pipeline" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-pipeline" data-prospects-tab="pipeline"><i data-lucide="folder-kanban"></i><span>Pipeline</span></button>
           <button id="prospects-tab-directory" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-directory" data-prospects-tab="directory"><i data-lucide="contact-round"></i><span>Directorio</span></button>
@@ -23,30 +23,30 @@
         <section id="prospects-panel-pipeline" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-pipeline" data-prospects-panel="pipeline" hidden>
           <div class="module-head compact prospects-panel-head">
             <div><h2>Pipeline operativo</h2><p>Crea, mueve, designa y administra automatizaciones del flujo comercial.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
-            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh><i data-lucide="refresh-cw"></i>Actualizar</button><button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button></div>
+            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh><i data-lucide="refresh-cw"></i>Actualizar</button><button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo contacto</button></div>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
             <section class="workspace-metrics prospects-metrics" aria-label="Resumen del pipeline">
-              <div><span>Prospectos</span><strong data-prospect-metric="total">-</strong><small>Base activa</small></div>
+              <div><span>Contactos</span><strong data-prospect-metric="total">-</strong><small>Base activa</small></div>
               <div><span>Seguimiento hoy</span><strong data-prospect-metric="due">-</strong><small>Acciones vencidas o para hoy</small></div>
               <div><span>En propuesta</span><strong data-prospect-metric="pipeline">-</strong><small>Propuesta y negociación</small></div>
               <div><span>Ganados</span><strong data-prospect-metric="won">-</strong><small>Cierres registrados</small></div>
             </section>
-            <section class="prospects-board" data-prospects-board aria-label="Pipeline operativo de prospectos"></section>
+            <section class="prospects-board" data-prospects-board aria-label="Pipeline operativo de contactos"></section>
           </div>
         </section>
         <section id="prospects-panel-directory" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-directory" data-prospects-panel="directory" hidden>
           <div class="module-head compact prospects-panel-head">
-            <div><h2>Directorio y ficha</h2><p>Administra la base y trabaja la comunicación/actividad de cada prospecto.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
-            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo prospecto</button></div>
+            <div><h2>Directorio y ficha</h2><p>Administra la base y trabaja la comunicación/actividad de cada contacto.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
+            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo contacto</button></div>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
             <section class="prospects-directory-workspace" aria-label="Directorio comercial">
               <div class="prospects-directory-controls" data-directory-controls></div>
               <div class="prospects-directory-layout">
-                <section class="prospects-directory-list" data-prospects-directory-list aria-label="Directorio de prospectos"></section>
-                <aside class="prospect-directory-side" aria-label="Trabajo del prospecto seleccionado">
-                  <div class="prospect-directory-tabs" role="tablist" aria-label="Detalle del prospecto">
+                <section class="prospects-directory-list" data-prospects-directory-list aria-label="Directorio de contactos"></section>
+                <aside class="prospect-directory-side" aria-label="Trabajo del contacto seleccionado">
+                  <div class="prospect-directory-tabs" role="tablist" aria-label="Detalle del contacto">
                     <button class="active" type="button" data-directory-section="profile"><i data-lucide="contact-round"></i>Ficha</button>
                     <button type="button" data-directory-section="communication"><i data-lucide="send"></i>Comunicación</button>
                     <button type="button" data-directory-section="activity"><i data-lucide="clock-3"></i>Actividad</button>
@@ -62,7 +62,7 @@
         </section>
         <section id="prospects-panel-inbox" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-inbox" data-prospects-panel="inbox" hidden>
           <div class="module-head compact prospects-panel-head">
-            <div><h2>Bandeja de entrada</h2><p>Correos pendientes, programados, borradores y enviados de todos los prospectos.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
+            <div><h2>Bandeja de entrada</h2><p>Correos pendientes, programados, borradores y enviados de todos los contactos.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
             <span class="status-dot" data-prospect-inbox-count>0</span>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body"><section data-prospect-inbox></section></div>
