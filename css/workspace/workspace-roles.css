@@ -250,3 +250,14 @@
     width: 100%;
   }
 }
+
+.role-card-head em{
+  width: fit-content;
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--ink-muted);
+  background: var(--surface-muted);
+  font-size: .7rem;
+  font-style: normal;
+  font-weight: 800;
+}

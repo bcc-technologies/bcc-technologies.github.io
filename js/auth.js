@@ -10,6 +10,10 @@ const STAFF_ROLE_PERMISSIONS = {
   department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
 };
 
+const BASE_ROLE_HIERARCHY = { admin: 0, staff: 50, client: 90 };
+const STAFF_ROLE_HIERARCHY = { cofounder: 10, department_director: 20, author: 40 };
+const DEFAULT_CUSTOM_ROLE_HIERARCHY = 50;
+
 const DEPARTMENT_PERMISSIONS = {
   technology: ["department:technology"],
   finance: ["department:finance"],
@@ -78,6 +82,16 @@ function normalizeCustomRoleList(value, definitions = []) {
   return allowed.size ? clean.filter(item => allowed.has(item)) : clean;
 }
 
+function hierarchyLevelForProfile(role, staffRoles = [], customRoles = [], customRoleDefinitions = []) {
+  const levels = [BASE_ROLE_HIERARCHY[role] ?? BASE_ROLE_HIERARCHY.client];
+  normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => levels.push(STAFF_ROLE_HIERARCHY[staffRole] ?? DEFAULT_CUSTOM_ROLE_HIERARCHY));
+  const customDefinitions = new Map((customRoleDefinitions || []).map(customRole => [customRole.id, customRole]));
+  normalizeCustomRoleList(customRoles, customRoleDefinitions).forEach(customRoleId => {
+    levels.push(Number(customDefinitions.get(customRoleId)?.hierarchyLevel ?? DEFAULT_CUSTOM_ROLE_HIERARCHY));
+  });
+  return Math.min(...levels.filter(level => Number.isFinite(level)));
+}
+
 function permissionsForProfile(role, staffRoles = [], departments = [], customRoles = [], customRoleDefinitions = []) {
   const permissions = new Set(ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.client);
   normalizeList(staffRoles, STAFF_ROLES).forEach(staffRole => {
@@ -105,6 +119,7 @@ function builtInRoleDefinitions() {
     description: id === "client" ? "Acceso externo para clientes." : id === "staff" ? "Acceso interno operativo." : "Control completo del workspace.",
     type: "base",
     locked: true,
+    hierarchyLevel: BASE_ROLE_HIERARCHY[id] ?? DEFAULT_CUSTOM_ROLE_HIERARCHY,
     permissions: [...permissions].sort()
   }));
   const staff = Object.entries(STAFF_ROLE_PERMISSIONS).map(([id, permissions]) => ({
@@ -114,6 +129,7 @@ function builtInRoleDefinitions() {
     description: "Rol interno acumulable para personal y administradores.",
     type: "staff",
     locked: true,
+    hierarchyLevel: STAFF_ROLE_HIERARCHY[id] ?? DEFAULT_CUSTOM_ROLE_HIERARCHY,
     permissions: [...permissions].sort()
   }));
   const departments = Object.entries(DEPARTMENT_PERMISSIONS).map(([id, permissions]) => ({
@@ -123,6 +139,7 @@ function builtInRoleDefinitions() {
     description: "Ámbito departamental acumulable.",
     type: "department",
     locked: true,
+    hierarchyLevel: DEFAULT_CUSTOM_ROLE_HIERARCHY,
     permissions: [...permissions].sort()
   }));
   return [...base, ...staff, ...departments];
@@ -161,10 +178,17 @@ function publicWorkspaceRoleDefinition(row = {}) {
     description: String(row.description || ""),
     type: "custom",
     locked: false,
+    hierarchyLevel: normalizeHierarchyLevel(row.hierarchy_level ?? row.hierarchyLevel),
     permissions: [...new Set(Array.isArray(row.permissions) ? row.permissions.map(String) : [])].sort(),
     createdAt: row.created_at || row.createdAt || "",
     updatedAt: row.updated_at || row.updatedAt || ""
   };
+}
+
+function normalizeHierarchyLevel(value, fallback = DEFAULT_CUSTOM_ROLE_HIERARCHY) {
+  const level = Number(value);
+  if (!Number.isFinite(level)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(level)));
 }
 
 function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
@@ -190,6 +214,7 @@ function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
     key: id.replace(/^custom:/, ""),
     name,
     description: String(body.description || "").trim(),
+    hierarchy_level: normalizeHierarchyLevel(body.hierarchyLevel ?? body.hierarchy_level),
     permissions
   };
 }
@@ -326,6 +351,7 @@ function publicProfile(profile, authUser = null, customRoleDefinitions = []) {
     departments,
     customRoles,
     status: "active",
+    hierarchyLevel: hierarchyLevelForProfile(role, staffRoles, customRoles, customRoleDefinitions),
     permissions: permissionsForProfile(role, staffRoles, departments, customRoles, customRoleDefinitions),
     createdAt: profile?.created_at || authUser?.created_at || "",
     lastLoginAt: authUser?.last_sign_in_at || ""
@@ -661,28 +687,39 @@ async function bccApi(path, options = {}) {
     return deleteAccountEmail(decodeURIComponent(deleteEmailMatch[1]));
   }
 
+  if (path === "/api/workspace/task-collaborators" && (!options.method || options.method === "GET")) {
+    const collaborators = await loadWorkspaceTaskCollaborators(supabase);
+    return { ok: true, collaborators };
+  }
+
   if (path === "/api/workspace/tasks" && (!options.method || options.method === "GET")) {
+    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
     const { data, error } = await supabase
       .from("workspace_tasks")
       .select(WORKSPACE_TASK_COLUMNS)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return { ok: true, tasks: data.map(publicWorkspaceTask) };
+    return { ok: true, tasks: data.map(task => publicWorkspaceTask(task, collaborators)) };
   }
 
   if (path === "/api/workspace/tasks" && options.method === "POST") {
-    const body = normalizeWorkspaceTaskInput(JSON.parse(options.body || "{}"), true);
+    const me = await authorizedUser();
+    const raw = JSON.parse(options.body || "{}");
+    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
+    const body = normalizeWorkspaceTaskInput(raw, true);
+    Object.assign(body, resolveWorkspaceTaskAssignment(raw, me, collaborators));
     const { data, error } = await supabase
       .from("workspace_tasks")
       .insert(body)
       .select(WORKSPACE_TASK_COLUMNS)
       .single();
     if (error) throw error;
-    return { ok: true, task: publicWorkspaceTask(data) };
+    return { ok: true, task: publicWorkspaceTask(data, collaborators) };
   }
 
   const workspaceTaskMatch = path.match(/^\/api\/workspace\/tasks\/([^/]+)$/);
   if (workspaceTaskMatch && options.method === "PATCH") {
+    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
     const body = normalizeWorkspaceTaskInput(JSON.parse(options.body || "{}"));
     const { data, error } = await supabase
       .from("workspace_tasks")
@@ -691,7 +728,7 @@ async function bccApi(path, options = {}) {
       .select(WORKSPACE_TASK_COLUMNS)
       .single();
     if (error) throw error;
-    return { ok: true, task: publicWorkspaceTask(data) };
+    return { ok: true, task: publicWorkspaceTask(data, collaborators) };
   }
 
   if (workspaceTaskMatch && options.method === "DELETE") {
@@ -1052,7 +1089,7 @@ async function bccApi(path, options = {}) {
     const { data, error } = await supabase
       .from("workspace_role_definitions")
       .insert(payload)
-      .select("id, key, name, description, permissions, created_at, updated_at")
+      .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
       .single();
     if (error) throw error;
     const roles = await loadWorkspaceRoleDefinitions(supabase);
@@ -1077,9 +1114,9 @@ async function bccApi(path, options = {}) {
     const payload = sanitizeWorkspaceRoleInput({ ...JSON.parse(options.body || "{}"), id }, existing.filter(role => role.id !== id));
     const { data, error } = await supabase
       .from("workspace_role_definitions")
-      .update({ key: payload.key, name: payload.name, description: payload.description, permissions: payload.permissions })
+      .update({ key: payload.key, name: payload.name, description: payload.description, hierarchy_level: payload.hierarchy_level, permissions: payload.permissions })
       .eq("id", id)
-      .select("id, key, name, description, permissions, created_at, updated_at")
+      .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
       .single();
     if (error) throw error;
     const roles = await loadWorkspaceRoleDefinitions(supabase);
@@ -1474,10 +1511,46 @@ async function bccApi(path, options = {}) {
   throw new Error(`Endpoint no migrado a Supabase: ${path}`);
 }
 
+async function loadWorkspaceTaskCollaborators(supabase) {
+  const { data, error } = await supabase.rpc("get_workspace_task_collaborators");
+  if (error) throw error;
+  return (Array.isArray(data) ? data : []).map(item => ({
+    id: String(item.id || ""),
+    name: String(item.name || item.display_name || item.email || "Cuenta"),
+    email: String(item.email || ""),
+    role: String(item.role || "staff"),
+    hierarchyLevel: normalizeHierarchyLevel(item.hierarchy_level ?? item.hierarchyLevel),
+    relation: item.relation === "assign" ? "assign" : "suggest"
+  })).filter(item => item.id);
+}
+
+function resolveWorkspaceTaskAssignment(raw = {}, me = {}, collaborators = []) {
+  const assigneeId = String(raw.assigneeId || raw.assignee_id || me.id || "").trim();
+  if (!assigneeId || assigneeId === me.id) {
+    return {
+      user_id: me.id,
+      assignee_id: me.id,
+      created_by: me.id,
+      assignment_mode: "self",
+      assignment_status: "accepted"
+    };
+  }
+  const collaborator = collaborators.find(item => item.id === assigneeId);
+  if (!collaborator) throw new Error("No puedes asignar o sugerir tareas a esta cuenta.");
+  const mode = collaborator.relation === "assign" ? "assigned" : "suggested";
+  return {
+    user_id: collaborator.id,
+    assignee_id: collaborator.id,
+    created_by: me.id,
+    assignment_mode: mode,
+    assignment_status: mode === "assigned" ? "accepted" : "pending"
+  };
+}
+
 async function loadWorkspaceRoleDefinitions(supabase) {
   const { data, error } = await supabase
     .from("workspace_role_definitions")
-    .select("id, key, name, description, permissions, created_at, updated_at")
+    .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
     .order("created_at", { ascending: true });
   if (error) throw error;
   return (data || []).map(publicWorkspaceRoleDefinition);
@@ -1620,9 +1693,11 @@ function normalizeAnalyticsDashboard(value, fallbackDays = 30) {
   };
 }
 
-const WORKSPACE_TASK_COLUMNS = "id, title, description, status, priority, importance, urgency, due_date, completed_at, created_at, updated_at";
+const WORKSPACE_TASK_COLUMNS = "id, user_id, created_by, assignee_id, assignment_mode, assignment_status, assignment_note, responded_at, title, description, status, priority, importance, urgency, due_date, completed_at, created_at, updated_at";
 const WORKSPACE_TASK_STATUSES = ["backlog", "in_progress", "done"];
 const WORKSPACE_TASK_PRIORITIES = ["low", "medium", "high"];
+const WORKSPACE_TASK_ASSIGNMENT_MODES = ["self", "assigned", "suggested"];
+const WORKSPACE_TASK_ASSIGNMENT_STATUSES = ["accepted", "pending", "rejected"];
 const WORKSPACE_EVENT_COLUMNS = "id, title, type, event_date, start_time, end_time, description, location, link, visibility, related_task_id, created_at, updated_at";
 const WORKSPACE_EVENT_TYPES = ["meeting", "call", "milestone", "blocker", "reminder", "availability", "review"];
 const WORKSPACE_EVENT_VISIBILITIES = ["private", "team", "client"];
@@ -1709,6 +1784,16 @@ function normalizeWorkspaceTaskInput(value, requireTitle = false) {
     const dueDate = payload.dueDate ? String(payload.dueDate) : null;
     if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) throw new Error("Fecha limite invalida.");
     task.due_date = dueDate;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "assignmentStatus")) {
+    if (!WORKSPACE_TASK_ASSIGNMENT_STATUSES.includes(payload.assignmentStatus)) throw new Error("Estado de asignacion invalido.");
+    task.assignment_status = payload.assignmentStatus;
+    task.responded_at = ["accepted", "rejected"].includes(payload.assignmentStatus) ? new Date().toISOString() : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, "assignmentNote")) {
+    const note = String(payload.assignmentNote || "").trim();
+    if (note.length > 500) throw new Error("La nota de asignacion es demasiado larga.");
+    task.assignment_note = note;
   }
   if (Object.prototype.hasOwnProperty.call(payload, "status")) {
     if (!WORKSPACE_TASK_STATUSES.includes(payload.status)) throw new Error("Estado invalido.");
@@ -1814,9 +1899,23 @@ function priorityUrgencyFallback(priority, dueDate) {
   return 2;
 }
 
-function publicWorkspaceTask(task) {
+function publicWorkspaceTask(task, collaborators = []) {
+  const collaboratorById = new Map((collaborators || []).map(collaborator => [collaborator.id, collaborator]));
+  const assignee = collaboratorById.get(task.assignee_id || task.user_id) || null;
+  const creator = collaboratorById.get(task.created_by) || null;
+  const me = currentPageUser || null;
   return {
     id: task.id,
+    ownerId: task.user_id || task.assignee_id || "",
+    createdBy: task.created_by || task.user_id || "",
+    assigneeId: task.assignee_id || task.user_id || "",
+    assigneeName: assignee?.name || (task.assignee_id === me?.id || task.user_id === me?.id ? "Tu" : ""),
+    creatorName: creator?.name || (task.created_by === me?.id ? "Tu" : ""),
+    assignmentMode: WORKSPACE_TASK_ASSIGNMENT_MODES.includes(task.assignment_mode) ? task.assignment_mode : "self",
+    assignmentStatus: WORKSPACE_TASK_ASSIGNMENT_STATUSES.includes(task.assignment_status) ? task.assignment_status : "accepted",
+    assignmentNote: task.assignment_note || "",
+    respondedAt: task.responded_at || null,
+    canRespond: task.assignee_id === me?.id && task.assignment_mode === "suggested" && task.assignment_status === "pending",
     title: task.title,
     description: task.description || "",
     status: task.status,

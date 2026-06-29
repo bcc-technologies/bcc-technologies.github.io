@@ -978,3 +978,58 @@
     min-height: 190px;
   }
 }
+
+.task-assignee-control{
+  display: grid;
+  gap: 7px;
+}
+
+.task-assignee-control select{
+  height: 39px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: .87rem;
+  padding: 0 10px;
+}
+
+.task-assignee-control small{
+  color: var(--ink-muted);
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.task-assignment-chip{
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--ink-muted);
+  background: var(--surface-muted);
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+.task-assignment-chip.suggested.pending{
+  border-color: color-mix(in srgb, var(--warning) 38%, var(--line));
+  color: color-mix(in srgb, var(--warning) 74%, var(--ink));
+  background: color-mix(in srgb, var(--warning) 9%, var(--surface-solid));
+}
+
+.task-assignment-chip.rejected{
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--line));
+  color: color-mix(in srgb, var(--danger) 76%, var(--ink));
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface-solid));
+}
+
+.task-accept{
+  color: color-mix(in srgb, var(--success) 82%, var(--ink));
+}
+
+.task-reject{
+  color: color-mix(in srgb, var(--danger) 78%, var(--ink));
+}

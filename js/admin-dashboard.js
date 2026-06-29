@@ -655,6 +655,7 @@ function roleCard(role) {
         <span>${window.BCCWorkspaceUtils.escapeHtml(roleTypeLabel(role.type))}</span>
         <strong>${window.BCCWorkspaceUtils.escapeHtml(role.name)}</strong>
         <small>${window.BCCWorkspaceUtils.escapeHtml(role.description || "Sin descripción")}</small>
+        <em>Jerarquía ${window.BCCWorkspaceUtils.escapeHtml(role.hierarchyLevel ?? 50)}</em>
       </div>
       <div class="role-permission-chips">
         ${labels.map(label => `<span>${window.BCCWorkspaceUtils.escapeHtml(label)}</span>`).join("")}
@@ -680,6 +681,7 @@ async function saveRoleDefinition(event) {
   const payload = {
     name: form.elements.name.value,
     description: form.elements.description.value,
+    hierarchyLevel: Number(form.elements.hierarchyLevel?.value || 50),
     permissions
   };
   try {
@@ -707,6 +709,7 @@ function editRoleDefinition(id) {
   form.elements.roleId.value = role.id;
   form.elements.name.value = role.name || "";
   form.elements.description.value = role.description || "";
+  if (form.elements.hierarchyLevel) form.elements.hierarchyLevel.value = role.hierarchyLevel ?? 50;
   renderPermissionPicker(role.permissions || []);
   showRoleFormMessage(document.querySelector("[data-role-form-message]"), "Editando rol personalizado.", "ok");
   document.querySelector("#roles")?.scrollIntoView({ block: "start" });
@@ -738,6 +741,7 @@ function resetRoleForm() {
   if (!form) return;
   form.reset();
   form.elements.roleId.value = "";
+  if (form.elements.hierarchyLevel) form.elements.hierarchyLevel.value = 50;
   renderPermissionPicker();
   const message = document.querySelector("[data-role-form-message]");
   if (message) {

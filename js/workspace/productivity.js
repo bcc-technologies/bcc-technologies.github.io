@@ -12,6 +12,8 @@
   };
 
   let tasks = [];
+  let taskCollaborators = [];
+  let currentUser = null;
   let tasksLoaded = false;
   const taskSubscribers = new Set();
   let activeFilter = "all";
@@ -24,12 +26,14 @@
   async function init(user) {
     root = document.querySelector("[data-productivity-workspace]");
     if (!root || root.dataset.ready === "true") return;
+    currentUser = user || null;
     root.dataset.ready = "true";
     root.innerHTML = template(user);
     bindControls();
     moveTaskDialog();
     renderAll();
     refreshIcons();
+    await loadTaskCollaborators();
     await loadTasks();
   }
 
@@ -116,6 +120,11 @@
             Titulo
             <input type="text" name="title" maxlength="160" required placeholder="Que necesitas completar?" />
           </label>
+          <label class="task-assignee-control">
+            Responsable
+            <select name="assigneeId" data-task-assignee></select>
+            <small data-task-assignment-hint>Tarea privada para ti.</small>
+          </label>
           <div class="task-form-row">
             <div class="task-slider-control">
               <label for="task-importance">Importancia <strong data-importance-output>3</strong></label>
@@ -155,6 +164,7 @@
     root.querySelectorAll("[name=importance], [name=urgency]").forEach(input => {
       input.addEventListener("input", syncTaskPriorityPreview);
     });
+    root.querySelector("[data-task-assignee]")?.addEventListener("change", syncAssignmentPreview);
     root.querySelector("[data-task-filter]")?.addEventListener("change", event => {
       activeFilter = event.target.value;
       renderTaskList();
@@ -173,6 +183,16 @@
   function moveTaskDialog() {
     const dialog = document.querySelector("[data-task-dialog]");
     if (dialog && dialog.parentElement !== document.body) document.body.append(dialog);
+  }
+
+  async function loadTaskCollaborators() {
+    try {
+      const data = await window.BCCAuth.api("/api/workspace/task-collaborators");
+      taskCollaborators = Array.isArray(data.collaborators) ? data.collaborators : [];
+    } catch (error) {
+      taskCollaborators = [];
+    }
+    renderAssigneeOptions();
   }
 
   async function loadTasks() {
@@ -202,6 +222,7 @@
     const form = document.querySelector("[data-task-form]");
     editingTaskId = task?.id || null;
     form?.reset();
+    renderAssigneeOptions();
     if (form && task) {
       form.elements.title.value = task.title || "";
       form.elements.description.value = task.description || "";
@@ -209,13 +230,22 @@
       const sliderValues = taskSliderValues(task);
       form.elements.importance.value = sliderValues.importance;
       form.elements.urgency.value = sliderValues.urgency;
-    } else if (form && defaults?.dueDate) {
-      form.elements.dueDate.value = defaults.dueDate;
+      if (form.elements.assigneeId) {
+        form.elements.assigneeId.value = task.assigneeId || currentUser?.id || "self";
+        form.elements.assigneeId.disabled = true;
+      }
+    } else if (form) {
+      if (form.elements.assigneeId) {
+        form.elements.assigneeId.disabled = false;
+        form.elements.assigneeId.value = defaults.assigneeId || currentUser?.id || "self";
+      }
+      if (defaults?.dueDate) form.elements.dueDate.value = defaults.dueDate;
     }
     document.querySelector("[data-task-dialog-title]").textContent = task ? "Editar tarea" : "Nueva tarea";
     document.querySelector("[data-task-dialog-copy]").textContent = task ? "Actualiza la actividad sin perder su estado actual." : "Agrega una actividad a tu tablero privado.";
     document.querySelector("[data-task-submit]").textContent = task ? "Guardar cambios" : "Crear tarea";
     syncTaskPriorityPreview();
+    syncAssignmentPreview();
     dialog?.showModal();
     form?.elements.title.focus();
   }
@@ -233,6 +263,7 @@
         priority: derivePriority(form.elements.importance.value, form.elements.urgency.value),
         importance: Number(form.elements.importance.value || 3),
         urgency: Number(form.elements.urgency.value || 3),
+        assigneeId: form.elements.assigneeId?.disabled ? null : (form.elements.assigneeId?.value || currentUser?.id || null),
         dueDate: form.elements.dueDate.value || null,
         description: String(form.elements.description.value || "").trim()
       };
@@ -262,6 +293,16 @@
     if (!checkbox) return;
     const task = findTask(checkbox.dataset.taskComplete);
     if (!task) return;
+    if (task.assignmentMode === "suggested" && task.assignmentStatus === "pending") {
+      checkbox.checked = false;
+      setMessage("Acepta la sugerencia antes de marcar avance.", "error");
+      return;
+    }
+    if (task.assignmentStatus === "rejected") {
+      checkbox.checked = false;
+      setMessage("Esta sugerencia fue rechazada.", "error");
+      return;
+    }
     const status = checkbox.checked ? "done" : "in_progress";
     await updateTask(task, { status }, checkbox);
   }
@@ -277,6 +318,14 @@
     }
     if (button.dataset.taskAction === "delete") {
       await deleteTask(task, button);
+      return;
+    }
+    if (button.dataset.taskAction === "accept") {
+      await updateTask(task, { assignmentStatus: "accepted" }, button);
+      return;
+    }
+    if (button.dataset.taskAction === "reject") {
+      await updateTask(task, { assignmentStatus: "rejected" }, button);
       return;
     }
     const direction = button.dataset.taskAction === "forward" ? 1 : -1;
@@ -360,10 +409,19 @@
           <div>
             <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
             <span class="task-status">${escapeHtml(STATUS_LABELS[task.status] || "Pendiente")}</span>
+            ${assignmentBadge(task)}
             ${task.dueDate ? `<span class="task-date ${dueTone(task)}"><i data-lucide="calendar-clock"></i>${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
           </div>
         </div>
         <div class="task-actions">
+          ${task.canRespond ? `
+            <button class="task-icon-action task-accept" type="button" data-task-action="accept" data-task-id="${escapeHtml(task.id)}" aria-label="Aceptar sugerencia">
+              <i data-lucide="check"></i>
+            </button>
+            <button class="task-icon-action task-reject" type="button" data-task-action="reject" data-task-id="${escapeHtml(task.id)}" aria-label="Rechazar sugerencia">
+              <i data-lucide="x"></i>
+            </button>
+          ` : ""}
           <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
             <i data-lucide="pencil"></i>
           </button>
@@ -373,6 +431,15 @@
         </div>
       </li>
     `).join("");
+  }
+
+  function assignmentBadge(task) {
+    if (!task || task.assignmentMode === "self") return "";
+    const label = task.assignmentMode === "assigned"
+      ? (task.assigneeId === currentUser?.id ? `Asignada por ${task.creatorName || "equipo"}` : `Asignada a ${task.assigneeName || "equipo"}`)
+      : (task.assigneeId === currentUser?.id ? `Sugerida por ${task.creatorName || "equipo"}` : `Sugerida a ${task.assigneeName || "equipo"}`);
+    const status = task.assignmentStatus === "pending" ? "Pendiente" : task.assignmentStatus === "rejected" ? "Rechazada" : "Aceptada";
+    return `<span class="task-assignment-chip ${escapeAttr(task.assignmentMode)} ${escapeAttr(task.assignmentStatus)}">${escapeHtml(label)} · ${escapeHtml(status)}</span>`;
   }
 
   function renderBoard() {
@@ -526,6 +593,37 @@
     const score = Number(value);
     if (!Number.isFinite(score)) return fallback;
     return Math.min(5, Math.max(1, Math.round(score)));
+  }
+
+  function renderAssigneeOptions() {
+    const select = document.querySelector("[data-task-assignee]");
+    if (!select) return;
+    const current = select.value || currentUser?.id || "self";
+    const options = [
+      `<option value="${escapeAttr(currentUser?.id || "self")}">Para mi</option>`,
+      ...taskCollaborators.map(collaborator => `<option value="${escapeAttr(collaborator.id)}">${escapeHtml(collaborator.name)} · ${collaborator.relation === "assign" ? "Asignar" : "Sugerir"}</option>`)
+    ];
+    select.innerHTML = options.join("");
+    select.value = [...select.options].some(option => option.value === current) ? current : (currentUser?.id || "self");
+  }
+
+  function syncAssignmentPreview() {
+    const form = document.querySelector("[data-task-form]");
+    const hint = document.querySelector("[data-task-assignment-hint]");
+    if (!form || !hint) return;
+    const selected = form.elements.assigneeId?.value || currentUser?.id || "self";
+    const collaborator = taskCollaborators.find(item => item.id === selected);
+    if (form.elements.assigneeId?.disabled) {
+      hint.textContent = "La reasignacion se hace creando una nueva tarea para otro responsable.";
+      return;
+    }
+    if (!collaborator) {
+      hint.textContent = "Tarea privada para ti.";
+      return;
+    }
+    hint.textContent = collaborator.relation === "assign"
+      ? "Asignacion directa: la tarea aparecera en la lista del responsable."
+      : "Sugerencia entre pares: el responsable debe aceptarla o rechazarla.";
   }
 
   function syncTaskPriorityPreview() {
