@@ -56,7 +56,8 @@
       dashboard = normalizeDashboard(data.dashboard || dashboard);
       const summary = data.summary || {};
       const errorText = Array.isArray(data.errors) && data.errors.length ? ` · ${data.errors.length} connector issue(s) stored in sync history.` : "";
-      setMessage(`Sync finished: ${summary.datasets || 0} datasets, ${summary.resources || 0} resources, ${summary.geoLayers || 0} geo layers, ${summary.signals || 0} signals.${errorText}`, data.ok ? "ok" : "error");
+      const fallbackText = data.snapshotOnly ? "Persisted snapshot refreshed" : "Sync finished";
+      setMessage(`${fallbackText}: ${summary.datasets || 0} datasets, ${summary.resources || 0} resources, ${summary.geoLayers || 0} geo layers, ${summary.signals || 0} signals.${errorText}`, data.ok ? "ok" : "error");
       renderAll();
     } catch (error) {
       setMessage(error.message || "Sync failed.", "error");

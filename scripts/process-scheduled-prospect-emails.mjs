@@ -1,9 +1,16 @@
+import { createSupabaseRestClient } from "./lib/supabase-rest.mjs";
+
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "";
 const RESEND_FROM_NAME = process.env.RESEND_FROM_NAME || "BCC Technologies";
 const RESEND_REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO_EMAIL || "";
+
+const supabaseRest = createSupabaseRestClient({
+  baseUrl: SUPABASE_URL,
+  serviceKey: SUPABASE_SERVICE_ROLE_KEY
+});
 
 const EMAIL_COLUMNS = [
   "id",
@@ -31,33 +38,8 @@ function assertEnv() {
   if (missing.length) throw new Error(`Missing required env vars: ${missing.join(", ")}`);
 }
 
-function restUrl(pathname, params = {}) {
-  const url = new URL(`/rest/v1/${pathname}`, SUPABASE_URL);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== null && typeof value !== "undefined" && value !== "") {
-      url.searchParams.set(key, String(value));
-    }
-  });
-  return url;
-}
-
-async function restFetch(pathname, { method = "GET", params = {}, body, prefer } = {}) {
-  const response = await fetch(restUrl(pathname, params), {
-    method,
-    headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      Accept: "application/json",
-      ...(prefer ? { Prefer: prefer } : {}),
-      ...(body ? { "Content-Type": "application/json" } : {})
-    },
-    ...(body ? { body: JSON.stringify(body) } : {})
-  });
-  if (!response.ok) {
-    throw new Error(`Supabase ${method} ${pathname} failed with ${response.status}: ${await response.text()}`);
-  }
-  if (response.status === 204) return null;
-  return response.json();
+function restFetch(pathname, options = {}) {
+  return supabaseRest.fetch(pathname, options);
 }
 
 function escapeHtml(value) {

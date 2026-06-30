@@ -1,5 +1,6 @@
 import { cleanText, normalizeArxivId, normalizeTitle, stripDoiUrl, titleFingerprint } from "./connectors/base.mjs";
 import { findPossibleDuplicateCandidates } from "./dedupe.mjs";
+import { redactSensitiveText, supabaseRestFetch as restFetch } from "../lib/supabase-rest.mjs";
 
 const SOURCE_COLUMNS = "id,name,type,base_url,enabled,requires_api_key,rate_limit_notes,last_sync_at";
 const TOPIC_COLUMNS = "id,name,keywords,enabled";
@@ -13,54 +14,6 @@ const RUN_COLUMNS = "id,status,action_type,dry_run,started_at,finished_at,items_
 
 function assertEnv(name, value) {
   if (!value) throw new Error(`Missing required env var: ${name}`);
-}
-
-function redactSensitiveText(value, secrets = []) {
-  let text = cleanText(value, 6000)
-    .replace(/Bearer\s+[A-Za-z0-9._\-+/=]+/gi, "Bearer [redacted]")
-    .replace(/apikey[:=]\s*[A-Za-z0-9._\-+/=]+/gi, "apikey=[redacted]")
-    .replace(/token[:=]\s*[A-Za-z0-9._\-+/=]+/gi, "token=[redacted]");
-  for (const secret of secrets.filter(Boolean)) {
-    if (String(secret).length >= 6) {
-      text = text.split(String(secret)).join("[redacted]");
-    }
-  }
-  return text;
-}
-
-function restUrl(baseUrl, pathname, params = {}) {
-  const url = new URL(`/rest/v1/${pathname}`, baseUrl);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== null && typeof value !== "undefined" && value !== "") {
-      url.searchParams.set(key, String(value));
-    }
-  });
-  return url;
-}
-
-async function restFetch(baseUrl, serviceKey, pathname, {
-  method = "GET",
-  params = {},
-  body,
-  prefer
-} = {}) {
-  const response = await fetch(restUrl(baseUrl, pathname, params), {
-    method,
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      Accept: "application/json",
-      ...(prefer ? { Prefer: prefer } : {}),
-      ...(body ? { "Content-Type": "application/json" } : {})
-    },
-    ...(body ? { body: JSON.stringify(body) } : {})
-  });
-
-  if (!response.ok) {
-    throw new Error(`Supabase ${method} ${pathname} failed with ${response.status}: ${await response.text()}`);
-  }
-  if (response.status === 204) return null;
-  return response.json();
 }
 
 function mapPaperRecord(item, sourceId) {

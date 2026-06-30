@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { supabaseRestFetch as restFetch } from "../lib/supabase-rest.mjs";
 import { DOMINICAN_SOURCES, CURATED_INSTITUTIONS } from "./registry.mjs";
 
 const TABLES = [
@@ -39,33 +40,6 @@ function nowIso() {
 
 function emptyState() {
   return Object.fromEntries(TABLES.map(key => [key, []]));
-}
-
-function restUrl(baseUrl, pathname, params = {}) {
-  const url = new URL(`/rest/v1/${pathname}`, baseUrl);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== null && typeof value !== "undefined" && value !== "") url.searchParams.set(key, String(value));
-  });
-  return url;
-}
-
-async function restFetch(baseUrl, serviceKey, pathname, { method = "GET", params = {}, body, prefer } = {}) {
-  const response = await fetch(restUrl(baseUrl, pathname, params), {
-    method,
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      Accept: "application/json",
-      ...(prefer ? { Prefer: prefer } : {}),
-      ...(body ? { "Content-Type": "application/json" } : {})
-    },
-    ...(body ? { body: JSON.stringify(body) } : {})
-  });
-  if (!response.ok) {
-    throw new Error(`Supabase ${method} ${pathname} failed with ${response.status}: ${await response.text()}`);
-  }
-  if (response.status === 204) return null;
-  return response.json();
 }
 
 function toDbSource(source) {

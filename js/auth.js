@@ -687,509 +687,84 @@ async function bccApi(path, options = {}) {
     return deleteAccountEmail(decodeURIComponent(deleteEmailMatch[1]));
   }
 
-  if (path === "/api/workspace/push-subscriptions" && options.method === "POST") {
-    const me = await authorizedUser();
-    const body = normalizeWorkspacePushSubscriptionInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_push_subscriptions")
-      .upsert({ ...body, user_id: me.id, updated_at: new Date().toISOString() }, { onConflict: "endpoint" })
-      .select("id")
-      .single();
-    if (error) throw error;
-    return { ok: true, subscriptionId: data.id };
+  if (path.startsWith("/api/workspace/")) {
+    const workspaceApi = window.BCCAuthWorkspaceApi?.createWorkspaceApi?.({
+      supabase,
+      authorizedUser,
+      loadWorkspaceTaskCollaborators,
+      resolveWorkspaceTaskAssignment,
+      normalizeWorkspacePushSubscriptionInput,
+      normalizeWorkspaceTaskInput,
+      normalizeWorkspaceEventInput,
+      normalizeWorkspaceFormInput,
+      normalizeWorkspaceAnswers,
+      publicWorkspaceTask,
+      publicWorkspaceEvent,
+      publicWorkspaceForm,
+      publicWorkspaceResponse,
+      columns: {
+        tasks: WORKSPACE_TASK_COLUMNS,
+        events: WORKSPACE_EVENT_COLUMNS,
+        forms: WORKSPACE_FORM_COLUMNS,
+        responses: WORKSPACE_RESPONSE_COLUMNS
+      }
+    });
+    const workspaceResult = await workspaceApi?.handle(path, options);
+    if (workspaceResult?.handled) return workspaceResult.value;
   }
 
-  if (path === "/api/workspace/push-subscriptions" && options.method === "DELETE") {
-    const body = normalizeWorkspacePushSubscriptionInput(JSON.parse(options.body || "{}"), { allowMissingKeys: true });
-    const { error } = await supabase
-      .from("workspace_push_subscriptions")
-      .delete()
-      .eq("endpoint", body.endpoint);
-    if (error) throw error;
-    return { ok: true };
+  if (path.startsWith("/api/admin/prospect")) {
+    const prospectsApi = window.BCCAuthProspectsApi?.createProspectsApi?.({
+      supabase,
+      authorizedUser,
+      canManageSignalWorkspace,
+      isMissingProspectAssignmentSchema,
+      workspaceProspectWithoutAssignment,
+      normalizeWorkspaceProspectInput,
+      normalizeWorkspaceProspectTemplateInput,
+      normalizeWorkspaceProspectEmailInput,
+      normalizeWorkspaceProspectActivityInput,
+      publicWorkspaceProspect,
+      publicWorkspaceProspectTemplate,
+      publicWorkspaceProspectEmail,
+      publicWorkspaceProspectActivity,
+      columns: {
+        prospectBase: WORKSPACE_PROSPECT_BASE_COLUMNS,
+        prospects: WORKSPACE_PROSPECT_COLUMNS,
+        templates: WORKSPACE_PROSPECT_TEMPLATE_COLUMNS,
+        emails: WORKSPACE_PROSPECT_EMAIL_COLUMNS,
+        activities: WORKSPACE_PROSPECT_ACTIVITY_COLUMNS
+      }
+    });
+    const prospectsResult = await prospectsApi?.handle(path, options);
+    if (prospectsResult?.handled) return prospectsResult.value;
   }
 
-  if (path === "/api/workspace/task-collaborators" && (!options.method || options.method === "GET")) {
-    const collaborators = await loadWorkspaceTaskCollaborators(supabase);
-    return { ok: true, collaborators };
+  if (path.startsWith("/api/admin/users") || path.startsWith("/api/admin/roles") || path === "/api/admin/access-audit") {
+    const adminAccessApi = window.BCCAuthAdminAccessApi?.createAdminAccessApi?.({
+      supabase,
+      authorizedUser,
+      loadWorkspaceRoleDefinitions,
+      publicProfile,
+      publicWorkspaceRoleDefinition,
+      builtInRoleDefinitions,
+      permissionCatalog,
+      sanitizeWorkspaceRoleInput,
+      normalizeAccessPayload,
+      normalizeCustomRoleList
+    });
+    const adminAccessResult = await adminAccessApi?.handle(path, options);
+    if (adminAccessResult?.handled) return adminAccessResult.value;
   }
 
-  if (path === "/api/workspace/tasks" && (!options.method || options.method === "GET")) {
-    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
-    const { data, error } = await supabase
-      .from("workspace_tasks")
-      .select(WORKSPACE_TASK_COLUMNS)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return { ok: true, tasks: data.map(task => publicWorkspaceTask(task, collaborators)) };
-  }
-
-  if (path === "/api/workspace/tasks" && options.method === "POST") {
-    const me = await authorizedUser();
-    const raw = JSON.parse(options.body || "{}");
-    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
-    const body = normalizeWorkspaceTaskInput(raw, true);
-    Object.assign(body, resolveWorkspaceTaskAssignment(raw, me, collaborators));
-    const { data, error } = await supabase
-      .from("workspace_tasks")
-      .insert(body)
-      .select(WORKSPACE_TASK_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, task: publicWorkspaceTask(data, collaborators) };
-  }
-
-  const workspaceTaskMatch = path.match(/^\/api\/workspace\/tasks\/([^/]+)$/);
-  if (workspaceTaskMatch && options.method === "PATCH") {
-    const collaborators = await loadWorkspaceTaskCollaborators(supabase).catch(() => []);
-    const body = normalizeWorkspaceTaskInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_tasks")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(workspaceTaskMatch[1]))
-      .select(WORKSPACE_TASK_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, task: publicWorkspaceTask(data, collaborators) };
-  }
-
-  if (workspaceTaskMatch && options.method === "DELETE") {
-    const { error } = await supabase
-      .from("workspace_tasks")
-      .delete()
-      .eq("id", decodeURIComponent(workspaceTaskMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  if (path === "/api/workspace/events" && (!options.method || options.method === "GET")) {
-    const { data, error } = await supabase
-      .from("workspace_events")
-      .select(WORKSPACE_EVENT_COLUMNS)
-      .order("event_date", { ascending: true })
-      .order("start_time", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return { ok: true, events: data.map(publicWorkspaceEvent) };
-  }
-
-  if (path === "/api/workspace/events" && options.method === "POST") {
-    const body = normalizeWorkspaceEventInput(JSON.parse(options.body || "{}"), true);
-    const { data, error } = await supabase
-      .from("workspace_events")
-      .insert(body)
-      .select(WORKSPACE_EVENT_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, event: publicWorkspaceEvent(data) };
-  }
-
-  const workspaceEventMatch = path.match(/^\/api\/workspace\/events\/([^/]+)$/);
-  if (workspaceEventMatch && options.method === "PATCH") {
-    const body = normalizeWorkspaceEventInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_events")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(workspaceEventMatch[1]))
-      .select(WORKSPACE_EVENT_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, event: publicWorkspaceEvent(data) };
-  }
-
-  if (workspaceEventMatch && options.method === "DELETE") {
-    const { error } = await supabase
-      .from("workspace_events")
-      .delete()
-      .eq("id", decodeURIComponent(workspaceEventMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  if (path === "/api/workspace/forms" && (!options.method || options.method === "GET")) {
-    const { data, error } = await supabase
-      .from("workspace_forms")
-      .select(WORKSPACE_FORM_COLUMNS)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return { ok: true, forms: data.map(publicWorkspaceForm) };
-  }
-
-  if (path === "/api/workspace/forms" && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"), true);
-    const { data, error } = await supabase
-      .from("workspace_forms")
-      .insert(body)
-      .select(WORKSPACE_FORM_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, form: publicWorkspaceForm(data) };
-  }
-
-  if (path === "/api/workspace/form-responses/me") {
-    const { data, error } = await supabase
-      .from("workspace_form_responses")
-      .select(WORKSPACE_RESPONSE_COLUMNS)
-      .order("submitted_at", { ascending: false });
-    if (error) throw error;
-    return { ok: true, responses: data.map(publicWorkspaceResponse) };
-  }
-
-  const workspaceFormMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)$/);
-  if (workspaceFormMatch && options.method === "PATCH") {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceFormInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_forms")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(workspaceFormMatch[1]))
-      .select(WORKSPACE_FORM_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, form: publicWorkspaceForm(data) };
-  }
-
-  const responseListMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)\/responses$/);
-  if (responseListMatch) {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
-    const formId = decodeURIComponent(responseListMatch[1]);
-    const { data, error } = await supabase
-      .from("workspace_form_responses")
-      .select(WORKSPACE_RESPONSE_COLUMNS)
-      .eq("form_id", formId)
-      .order("submitted_at", { ascending: false });
-    if (error) throw error;
-    const profileIds = [...new Set(data.map(item => item.respondent_id))];
-    const { data: profiles, error: profileError } = profileIds.length
-      ? await supabase.from("profiles").select("id, display_name, full_name, email").in("id", profileIds)
-      : { data: [], error: null };
-    if (profileError) throw profileError;
-    const labels = new Map(profiles.map(profile => [profile.id, profile.display_name || profile.full_name || profile.email]));
-    return {
-      ok: true,
-      responses: data.map(item => ({ ...publicWorkspaceResponse(item), respondentLabel: labels.get(item.respondent_id) || "Usuario" }))
-    };
-  }
-
-  const responseSubmitMatch = path.match(/^\/api\/workspace\/forms\/([^/]+)\/response$/);
-  if (responseSubmitMatch && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!me) throw new Error("No autenticado.");
-    const formId = decodeURIComponent(responseSubmitMatch[1]);
-    const { data: form, error: formError } = await supabase
-      .from("workspace_forms")
-      .select(WORKSPACE_FORM_COLUMNS)
-      .eq("id", formId)
-      .single();
-    if (formError) throw formError;
-    const answers = normalizeWorkspaceAnswers(JSON.parse(options.body || "{}").answers, form.questions);
-    const { data, error } = await supabase
-      .from("workspace_form_responses")
-      .upsert({
-        form_id: formId,
-        respondent_id: me.id,
-        answers,
-        submitted_at: new Date().toISOString()
-      }, { onConflict: "form_id,respondent_id" })
-      .select(WORKSPACE_RESPONSE_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, response: publicWorkspaceResponse(data) };
-  }
-
-  if (path === "/api/admin/prospects/dashboard" && (!options.method || options.method === "GET")) {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    let prospectsResult = await supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_COLUMNS).order("updated_at", { ascending: false });
-    if (isMissingProspectAssignmentSchema(prospectsResult.error)) {
-      prospectsResult = await supabase.from("workspace_prospects").select(WORKSPACE_PROSPECT_BASE_COLUMNS).order("updated_at", { ascending: false });
-    }
-    const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
-      supabase.from("workspace_prospect_templates").select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS).order("updated_at", { ascending: false }),
-      supabase.from("workspace_prospect_emails").select(WORKSPACE_PROSPECT_EMAIL_COLUMNS).order("created_at", { ascending: false }).limit(200),
-      supabase.from("workspace_prospect_activities").select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400)
-    ]);
-    const { data: prospects, error: prospectsError } = prospectsResult;
-    if (prospectsError) throw prospectsError;
-    if (templatesError) throw templatesError;
-    if (emailsError) throw emailsError;
-    if (activitiesError) throw activitiesError;
-    return {
-      ok: true,
-      prospects: (prospects || []).map(publicWorkspaceProspect),
-      templates: (templates || []).map(publicWorkspaceProspectTemplate),
-      emails: (emails || []).map(publicWorkspaceProspectEmail),
-      activities: (activities || []).map(publicWorkspaceProspectActivity)
-    };
-  }
-
-  if (path === "/api/admin/prospects" && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"), true);
-    let { data, error } = await supabase
-      .from("workspace_prospects")
-      .insert(body)
-      .select(WORKSPACE_PROSPECT_COLUMNS)
-      .single();
-    if (isMissingProspectAssignmentSchema(error)) {
-      const fallbackBody = workspaceProspectWithoutAssignment(body);
-      const fallback = await supabase
-        .from("workspace_prospects")
-        .insert(fallbackBody)
-        .select(WORKSPACE_PROSPECT_BASE_COLUMNS)
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
-    if (error) throw error;
-    return { ok: true, prospect: publicWorkspaceProspect(data) };
-  }
-
-  const adminProspectMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)$/);
-  if (adminProspectMatch && options.method === "PATCH") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectInput(JSON.parse(options.body || "{}"));
-    let { data, error } = await supabase
-      .from("workspace_prospects")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(adminProspectMatch[1]))
-      .select(WORKSPACE_PROSPECT_COLUMNS)
-      .single();
-    if (isMissingProspectAssignmentSchema(error)) {
-      const fallbackBody = workspaceProspectWithoutAssignment(body);
-      const fallback = await supabase
-        .from("workspace_prospects")
-        .update({ ...fallbackBody, updated_at: new Date().toISOString() })
-        .eq("id", decodeURIComponent(adminProspectMatch[1]))
-        .select(WORKSPACE_PROSPECT_BASE_COLUMNS)
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
-    if (error) throw error;
-    return { ok: true, prospect: publicWorkspaceProspect(data) };
-  }
-
-  if (adminProspectMatch && options.method === "DELETE") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const { error } = await supabase
-      .from("workspace_prospects")
-      .delete()
-      .eq("id", decodeURIComponent(adminProspectMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  if (path === "/api/admin/prospect-templates" && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"), true);
-    const { data, error } = await supabase
-      .from("workspace_prospect_templates")
-      .insert(body)
-      .select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, template: publicWorkspaceProspectTemplate(data) };
-  }
-
-  const templateMatch = path.match(/^\/api\/admin\/prospect-templates\/([^/]+)$/);
-  if (templateMatch && options.method === "PATCH") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectTemplateInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_prospect_templates")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(templateMatch[1]))
-      .select(WORKSPACE_PROSPECT_TEMPLATE_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, template: publicWorkspaceProspectTemplate(data) };
-  }
-
-  if (templateMatch && options.method === "DELETE") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const { error } = await supabase
-      .from("workspace_prospect_templates")
-      .delete()
-      .eq("id", decodeURIComponent(templateMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  const createEmailMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/emails$/);
-  if (createEmailMatch && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const prospectId = decodeURIComponent(createEmailMatch[1]);
-    const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"), true);
-    body.prospect_id = prospectId;
-    const { data, error } = await supabase
-      .from("workspace_prospect_emails")
-      .insert(body)
-      .select(WORKSPACE_PROSPECT_EMAIL_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, email: publicWorkspaceProspectEmail(data) };
-  }
-
-  const prospectEmailMatch = path.match(/^\/api\/admin\/prospect-emails\/([^/]+)$/);
-  if (prospectEmailMatch && options.method === "PATCH") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectEmailInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_prospect_emails")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(prospectEmailMatch[1]))
-      .select(WORKSPACE_PROSPECT_EMAIL_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, email: publicWorkspaceProspectEmail(data) };
-  }
-
-  if (prospectEmailMatch && options.method === "DELETE") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const { error } = await supabase
-      .from("workspace_prospect_emails")
-      .delete()
-      .eq("id", decodeURIComponent(prospectEmailMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  const createActivityMatch = path.match(/^\/api\/admin\/prospects\/([^/]+)\/activities$/);
-  if (createActivityMatch && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const prospectId = decodeURIComponent(createActivityMatch[1]);
-    const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"), true);
-    body.prospect_id = prospectId;
-    const { data, error } = await supabase
-      .from("workspace_prospect_activities")
-      .insert(body)
-      .select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, activity: publicWorkspaceProspectActivity(data) };
-  }
-
-  const prospectActivityMatch = path.match(/^\/api\/admin\/prospect-activities\/([^/]+)$/);
-  if (prospectActivityMatch && options.method === "PATCH") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const body = normalizeWorkspaceProspectActivityInput(JSON.parse(options.body || "{}"));
-    const { data, error } = await supabase
-      .from("workspace_prospect_activities")
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq("id", decodeURIComponent(prospectActivityMatch[1]))
-      .select(WORKSPACE_PROSPECT_ACTIVITY_COLUMNS)
-      .single();
-    if (error) throw error;
-    return { ok: true, activity: publicWorkspaceProspectActivity(data) };
-  }
-
-  if (prospectActivityMatch && options.method === "DELETE") {
-    const me = await authorizedUser();
-    if (!canManageSignalWorkspace(me)) throw new Error("Permiso insuficiente.");
-    const { error } = await supabase
-      .from("workspace_prospect_activities")
-      .delete()
-      .eq("id", decodeURIComponent(prospectActivityMatch[1]));
-    if (error) throw error;
-    return { ok: true };
-  }
-
-  if (path === "/api/admin/users") {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const [{ data, error }, customRoles] = await Promise.all([
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      loadWorkspaceRoleDefinitions(supabase)
-    ]);
-    if (error) throw error;
-    return { ok: true, users: data.map(profile => publicProfile(profile, null, customRoles)) };
-  }
-
-  if (path === "/api/admin/roles" && (!options.method || options.method === "GET")) {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const customRoles = await loadWorkspaceRoleDefinitions(supabase);
-    return { ok: true, roles: [...builtInRoleDefinitions(), ...customRoles], permissions: permissionCatalog(customRoles) };
-  }
-
-  if (path === "/api/admin/roles" && options.method === "POST") {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const existing = await loadWorkspaceRoleDefinitions(supabase);
-    const payload = sanitizeWorkspaceRoleInput(JSON.parse(options.body || "{}"), existing);
-    const { data, error } = await supabase
-      .from("workspace_role_definitions")
-      .insert(payload)
-      .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
-      .single();
-    if (error) throw error;
-    const roles = await loadWorkspaceRoleDefinitions(supabase);
-    return { ok: true, role: publicWorkspaceRoleDefinition(data), roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
-  }
-
-  const roleDefinitionMatch = path.match(/^\/api\/admin\/roles\/([^/]+)$/);
-  if (roleDefinitionMatch && (options.method === "PATCH" || options.method === "DELETE")) {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const id = decodeURIComponent(roleDefinitionMatch[1]);
-    if (!id.startsWith("custom:")) throw new Error("Solo los roles personalizados se pueden modificar.");
-    const existing = await loadWorkspaceRoleDefinitions(supabase);
-    const target = existing.find(role => role.id === id);
-    if (!target) throw new Error("Rol no encontrado.");
-    if (options.method === "DELETE") {
-      const { error } = await supabase.from("workspace_role_definitions").delete().eq("id", id);
-      if (error) throw error;
-      const roles = await loadWorkspaceRoleDefinitions(supabase);
-      return { ok: true, roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
-    }
-    const payload = sanitizeWorkspaceRoleInput({ ...JSON.parse(options.body || "{}"), id }, existing.filter(role => role.id !== id));
-    const { data, error } = await supabase
-      .from("workspace_role_definitions")
-      .update({ key: payload.key, name: payload.name, description: payload.description, hierarchy_level: payload.hierarchy_level, permissions: payload.permissions })
-      .eq("id", id)
-      .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
-      .single();
-    if (error) throw error;
-    const roles = await loadWorkspaceRoleDefinitions(supabase);
-    return { ok: true, role: publicWorkspaceRoleDefinition(data), roles: [...builtInRoleDefinitions(), ...roles], permissions: permissionCatalog(roles) };
-  }
-
-  if (path === "/api/admin/access-audit") {
-    const me = await authorizedUser();
-    if (!me?.permissions.includes("users:manage")) throw new Error("Permiso insuficiente.");
-    const { data, error } = await supabase
-      .from("access_audit_logs")
-      .select("id, actor_email, target_email, before_access, after_access, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) throw error;
-    return {
-      ok: true,
-      logs: data.map(log => ({
-        id: log.id,
-        actorEmail: log.actor_email,
-        targetEmail: log.target_email,
-        beforeAccess: normalizeAccessPayload(log.before_access),
-        afterAccess: normalizeAccessPayload(log.after_access),
-        createdAt: log.created_at
-      }))
-    };
+  if (path.startsWith("/api/admin/dominican") || path.startsWith("/api/admin/dominican%20intelligence")) {
+    const dominicanIntelligenceApi = window.BCCAuthDominicanIntelligenceApi?.createDominicanIntelligenceApi?.({
+      supabase,
+      authorizedUser,
+      canManageSignalWorkspace
+    });
+    const dominicanIntelligenceResult = await dominicanIntelligenceApi?.handle(path, options);
+    if (dominicanIntelligenceResult?.handled) return dominicanIntelligenceResult.value;
   }
 
   const intelligenceRequestUrl = path.startsWith("/api/admin/intelligence")
@@ -1538,21 +1113,6 @@ async function bccApi(path, options = {}) {
     const { data, error } = await supabase.rpc("get_admin_analytics_dashboard", { range_days: days });
     if (error) throw error;
     return { ok: true, dashboard: normalizeAnalyticsDashboard(data, days) };
-  }
-
-  const roleMatch = path.match(/^\/api\/admin\/users\/([^/]+)\/role$/);
-  if (roleMatch && options.method === "PATCH") {
-    const body = JSON.parse(options.body || "{}");
-    const customRoles = await loadWorkspaceRoleDefinitions(supabase);
-    const { error } = await supabase.rpc("set_user_access", {
-      target_user_id: decodeURIComponent(roleMatch[1]),
-      next_role: body.role,
-      next_staff_roles: body.staffRoles || [],
-      next_departments: body.departments || [],
-      next_custom_roles: normalizeCustomRoleList(body.customRoles, customRoles)
-    });
-    if (error) throw error;
-    return { ok: true };
   }
 
   throw new Error(`Endpoint no migrado a Supabase: ${path}`);
