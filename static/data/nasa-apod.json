@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-06-30T09:28:10.480Z",
+  "updatedAt": "2026-07-02T08:50:39.674Z",
   "item": {
-    "date": "2026-06-30",
-    "explanation": "Why are parts of this asteroid's surface so smooth?  The answer seems likely to do with the dynamics of an asteroid that is a loose pile of rubble rather than a solid rock.  The unusual asteroid Itokawa was visited by the Japanese spacecraft Hayabusa in 2005 which imaged and documented its unusual structure and mysterious lack of craters.  Analyses of the border regions between smooth and rugged sections indicate that jostling of the asteroid might be creating segregation between large and small rocks near the surface, like the Brazil nut effect.  The robotic Hayabusa actually touched down on one of the smooth patches, dubbed the MUSES Sea, and collected soil samples. These samples were returned to Earth and are not only giving clues to the ancient history of this unusual asteroid, but also about the early years of our entire Solar System. Computer simulations show that 500-meter asteroid Itokawa may impact the Earth within the next few million years.   Rocking Space: Today is Asteroid Day",
-    "hdurl": "https://apod.nasa.gov/apod/image/2606/itokawa07_hayabusa_1080.jpg",
+    "date": "2026-07-02",
+    "explanation": "What happens when one of the stars in a binary goes supernova?   This image combines visible (yellow), ultraviolet (purple) and infrared light (cyan, red and orange) to show two supernova remnants and their surrounding environment, about 6,000 light-years away.   The younger one is the well-known Jellyfish Nebula in the center (mostly in yellow).   If we could see it by eye, it would appear larger than the full moon in the sky.   The filament shown in purple is part of an older, overlapping supernova remnant, G189.6+3.3.   A new study used data from NASA's Fermi Gamma-ray Space Telescope to piece together their story.   Astronomers believe that there were two stars in a binary system, then the first one exploded as a supernova, kicking away its companion, which also exploded as a supernova tens of thousands of years later, creating the superimposed supernova remnants we see today.   The bright star on the right is actually a triple star system named Propus.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2607/sibling_supernovae.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Unusually Smooth Sections of Asteroid Itokawa",
-    "url": "https://apod.nasa.gov/apod/image/2606/itokawa07_hayabusa_1080.jpg"
+    "title": "Sibling Supernova Remnants",
+    "url": "https://apod.nasa.gov/apod/image/2607/sibling_supernovae_1024.jpg"
   }
 }
