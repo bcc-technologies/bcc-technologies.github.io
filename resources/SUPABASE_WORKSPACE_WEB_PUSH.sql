@@ -203,10 +203,13 @@ create trigger workspace_events_queue_push
 after insert or update of event_date, start_time, title on public.workspace_events
 for each row execute function public.queue_workspace_event_push();
 
+drop function if exists public.claim_workspace_push_notifications(integer);
+
 create or replace function public.claim_workspace_push_notifications(batch_size integer default 25)
 returns table (
   notification_id uuid,
   user_id uuid,
+  notification_type text,
   title text,
   body text,
   target_url text,
@@ -246,6 +249,7 @@ begin
   select
     marked.id,
     marked.user_id,
+    marked.notification_type,
     marked.title,
     marked.body,
     marked.target_url,

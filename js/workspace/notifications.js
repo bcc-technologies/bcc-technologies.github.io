@@ -135,7 +135,7 @@
         const body = task.assignmentMode === "suggested"
           ? `${task.creatorName || "El equipo"} sugiere: ${task.title}`
           : `${task.creatorName || "El equipo"} te asigno: ${task.title}`;
-        notifyOnce(key, title, { body, tag: key });
+        notifyOnce(key, title, { body, tag: key, kind: task.assignmentMode === "suggested" ? "task_suggested" : "task_assigned", requireInteraction: true });
       }
 
       if (task.status === "done" || task.assignmentStatus === "pending") return;
@@ -143,17 +143,21 @@
       if (task.dueDate < today) {
         notifyOnce(`task-overdue:${task.id}:${today}`, "Tarea vencida", {
           body: `${task.title} vencio el ${formatDate(task.dueDate)}.`,
-          tag: `task-due-${task.id}`
+          tag: `task-due-${task.id}`,
+          kind: "task_overdue",
+          requireInteraction: true
         });
       } else if (task.dueDate === today) {
         notifyOnce(`task-due-today:${task.id}:${today}`, "Tarea vence hoy", {
           body: task.title,
-          tag: `task-due-${task.id}`
+          tag: `task-due-${task.id}`,
+          kind: "task_due"
         });
       } else if (task.dueDate === tomorrow) {
         notifyOnce(`task-due-tomorrow:${task.id}:${today}`, "Tarea vence mañana", {
           body: task.title,
-          tag: `task-due-${task.id}`
+          tag: `task-due-${task.id}`,
+          kind: "task_due"
         });
       }
     });
@@ -171,18 +175,21 @@
         if (minutes !== null && minutes >= 0 && minutes <= 60) {
           notifyOnce(`event-hour:${event.id}:${today}`, "Evento próximo", {
             body: `${event.title}${event.startTime ? ` · ${event.startTime}` : ""}`,
-            tag: `event-${event.id}`
+            tag: `event-${event.id}`,
+            kind: "calendar_event"
           });
           return;
         }
         notifyOnce(`event-today:${event.id}:${today}`, "Evento hoy", {
           body: `${event.title}${event.startTime ? ` · ${event.startTime}` : ""}`,
-          tag: `event-${event.id}`
+          tag: `event-${event.id}`,
+          kind: "calendar_event"
         });
       } else if (event.date === tomorrow) {
         notifyOnce(`event-tomorrow:${event.id}:${today}`, "Evento mañana", {
           body: `${event.title}${event.startTime ? ` · ${event.startTime}` : ""}`,
-          tag: `event-${event.id}`
+          tag: `event-${event.id}`,
+          kind: "calendar_event"
         });
       }
     });
@@ -194,13 +201,28 @@
     seen[key] = Date.now();
     writeSeen(pruneSeen(seen));
     try {
+      const vibrate = notificationVibration(options.kind || key);
       new Notification(title, {
         body: options.body || "",
         tag: options.tag || key,
         icon: "/favicon.ico",
-        badge: "/favicon.ico"
+        badge: "/favicon.ico",
+        renotify: true,
+        requireInteraction: Boolean(options.requireInteraction),
+        silent: false,
+        timestamp: Date.now(),
+        vibrate
       });
+      navigator.vibrate?.(vibrate);
     } catch {}
+  }
+
+  function notificationVibration(kind = "") {
+    const value = String(kind);
+    if (value.includes("overdue") || value.includes("vencida")) return [220, 90, 220, 90, 160];
+    if (value.includes("assignment") || value.includes("assigned") || value.includes("suggested")) return [180, 80, 180];
+    if (value.includes("event")) return [140, 70, 140];
+    return [160, 70, 160];
   }
 
   function readSeen() {

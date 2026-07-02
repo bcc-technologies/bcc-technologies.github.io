@@ -10,6 +10,7 @@ const corsHeaders = {
 type PushRow = {
   notification_id: string;
   user_id: string;
+  notification_type?: string;
   title: string;
   body: string;
   target_url: string;
@@ -42,14 +43,35 @@ function isAuthorized(request: Request, serviceRoleKey: string, dispatchSecret: 
   return Boolean(serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`);
 }
 
+function notificationVibration(row: PushRow) {
+  switch (row.notification_type) {
+    case "task_overdue":
+      return [220, 90, 220, 90, 160];
+    case "task_assigned":
+    case "task_suggested":
+      return [180, 80, 180];
+    case "calendar_event":
+      return [140, 70, 140];
+    default:
+      return [160, 70, 160];
+  }
+}
+
 function notificationPayload(row: PushRow) {
+  const notificationType = cleanText(row.notification_type, 80);
   return JSON.stringify({
     title: cleanText(row.title, 160) || "BCC Workspace",
     body: cleanText(row.body, 300),
     url: cleanText(row.target_url, 300) || "/staff-dashboard.html#trabajo",
     tag: cleanText(row.tag, 160) || `workspace-${row.notification_id}`,
     icon: "/favicon.ico",
-    badge: "/favicon.ico"
+    badge: "/favicon.ico",
+    renotify: true,
+    silent: false,
+    requireInteraction: ["task_assigned", "task_suggested", "task_overdue"].includes(notificationType),
+    vibrate: notificationVibration(row),
+    timestamp: Date.now(),
+    actions: [{ action: "open", title: "Abrir" }]
   });
 }
 

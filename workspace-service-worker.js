@@ -7,11 +7,20 @@ self.addEventListener("push", event => {
   }
 
   const title = payload.title || "BCC Workspace";
+  const vibrate = Array.isArray(payload.vibrate) && payload.vibrate.length
+    ? payload.vibrate.map(Number).filter(Number.isFinite)
+    : [160, 70, 160];
   const options = {
     body: payload.body || "Nueva notificacion.",
     icon: payload.icon || "/favicon.ico",
     badge: payload.badge || "/favicon.ico",
     tag: payload.tag || "bcc-workspace",
+    renotify: payload.renotify !== false,
+    requireInteraction: Boolean(payload.requireInteraction),
+    silent: Boolean(payload.silent),
+    timestamp: Number(payload.timestamp) || Date.now(),
+    vibrate,
+    actions: Array.isArray(payload.actions) ? payload.actions.slice(0, 2) : [{ action: "open", title: "Abrir" }],
     data: {
       url: payload.url || "/staff-dashboard.html#trabajo"
     }
