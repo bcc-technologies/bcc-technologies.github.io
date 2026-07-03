@@ -452,9 +452,10 @@ function routeForUser(user) {
 
 async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
-    if (location.hash || location.search.includes("code=")) {
+    const hashIsAuthToken = location.hash && new URLSearchParams(location.hash.slice(1)).has("access_token");
+    if (hashIsAuthToken || location.search.includes("code=")) {
       await waitForSupabaseSession();
-      if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+      if (hashIsAuthToken) history.replaceState(null, "", location.pathname + location.search);
     }
 
     const user = await currentUser();
