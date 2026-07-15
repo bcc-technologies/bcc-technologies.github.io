@@ -348,6 +348,7 @@ function updateAccessPreview() {
   if (customRoles.length) labels.push(`${customRoles.length} rol personalizado`);
   if (role === "admin" || staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item)) || customPermissions.includes("cms:access")) labels.push("CMS");
   if (role === "admin" || staffRoles.includes("department_director") || customPermissions.includes("forms:manage")) labels.push("Formularios");
+  if (role === "admin" || staffRoles.some(item => ["maps_developer", "maps_release_manager"].includes(item)) || customPermissions.includes("maps:developer:access")) labels.push("MAPs Dev");
   hideAccessConfirmation(modal);
   preview.textContent = labels.join(" · ");
 }
@@ -447,8 +448,8 @@ function isSensitiveAccessChange(user, nextRole, nextStaffRoles, nextDepartments
   const oldCustomRoles = Array.isArray(user.customRoles) ? user.customRoles : [];
   if (window.BCCAdminCurrentUser?.id === user.id) return true;
   if (user.role === "admin" || nextRole === "admin") return true;
-  if (!window.BCCWorkspaceUtils.sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director"].includes(role))) return true;
-  if (!window.BCCWorkspaceUtils.sameSet(oldCustomRoles, nextCustomRoles) && permissionsForCustomRoles(nextCustomRoles).some(permission => ["admin:view", "users:manage", "cms:access", "forms:manage"].includes(permission))) return true;
+  if (!window.BCCWorkspaceUtils.sameSet(oldStaffRoles, nextStaffRoles) && nextStaffRoles.some(role => ["author", "cofounder", "department_director", "maps_developer", "maps_release_manager"].includes(role))) return true;
+  if (!window.BCCWorkspaceUtils.sameSet(oldCustomRoles, nextCustomRoles) && permissionsForCustomRoles(nextCustomRoles).some(permission => ["admin:view", "users:manage", "cms:access", "forms:manage", "maps:developer:access", "maps:developer:write", "maps:developer:release"].includes(permission))) return true;
   return !window.BCCWorkspaceUtils.sameSet(oldDepartments, nextDepartments) && nextDepartments.some(department => ["finance", "hr"].includes(department));
 }
 

@@ -23,13 +23,15 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view"]
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
   author: ["content:write", "cms:access"],
   cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
+  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"],
+  maps_developer: ["maps:developer:access", "maps:developer:read", "maps:developer:write"],
+  maps_release_manager: ["maps:developer:access", "maps:developer:read", "maps:developer:release"]
 };
 
 const DEPARTMENT_PERMISSIONS = {
@@ -234,6 +236,10 @@ const PERMISSION_LABELS = {
   "content:write": "Crear contenido",
   "strategy:view": "Ver estrategia",
   "department:manage": "Gestionar departamento",
+  "maps:developer:access": "Acceder a desarrolladores de MAPs",
+  "maps:developer:read": "Consultar datos técnicos de MAPs",
+  "maps:developer:write": "Modificar configuraciones de MAPs",
+  "maps:developer:release": "Publicar versiones de MAPs",
   "department:technology": "Departamento tecnología",
   "department:finance": "Departamento finanzas",
   "department:operations": "Departamento operaciones",
@@ -248,6 +254,8 @@ const ROLE_LABELS = {
   author: "Autor",
   cofounder: "Cofounder",
   department_director: "Director",
+  maps_developer: "Desarrollador MAPs",
+  maps_release_manager: "Responsable de releases MAPs",
   technology: "Tecnología",
   finance: "Finanzas",
   operations: "Operaciones",

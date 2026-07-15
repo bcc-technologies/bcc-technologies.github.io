@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Desarrolladores MAPs | BCC Technologies</title>
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+  <style>
+    .maps-dev-page { max-width: 1040px; margin: 0 auto; padding: 56px 24px 80px; color: #17212b; }
+    .maps-dev-hero { padding: 32px; border-radius: 20px; background: linear-gradient(135deg, #102a43, #0f766e); color: #fff; }
+    .maps-dev-hero h1 { margin: 8px 0; font-size: clamp(2rem, 5vw, 3.25rem); }
+    .maps-dev-eyebrow { margin: 0; text-transform: uppercase; letter-spacing: .11em; font-size: .77rem; font-weight: 700; opacity: .8; }
+    .maps-dev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 24px; }
+    .maps-dev-card { border: 1px solid #dce5e8; border-radius: 16px; padding: 22px; background: #fff; box-shadow: 0 8px 22px rgba(15, 35, 48, .06); }
+    .maps-dev-card h2 { margin-top: 0; font-size: 1.05rem; }
+    .maps-dev-card p { margin-bottom: 0; color: #52616b; line-height: 1.55; }
+    .maps-dev-capabilities { padding-left: 20px; line-height: 1.8; }
+    .maps-dev-notice { margin-top: 24px; padding: 18px 20px; border-left: 4px solid #0f766e; background: #ecfdf5; border-radius: 8px; }
+    .maps-dev-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .maps-dev-actions a { display: inline-flex; align-items: center; border-radius: 8px; padding: 11px 16px; text-decoration: none; font-weight: 700; background: #0f766e; color: #fff; }
+    .maps-dev-actions a.secondary { background: #eef3f4; color: #17212b; }
+  </style>
+  <script src="js/supabase-config.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/maps-developer.js"></script>
+</head>
+<body>
+  <main class="maps-dev-page" aria-live="polite">
+    <section class="maps-dev-hero">
+      <p class="maps-dev-eyebrow">MAPs Platform · Internal</p>
+      <h1>Interfaz de desarrolladores</h1>
+      <p>Acceso técnico para MAP-Nano, MAP-Bio y los módulos MAPs que se incorporen.</p>
+    </section>
+
+    <section class="maps-dev-grid" aria-label="Alcance de acceso">
+      <article class="maps-dev-card">
+        <h2>Sesión</h2>
+        <p><strong data-maps-dev-user>Validando acceso…</strong></p>
+        <p data-maps-dev-role></p>
+      </article>
+      <article class="maps-dev-card">
+        <h2>Permisos efectivos</h2>
+        <ul class="maps-dev-capabilities" data-maps-dev-capabilities></ul>
+      </article>
+      <article class="maps-dev-card">
+        <h2>Fuente de identidad</h2>
+        <p>La aplicación MAPs debe validar la misma sesión y permisos en su propio backend; esta pantalla no sustituye esa validación.</p>
+      </article>
+    </section>
+
+    <section class="maps-dev-notice">
+      Los permisos se conceden individualmente desde Administración → Usuarios. El personal general no obtiene este acceso por pertenecer al staff.
+    </section>
+
+    <div class="maps-dev-actions">
+      <a href="/staff-dashboard.html">Volver al workspace</a>
+      <a class="secondary" data-maps-dev-project-link hidden target="_blank" rel="noopener noreferrer">Abrir proyecto MAPs</a>
+    </div>
+  </main>
+</body>
+</html>
