@@ -1,8 +1,7 @@
-const MAPS_DEVELOPER_PERMISSION = "maps:developer:access";
+const MAPS_DEVELOPER_PERMISSION = "map.dev.access";
 const MAPS_DEVELOPER_CAPABILITIES = [
-  ["maps:developer:read", "Consultar datos técnicos"],
-  ["maps:developer:write", "Modificar configuraciones"],
-  ["maps:developer:release", "Publicar versiones"]
+  ["map.dev.access", "Acceder al entorno de desarrollo MAP"],
+  ["map.release.manage", "Aprobar y publicar versiones MAP"]
 ];
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -15,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const permissions = new Set(user.permissions || []);
   const capabilities = MAPS_DEVELOPER_CAPABILITIES
-    .filter(([permission]) => permissions.has(permission) || user.role === "admin")
+    .filter(([permission]) => permissions.has(permission))
     .map(([, label]) => `<li>${label}</li>`);
   document.querySelector("[data-maps-dev-capabilities]").innerHTML = capabilities.join("") || "<li>Acceso de entrada únicamente</li>";
 

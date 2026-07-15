@@ -4,6 +4,9 @@
       { type: "label", label: "Panel" },
       { href: "#resumen", label: "Inicio", icon: "layout-dashboard", active: true },
       { href: "#cuenta", label: "Cuenta", icon: "user-round-cog" },
+      { type: "label", label: "Productos" },
+      { href: "#licencias", label: "MAPs", icon: "map" },
+      { type: "label", label: "Servicio" },
       { href: "#operacion", label: "Operación", icon: "inbox" },
       { href: "#comercial", label: "Comercial", icon: "briefcase-business" },
       { href: "/staff-dashboard.html", label: "Administración", icon: "shield-check", adminReturn: true, hidden: true }
@@ -16,6 +19,8 @@
       { type: "label", label: "CMS", cmsAccess: true, permission: "cms:access", hidden: true },
       { href: "/cms.html", label: "Editorial", icon: "file-pen-line", cmsAccess: true, permission: "cms:access", hidden: true },
       { href: "#conocimiento", label: "Conocimiento", icon: "notebook-tabs" },
+      { type: "label", label: "Productos", permission: "platform.licenses.read" },
+      { href: "#maps-licensing", label: "MAPs", icon: "map", permission: "platform.licenses.read" },
       { type: "label", label: "Gestión", permission: "admin:view" },
       { href: "#usuarios", label: "Usuarios", icon: "users-round", permission: "admin:view" },
       { href: "#roles", label: "Roles y permisos", icon: "key-round", permission: "admin:view" },

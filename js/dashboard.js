@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   });
   window.BCCWorkspaceForms?.init(user);
+  window.BCCWorkspaceClientMapLicenses?.init(user);
   window.BCCWorkspaceUtils.refreshIcons();
 });
 
@@ -31,7 +32,9 @@ function bindCustomerWorkspaceRouter() {
       solicitudes: "operacion",
       formularios: "operacion",
       facturacion: "comercial",
-      documentos: "comercial"
+      documentos: "comercial",
+      map: "licencias",
+      maps: "licencias"
     }
   });
 }

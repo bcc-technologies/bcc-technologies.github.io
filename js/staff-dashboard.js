@@ -3,6 +3,7 @@ let staffCurrentUser = null;
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
   "product-intelligence": "analytics",
+  "maps-licensing": "maps-licensing",
   "dominican-intelligence": "dominican-intelligence",
   "crm-correos": "prospectos"
 };
