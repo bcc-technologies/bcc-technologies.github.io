@@ -332,9 +332,30 @@
   font-size: .78rem;
 }
 
+@keyframes workspaceViewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .workspace-view{
   display: grid;
   gap: 18px;
+}
+
+.workspace-view:not([hidden]) {
+  animation: workspaceViewFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-view:not([hidden]) {
+    animation: none;
+  }
 }
 
 .workspace-view[hidden]{

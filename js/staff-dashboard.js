@@ -124,6 +124,10 @@ function openStaffWorkPanel(panelId = "tareas") {
     tab.setAttribute("aria-selected", active ? "true" : "false");
   });
 
+  try {
+    localStorage.setItem(`bcc_last_panel_${window.location.pathname}_trabajo`, panel.dataset.workPanel);
+  } catch (e) {}
+
   window.BCCWorkspaceUtils.refreshIcons();
 }
 
@@ -147,6 +151,10 @@ function openIntelligencePanel(view, panelId = "") {
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", active ? "true" : "false");
   });
+
+  try {
+    localStorage.setItem(`bcc_last_panel_${window.location.pathname}_${view.id}`, panel.dataset.intelPanel);
+  } catch (e) {}
 
   window.BCCWorkspaceUtils.refreshIcons();
 }
