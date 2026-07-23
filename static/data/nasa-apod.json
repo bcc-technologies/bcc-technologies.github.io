@@ -1,12 +1,13 @@
 {
-  "updatedAt": "2026-07-21T08:22:08.341Z",
+  "updatedAt": "2026-07-23T08:23:51.546Z",
   "item": {
-    "date": "2026-07-21",
-    "explanation": "Is this a fossilized turtle on Mars?  No.  Although resembling a large Earth tortoise, this is a layered rock outcrop on Mars that is estimated to span about 15 meters, making it much larger than turtles on Earth. NASA’s robotic Curiosity rover came across this unusual mound, dubbed Miraflores, last month during its 4922nd Martian day exploring Mars.  The small butte may survive because it was somehow more resistant to erosion than surrounding rock.  More recent wind has now covered its top with orange Martian sand.  Below the top shell, many layers of stratified rock are visible, possibly indicating a long history of intermittent wind-blown sand being deposited and then hardened by ground water.  Similar wind-eroded layered landforms, such as yardangs in the Qaidam Desert of China, exist here on Earth. Curiosity and its companion rover Perseverance continue to investigate the ancient history of Mars as well as searching for signs of primeval life.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2607/TurtleRock_Curiosity_2048.jpg",
+    "copyright": "Monica Mesa\n Text: \nCecilia Chirenti \n(NASA\nGSFC, \nUMCP, \nCRESST II)",
+    "date": "2026-07-23",
+    "explanation": "Have you ever seen another galaxy with your own eyes?   The featured image shows the Large Magellanic Cloud (LMC), one of the closest neighbors of our Milky Way.     If you are anywhere south of latitude 20° N (but the further south, the better), you can see it with the unaided eye if you go to a dark sky location, away from big cities and light polution.   It is a dwarf irregular galaxy about 163,000 light-years away, and a member of our Local Group of galaxies.   Despite being small, with a total mass approximately equivalent to 10% - 20% of the mass of the Milky Way, the LMC is very actively forming stars.   This is likely due in part to the gravitational push and pull of tides caused by the Milky Way on the LMC.   Some astronomers have predicted that it will collide with the Milky Way in in about 2 billion years.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2607/LMC.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Turtle Rock on Mars",
-    "url": "https://apod.nasa.gov/apod/image/2607/TurtleRock_Curiosity_1080.jpg"
+    "title": "The Large Magellanic Cloud",
+    "url": "https://apod.nasa.gov/apod/image/2607/LMC_1024.jpg"
   }
 }
