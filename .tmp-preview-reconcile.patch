@@ -1,0 +1,13 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -243,7 +243,8 @@
+   const current = document.querySelector(".workspace-view:not([hidden])");
+   const required = current?.dataset.permissionRequired;
+   if (current && (!required || canAccess(user, required))) return;
+-  document.querySelector('.workspace-nav a[href="#resumen"]')?.click();
++  if (staffWorkspaceRouter?.navigate) staffWorkspaceRouter.navigate("resumen", { replace: true });
++  else activateWorkspaceFallback();
+ }
+ 
+ function updateAccountUser(user) {

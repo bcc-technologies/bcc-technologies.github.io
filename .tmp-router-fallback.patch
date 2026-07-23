@@ -1,0 +1,46 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -58,8 +58,14 @@
+ }
+ 
+ function bindStaffWorkspaceRouter() {
++  if (!window.BCCWorkspaceRouter?.bind) {
++    console.error("No se pudo cargar el router del workspace.");
++    activateWorkspaceFallback();
++    return null;
++  }
+   const routes = window.BCCWorkspaceNavigation?.routes?.staff || {};
+-  staffWorkspaceRouter = window.BCCWorkspaceRouter?.bind({
++  staffWorkspaceRouter = window.BCCWorkspaceRouter.bind({
+     ...routes,
+     onShow({ nextId, panelId, activeView }) {
+       if (nextId === "trabajo") {
+@@ -71,6 +77,29 @@
+       initializeWorkspaceView(nextId);
+     }
+   });
++  if (!staffWorkspaceRouter) activateWorkspaceFallback();
++  else document.body.dataset.workspaceRouterState = "ready";
++  return staffWorkspaceRouter;
++}
++
++function activateWorkspaceFallback(viewId = "resumen") {
++  const views = [...document.querySelectorAll("[data-workspace-view]")];
++  const target = views.find(view => view.id === viewId) || views[0];
++  views.forEach(view => {
++    view.hidden = view !== target;
++  });
++  document.querySelectorAll('.workspace-nav a[href^="#"]').forEach(link => {
++    const active = link.getAttribute("href") === `#${target?.id || viewId}`;
++    link.classList.toggle("active", active);
++    if (active) link.setAttribute("aria-current", "page");
++    else link.removeAttribute("aria-current");
++  });
++  const title = document.querySelector("[data-workspace-view-title]");
++  if (title && target?.dataset.viewTitle) title.textContent = target.dataset.viewTitle;
++  document.body.dataset.workspaceRouterState = "fallback";
++  return target || null;
+ }
+ 
+ function bindStaffWorkPanels() {

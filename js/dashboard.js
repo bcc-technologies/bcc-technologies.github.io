@@ -24,16 +24,8 @@ function hydrateUser(user) {
 }
 
 function bindCustomerWorkspaceRouter() {
-  window.BCCWorkspaceRouter?.bind({
-    aliases: {
-      perfil: "cuenta",
-      seguridad: "cuenta",
-      solicitudes: "operacion",
-      formularios: "operacion",
-      facturacion: "comercial",
-      documentos: "comercial"
-    }
-  });
+  const routes = window.BCCWorkspaceNavigation?.routes?.client || {};
+  window.BCCWorkspaceRouter?.bind(routes);
 }
 
 function updateAccountUser(user) {

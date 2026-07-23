@@ -1,0 +1,23 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -66,6 +66,7 @@
+     return null;
+   }
+   const routes = window.BCCWorkspaceNavigation?.routes?.staff || {};
++  try {
+   staffWorkspaceRouter = window.BCCWorkspaceRouter.bind({
+     ...routes,
+     onShow({ nextId, panelId, activeView }) {
+@@ -78,6 +79,11 @@
+       initializeWorkspaceView(nextId);
+     }
+   });
++  } catch (error) {
++    console.error("No se pudo inicializar el router del workspace.", error);
++    activateWorkspaceFallback();
++    return null;
++  }
+   if (!staffWorkspaceRouter) activateWorkspaceFallback();
+   else document.body.dataset.workspaceRouterState = "ready";
+   return staffWorkspaceRouter;

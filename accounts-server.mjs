@@ -4,6 +4,7 @@ import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { loadDominicanDashboard, runDominicanSync } from "./scripts/dominican-intelligence/sync.mjs";
+import { createMapLicenseStore } from "./js/map-licenses-store.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,8 @@ const USERS_PATH = path.join(DATA_DIR, "users.json");
 const SESSIONS_PATH = path.join(DATA_DIR, "sessions.json");
 const ACCESS_AUDIT_PATH = path.join(DATA_DIR, "access-audit.json");
 const ROLES_PATH = path.join(DATA_DIR, "roles.json");
+const MAP_LICENSES_PATH = path.join(DATA_DIR, "map-licenses.json");
+const mapLicenseStore = createMapLicenseStore({ filePath: MAP_LICENSES_PATH });
 
 const PORT = Number(process.env.PORT || process.env.BCC_ACCOUNTS_PORT || 3888);
 const SESSION_COOKIE = "bcc_session";
@@ -23,7 +26,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view"]
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
@@ -215,6 +218,7 @@ function permissionsForUser(role, staffRoles = [], departments = [], customRoles
     STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
     DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
   }
+  if (permissions.has("licenses:manage") || permissions.has("licenses:assign")) permissions.add("licenses:view");
   return [...permissions];
 }
 
@@ -231,6 +235,10 @@ const PERMISSION_LABELS = {
   "users:manage": "Administrar usuarios",
   "forms:manage": "Administrar formularios",
   "admin:view": "Vista administrador",
+  "licenses:view": "Ver licencias MAPs",
+  "licenses:manage": "Administrar licencias MAPs",
+  "licenses:assign": "Asignar licencias MAPs",
+  "licenses:audit": "Auditar licencias MAPs",
   "content:write": "Crear contenido",
   "strategy:view": "Ver estrategia",
   "department:manage": "Gestionar departamento",
@@ -506,6 +514,30 @@ function can(user, permission) {
   return permissionsForUser(user?.role, user?.staffRoles || [], user?.departments || [], user?.customRoles || []).includes(permission);
 }
 
+function publicMapLicense(license) {
+  if (!license) return null;
+  const { createdBy, events, assignments, ...publicValue } = license;
+  return publicValue;
+}
+
+function publicLicenseUser(user) {
+  const value = publicUser(user);
+  return { id: value.id, name: value.displayName || value.name, email: value.email, role: value.role };
+}
+
+function publicLicenseAssignment(assignment, users) {
+  const target = users.find(item => item.id === assignment.userId);
+  return {
+    id: assignment.id,
+    userId: assignment.userId,
+    name: target ? (publicUser(target).displayName || target.name) : "Usuario",
+    email: target?.email || "",
+    status: assignment.status,
+    assignedAt: assignment.assignedAt,
+    revokedAt: assignment.revokedAt || ""
+  };
+}
+
 async function handleApi(req, res, url) {
   try {
     if (!assertSameOrigin(req, res)) return;
@@ -700,6 +732,95 @@ async function handleApi(req, res, url) {
       } : item);
       writeJson(USERS_PATH, updated);
       return sendJson(res, 200, { ok: true, emails: publicEmails(updated.find(item => item.id === user.id)) });
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/admin/licenses/assignable-users") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:assign")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const users = readJson(USERS_PATH, [])
+        .filter(item => item.status !== "disabled")
+        .map(publicLicenseUser)
+        .sort((a, b) => a.name.localeCompare(b.name, "es"));
+      return sendJson(res, 200, { ok: true, users });
+    }
+
+    const licenseAssignmentsMatch = url.pathname.match(/^\/api\/admin\/licenses\/([^/]+)\/assignments$/);
+    if (req.method === "GET" && licenseAssignmentsMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:view")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const licenseId = decodeURIComponent(licenseAssignmentsMatch[1]);
+      const assignments = mapLicenseStore.listAssignments(licenseId);
+      if (!assignments) return sendJson(res, 404, { ok: false, error: "Licencia no encontrada." });
+      const users = readJson(USERS_PATH, []);
+      return sendJson(res, 200, { ok: true, assignments: assignments.map(item => publicLicenseAssignment(item, users)) });
+    }
+
+    if (req.method === "POST" && licenseAssignmentsMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:assign")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const body = await readBody(req);
+      const users = readJson(USERS_PATH, []);
+      const target = users.find(item => item.id === String(body.userId || "") && item.status !== "disabled");
+      if (!target) return sendJson(res, 404, { ok: false, error: "Usuario no encontrado o inactivo." });
+      try {
+        const result = mapLicenseStore.assign(decodeURIComponent(licenseAssignmentsMatch[1]), target.id, user.id);
+        if (!result) return sendJson(res, 404, { ok: false, error: "Licencia no encontrada." });
+        return sendJson(res, 201, { ok: true, license: publicMapLicense(result.license), assignment: publicLicenseAssignment(result.assignment, users) });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message || "No se pudo asignar el asiento." });
+      }
+    }
+
+    const licenseAssignmentUserMatch = url.pathname.match(/^\/api\/admin\/licenses\/([^/]+)\/assignments\/([^/]+)$/);
+    if (req.method === "DELETE" && licenseAssignmentUserMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:assign")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      try {
+        const result = mapLicenseStore.revoke(decodeURIComponent(licenseAssignmentUserMatch[1]), decodeURIComponent(licenseAssignmentUserMatch[2]), user.id);
+        if (!result) return sendJson(res, 404, { ok: false, error: "Licencia no encontrada." });
+        return sendJson(res, 200, { ok: true, license: publicMapLicense(result.license) });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message || "No se pudo revocar el asiento." });
+      }
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/admin/licenses") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:view")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      return sendJson(res, 200, { ok: true, licenses: mapLicenseStore.list().map(publicMapLicense) });
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/admin/licenses") {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const body = await readBody(req);
+      try {
+        const license = mapLicenseStore.create(body, user.id);
+        return sendJson(res, 201, { ok: true, license: publicMapLicense(license) });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message || "No se pudo crear la licencia." });
+      }
+    }
+
+    const licenseStatusMatch = url.pathname.match(/^\/api\/admin\/licenses\/([^/]+)\/status$/);
+    if (req.method === "PATCH" && licenseStatusMatch) {
+      const user = requireUser(req, res);
+      if (!user) return;
+      if (!can(user, "licenses:manage")) return sendJson(res, 403, { ok: false, error: "Permiso insuficiente" });
+      const body = await readBody(req);
+      try {
+        const license = mapLicenseStore.setStatus(decodeURIComponent(licenseStatusMatch[1]), String(body.status || ""), user.id);
+        if (!license) return sendJson(res, 404, { ok: false, error: "Licencia no encontrada." });
+        return sendJson(res, 200, { ok: true, license: publicMapLicense(license) });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message || "No se pudo actualizar la licencia." });
+      }
     }
 
     if (req.method === "GET" && url.pathname === "/api/admin/users") {

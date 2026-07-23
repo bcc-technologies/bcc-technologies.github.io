@@ -1,0 +1,87 @@
+/* Interaction states shared by the workspace shell.
+   Visual navigation geometry remains owned by workspace-sidebar.css. */
+.workspace-help{
+  margin-top: auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.workspace-help-trigger{
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 10px;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-help-trigger:hover{
+  background: var(--hover);
+}
+
+.workspace-help-trigger > span:last-child{
+  color: var(--ink-muted);
+  transition: transform .16s ease;
+}
+
+.workspace-help.is-open .workspace-help-trigger > span:last-child{
+  transform: rotate(180deg);
+}
+
+.workspace-help-content{
+  padding: 0 10px 10px;
+}
+
+.workspace-help-content > p{
+  margin-top: 0;
+}
+
+.workspace-sidebar-foot{
+  gap: 2px;
+}
+
+[data-workspace-collapse].is-collapsed svg{
+  transform: scaleX(-1);
+}
+
+.workspace-sidebar-foot button,
+.workspace-sidebar-foot a{
+  text-align: left;
+}
+
+@media (max-width: 900px){
+  body.workspace-nav-open{
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  .workspace-refined .workspace-sidebar{
+    height: calc(100dvh - 64px);
+    overscroll-behavior: contain;
+  }
+
+  .workspace-refined .workspace-backdrop{
+    touch-action: none;
+  }
+
+  .workspace-help-trigger,
+  .workspace-sidebar-foot a{
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .workspace-help-trigger > span:last-child,
+  [data-workspace-collapse] svg{
+    transition: none;
+  }
+}

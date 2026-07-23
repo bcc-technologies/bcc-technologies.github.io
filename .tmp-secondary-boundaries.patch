@@ -1,0 +1,65 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -15,24 +15,43 @@
+   applyWorkspaceAccess(user);
+   bindStaffWorkspaceRouter();
+ 
+-  hydrateUser(user);
+-  window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
+-  bindStaffWorkPanels();
+-  bindIntelligencePanels();
+-  enhanceWorkspaceTabs();
+-  bindAdminViewSimulator(user);
+-  window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
+-  window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser });
+-  window.BCCWorkspaceAccount?.renderPermissions(user, {
++  runWorkspaceStep("usuario", () => hydrateUser(user));
++  runWorkspaceStep("menú de cuenta", () => window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel }));
++  runWorkspaceStep("pestañas de operación", bindStaffWorkPanels);
++  runWorkspaceStep("pestañas de inteligencia", bindIntelligencePanels);
++  runWorkspaceStep("semántica de pestañas", enhanceWorkspaceTabs);
++  runWorkspaceStep("simulador de acceso", () => bindAdminViewSimulator(user));
++  runWorkspaceStep("perfil", () => window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser }));
++  runWorkspaceStep("correos", () => window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser }));
++  runWorkspaceStep("permisos", () => window.BCCWorkspaceAccount?.renderPermissions(user, {
+     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
+-  });
+-  window.BCCWorkspaceNotifications?.init(user);
+-  window.BCCWorkspaceProductivity?.init(user);
+-  window.BCCWorkspaceCalendar?.init(user);
+-  window.BCCWorkspaceForms?.init(user);
+-  await window.BCCWorkspaceAdmin?.init(user, { bindRouter: false });
+-  window.BCCWorkspaceLicenses?.init(user);
+-  window.BCCWorkspaceUtils.refreshIcons();
++  }));
++  runWorkspaceStep("notificaciones", () => window.BCCWorkspaceNotifications?.init(user));
++  runWorkspaceStep("productividad", () => window.BCCWorkspaceProductivity?.init(user));
++  runWorkspaceStep("calendario", () => window.BCCWorkspaceCalendar?.init(user));
++  runWorkspaceStep("formularios", () => window.BCCWorkspaceForms?.init(user));
++  await runWorkspaceAsyncStep("administración", () => window.BCCWorkspaceAdmin?.init(user, { bindRouter: false }));
++  runWorkspaceStep("licencias", () => window.BCCWorkspaceLicenses?.init(user));
++  runWorkspaceStep("iconos", () => window.BCCWorkspaceUtils.refreshIcons());
+ });
+ 
++function runWorkspaceStep(label, callback) {
++  try {
++    return callback();
++  } catch (error) {
++    console.error(`No se pudo inicializar ${label}.`, error);
++    return null;
++  }
++}
++
++async function runWorkspaceAsyncStep(label, callback) {
++  try {
++    return await callback();
++  } catch (error) {
++    console.error(`No se pudo inicializar ${label}.`, error);
++    return null;
++  }
++}
++
+ function hydrateUser(user) {
+   const staffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
+   const departments = Array.isArray(user.departments) ? user.departments : [];

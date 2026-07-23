@@ -1,0 +1,18 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -13,13 +13,13 @@
+   if (!user) return;
+   staffCurrentUser = user;
+   applyWorkspaceAccess(user);
++  bindStaffWorkspaceRouter();
+ 
+   hydrateUser(user);
+   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
+   bindStaffWorkPanels();
+   bindIntelligencePanels();
+   enhanceWorkspaceTabs();
+-  bindStaffWorkspaceRouter();
+   bindAdminViewSimulator(user);
+   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
+   window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser });

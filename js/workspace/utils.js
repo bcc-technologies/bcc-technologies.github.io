@@ -33,6 +33,10 @@
     "department:manage": "Gestion departamental",
     "strategy:view": "Estrategia",
     "admin:view": "Administración"
+    "licenses:view": "Ver licencias MAPs",
+    "licenses:manage": "Administrar licencias MAPs",
+    "licenses:assign": "Asignar licencias MAPs",
+    "licenses:audit": "Auditar licencias MAPs",
   };
 
   function escapeHtml(value) {

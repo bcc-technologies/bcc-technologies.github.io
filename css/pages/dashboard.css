@@ -1,6 +1,5 @@
 /* Dashboard workspace styles
-   Keep this file as an ordered module manifest.
-   Add dashboard CSS to css/workspace/*.css by responsibility.
+   Ordered module manifest. Each module owns one responsibility.
 */
 
 @import url("../workspace/workspace-core.css");
@@ -9,6 +8,7 @@
 @import url("../workspace/workspace-components.css");
 @import url("../workspace/workspace-account.css");
 @import url("../workspace/workspace-access.css");
+@import url("../workspace/workspace-licenses.css");
 @import url("../workspace/workspace-prospects.css");
 @import url("../workspace/workspace-productivity.css");
 @import url("../workspace/workspace-calendar.css");
@@ -17,3 +17,4 @@
 @import url("../workspace/workspace-internal.css");
 @import url("../workspace/workspace-roles.css");
 @import url("../workspace/workspace-sidebar.css");
+@import url("../workspace/workspace-shell-experience.css");

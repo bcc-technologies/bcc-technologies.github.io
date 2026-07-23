@@ -1,0 +1,23 @@
+diff --git a/js/staff-dashboard.js b/js/staff-dashboard.js
+--- a/js/staff-dashboard.js
++++ b/js/staff-dashboard.js
+@@ -228,14 +228,18 @@
+   const realAdmin = canAccess(staffCurrentUser || user, "admin:view");
+   document.body.classList.toggle("admin-workspace", realAdmin && canAccess(user, "admin:view"));
+   document.querySelectorAll("[data-permission-required]").forEach(el => {
++    const isWorkspaceView = el.matches("[data-workspace-view]");
+     if (canAccess(user, el.dataset.permissionRequired)) {
+-      el.hidden = false;
++      el.dataset.accessAllowed = "true";
++      if (!isWorkspaceView) el.hidden = false;
+       return;
+     }
+-    if (!previewMode && !realAdmin && el.matches("[data-workspace-view]")) {
++    delete el.dataset.accessAllowed;
++    if (!previewMode && !realAdmin && isWorkspaceView) {
+       el.remove();
+       return;
+     }
+     el.hidden = true;
+   });
+ }

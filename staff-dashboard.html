@@ -16,11 +16,13 @@
   <script src="js/auth-workspace-api.js" defer></script>
   <script src="js/auth-prospects-api.js" defer></script>
   <script src="js/auth-admin-access-api.js" defer></script>
+  <script src="js/auth-map-licenses-api.js" defer></script>
   <script src="js/auth-dominican-intelligence-api.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/layout.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
   <script src="js/workspace/navigation.js" defer></script>
+  <script src="js/workspace/licenses.js" defer></script>
   <script src="js/workspace/analytics.js" defer></script>
   <script src="js/workspace/intelligence.js" defer></script>
   <script src="js/workspace/dominican-intelligence.js" defer></script>
@@ -103,7 +105,7 @@
       </section>
       <div class="workspace-sidebar-foot">
         <button type="button" data-workspace-collapse aria-expanded="true"><i data-lucide="panel-left-close"></i><span>Contraer</span></button>
-        <a href="/dashboard.html"><i data-lucide="monitor"></i><span>Vista cliente</span></a>
+        <a href="/dashboard.html" aria-label="Vista cliente" title="Vista cliente"><i data-lucide="monitor"></i><span>Vista cliente</span></a>
       </div>
     </aside>
     <button class="workspace-backdrop" type="button" data-workspace-backdrop aria-label="Cerrar navegación"></button>
@@ -429,6 +431,9 @@
             </div>
             <div class="role-library" data-role-library></div>
           </section>
+        </section>
+        <section class="workspace-view" id="licencias-maps" data-permission-required="licenses:view" data-workspace-view data-view-title="Licencias MAPs" hidden>
+          <section data-licenses-workspace aria-label="Gestión de licencias MAPs"></section>
         </section>
         <section class="workspace-view" id="science-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Science Radar" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Science Radar">

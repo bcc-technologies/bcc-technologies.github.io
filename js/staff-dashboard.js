@@ -1,4 +1,5 @@
 let staffCurrentUser = null;
+let staffWorkspaceRouter = null;
 
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
@@ -12,25 +13,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!user) return;
   staffCurrentUser = user;
   applyWorkspaceAccess(user);
-
-  hydrateUser(user);
-  window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
-  bindStaffWorkPanels();
-  bindIntelligencePanels();
   bindStaffWorkspaceRouter();
-  bindAdminViewSimulator(user);
-  window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
-  window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser });
-  window.BCCWorkspaceAccount?.renderPermissions(user, {
+
+  runWorkspaceStep("usuario", () => hydrateUser(user));
+  runWorkspaceStep("menú de cuenta", () => window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel }));
+  runWorkspaceStep("pestañas de operación", bindStaffWorkPanels);
+  runWorkspaceStep("pestañas de inteligencia", bindIntelligencePanels);
+  runWorkspaceStep("semántica de pestañas", enhanceWorkspaceTabs);
+  runWorkspaceStep("simulador de acceso", () => bindAdminViewSimulator(user));
+  runWorkspaceStep("perfil", () => window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser }));
+  runWorkspaceStep("correos", () => window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser }));
+  runWorkspaceStep("permisos", () => window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
-  });
-  window.BCCWorkspaceNotifications?.init(user);
-  window.BCCWorkspaceProductivity?.init(user);
-  window.BCCWorkspaceCalendar?.init(user);
-  window.BCCWorkspaceForms?.init(user);
-  await window.BCCWorkspaceAdmin?.init(user, { bindRouter: false });
-  window.BCCWorkspaceUtils.refreshIcons();
+  }));
+  runWorkspaceStep("notificaciones", () => window.BCCWorkspaceNotifications?.init(user));
+  runWorkspaceStep("productividad", () => window.BCCWorkspaceProductivity?.init(user));
+  runWorkspaceStep("calendario", () => window.BCCWorkspaceCalendar?.init(user));
+  runWorkspaceStep("formularios", () => window.BCCWorkspaceForms?.init(user));
+  await runWorkspaceAsyncStep("administración", () => window.BCCWorkspaceAdmin?.init(user, { bindRouter: false }));
+  runWorkspaceStep("licencias", () => window.BCCWorkspaceLicenses?.init(user));
+  runWorkspaceStep("iconos", () => window.BCCWorkspaceUtils.refreshIcons());
 });
+
+function runWorkspaceStep(label, callback) {
+  try {
+    return callback();
+  } catch (error) {
+    console.error(`No se pudo inicializar ${label}.`, error);
+    return null;
+  }
+}
+
+async function runWorkspaceAsyncStep(label, callback) {
+  try {
+    return await callback();
+  } catch (error) {
+    console.error(`No se pudo inicializar ${label}.`, error);
+    return null;
+  }
+}
 
 function hydrateUser(user) {
   const staffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
@@ -55,27 +76,15 @@ function hydrateUser(user) {
 }
 
 function bindStaffWorkspaceRouter() {
-  const panelAliases = {
-    productividad: "tareas",
-    calendario: "agenda",
-    kpis: "kpis",
-    formularios: "formularios",
-    analytics: "website",
-    business: "website",
-    prospectos: "correos"
-  };
-  window.BCCWorkspaceRouter?.bind({
-    aliases: {
-      productividad: "trabajo",
-      calendario: "trabajo",
-      kpis: "trabajo",
-      formularios: "trabajo",
-      business: "product-intelligence",
-      analytics: "product-intelligence",
-      intelligence: "science-radar",
-      prospectos: "crm-correos"
-    },
-    panelAliases,
+  if (!window.BCCWorkspaceRouter?.bind) {
+    console.error("No se pudo cargar el router del workspace.");
+    activateWorkspaceFallback();
+    return null;
+  }
+  const routes = window.BCCWorkspaceNavigation?.routes?.staff || {};
+  try {
+  staffWorkspaceRouter = window.BCCWorkspaceRouter.bind({
+    ...routes,
     onShow({ nextId, panelId, activeView }) {
       if (nextId === "trabajo") {
         openStaffWorkPanel(panelId || "tareas");
@@ -85,12 +94,40 @@ function bindStaffWorkspaceRouter() {
       initializeWorkspaceView(nextId);
     }
   });
+  } catch (error) {
+    console.error("No se pudo inicializar el router del workspace.", error);
+    activateWorkspaceFallback();
+    return null;
+  }
+  if (!staffWorkspaceRouter) activateWorkspaceFallback();
+  else document.body.dataset.workspaceRouterState = "ready";
+  return staffWorkspaceRouter;
+}
+
+function activateWorkspaceFallback(viewId = "resumen") {
+  const views = [...document.querySelectorAll("[data-workspace-view]")];
+  const target = views.find(view => view.id === viewId) || views[0];
+  views.forEach(view => {
+    view.hidden = view !== target;
+  });
+  document.querySelectorAll('.workspace-nav a[href^="#"]').forEach(link => {
+    const active = link.getAttribute("href") === `#${target?.id || viewId}`;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+  const title = document.querySelector("[data-workspace-view-title]");
+  if (title && target?.dataset.viewTitle) title.textContent = target.dataset.viewTitle;
+  document.body.dataset.workspaceRouterState = "fallback";
+  return target || null;
 }
 
 function bindStaffWorkPanels() {
   document.querySelectorAll("[data-work-panel-tab]").forEach(tab => {
     tab.addEventListener("click", () => {
-      openStaffWorkPanel(tab.dataset.workPanelTab || "tareas");
+      const panelId = tab.dataset.workPanelTab || "tareas";
+      if (staffWorkspaceRouter) staffWorkspaceRouter.navigate("trabajo", { panelId });
+      else openStaffWorkPanel(panelId);
     });
   });
 }
@@ -99,8 +136,47 @@ function bindIntelligencePanels() {
   document.querySelectorAll("[data-intel-panel-tab]").forEach(tab => {
     tab.addEventListener("click", () => {
       const view = tab.closest("[data-workspace-view]");
-      openIntelligencePanel(view, tab.dataset.intelPanelTab);
-      initializeWorkspaceView(view?.id);
+      const panelId = tab.dataset.intelPanelTab;
+      if (staffWorkspaceRouter) staffWorkspaceRouter.navigate(view?.id, { panelId });
+      else openIntelligencePanel(view, panelId);
+    });
+  });
+}
+
+function enhanceWorkspaceTabs() {
+  document.querySelectorAll(".staff-work-tabs[role=\"tablist\"]").forEach(tablist => {
+    const scope = tablist.closest("[data-workspace-view]");
+    const tabs = [...tablist.querySelectorAll("button")];
+    tabs.forEach((tab, index) => {
+      const isWorkTab = Boolean(tab.dataset.workPanelTab);
+      const panelId = tab.dataset.workPanelTab || tab.dataset.intelPanelTab || "";
+      const panelSelector = isWorkTab ? `[data-work-panel="${panelId}"]` : `[data-intel-panel="${panelId}"]`;
+      const panel = scope?.querySelector(panelSelector);
+      const baseId = `${scope?.id || "workspace"}-${panelId || index}`;
+
+      tab.id ||= `${baseId}-tab`;
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("tabindex", tab.classList.contains("active") ? "0" : "-1");
+      if (panel) {
+        panel.id ||= `${baseId}-panel`;
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", tab.id);
+        tab.setAttribute("aria-controls", panel.id);
+      }
+
+      tab.addEventListener("keydown", event => {
+        const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+        if (!keys.includes(event.key)) return;
+        event.preventDefault();
+        const current = tabs.indexOf(tab);
+        let next = current;
+        if (event.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+        if (event.key === "ArrowRight") next = (current + 1) % tabs.length;
+        if (event.key === "Home") next = 0;
+        if (event.key === "End") next = tabs.length - 1;
+        tabs[next]?.focus();
+        tabs[next]?.click();
+      });
     });
   });
 }
@@ -121,6 +197,7 @@ function openStaffWorkPanel(panelId = "tareas") {
     const active = tab.dataset.workPanelTab === panel.dataset.workPanel;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", active ? "true" : "false");
+    tab.setAttribute("tabindex", active ? "0" : "-1");
   });
 
   window.BCCWorkspaceUtils.refreshIcons();
@@ -145,6 +222,7 @@ function openIntelligencePanel(view, panelId = "") {
     const active = tab.dataset.intelPanelTab === panel.dataset.intelPanel;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", active ? "true" : "false");
+    tab.setAttribute("tabindex", active ? "0" : "-1");
   });
 
   window.BCCWorkspaceUtils.refreshIcons();
@@ -188,7 +266,8 @@ function ensureVisibleWorkspaceView(user) {
   const current = document.querySelector(".workspace-view:not([hidden])");
   const required = current?.dataset.permissionRequired;
   if (current && (!required || canAccess(user, required))) return;
-  document.querySelector('.workspace-nav a[href="#resumen"]')?.click();
+  if (staffWorkspaceRouter?.navigate) staffWorkspaceRouter.navigate("resumen", { replace: true });
+  else activateWorkspaceFallback();
 }
 
 function updateAccountUser(user) {
@@ -200,11 +279,14 @@ function applyWorkspaceAccess(user, options = {}) {
   const realAdmin = canAccess(staffCurrentUser || user, "admin:view");
   document.body.classList.toggle("admin-workspace", realAdmin && canAccess(user, "admin:view"));
   document.querySelectorAll("[data-permission-required]").forEach(el => {
+    const isWorkspaceView = el.matches("[data-workspace-view]");
     if (canAccess(user, el.dataset.permissionRequired)) {
-      el.hidden = false;
+      el.dataset.accessAllowed = "true";
+      if (!isWorkspaceView) el.hidden = false;
       return;
     }
-    if (!previewMode && !realAdmin && el.matches("[data-workspace-view]")) {
+    delete el.dataset.accessAllowed;
+    if (!previewMode && !realAdmin && isWorkspaceView) {
       el.remove();
       return;
     }

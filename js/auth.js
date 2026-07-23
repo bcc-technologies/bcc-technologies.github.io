@@ -1,7 +1,7 @@
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view"]
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
@@ -37,6 +37,10 @@ const PERMISSION_LABELS = {
   "users:manage": "Administrar usuarios",
   "forms:manage": "Administrar formularios",
   "admin:view": "Vista administrador",
+  "licenses:view": "Ver licencias MAPs",
+  "licenses:manage": "Administrar licencias MAPs",
+  "licenses:assign": "Asignar licencias MAPs",
+  "licenses:audit": "Auditar licencias MAPs",
   "content:write": "Crear contenido",
   "strategy:view": "Ver estrategia",
   "department:manage": "Gestionar departamento",
@@ -108,6 +112,7 @@ function permissionsForProfile(role, staffRoles = [], departments = [], customRo
     STAFF_ROLES.forEach(staffRole => (STAFF_ROLE_PERMISSIONS[staffRole] || []).forEach(permission => permissions.add(permission)));
     DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
   }
+  if (permissions.has("licenses:manage") || permissions.has("licenses:assign")) permissions.add("licenses:view");
   return [...permissions];
 }
 
@@ -450,11 +455,22 @@ function routeForUser(user) {
   return "/dashboard.html";
 }
 
+function isSupabaseAuthHash(value = location.hash) {
+  const hash = new URLSearchParams(String(value || "").replace(/^#/, ""));
+  return ["access_token", "refresh_token", "error", "error_code", "type"]
+    .some(key => hash.has(key));
+}
+
+function isSupabaseAuthCallbackLocation() {
+  const query = new URLSearchParams(location.search);
+  return query.has("code") || isSupabaseAuthHash();
+}
+
 async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
-    if (location.hash || location.search.includes("code=")) {
+    if (isSupabaseAuthCallbackLocation()) {
       await waitForSupabaseSession();
-      if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+      if (isSupabaseAuthHash()) history.replaceState(null, "", location.pathname + location.search);
     }
 
     const user = await currentUser();
@@ -738,6 +754,12 @@ async function bccApi(path, options = {}) {
     });
     const prospectsResult = await prospectsApi?.handle(path, options);
     if (prospectsResult?.handled) return prospectsResult.value;
+  }
+
+  if (path.startsWith("/api/admin/licenses")) {
+    const licensesApi = window.BCCAuthMapLicensesApi?.createMapLicensesApi?.({ supabase, authorizedUser });
+    const licensesResult = await licensesApi?.handle(path, options);
+    if (licensesResult?.handled) return licensesResult.value;
   }
 
   if (path.startsWith("/api/admin/users") || path.startsWith("/api/admin/roles") || path === "/api/admin/access-audit") {
