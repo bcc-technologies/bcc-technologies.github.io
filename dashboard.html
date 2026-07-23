@@ -22,6 +22,8 @@
   <script src="js/workspace/account.js" defer></script>
   <script src="js/workspace/navigation.js" defer></script>
   <script src="js/workspace/forms.js" defer></script>
+  <script src="js/workspace/license-contracts.js" defer></script>
+  <script src="js/workspace/client-map-licenses.js" defer></script>
   <script src="js/workspace/shell.js" defer></script>
   <script src="js/workspace/router.js" defer></script>
   <script src="js/dashboard.js" defer></script>
@@ -145,6 +147,7 @@
                 <div class="resource-rows">
                   <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
                   <a href="#operacion"><i data-lucide="file-check-2"></i><div><strong>Ver pendientes</strong><span>Solicitudes y requerimientos.</span></div><i data-lucide="chevron-right"></i></a>
+                  <a href="#licencias"><i data-lucide="badge-check"></i><div><strong>Administrar licencias MAP</strong><span>Consulta vigencia y gestiona las plazas de tu cuenta.</span></div><i data-lucide="chevron-right"></i></a>
                   <a href="#comercial"><i data-lucide="receipt-text"></i><div><strong>Facturación y documentos</strong><span>Estado comercial y archivos.</span></div><i data-lucide="chevron-right"></i></a>
                   <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="external-link"></i></a>
                 </div>
@@ -179,6 +182,18 @@
               </article>
             </aside>
           </div>
+        </section>
+
+        <section class="workspace-view" id="licencias" data-workspace-view data-view-title="MAPs" hidden>
+          <section data-client-map-licenses aria-label="MAPs y licencias">
+            <article class="module-surface client-license-loading">
+              <i data-lucide="loader-circle"></i>
+              <div>
+                <h2>Cargando licencias MAP</h2>
+                <p>Estamos consultando el acceso asociado a tu cuenta.</p>
+              </div>
+            </article>
+          </section>
         </section>
 
         <section class="workspace-view" id="cuenta" data-workspace-view data-view-title="Cuenta" hidden>

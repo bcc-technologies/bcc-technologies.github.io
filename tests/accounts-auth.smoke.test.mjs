@@ -135,6 +135,46 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(profile.user.name, "Admin Updated");
     assert.equal(profile.user.displayName, "Admin");
     assert.equal(profile.user.company, "BCC Lab");
+
+    res = await fetch(`http://localhost:${port}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "MAPs Developer",
+        email: "maps-developer@example.com",
+        company: "BCC",
+        title: "Engineer",
+        password: "Password123!"
+      })
+    });
+    const mapsDeveloperCookie = res.headers.get("set-cookie");
+    const mapsDeveloperSignup = await res.json();
+    assert.equal(res.status, 201);
+
+    res = await fetch(`http://localhost:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ role: "staff", staffRoles: ["maps_developer"] })
+    });
+    assert.equal(res.status, 200);
+
+    res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
+    const mapsDeveloper = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:access"), true);
+    assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:write"), true);
+    assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:release"), false);
+
+    res = await fetch(`http://localhost:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ role: "staff", staffRoles: ["maps_developer", "maps_release_manager"] })
+    });
+    assert.equal(res.status, 200);
+
+    res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
+    const mapsReleaseManager = await res.json();
+    assert.equal(mapsReleaseManager.user.permissions.includes("maps:developer:release"), true);
   } finally {
     child.kill();
     fs.rmSync(dataDir, { recursive: true, force: true });

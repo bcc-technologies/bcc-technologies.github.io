@@ -24,6 +24,8 @@
   <script src="js/workspace/navigation.js" defer></script>
   <script src="js/workspace/licenses.js" defer></script>
   <script src="js/workspace/analytics.js" defer></script>
+  <script src="js/workspace/license-contracts.js" defer></script>
+  <script src="js/workspace/maps-licensing.js" defer></script>
   <script src="js/workspace/intelligence.js" defer></script>
   <script src="js/workspace/dominican-intelligence.js" defer></script>
   <script src="js/workspace/prospects.constants.js" defer></script>
@@ -484,6 +486,11 @@
             </article>
           </section>
         </section>
+        <section class="workspace-view" id="maps-licensing" data-permission-required="platform.licenses.read" data-workspace-view data-view-title="MAPs" hidden>
+          <section data-maps-licensing-workspace aria-label="MAPs y gestión de licencias">
+            <p class="muted-text">Cargando gestión de licencias MAP...</p>
+          </section>
+        </section>
         <section class="workspace-view" id="product-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Product Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Product Intelligence">
             <article class="module-surface staff-hub-hero staff-work-hub-hero">
@@ -687,6 +694,7 @@
                   <a href="/science.html"><i data-lucide="microscope"></i><span>Ciencia</span><strong>Investigacion y referencias</strong></a>
                   <a href="/products.html"><i data-lucide="boxes"></i><span>Productos</span><strong>Soluciones y capacidades</strong></a>
                   <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><span>Editorial</span><strong>Gestion editorial interna</strong></a>
+                  <a href="/maps-developer.html" data-permission-required="map.dev.access" hidden><i data-lucide="code-2"></i><span>Desarrolladores MAPs</span><strong>Herramientas técnicas autorizadas</strong></a>
                 </div>
               </article>
               <article class="module-surface staff-hub-panel">

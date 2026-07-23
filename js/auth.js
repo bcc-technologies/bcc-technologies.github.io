@@ -1,17 +1,25 @@
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
+<<<<<<< HEAD
   admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
+=======
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read", "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"]
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
 };
 
 const STAFF_ROLE_PERMISSIONS = {
   author: ["content:write", "cms:access"],
   cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
+  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"],
+  maps_developer: ["map.dev.access", "maps:developer:access", "maps:developer:read", "maps:developer:write"],
+  maps_release_manager: ["map.dev.access", "map.release.manage", "maps:developer:access", "maps:developer:read", "maps:developer:release"],
+  maps_license_manager: ["platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.analytics.read"],
+  maps_product_analyst: ["platform.licenses.read", "platform.analytics.read"]
 };
 
 const BASE_ROLE_HIERARCHY = { admin: 0, staff: 50, client: 90 };
-const STAFF_ROLE_HIERARCHY = { cofounder: 10, department_director: 20, author: 40 };
+const STAFF_ROLE_HIERARCHY = { cofounder: 10, department_director: 20, maps_release_manager: 30, maps_developer: 35, author: 40 };
 const DEFAULT_CUSTOM_ROLE_HIERARCHY = 50;
 
 const DEPARTMENT_PERMISSIONS = {
@@ -44,6 +52,17 @@ const PERMISSION_LABELS = {
   "content:write": "Crear contenido",
   "strategy:view": "Ver estrategia",
   "department:manage": "Gestionar departamento",
+  "maps:developer:access": "Acceder a desarrolladores de MAPs",
+  "maps:developer:read": "Consultar datos técnicos de MAPs",
+  "maps:developer:write": "Modificar configuraciones de MAPs",
+  "maps:developer:release": "Publicar versiones de MAPs",
+  "map.dev.access": "Acceder al entorno de desarrollo MAP",
+  "map.release.manage": "Gestionar publicaciones de MAP",
+  "platform.licenses.read": "Consultar licencias MAP",
+  "platform.licenses.manage": "Gestionar licencias MAP",
+  "platform.evaluations.manage": "Gestionar evaluaciones MAP",
+  "platform.permissions.manage": "Gestionar permisos de plataforma",
+  "platform.analytics.read": "Consultar analíticas MAP",
   "department:technology": "Departamento tecnología",
   "department:finance": "Departamento finanzas",
   "department:operations": "Departamento operaciones",
@@ -58,6 +77,8 @@ const ROLE_LABELS = {
   author: "Autor",
   cofounder: "Cofounder",
   department_director: "Director",
+  maps_developer: "Desarrollador MAPs",
+  maps_release_manager: "Responsable de releases MAPs",
   technology: "Tecnología",
   finance: "Finanzas",
   operations: "Operaciones",
@@ -362,6 +383,20 @@ function publicProfile(profile, authUser = null, customRoleDefinitions = []) {
     lastLoginAt: authUser?.last_sign_in_at || ""
   };
 }
+async function platformPermissionsForCurrentUser(supabase) {
+  try {
+    const { data, error } = await supabase.rpc("get_my_platform_access");
+    if (error) throw error;
+    return [...new Set((Array.isArray(data) ? data : [])
+      .map(item => String(item?.access_key || "").trim())
+      .filter(Boolean))];
+  } catch (error) {
+    // La identidad del sitio sigue siendo utilizable si MAP aún no está configurado.
+    console.warn("No se pudo cargar el acceso de plataforma.", error);
+    return [];
+  }
+}
+
 async function currentUser() {
   if (currentPageUser) return currentPageUser;
   if (currentUserPromise) return currentUserPromise;
@@ -402,7 +437,12 @@ async function currentUser() {
           if (!created.error) profile = created.data;
         }
 
-        currentPageUser = publicProfile(profile, userData.user);
+        const platformPermissions = await platformPermissionsForCurrentUser(supabase);
+        const user = publicProfile(profile, userData.user);
+        currentPageUser = {
+          ...user,
+          permissions: [...new Set([...(user?.permissions || []), ...platformPermissions])]
+        };
         return currentPageUser;
       }
     } catch (_error) {
@@ -468,9 +508,16 @@ function isSupabaseAuthCallbackLocation() {
 
 async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
+<<<<<<< HEAD
     if (isSupabaseAuthCallbackLocation()) {
       await waitForSupabaseSession();
       if (isSupabaseAuthHash()) history.replaceState(null, "", location.pathname + location.search);
+=======
+    const hashIsAuthToken = location.hash && new URLSearchParams(location.hash.slice(1)).has("access_token");
+    if (hashIsAuthToken || location.search.includes("code=")) {
+      await waitForSupabaseSession();
+      if (hashIsAuthToken) history.replaceState(null, "", location.pathname + location.search);
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
     }
 
     const user = await currentUser();

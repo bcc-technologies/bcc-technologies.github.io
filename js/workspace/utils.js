@@ -8,7 +8,11 @@
   const STAFF_ROLE_OPTIONS = [
     { value: "author", label: "Autor" },
     { value: "cofounder", label: "Cofounder" },
-    { value: "department_director", label: "Director" }
+    { value: "department_director", label: "Director" },
+    { value: "maps_developer", label: "Desarrollador MAP" },
+    { value: "maps_release_manager", label: "Responsable de releases MAP" },
+    { value: "maps_license_manager", label: "Gestor de licencias MAP" },
+    { value: "maps_product_analyst", label: "Analista de producto MAP" }
   ];
 
   const DEPARTMENT_OPTIONS = [
@@ -32,11 +36,22 @@
     "forms:manage": "Gestionar formularios",
     "department:manage": "Gestion departamental",
     "strategy:view": "Estrategia",
+<<<<<<< HEAD
     "admin:view": "Administración"
     "licenses:view": "Ver licencias MAPs",
     "licenses:manage": "Administrar licencias MAPs",
     "licenses:assign": "Asignar licencias MAPs",
     "licenses:audit": "Auditar licencias MAPs",
+=======
+    "admin:view": "Administración",
+    "map.dev.access": "Desarrollo MAP",
+    "map.release.manage": "Publicaciones MAP",
+    "platform.licenses.read": "Consultar licencias MAP",
+    "platform.licenses.manage": "Gestionar licencias MAP",
+    "platform.evaluations.manage": "Gestionar evaluaciones MAP",
+    "platform.permissions.manage": "Gestionar permisos MAP",
+    "platform.analytics.read": "Analíticas MAP"
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
   };
 
   function escapeHtml(value) {

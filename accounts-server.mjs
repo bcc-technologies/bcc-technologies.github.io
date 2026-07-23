@@ -26,13 +26,21 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
+<<<<<<< HEAD
   admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
+=======
+  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read", "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"]
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
 };
 
 const STAFF_ROLE_PERMISSIONS = {
   author: ["content:write", "cms:access"],
   cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"]
+  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"],
+  maps_developer: ["map.dev.access", "maps:developer:access", "maps:developer:read", "maps:developer:write"],
+  maps_release_manager: ["map.dev.access", "map.release.manage", "maps:developer:access", "maps:developer:read", "maps:developer:release"],
+  maps_license_manager: ["platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.analytics.read"],
+  maps_product_analyst: ["platform.licenses.read", "platform.analytics.read"]
 };
 
 const DEPARTMENT_PERMISSIONS = {
@@ -242,6 +250,17 @@ const PERMISSION_LABELS = {
   "content:write": "Crear contenido",
   "strategy:view": "Ver estrategia",
   "department:manage": "Gestionar departamento",
+  "maps:developer:access": "Acceder a desarrolladores de MAPs",
+  "maps:developer:read": "Consultar datos técnicos de MAPs",
+  "maps:developer:write": "Modificar configuraciones de MAPs",
+  "maps:developer:release": "Publicar versiones de MAPs",
+  "map.dev.access": "Acceder al entorno de desarrollo MAP",
+  "map.release.manage": "Gestionar publicaciones de MAP",
+  "platform.licenses.read": "Consultar licencias MAP",
+  "platform.licenses.manage": "Gestionar licencias MAP",
+  "platform.evaluations.manage": "Gestionar evaluaciones MAP",
+  "platform.permissions.manage": "Gestionar permisos de plataforma",
+  "platform.analytics.read": "Consultar analíticas MAP",
   "department:technology": "Departamento tecnología",
   "department:finance": "Departamento finanzas",
   "department:operations": "Departamento operaciones",
@@ -256,6 +275,10 @@ const ROLE_LABELS = {
   author: "Autor",
   cofounder: "Cofounder",
   department_director: "Director",
+  maps_developer: "Desarrollador MAPs",
+  maps_release_manager: "Responsable de releases MAPs",
+  maps_license_manager: "Gestor de licencias MAP",
+  maps_product_analyst: "Analista de producto MAP",
   technology: "Tecnología",
   finance: "Finanzas",
   operations: "Operaciones",

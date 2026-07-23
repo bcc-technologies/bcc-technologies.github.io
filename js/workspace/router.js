@@ -33,7 +33,27 @@
       const requestedId = id || defaultView;
       const canonicalId = canonicalViewId(requestedId);
       const nextId = viewIds.has(canonicalId) ? canonicalId : defaultView;
+<<<<<<< HEAD
       const panelId = panelFor(requestedId, nextId, showOptions.panelId);
+=======
+
+      const pathname = window.location.pathname;
+      const panelStorageKey = `bcc_last_panel_${pathname}_${nextId}`;
+      let storedPanelId = "";
+      try {
+        storedPanelId = localStorage.getItem(panelStorageKey) || "";
+      } catch (e) {}
+
+      const panelId = showOptions.panelId || storedPanelId || panelAliases[requestedId] || "";
+
+      // Store active view and panel in localStorage for persistence
+      try {
+        localStorage.setItem(`bcc_last_view_${pathname}`, nextId);
+        if (panelId) {
+          localStorage.setItem(panelStorageKey, panelId);
+        }
+      } catch (e) {}
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
 
       views.forEach(view => {
         view.hidden = view.id !== nextId;
@@ -107,8 +127,37 @@
       });
     });
 
+<<<<<<< HEAD
     window.addEventListener("popstate", () => showRoute(window.location.hash, { normalize: false }));
     showRoute(window.location.hash);
+=======
+    window.addEventListener("popstate", () => showView(window.location.hash.slice(1)));
+
+    // Load initial view, falling back to localStorage if URL hash is absent
+    let initialId = window.location.hash.slice(1);
+    const pathname = window.location.pathname;
+    if (!initialId) {
+      try {
+        initialId = localStorage.getItem(`bcc_last_view_${pathname}`) || "";
+      } catch (e) {}
+    }
+
+    const requestedId = initialId || defaultView;
+    const canonicalId = canonicalViewId(requestedId);
+    const nextId = viewIds.has(canonicalId) ? canonicalId : defaultView;
+
+    let initialPanelId = "";
+    try {
+      initialPanelId = localStorage.getItem(`bcc_last_panel_${pathname}_${nextId}`) || "";
+    } catch (e) {}
+
+    // Sync URL hash with the loaded view if we restored it from localStorage
+    if (!window.location.hash.slice(1) && nextId !== defaultView) {
+      window.history.replaceState(null, "", `#${nextId}`);
+    }
+
+    showView(nextId, { panelId: initialPanelId, scroll: false });
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
 
     return { showView, showRoute, navigate, canonicalViewId, parseRoute };
   }

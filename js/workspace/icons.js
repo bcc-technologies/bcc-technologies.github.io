@@ -46,6 +46,7 @@
     "briefcase-business": '<path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
     "check": '<path d="M20 6 9 17l-5-5"/>',
     "check-circle-2": '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
+    "circle-help": '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.5 1.7c-.9.7-1.6 1.1-1.6 2.3"/><path d="M12 17h.01"/>',
     "chevron-down": '<path d="m6 9 6 6 6-6"/>',
     "chevron-right": '<path d="m9 18 6-6-6-6"/>',
     "chart-no-axes-column-increasing": '<path d="M5 21v-6"/><path d="M12 21V9"/><path d="M19 21V3"/>',
@@ -100,11 +101,15 @@
     "x": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
   };
 
+  const ICON_SIZES = new Set(["xs", "sm", "md", "lg", "xl"]);
+
   function createIcons(root = document) {
     root.querySelectorAll("[data-lucide]").forEach(node => {
-      const path = paths[node.dataset.lucide];
-      if (!path) return;
+      const path = paths[node.dataset.lucide] || paths["circle-help"];
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      const requestedSize = node.dataset.iconSize;
+      svg.classList.add("workspace-icon", `workspace-icon--${ICON_SIZES.has(requestedSize) ? requestedSize : "md"}`);
+      if (!paths[node.dataset.lucide]) svg.classList.add("workspace-icon--fallback");
       svg.setAttribute("viewBox", "0 0 24 24");
       svg.setAttribute("fill", "none");
       svg.setAttribute("stroke", "currentColor");

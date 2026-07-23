@@ -393,7 +393,7 @@ begin
     raise exception 'Rol invalido';
   end if;
 
-  if not clean_staff_roles <@ array['author', 'cofounder', 'department_director']::text[] then
+  if not clean_staff_roles <@ array['author', 'cofounder', 'department_director', 'maps_developer', 'maps_release_manager']::text[] then
     raise exception 'Rol interno invalido';
   end if;
 

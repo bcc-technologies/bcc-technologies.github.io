@@ -1,12 +1,13 @@
 {
-  "updatedAt": "2026-07-02T08:50:39.674Z",
+  "updatedAt": "2026-07-23T08:23:51.546Z",
   "item": {
-    "date": "2026-07-02",
-    "explanation": "What happens when one of the stars in a binary goes supernova?   This image combines visible (yellow), ultraviolet (purple) and infrared light (cyan, red and orange) to show two supernova remnants and their surrounding environment, about 6,000 light-years away.   The younger one is the well-known Jellyfish Nebula in the center (mostly in yellow).   If we could see it by eye, it would appear larger than the full moon in the sky.   The filament shown in purple is part of an older, overlapping supernova remnant, G189.6+3.3.   A new study used data from NASA's Fermi Gamma-ray Space Telescope to piece together their story.   Astronomers believe that there were two stars in a binary system, then the first one exploded as a supernova, kicking away its companion, which also exploded as a supernova tens of thousands of years later, creating the superimposed supernova remnants we see today.   The bright star on the right is actually a triple star system named Propus.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2607/sibling_supernovae.jpg",
+    "copyright": "Monica Mesa\n Text: \nCecilia Chirenti \n(NASA\nGSFC, \nUMCP, \nCRESST II)",
+    "date": "2026-07-23",
+    "explanation": "Have you ever seen another galaxy with your own eyes?   The featured image shows the Large Magellanic Cloud (LMC), one of the closest neighbors of our Milky Way.     If you are anywhere south of latitude 20° N (but the further south, the better), you can see it with the unaided eye if you go to a dark sky location, away from big cities and light polution.   It is a dwarf irregular galaxy about 163,000 light-years away, and a member of our Local Group of galaxies.   Despite being small, with a total mass approximately equivalent to 10% - 20% of the mass of the Milky Way, the LMC is very actively forming stars.   This is likely due in part to the gravitational push and pull of tides caused by the Milky Way on the LMC.   Some astronomers have predicted that it will collide with the Milky Way in in about 2 billion years.",
+    "hdurl": "https://apod.nasa.gov/apod/image/2607/LMC.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Sibling Supernova Remnants",
-    "url": "https://apod.nasa.gov/apod/image/2607/sibling_supernovae_1024.jpg"
+    "title": "The Large Magellanic Cloud",
+    "url": "https://apod.nasa.gov/apod/image/2607/LMC_1024.jpg"
   }
 }

@@ -4,6 +4,7 @@ let staffWorkspaceRouter = null;
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
   "product-intelligence": "analytics",
+  "maps-licensing": "maps-licensing",
   "dominican-intelligence": "dominican-intelligence",
   "crm-correos": "prospectos"
 };
@@ -200,6 +201,10 @@ function openStaffWorkPanel(panelId = "tareas") {
     tab.setAttribute("tabindex", active ? "0" : "-1");
   });
 
+  try {
+    localStorage.setItem(`bcc_last_panel_${window.location.pathname}_trabajo`, panel.dataset.workPanel);
+  } catch (e) {}
+
   window.BCCWorkspaceUtils.refreshIcons();
 }
 
@@ -224,6 +229,10 @@ function openIntelligencePanel(view, panelId = "") {
     tab.setAttribute("aria-selected", active ? "true" : "false");
     tab.setAttribute("tabindex", active ? "0" : "-1");
   });
+
+  try {
+    localStorage.setItem(`bcc_last_panel_${window.location.pathname}_${view.id}`, panel.dataset.intelPanel);
+  } catch (e) {}
 
   window.BCCWorkspaceUtils.refreshIcons();
 }

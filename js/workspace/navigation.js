@@ -3,6 +3,7 @@
   const storagePrefix = `bcc-workspace-nav:v${STORAGE_VERSION}`;
   const NAVIGATION = {
     client: [
+<<<<<<< HEAD
       { id: "overview", label: "Panel", open: true, items: [
         { href: "#resumen", label: "Inicio", icon: "layout-dashboard", active: true }
       ] },
@@ -50,6 +51,44 @@
       { id: "crm", label: "CRM", permission: "department:manage", items: [
         { href: "#crm-correos", label: "Correos", icon: "mail-plus", permission: "department:manage" }
       ] }
+=======
+      { type: "label", label: "Panel" },
+      { href: "#resumen", label: "Inicio", icon: "layout-dashboard", active: true },
+      { href: "#cuenta", label: "Cuenta", icon: "user-round-cog" },
+      { type: "label", label: "Productos" },
+      { href: "#licencias", label: "MAPs", icon: "map" },
+      { type: "label", label: "Servicio" },
+      { href: "#operacion", label: "Operación", icon: "inbox" },
+      { href: "#comercial", label: "Comercial", icon: "briefcase-business" },
+      { href: "/staff-dashboard.html", label: "Administración", icon: "shield-check", adminReturn: true, hidden: true }
+    ],
+    staff: [
+      { type: "label", label: "Personal" },
+      { href: "#resumen", label: "Inicio", icon: "layout-dashboard", active: true },
+      { href: "#perfil", label: "Cuenta", icon: "user-round" },
+      { href: "#trabajo", label: "Operación", icon: "workflow" },
+      { type: "label", label: "CMS", cmsAccess: true, permission: "cms:access", hidden: true },
+      { href: "/cms.html", label: "Editorial", icon: "file-pen-line", cmsAccess: true, permission: "cms:access", hidden: true },
+      { href: "#conocimiento", label: "Conocimiento", icon: "notebook-tabs" },
+      { type: "label", label: "Productos", permission: "platform.licenses.read" },
+      { href: "#maps-licensing", label: "MAPs", icon: "map", permission: "platform.licenses.read" },
+      { type: "label", label: "Gestión", permission: "admin:view" },
+      { href: "#usuarios", label: "Usuarios", icon: "users-round", permission: "admin:view" },
+      { href: "#roles", label: "Roles y permisos", icon: "key-round", permission: "admin:view" },
+      { href: "#auditoria", label: "Auditoría", icon: "history", permission: "admin:view" },
+      { type: "label", label: "External Intelligence", permission: "department:manage" },
+      { href: "#science-radar", label: "Science Radar", icon: "radar", permission: "department:manage" },
+      { href: "#business-radar", label: "Business Radar", icon: "scan-search", permission: "department:manage" },
+      { href: "#dominican-intelligence", label: "Dominican Intelligence", icon: "map", permission: "department:manage" },
+      { type: "label", label: "Internal Intelligence", permission: "department:manage" },
+      { href: "#product-intelligence", label: "Product Intelligence", icon: "chart-no-axes-column-increasing", permission: "department:manage" },
+      { href: "#performance-intelligence", label: "Performance Intelligence", icon: "gauge", permission: "department:manage" },
+      { href: "#financial-intelligence", label: "Financial Intelligence", icon: "circle-dollar-sign", permission: "department:manage" },
+      { href: "#bureaucracy-intelligence", label: "Bureaucracy Intelligence", icon: "file-cog", permission: "department:manage" },
+      { href: "#marketing-intelligence", label: "Marketing Intelligence", icon: "megaphone", permission: "department:manage" },
+      { type: "label", label: "CRM", permission: "department:manage" },
+      { href: "#crm-correos", label: "Correos", icon: "mail-plus", permission: "department:manage" }
+>>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
     ]
   };
   const ROUTES = {
