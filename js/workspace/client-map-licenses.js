@@ -22,6 +22,16 @@
     return { accounts: [], licenses: [], members: [], assignments: [], recent_events: [] };
   }
 
+  function trackLicenseFunnel(eventName, metadata = {}) {
+    window.BCCAnalytics?.track(eventName, {
+      section: "client_map_licenses",
+      product_key: metadata.productKey || selectedSuiteProductKey,
+      license_type: metadata.licenseType || "",
+      is_evaluation: Boolean(metadata.isEvaluation),
+      trial_days: metadata.isEvaluation ? trialOffer.duration_days : undefined
+    });
+  }
+
   function init(user) {
     root = document.querySelector("[data-client-map-licenses]");
     if (!root || root.dataset.ready === "true") return;
@@ -82,7 +92,7 @@
           actionsClassName: "client-license-actions",
           title: "Licencias MAP",
           level: 1,
-          description: "Elige un producto para consultar, solicitar o administrar su acceso.",
+          description: "Elige el producto y la modalidad para llevar tus análisis de la evaluación al trabajo diario.",
           actions: [
             {
               label: "Actualizar",
@@ -153,13 +163,8 @@
     };
     const panelId = productDomId(key);
     return `<div class="client-license-product-panel" id="suite-panel-${panelId}" role="tabpanel" aria-labelledby="suite-tab-${panelId}" tabindex="0">
-      <header class="client-license-product-context">
-        <span class="client-license-product-icon">${ui.icon(product.icon, "lg")}</span>
-        <div>
-          <span class="workspace-eyebrow">${escapeHtml(product.category)}</span>
-          <h2>${escapeHtml(productName(key))}</h2>
-          <p>${escapeHtml(product.description)}</p>
-        </div>
+      <header class="client-license-product-summary">
+        <p>${escapeHtml(product.description)}</p>
         <a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>
       </header>
       ${renderCurrentProductAccess(key, product, productLicenses)}
@@ -232,15 +237,22 @@
         ${isOwned ? '<span class="client-license-tag active">Actual</span>' : ""}
       </div>
       <p>${escapeHtml(type.description)}</p>
+      <ul class="client-license-offer-benefits">
+        ${type.features.slice(0, 2).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}
+      </ul>
       ${type.isEvaluation ? `<p class="client-license-trial-offer"><strong>${trialDays} días gratis</strong><span>${trialCampaign ? `Early access · luego ${trialOffer.standard_days} días` : "Prueba estándar"}</span></p>` : ""}
-      <div class="client-license-offer-meta"><span>${ui.icon("users", "xs")}${escapeHtml(type.seatLabel)}</span><span>${ui.icon("calendar-clock", "xs")}${escapeHtml(type.isEvaluation ? `${trialDays} días` : type.durationLabel)}</span></div>
+      <div class="client-license-offer-meta">
+        <span>${ui.icon("users", "xs")}${escapeHtml(type.seatLabel)}</span>
+        ${type.isEvaluation ? "" : `<span>${ui.icon("calendar-clock", "xs")}${escapeHtml(type.durationLabel)}</span>`}
+      </div>
       <footer>
         ${ui.action({
-          label: type.isEvaluation ? `Probar gratis ${trialDays} días` : isOwned ? "Solicitar ampliación" : type.ctaLabel,
+          label: type.isEvaluation ? `Solicitar ${trialDays} días gratis` : isOwned ? "Solicitar ampliación" : type.ctaLabel,
           icon: type.isEvaluation ? "flask-conical" : "badge-plus",
           className: type.recommended ? "btn btn-primary" : "btn btn-ghost",
           data: { clientLicenseRequest: key, clientLicenseType: type.key }
         })}
+        <small class="client-license-offer-assurance">${ui.icon("shield-check", "xs")}${type.isEvaluation ? "Sin tarjeta" : "Sin compromiso"} · respuesta en 1 día hábil</small>
       </footer>
     </article>`;
   }
@@ -379,10 +391,10 @@
     const typeKey = allowedTypes.includes(selectedRequestLicenseType) ? selectedRequestLicenseType : allowedTypes[0] || "named_user";
     const type = contracts.licenseType(typeKey);
     const requestIntro = type.isEvaluation
-      ? `Activa ${trialOffer.duration_days} días gratis durante ${trialOffer.display_name}. La prueba estándar será de ${trialOffer.standard_days} días.`
-      : "Cuéntanos el alcance para preparar una recomendación y cotización útil.";
+      ? `Solicita ${trialOffer.duration_days} días gratis. Confirmaremos el acceso y el caso de uso en 1 día hábil.`
+      : "Cuéntanos el alcance. Responderemos con una recomendación y los próximos pasos en 1 día hábil.";
     return `<dialog class="workspace-layer is-drawer" data-client-license-request-layer aria-labelledby="client-license-request-title">
-      <form class="workspace-layer-panel client-license-request-form" data-client-license-request-form>
+      <form class="workspace-layer-panel client-license-request-form" data-client-license-request-form data-analytics-form="map-license-request">
         <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Solicitud comercial</span><h2 id="client-license-request-title">${escapeHtml(productName(key))} · ${escapeHtml(type.label)}</h2><p>${escapeHtml(requestIntro)}</p></div>${closeLayerAction("Cerrar solicitud")}</header>
         <div class="workspace-layer-body" data-client-license-request-body>
           <input type="hidden" name="product_key" value="${escapeHtml(key)}">
@@ -395,9 +407,11 @@
           <label>Correo de contacto
             <input type="email" name="user_email" value="${escapeHtml(currentUser?.email || "")}" autocomplete="email" required>
           </label>
-          <div class="client-license-form-row">
+          ${type.isEvaluation ? `<label>Caso de uso
+            <textarea name="message" rows="4" placeholder="¿Qué quieres validar con ${escapeHtml(productName(key))}?" required></textarea>
+          </label>` : `<div class="client-license-form-row">
             <label>Plazas estimadas
-              <input type="number" name="seats" min="${type.defaultSeatLimit}" max="10000" value="${type.defaultSeatLimit}" ${type.defaultSeatLimit === 1 ? "readonly" : ""} required>
+              <input type="number" name="seats" min="${type.defaultSeatLimit}" max="10000" value="${type.defaultSeatLimit}" required>
             </label>
             <label>Despliegue
               <select name="deployment" required>
@@ -410,13 +424,13 @@
           </div>
           <label>Contexto del proyecto
             <textarea name="message" rows="5" placeholder="Equipo, flujo actual, volumen de análisis o fecha objetivo"></textarea>
-          </label>
+          </label>`}
           <p class="client-license-request-feedback" data-client-license-request-feedback role="status" aria-live="polite"></p>
           <p class="client-license-request-fallback">Si tienes problemas al enviar, <a href="${escapeHtml(product.requestHref + `&license_type=${encodeURIComponent(typeKey)}`)}">continúa en el formulario de contacto</a>.</p>
         </div>
         <footer class="workspace-layer-actions">
           <button class="btn btn-ghost" type="button" data-client-license-close-layer>Cancelar</button>
-          <button class="btn btn-primary" type="submit" data-client-license-request-submit>Enviar solicitud</button>
+          <button class="btn btn-primary" type="submit" data-client-license-request-submit>${type.isEvaluation ? "Solicitar prueba" : "Enviar solicitud"}</button>
         </footer>
       </form>
     </dialog>`;
@@ -509,7 +523,9 @@
 
   function activateSuiteProduct(key, { focus = false } = {}) {
     if (!suiteProductKeys().includes(key)) return;
+    const previousKey = selectedSuiteProductKey;
     selectedSuiteProductKey = key;
+    if (previousKey !== key) trackLicenseFunnel("map_license_product_select", { productKey: key });
     const current = root.querySelector(".client-license-suite");
     if (!current) return;
     const wrapper = document.createElement("div");
@@ -541,6 +557,12 @@
     if (requestButton) {
       selectedRequestProductKey = requestButton.dataset.clientLicenseRequest;
       selectedRequestLicenseType = requestButton.dataset.clientLicenseType || "named_user";
+      const requestedType = contracts.licenseType(selectedRequestLicenseType);
+      trackLicenseFunnel("map_license_request_open", {
+        productKey: selectedRequestProductKey,
+        licenseType: selectedRequestLicenseType,
+        isEvaluation: requestedType?.isEvaluation
+      });
       const dialog = refreshCommercialRequestLayer();
       ui.openLayer(dialog, { trigger: requestButton });
       return;
@@ -590,6 +612,11 @@
     requestBusy = true;
     const submit = form.querySelector("[data-client-license-request-submit]");
     const feedback = form.querySelector("[data-client-license-request-feedback]");
+    const isEvaluation = form.elements.intent?.value === "evaluation";
+    const productKey = form.elements.product_key?.value || selectedRequestProductKey;
+    const licenseType = form.elements.license_type?.value || selectedRequestLicenseType;
+    const funnelMetadata = { productKey, licenseType, isEvaluation };
+    trackLicenseFunnel("map_license_request_submit", funnelMetadata);
     submit.disabled = true;
     submit.textContent = "Enviando...";
     feedback.textContent = "Enviando tu solicitud...";
@@ -601,15 +628,17 @@
         headers: { Accept: "application/json" }
       });
       if (!response.ok) throw new Error("No fue posible enviar la solicitud.");
+      trackLicenseFunnel("map_license_request_success", funnelMetadata);
       ui.closeLayer(form.closest("dialog"), "submitted");
-      setMessage("Recibimos tu solicitud. El equipo BCC se pondrá en contacto contigo.", "ok");
+      setMessage(isEvaluation ? "Recibimos tu solicitud de prueba. Te responderemos en 1 día hábil." : "Recibimos tu solicitud. Te responderemos en 1 día hábil.", "ok");
     } catch (error) {
+      trackLicenseFunnel("map_license_request_error", funnelMetadata);
       feedback.textContent = "No pudimos enviar la solicitud. Usa el enlace de contacto alternativo.";
       feedback.dataset.tone = "error";
     } finally {
       requestBusy = false;
       submit.disabled = false;
-      submit.textContent = "Enviar solicitud";
+      submit.textContent = isEvaluation ? "Solicitar prueba" : "Enviar solicitud";
     }
   }
 

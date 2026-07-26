@@ -64,9 +64,11 @@ test("client MAP dashboard keeps product and licenses in one compact product-led
   assert.match(styles, /\.client-license-product-tabs\{/);
   assert.match(styles, /\.client-license-product-tab\[aria-selected="true"\]/);
   assert.match(styles, /\.client-license-product-panel\{/);
-  assert.match(styles, /\.client-license-product-context\{/);
+  assert.match(styles, /\.client-license-product-summary\{/);
+  assert.match(styles, /\.client-license-offer-benefits\{/);
   assert.match(styles, /\.client-license-trial-offer\{/);
-  assert.doesNotMatch(styles, /\.client-license-(?:product-overview|no-access|feature-list|trial-duration)/);
+  assert.match(styles, /\.client-license-offer-assurance\{/);
+  assert.doesNotMatch(styles, /\.client-license-(?:product-overview|product-context|product-icon|no-access|feature-list|trial-duration)/);
   assert.match(styles, /\.client-license-offer-card\{/);
   assert.match(styles, /\.client-license-attention \{ min-width: 0; display: grid;/);
   assert.match(styles, /\.client-license-activity-disclosure/);
