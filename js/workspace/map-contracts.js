@@ -5,6 +5,33 @@
     "map.med": "MAP Med"
   });
 
+  const PRODUCT_CATALOG = Object.freeze({
+    "map.nano": Object.freeze({
+      category: "Materiales y superficies",
+      description: "Convierte imágenes de microestructuras en métricas repetibles para investigación y control de calidad.",
+      features: Object.freeze(["Rugosidad, porosidad y morfología", "Exportables CSV y PDF", "Despliegue web o desktop"]),
+      icon: "scan-line",
+      productHref: "/product_maps_nano.html",
+      requestHref: "/contactUs.html?product=map-nano&intent=license"
+    }),
+    "map.bio": Object.freeze({
+      category: "Biología e imagen",
+      description: "Automatiza conteo, clasificación y morfología para flujos de análisis biológico reproducibles.",
+      features: Object.freeze(["Conteo y clasificación", "Máscaras y mediciones", "Flujos web o desktop"]),
+      icon: "activity",
+      productHref: "/product_maps.html#map-bio",
+      requestHref: "/contactUs.html?product=map-bio&intent=license"
+    }),
+    "map.med": Object.freeze({
+      category: "Imagen clínica · I+D",
+      description: "Organiza análisis asistido de imágenes médicas para proyectos de investigación y validación.",
+      features: Object.freeze(["Flujos guiados de imagen", "Resultados trazables", "Configuración por proyecto"]),
+      icon: "shield-question",
+      productHref: "/product_maps.html#map-med",
+      requestHref: "/contactUs.html?product=map-med&intent=license"
+    })
+  });
+
   const STATUS = Object.freeze({
     active: { label: "Activa", tone: "success", icon: "check-circle-2", priority: 0 },
     scheduled: { label: "Programada", tone: "neutral", icon: "calendar-clock", priority: 1 },
@@ -120,6 +147,10 @@
     return PRODUCTS[key] || key || "MAP";
   }
 
+  function productCatalog(key) {
+    return PRODUCT_CATALOG[key] || null;
+  }
+
   function platformAccessLabel(key) {
     return PLATFORM_ACCESS_LABELS[key] || key;
   }
@@ -143,6 +174,7 @@
 
   window.BCCWorkspaceMapContracts = Object.freeze({
     PRODUCTS,
+    PRODUCT_CATALOG,
     STATUS,
     PLATFORM_ACCESS_LABELS,
     MapContractError,
@@ -155,6 +187,7 @@
     effectiveStatus,
     toLicenseViewModel,
     productName,
+    productCatalog,
     platformAccessLabel,
     toError
   });

@@ -98,6 +98,7 @@
       })}
       ${hasCommercialLicenses ? `${renderFeaturedLicense()}${renderAttention()}${renderMetrics()}` : ""}
       ${renderLicenses()}
+      ${renderMarketplace()}
       ${renderSeatManagement()}
     </section>`;
   }
@@ -187,49 +188,107 @@
   }
 
   function renderLicenses() {
+    const heading = ui.sectionHeader({
+      className: "client-license-section-head",
+      eyebrow: "Tu portafolio",
+      title: "Licencias asociadas",
+      description: "Consulta vigencia, capacidad y las acciones disponibles para cada producto."
+    });
     if (!dashboard.licenses.length) {
-      return ui.emptyState({
-        className: "client-license-empty",
-        icon: internalEntitlements.length ? "shield-check" : "badge-x",
-        title: "No hay licencias comerciales asociadas a tu usuario.",
-        description: internalEntitlements.length
-          ? "Tu licencia MAP Staff está activa y aparece arriba. Las licencias comerciales o de evaluación se mostrarán aquí por separado."
-          : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza.",
-        action: internalEntitlements.length ? null : {
-          href: "/contactUs.html",
-          label: "Contactar soporte",
-          className: "btn-primary"
-        }
-      });
+      return `<section class="client-license-portfolio" id="licencias-vigentes">
+        ${heading}
+        ${ui.emptyState({
+          className: "client-license-empty is-compact",
+          icon: internalEntitlements.length ? "shield-check" : "badge-x",
+          title: "Aún no tienes licencias comerciales.",
+          description: internalEntitlements.length
+            ? "Tu beneficio MAP Staff permanece separado. Puedes ampliar tu acceso desde el catálogo inferior."
+            : "Compara las opciones disponibles y solicita la licencia adecuada para tu flujo.",
+          action: { href: "#catalogo-map", label: "Explorar licencias", className: "btn-primary" }
+        })}
+      </section>`;
     }
 
-    return `<div class="client-license-list">${dashboard.licenses.map(rawLicense => {
-      const item = toLicenseViewModel(rawLicense);
-      return `<article class="client-license-card" data-workspace-searchable>
-        <div class="client-license-card-head">
-          <div>
-            <span class="workspace-eyebrow">${escapeHtml(item.account_name || "Cuenta MAP")}</span>
-            <h2>${escapeHtml(item.productName)}</h2>
-            <p>${escapeHtml(item.plan_name || item.license_type || "Licencia")}</p>
-          </div>
-          <div class="client-license-badges">
-            ${item.is_evaluation ? '<span class="client-license-tag">Evaluación</span>' : ""}
-            ${item.is_assigned_to_me ? '<span class="client-license-tag">Asignada a mí</span>' : ""}
-            <span class="client-license-tag ${escapeHtml(item.status)}">${ui.icon(item.statusMeta.icon, "xs")}${escapeHtml(item.statusMeta.label)}</span>
-          </div>
-        </div>
+    return `<section class="client-license-portfolio" id="licencias-vigentes">
+      ${heading}
+      <div class="client-license-list">${dashboard.licenses.map(renderLicenseCard).join("")}</div>
+    </section>`;
+  }
+
+  function renderLicenseCard(rawLicense) {
+    const item = toLicenseViewModel(rawLicense);
+    const catalog = contracts.productCatalog(item.product_key) || {};
+    const renewal = ["expiring", "suspended", "expired", "revoked"].includes(item.status);
+    const primaryAction = renewal
+      ? ui.action({ label: item.status === "expiring" ? "Renovar licencia" : "Solicitar reactivación", href: catalog.requestHref || "/contactUs.html?intent=license", icon: "refresh-cw", className: "btn btn-primary" })
+      : item.canManage
+        ? ui.action({ label: "Gestionar plazas", href: "#gestion-plazas", icon: "users", className: "btn btn-primary" })
+        : ui.action({ label: "Ver producto", href: catalog.productHref || "/products.html", icon: "scan-line", className: "btn btn-primary" });
+    const secondaryAction = renewal || item.canManage
+      ? ui.action({ label: "Ver producto", href: catalog.productHref || "/products.html", className: "btn btn-ghost" })
+      : "";
+
+    return `<article class="client-license-card client-license-product-card" data-workspace-searchable>
+      <div class="client-license-product-head">
+        <span class="client-license-product-icon">${ui.icon(catalog.icon || "scan-line", "lg")}</span>
         <div>
-          <div class="client-license-card-head"><span>Uso de plazas</span><strong>${item.assignedSeats} / ${item.seatLimit}</strong></div>
-          ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: `client-license-seat-bar ${item.seatUsage >= 100 ? "is-full" : item.seatUsage >= 80 ? "is-near-capacity" : ""}`, tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
+          <span class="workspace-eyebrow">${escapeHtml(catalog.category || item.account_name || "Cuenta MAP")}</span>
+          <h2>${escapeHtml(item.productName)}</h2>
+          <p>${escapeHtml(item.plan_name || item.license_type || "Licencia MAP")} · ${escapeHtml(item.account_name || "Cuenta MAP")}</p>
         </div>
-        <dl class="client-license-details">
-          <div><dt>Inicio</dt><dd>${formatDate(item.starts_at)}</dd></div>
-          <div><dt>Vencimiento</dt><dd>${item.ends_at ? formatDate(item.ends_at) : "Sin vencimiento"}</dd></div>
-          <div><dt>Tu rol</dt><dd>${escapeHtml(roleLabel(item.member_role))}</dd></div>
-        </dl>
-        ${item.is_evaluation ? `<p>${ui.icon("info", "xs")} El ciclo de evaluación es administrado por el equipo BCC.</p>` : ""}
-      </article>`;
-    }).join("")}</div>`;
+        <span class="client-license-tag ${escapeHtml(item.status)}">${ui.icon(item.statusMeta.icon, "xs")}${escapeHtml(item.statusMeta.label)}</span>
+      </div>
+      <div class="client-license-seat-summary">
+        <div><span>Uso de plazas</span><strong>${item.assignedSeats} / ${item.seatLimit}</strong></div>
+        ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: `client-license-seat-bar ${item.seatUsage >= 100 ? "is-full" : item.seatUsage >= 80 ? "is-near-capacity" : ""}`, tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
+      </div>
+      <dl class="client-license-details">
+        <div><dt>Vigencia</dt><dd>${item.ends_at ? `Hasta ${formatDate(item.ends_at)}` : "Sin vencimiento"}</dd></div>
+        <div><dt>Acceso</dt><dd>${item.is_assigned_to_me ? "Asignada a ti" : roleLabel(item.member_role)}</dd></div>
+        <div><dt>Modalidad</dt><dd>${item.is_evaluation ? "Evaluación" : "Comercial"}</dd></div>
+      </dl>
+      ${item.is_evaluation ? `<p class="client-license-card-note">${ui.icon("info", "xs")} El ciclo de evaluación es administrado por el equipo BCC.</p>` : ""}
+      <footer class="client-license-card-actions">${primaryAction}${secondaryAction}</footer>
+    </article>`;
+  }
+
+  function renderMarketplace() {
+    const ownedProducts = new Set(dashboard.licenses
+      .map(toLicenseViewModel)
+      .filter(item => ["active", "scheduled", "expiring"].includes(item.status))
+      .map(item => item.product_key));
+    const products = Object.entries(contracts.PRODUCT_CATALOG);
+
+    return `<section class="client-license-marketplace" id="catalogo-map">
+      ${ui.sectionHeader({
+        className: "client-license-section-head",
+        eyebrow: "Catálogo MAP",
+        title: "Amplía tu suite",
+        description: "Elige el producto que mejor encaja con tu flujo. La licencia y capacidad se cotizan según tu equipo y despliegue.",
+        status: { label: "Cotización personalizada", status: "neutral", icon: "badge-plus" }
+      })}
+      <div class="client-license-marketplace-grid">${products.map(([key, product]) => {
+        const owned = ownedProducts.has(key);
+        return `<article class="client-license-offer ${owned ? "is-owned" : ""}">
+          <div class="client-license-offer-head">
+            <span class="client-license-product-icon">${ui.icon(product.icon, "lg")}</span>
+            ${owned ? '<span class="client-license-tag active">En tu cuenta</span>' : '<span class="client-license-tag">Disponible</span>'}
+          </div>
+          <div>
+            <span class="workspace-eyebrow">${escapeHtml(product.category)}</span>
+            <h3>${escapeHtml(productName(key))}</h3>
+            <p>${escapeHtml(product.description)}</p>
+          </div>
+          <ul class="client-license-feature-list">${product.features.map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
+          <footer class="client-license-card-actions">
+            ${owned
+              ? ui.action({ label: "Ver mi licencia", href: "#licencias-vigentes", icon: "check-circle-2", className: "btn btn-ghost" })
+              : ui.action({ label: "Solicitar licencia", href: product.requestHref, icon: "badge-plus", className: "btn btn-primary" })}
+            ${ui.action({ label: "Conocer producto", href: product.productHref, className: "btn btn-ghost" })}
+          </footer>
+        </article>`;
+      }).join("")}</div>
+    </section>`;
   }
 
   function renderSeatManagement() {

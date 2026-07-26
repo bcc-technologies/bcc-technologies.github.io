@@ -80,3 +80,18 @@ test("legacy workspace license UI is no longer part of the dashboard manifest", 
   assert.match(client, /customerFeatureRegistry\.register\("client"\)/);
   assert.match(staff, /staffFeatureRegistry\.register\("staff"\)/);
 });
+
+test("MAP commercial catalog exposes honest, reusable purchase metadata", () => {
+  const window = runtime(async () => ({ data: null, error: null }));
+  const contracts = window.BCCWorkspaceMapContracts;
+  assert.deepEqual(Object.keys(contracts.PRODUCT_CATALOG), ["map.nano", "map.bio", "map.med"]);
+  for (const key of Object.keys(contracts.PRODUCT_CATALOG)) {
+    const product = contracts.productCatalog(key);
+    assert.equal(product, contracts.PRODUCT_CATALOG[key]);
+    assert.ok(product.description.length > 30);
+    assert.equal(product.features.length, 3);
+    assert.match(product.productHref, /^\//);
+    assert.match(product.requestHref, /intent=license/);
+    assert.doesNotMatch(JSON.stringify(product), /(?:price|precio|checkout)/i);
+  }
+});

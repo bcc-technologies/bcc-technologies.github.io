@@ -26,19 +26,17 @@ test("dashboard pages use scoped layered entrypoints", () => {
   assert.doesNotMatch(staffCss, /workspace-customer\.css|workspace-prospects\.css|workspace-intelligence-analytics\.css/);
 });
 
-test("feature style manifests join the declared feature layer", () => {
-  const manifests = [
-    "admin.css",
-    "client-licenses.css",
-    "forms.css",
-    "intelligence.css",
-    "maps-licensing.css",
-    "operation.css",
-    "prospects.css"
-  ];
-  for (const manifest of manifests) {
+test("feature style entrypoints join the declared feature layer", () => {
+  const importManifests = ["admin.css", "forms.css", "intelligence.css", "operation.css", "prospects.css"];
+  for (const manifest of importManifests) {
     const source = read(`css/workspace/features/${manifest}`);
     assert.match(source, /@import url\("[^"]+"\) layer\(workspace\.features\);/);
+  }
+
+  for (const entrypoint of ["client-licenses.css", "maps-licensing.css"]) {
+    const source = read(`css/workspace/features/${entrypoint}`);
+    assert.match(source, /@layer workspace\.features\s*\{/);
+    assert.doesNotMatch(source, /@import/);
   }
 });
 

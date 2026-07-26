@@ -30,6 +30,11 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.match(repository, /rpc\("get_my_internal_entitlements"\)/);
   assert.match(source, /Licencia MAP Staff/);
   assert.match(source, /Beneficio exclusivo del staff/);
+  assert.match(source, /function renderMarketplace/);
+  assert.match(source, /Amplía tu suite/);
+  assert.match(source, /Solicitar licencia/);
+  assert.match(source, /contracts\.PRODUCT_CATALOG/);
+  assert.match(source, /contracts\.productCatalog/);
   assert.match(await read("js/workspace/map-contracts.js"), /access_source === "internal_role"/);
   assert.ok(source.indexOf("function renderStaffLicense") < source.indexOf("function renderFeaturedLicense"));
   assert.ok(source.indexOf("function renderPlatformAccess") < source.indexOf("function renderFeaturedLicense"));

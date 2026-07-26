@@ -36,7 +36,7 @@ test("MAP subpanels are canonical nested routes and react to router activation",
 test("workspace layers centralize focus restoration and responsive drawer geometry", () => {
   const ui = read("js/workspace/ui/interactions.js");
   const sharedStyles = read("css/workspace/primitives/layers.css");
-  const mapStyles = read("css/workspace/workspace-maps-licensing.css");
+  const mapStyles = read("css/workspace/features/maps-licensing.css");
 
   assert.match(ui, /const layerTriggers = new WeakMap/);
   assert.match(ui, /function openLayer/);
@@ -44,12 +44,15 @@ test("workspace layers centralize focus restoration and responsive drawer geomet
   assert.match(sharedStyles, /\.workspace-layer\.is-drawer/);
   assert.match(sharedStyles, /height: 100dvh/);
   assert.match(mapStyles, /\.maps-license-evaluation-layout/);
+  assert.match(mapStyles, /\.maps-license-panel:not\(\[hidden\]\)\{ display: grid; gap: 16px; min-width: 0; \}/);
+  assert.match(mapStyles, /\.maps-license-shell > \*\{ min-width: 0; \}/);
+  assert.match(mapStyles, /\.maps-license-search \.workspace-icon/);
   assert.match(mapStyles, /@media \(max-width: 900px\)/);
 });
 
 test("client MAP dashboard separates entitlements, commercial access and secondary activity", () => {
   const source = read("js/workspace/client-map-licenses.js");
-  const styles = read("css/workspace/workspace-client-map-licenses.css");
+  const styles = read("css/workspace/features/client-licenses.css");
 
   assert.match(source, /function renderCommercialWorkspace/);
   assert.match(source, /client-license-commercial/);
@@ -57,5 +60,12 @@ test("client MAP dashboard separates entitlements, commercial access and seconda
   assert.match(source, /ui\.sectionHeader/);
   assert.match(source, /ui\.emptyState/);
   assert.match(styles, /\.client-license-commercial/);
+  assert.match(styles, /\.client-license-shell > \* \{ min-width: 0; \}/);
+  assert.match(styles, /\.client-license-card \{ min-width: 0; display: grid;/);
   assert.match(styles, /\.client-license-activity-disclosure/);
+  assert.match(styles, /\.client-license-activity-disclosure summary \.workspace-icon/);
+  assert.match(styles, /\.client-license-marketplace-grid\{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+  assert.match(styles, /\.client-license-offer:hover/);
+  assert.match(styles, /@media \(max-width: 640px\)/);
+  assert.match(styles, /\.client-license-card-actions\{ display: grid; grid-template-columns: 1fr; \}/);
 });
