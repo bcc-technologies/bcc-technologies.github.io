@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-24T08:21:10.558Z",
+  "updatedAt": "2026-07-26T08:21:10.770Z",
   "groups": [
     {
       "id": "physics",
@@ -74,7 +74,7 @@
       "2026-03": 0,
       "2026-04": 0,
       "2026-05": 0,
-      "2026-06": 6,
+      "2026-06": 7,
       "2026-07": 333
     },
     "cs": {
@@ -130,7 +130,7 @@
       "2026-03": 0,
       "2026-04": 0,
       "2026-05": 0,
-      "2026-06": 54,
+      "2026-06": 53,
       "2026-07": 154
     },
     "eess": {
@@ -36443,12 +36443,12 @@
         "Mehrdad Pirnia"
       ],
       "categories": [
-        "q-fin.MF",
-        "math.OC"
+        "math.OC",
+        "q-fin.MF"
       ],
-      "primaryCategory": "q-fin.MF",
+      "primaryCategory": "math.OC",
       "sourceGroup": "q-fin",
-      "group": "q-fin"
+      "group": "math"
     },
     {
       "id": "http://arxiv.org/abs/2505.07078v6",
