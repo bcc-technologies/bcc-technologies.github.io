@@ -3,6 +3,7 @@
   let currentUser = null;
   let dashboard = emptyDashboard();
   let selectedLicenseId = "";
+  let platformAccess = [];
   let busy = false;
 
   function emptyDashboard() {
@@ -32,7 +33,11 @@
     setBusy(true);
     setMessage("Actualizando tus licencias MAP...");
     try {
-      const payload = await rpc("get_my_license_dashboard");
+      const [payload, accessRows] = await Promise.all([
+        rpc("get_my_license_dashboard"),
+        rpc("get_my_platform_access")
+      ]);
+      platformAccess = [...new Set((accessRows || []).map(item => String(item?.access_key || "").trim()).filter(Boolean))];
       dashboard = normalizeDashboard(payload);
       selectDefaultLicense();
       render();
@@ -80,6 +85,7 @@
         </article>
         <p class="client-license-message" data-client-license-message hidden></p>
         ${renderFeaturedLicense()}
+        ${renderPlatformAccess()}
         ${renderAttention()}
         ${renderMetrics()}
         <section>
@@ -94,13 +100,35 @@
     refreshIcons();
   }
 
+  function renderPlatformAccess() {
+    if (!platformAccess.length) return "";
+    return `<article class="module-surface client-license-direct-access">
+      <div class="client-license-section-head">
+        <div>
+          <span class="workspace-eyebrow">Acceso directo</span>
+          <h2>Tu acceso interno a MAP está activo</h2>
+          <p>Este acceso proviene de tu rol de plataforma. No consume una plaza ni genera una licencia comercial.</p>
+        </div>
+        <span class="client-license-tag active"><i data-lucide="shield-check"></i>Autorizado</span>
+      </div>
+      <div class="client-license-badges">
+        ${platformAccess.map(key => `<span class="client-license-tag">${escapeHtml(platformAccessLabel(key))}</span>`).join("")}
+      </div>
+    </article>`;
+  }
+
+  function platformAccessLabel(key) {
+    const labels = { "map.dev.access": "Desarrollo MAP", "map.release.manage": "Releases MAP", "platform.licenses.read": "Consulta de licencias", "platform.licenses.manage": "Gestión de licencias", "platform.evaluations.manage": "Evaluaciones", "platform.permissions.manage": "Permisos", "platform.analytics.read": "Analíticas" };
+    return labels[key] || key;
+  }
+
   function renderFeaturedLicense() {
     const licenses = dashboard.licenses.map(toLicenseViewModel);
     const featured = licenses.find(item => item.is_assigned_to_me && item.status === "active")
       || licenses.find(item => item.status === "active")
       || licenses.sort((a, b) => a.statusMeta.priority - b.statusMeta.priority)[0];
     if (!featured) {
-      return `<div class="client-license-hero-summary is-empty"><i data-lucide="badge-plus"></i><span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
+      return platformAccess.length ? "" : `<div class="client-license-hero-summary is-empty"><i data-lucide="badge-plus"></i><span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
     }
 
     return `<div class="client-license-hero-summary">
@@ -139,7 +167,7 @@
 
   function renderLicenses() {
     if (!dashboard.licenses.length) {
-      return `<div class="client-license-empty"><i data-lucide="badge-x"></i><strong>No hay licencias asociadas a tu usuario.</strong><span>Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza.</span><a class="btn btn-primary" href="/contactUs.html">Contactar soporte</a></div>`;
+      return `<div class="client-license-empty"><i data-lucide="${platformAccess.length ? "shield-check" : "badge-x"}"></i><strong>No hay licencias asociadas a tu usuario.</strong><span>${platformAccess.length ? "Tu acceso actual es interno y aparece arriba; por diseño no se presenta como licencia ni consume una plaza." : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza."}</span>${platformAccess.length ? "" : '<a class="btn btn-primary" href="/contactUs.html">Contactar soporte</a>'}</div>`;
     }
 
     return `<div class="client-license-list">${dashboard.licenses.map(rawLicense => {

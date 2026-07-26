@@ -18,29 +18,11 @@
     return currentUser?.role === "admin" || currentUser?.permissions?.includes(permission);
   }
 
-  function apiBase() {
-    const configured = String(window.BCC_MAP_API_URL || "").trim().replace(/\/$/, "");
-    if (configured) return configured;
-    if (["localhost", "127.0.0.1"].includes(location.hostname)) return "http://127.0.0.1:8000";
-    throw new Error("Falta configurar window.BCC_MAP_API_URL para conectar el backend MAP.");
-  }
-
-  async function mapRequest(path, options = {}) {
+  async function platformRpc(name, parameters = {}) {
     const supabase = await window.BCCAuth.loadSupabaseClient();
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data?.session?.access_token) throw new Error("La sesión de Supabase no está disponible.");
-    const response = await fetch(`${apiBase()}${path}`, {
-      ...options,
-      credentials: "omit",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${data.session.access_token}`,
-        ...(options.headers || {})
-      }
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(String(payload.detail || payload.error || `MAP respondió ${response.status}.`));
-    return payload;
+    const { data, error } = await supabase.rpc(name, parameters);
+    if (error) throw new Error(error.message || "No fue posible consultar la plataforma MAP.");
+    return data;
   }
 
   function init(user) {
@@ -63,7 +45,7 @@
             <p class="muted-text">Control de licencias, evaluaciones, plazas y permisos internos desde una sola fuente de verdad.</p>
           </div>
           <div class="maps-license-actions">
-            <span class="status-pill enabled">Supabase + MAP API</span>
+            <span class="status-pill enabled">Supabase</span>
             <button class="btn btn-ghost btn-compact" type="button" data-map-refresh><i data-lucide="refresh-cw"></i>Actualizar</button>
           </div>
         </article>
@@ -97,25 +79,19 @@
   async function loadDashboard() {
     setMessage("Actualizando licencias y accesos...");
     try {
-      const requests = [
-        mapRequest("/api/admin/platform/overview"),
-        mapRequest("/api/admin/platform/licenses"),
-        mapRequest("/api/admin/platform/licenses/catalog"),
-        mapRequest("/api/admin/platform/licenses/users")
-      ];
-      if (has("platform.evaluations.manage")) requests.push(mapRequest("/api/admin/platform/evaluations/cohorts"));
-      if (has("platform.permissions.manage")) requests.push(mapRequest("/api/admin/platform/access/users"));
-      const results = await Promise.all(requests);
-      overview = results[0].overview || {};
-      licenses = results[1].licenses || [];
-      accounts = results[2].accounts || [];
-      plans = results[2].plans || [];
-      users = results[3].users || [];
-      let index = 4;
-      if (has("platform.evaluations.manage")) cohorts = results[index++].cohorts || [];
-      if (has("platform.permissions.manage")) accessUsers = results[index]?.users || [];
+      const dashboard = await platformRpc("get_my_platform_admin_dashboard", {
+        p_include_evaluations: has("platform.evaluations.manage"),
+        p_include_access: has("platform.permissions.manage")
+      });
+      overview = dashboard?.overview || {};
+      licenses = dashboard?.licenses || [];
+      accounts = dashboard?.accounts || [];
+      plans = dashboard?.plans || [];
+      users = dashboard?.users || [];
+      cohorts = dashboard?.cohorts || [];
+      accessUsers = dashboard?.access_users || [];
       renderAll();
-      setMessage("Datos de plataforma actualizados.", "ok");
+      setMessage("Datos de plataforma actualizados desde Supabase.", "ok");
     } catch (error) {
       setMessage(error.message, "error");
       renderAll();
@@ -298,11 +274,32 @@
     const data = Object.fromEntries(new FormData(form));
     try {
       setMessage("Guardando cambios...");
-      if (form.matches("[data-issue-license-form]")) await mapRequest("/api/admin/platform/licenses", { method: "POST", body: JSON.stringify({ accountId: data.accountId, planId: data.planId, seatLimit: Number(data.seatLimit), startsAt: isoDate(data.startsAt), endsAt: data.endsAt ? isoDate(data.endsAt) : null }) });
-      if (form.matches("[data-assign-license-form]")) await mapRequest(`/api/admin/platform/licenses/${encodeURIComponent(data.licenseId)}/assignments`, { method: "POST", body: JSON.stringify({ userId: data.userId }) });
-      if (form.matches("[data-create-evaluation-account]")) await mapRequest("/api/admin/platform/evaluations/accounts", { method: "POST", body: JSON.stringify({ displayName: data.displayName }) });
-      if (form.matches("[data-create-cohort]")) await mapRequest("/api/admin/platform/evaluations/cohorts", { method: "POST", body: JSON.stringify({ accountId: data.accountId, productKey: data.productKey, name: data.name, purpose: data.purpose, startsAt: isoDate(data.startsAt), endsAt: isoDate(data.endsAt) }) });
-      if (form.matches("[data-invite-participant]")) await mapRequest(`/api/admin/platform/evaluations/cohorts/${encodeURIComponent(data.cohortId)}/participants`, { method: "POST", body: JSON.stringify({ email: data.email, fullName: data.fullName || null }) });
+      if (form.matches("[data-issue-license-form]")) await platformRpc("issue_my_platform_license", {
+        p_account_id: data.accountId,
+        p_plan_id: data.planId,
+        p_seat_limit: Number(data.seatLimit),
+        p_starts_at: isoDate(data.startsAt),
+        p_ends_at: data.endsAt ? isoDate(data.endsAt) : null
+      });
+      if (form.matches("[data-assign-license-form]")) await platformRpc("assign_my_platform_license", {
+        p_license_id: data.licenseId,
+        p_user_id: data.userId
+      });
+      if (form.matches("[data-create-evaluation-account]")) await platformRpc("create_my_evaluation_account", {
+        p_display_name: data.displayName
+      });
+      if (form.matches("[data-create-cohort]")) await platformRpc("create_my_evaluation_cohort", {
+        p_account_id: data.accountId,
+        p_product_key: data.productKey,
+        p_name: data.name,
+        p_purpose: data.purpose,
+        p_starts_at: isoDate(data.startsAt),
+        p_ends_at: isoDate(data.endsAt)
+      });
+      if (form.matches("[data-invite-participant]")) await platformRpc("provision_my_evaluation_participant", {
+        p_cohort_id: data.cohortId,
+        p_email: data.email
+      });
       form.reset();
       await loadDashboard();
       setMessage("Cambio guardado y acceso recalculado.", "ok");
@@ -312,8 +309,9 @@
   async function loadParticipants(cohortId) {
     selectedCohortId = cohortId;
     try {
-      const payload = await mapRequest(`/api/admin/platform/evaluations/cohorts/${encodeURIComponent(cohortId)}/participants`);
-      participants = payload.participants || [];
+      participants = await platformRpc("list_my_evaluation_cohort_participants", {
+        p_cohort_id: cohortId
+      }) || [];
       renderEvaluations(); refreshIcons();
     } catch (error) { setMessage(error.message, "error"); }
   }
@@ -321,7 +319,11 @@
   async function revokeParticipantAccess(userId) {
     if (!confirm("¿Revocar el acceso de evaluación de este participante?")) return;
     try {
-      await mapRequest(`/api/admin/platform/evaluations/cohorts/${encodeURIComponent(selectedCohortId)}/participants/${encodeURIComponent(userId)}/revoke`, { method: "POST", body: JSON.stringify({ reason: "Revocado desde staff dashboard" }) });
+      await platformRpc("revoke_my_evaluation_participant", {
+        p_cohort_id: selectedCohortId,
+        p_user_id: userId,
+        p_reason: "Revocado desde staff dashboard"
+      });
       await loadParticipants(selectedCohortId); await loadDashboard();
     } catch (error) { setMessage(error.message, "error"); }
   }
@@ -329,7 +331,10 @@
   async function revokeLicenseAccess(licenseId) {
     if (!confirm("¿Revocar esta licencia y liberar todas sus plazas?")) return;
     try {
-      await mapRequest(`/api/admin/platform/licenses/${encodeURIComponent(licenseId)}/revoke`, { method: "POST", body: JSON.stringify({ reason: "Revocada desde staff dashboard" }) });
+      await platformRpc("revoke_my_platform_license", {
+        p_license_id: licenseId,
+        p_reason: "Revocada desde staff dashboard"
+      });
       await loadDashboard();
     } catch (error) { setMessage(error.message, "error"); }
   }

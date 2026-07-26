@@ -17,14 +17,25 @@ test("staff dashboard wires the MAP licensing workspace behind canonical access"
   assert.match(dashboard, /"maps-licensing": "maps-licensing"/);
 });
 
-test("MAP licensing UI uses the separated platform administration API", () => {
+test("MAP licensing UI uses authenticated Supabase RPCs without the suspended Render service", () => {
   const moduleSource = read("js/workspace/maps-licensing.js");
 
-  assert.match(moduleSource, /\/api\/admin\/platform\/licenses/);
-  assert.match(moduleSource, /\/api\/admin\/platform\/evaluations\/cohorts/);
-  assert.doesNotMatch(moduleSource, /\/api\/dev\/evaluations/);
+  assert.match(moduleSource, /get_my_platform_admin_dashboard/);
+  assert.match(moduleSource, /issue_my_platform_license/);
+  assert.match(moduleSource, /provision_my_evaluation_participant/);
+  assert.doesNotMatch(moduleSource, /map-nano\.onrender\.com|mapRequest\(|fetch\(/);
   assert.match(moduleSource, /platform\.permissions\.manage/);
   assert.match(moduleSource, /platform\.analytics\.read/);
+});
+
+test("browser platform administration wrappers bind identity to auth.uid", () => {
+  const sql = read("supabase/migrations/20260726030445_browser_platform_admin_rpc.sql");
+
+  assert.match(sql, /actor_id uuid := \(select auth\.uid\(\)\)/i);
+  assert.doesNotMatch(sql, /p_actor_id/);
+  assert.match(sql, /revoke all on function public\.get_my_platform_admin_dashboard[\s\S]*from public, anon, authenticated/i);
+  assert.match(sql, /grant execute on function public\.get_my_platform_admin_dashboard[\s\S]*to authenticated, service_role/i);
+  assert.match(sql, /private\.get_platform_admin_overview/);
 });
 
 test("assignable MAP staff roles expose least-privilege local fallbacks", () => {

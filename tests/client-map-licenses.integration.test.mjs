@@ -22,6 +22,9 @@ test("client license module only uses scoped self-service RPCs", async () => {
   const source = await read("js/workspace/client-map-licenses.js");
 
   assert.match(source, /rpc\("get_my_license_dashboard"\)/);
+  assert.match(source, /rpc\("get_my_platform_access"\)/);
+  assert.match(source, /Tu acceso interno a MAP está activo/);
+  assert.ok(source.indexOf("function renderPlatformAccess") < source.indexOf("function renderFeaturedLicense"));
   assert.match(source, /rpc\("assign_my_account_license"/);
   assert.match(source, /rpc\("release_my_license_assignment"/);
   assert.doesNotMatch(source, /\.from\("(?:platform_licenses|license_assignments|license_account_members)"\)/);
