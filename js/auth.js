@@ -406,13 +406,16 @@ async function currentUser() {
       if (userError) throw userError;
 
       if (userData?.user) {
-        let { data: profile, error } = await supabase
+        const profileRequest = supabase
           .from("profiles")
           .select("*")
           .eq("id", userData.user.id)
           .maybeSingle();
+        const accessRequest = platformPermissionsForCurrentUser(supabase);
+        const [profileResult, platformPermissions] = await Promise.all([profileRequest, accessRequest]);
+        let profile = profileResult.data;
 
-        if (error) throw error;
+        if (profileResult.error) throw profileResult.error;
 
         if (!profile) {
           const metadata = userData.user.user_metadata || {};
@@ -438,7 +441,6 @@ async function currentUser() {
           profile = created.data;
         }
 
-        const platformPermissions = await platformPermissionsForCurrentUser(supabase);
         const user = publicProfile(profile, userData.user);
         currentPageUser = {
           ...user,
@@ -521,6 +523,8 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
       window.location.replace(`/login.html?next=${encodeURIComponent(location.pathname)}`);
       return null;
     }
+    window.performance?.mark?.("bcc:auth-ready");
+    document.dispatchEvent?.(new CustomEvent("bcc:auth-ready"));
     if (admin && !user.permissions.includes("admin:view")) {
       window.location.replace(routeForUser(user));
       return null;

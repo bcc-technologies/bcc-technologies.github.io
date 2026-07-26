@@ -109,6 +109,7 @@
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       const requestedSize = node.dataset.iconSize;
       svg.classList.add("workspace-icon", `workspace-icon--${ICON_SIZES.has(requestedSize) ? requestedSize : "md"}`);
+      svg.dataset.workspaceIcon = node.dataset.lucide || "circle-help";
       if (!paths[node.dataset.lucide]) svg.classList.add("workspace-icon--fallback");
       svg.setAttribute("viewBox", "0 0 24 24");
       svg.setAttribute("fill", "none");
@@ -123,4 +124,7 @@
   }
 
   window.BCCWorkspaceIcons = { createIcons };
+  createIcons(document);
+  window.performance?.mark?.("bcc:icons-ready");
+  document.dispatchEvent(new CustomEvent("bcc:workspace-icons-ready"));
 })();

@@ -237,6 +237,7 @@
     const groups = NAVIGATION[key];
     if (!groups) return;
     target.replaceChildren(...groups.map(group => renderGroup(group, key)));
+    window.BCCWorkspaceIcons?.createIcons(target);
     bindKeyboard(target);
 
     const openActiveGroup = () => {

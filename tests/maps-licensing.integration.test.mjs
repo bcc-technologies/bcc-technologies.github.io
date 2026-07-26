@@ -11,7 +11,8 @@ test("staff dashboard wires the MAP licensing workspace behind canonical access"
 
   assert.match(html, /data-maps-licensing-workspace/);
   assert.match(html, /id="maps-licensing" data-permission-required="platform\.licenses\.read"/);
-  assert.match(html, /js\/workspace\/maps-licensing\.js/);
+  assert.doesNotMatch(html, /<script src="js\/workspace\/maps-licensing\.js"/);
+  assert.match(dashboard, /"js\/workspace\/maps-licensing\.js"/);
   assert.match(navigation, /#maps-licensing/);
   assert.match(dashboard, /"maps-licensing": "maps-licensing"/);
 });

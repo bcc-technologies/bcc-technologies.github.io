@@ -1,5 +1,6 @@
 let staffCurrentUser = null;
 let staffWorkspaceRouter = null;
+let accountEmailManagerBound = false;
 
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
@@ -8,6 +9,37 @@ const WORKSPACE_MODULE_BY_VIEW = {
   "dominican-intelligence": "dominican-intelligence",
   "crm-correos": "prospectos"
 };
+const WORKSPACE_LAZY_MODULES = {
+  analytics: { selector: "[data-analytics-workspace]", global: "BCCWorkspaceAnalytics" },
+  "maps-licensing": { selector: "[data-maps-licensing-workspace]", global: "BCCWorkspaceMapsLicensing" },
+  intelligence: { selector: "[data-intelligence-workspace]", global: "BCCWorkspaceIntelligence" },
+  "dominican-intelligence": { selector: "[data-dominican-intelligence-workspace]", global: "BCCWorkspaceDominicanIntelligence" },
+  prospectos: { selector: "[data-prospects-workspace]", global: "BCCWorkspaceProspects" }
+};
+
+
+const WORKSPACE_FEATURES = {
+  operation: [
+    "js/auth-workspace-api.js",
+    "js/workspace/productivity.js",
+    "js/workspace/calendar.js"
+  ],
+  forms: ["js/workspace/forms.js"],
+  admin: ["js/auth-admin-access-api.js", "js/admin-dashboard.js"],
+  analytics: ["js/workspace/analytics.js"],
+  "maps-licensing": ["js/workspace/license-contracts.js", "js/workspace/maps-licensing.js"],
+  intelligence: ["js/workspace/intelligence.js"],
+  "dominican-intelligence": ["js/auth-dominican-intelligence-api.js", "js/workspace/dominican-intelligence.js"],
+  prospectos: [
+    "js/auth-prospects-api.js",
+    "js/workspace/prospects.constants.js",
+    "js/workspace/prospects.layout.js",
+    "js/workspace/prospects.api.js",
+    "js/workspace/prospects.js"
+  ]
+};
+
+window.BCCWorkspaceLoader.register(WORKSPACE_FEATURES, { forms: ["operation"] });
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["staff", "admin"] });
@@ -23,30 +55,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   runWorkspaceStep("semántica de pestañas", enhanceWorkspaceTabs);
   runWorkspaceStep("simulador de acceso", () => bindAdminViewSimulator(user));
   runWorkspaceStep("perfil", () => window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser }));
-  runWorkspaceStep("correos", () => window.BCCWorkspaceAccount?.bindEmailManager(user, { onUserUpdate: updateAccountUser }));
   runWorkspaceStep("permisos", () => window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   }));
   runWorkspaceStep("notificaciones", () => window.BCCWorkspaceNotifications?.init(user));
-  runWorkspaceStep("productividad", () => window.BCCWorkspaceProductivity?.init(user));
-  runWorkspaceStep("calendario", () => window.BCCWorkspaceCalendar?.init(user));
-  runWorkspaceStep("formularios", () => window.BCCWorkspaceForms?.init(user));
-  await runWorkspaceAsyncStep("administración", () => window.BCCWorkspaceAdmin?.init(user, { bindRouter: false }));
   runWorkspaceStep("iconos", () => window.BCCWorkspaceUtils.refreshIcons());
+  document.body.dataset.workspaceReady = "true";
+  window.performance?.mark?.("bcc:workspace-ready");
+  document.dispatchEvent(new CustomEvent("bcc:workspace-ready", { detail: { viewId: staffWorkspaceRouter?.current?.() || "resumen" } }));
 });
 
 function runWorkspaceStep(label, callback) {
   try {
     return callback();
-  } catch (error) {
-    console.error(`No se pudo inicializar ${label}.`, error);
-    return null;
-  }
-}
-
-async function runWorkspaceAsyncStep(label, callback) {
-  try {
-    return await callback();
   } catch (error) {
     console.error(`No se pudo inicializar ${label}.`, error);
     return null;
@@ -88,10 +109,11 @@ function bindStaffWorkspaceRouter() {
     onShow({ nextId, panelId, activeView }) {
       if (nextId === "trabajo") {
         openStaffWorkPanel(panelId || "tareas");
+        void initializeWorkspaceView(nextId, panelId || "tareas");
         return;
       }
       if (activeView?.querySelector("[data-intel-panel]")) openIntelligencePanel(activeView, panelId);
-      initializeWorkspaceView(nextId);
+      void initializeWorkspaceView(nextId, panelId);
     }
   });
   } catch (error) {
@@ -236,9 +258,46 @@ function openIntelligencePanel(view, panelId = "") {
   window.BCCWorkspaceUtils.refreshIcons();
 }
 
-function initializeWorkspaceView(viewId) {
-  const moduleId = WORKSPACE_MODULE_BY_VIEW[viewId] || viewId;
-  window.BCCWorkspaceAdmin?.initializeWorkspaceModule?.(moduleId, staffCurrentUser);
+async function initializeWorkspaceView(viewId, panelId = "") {
+  try {
+    if (viewId === "resumen" || viewId === "trabajo") {
+      await window.BCCWorkspaceLoader.load(panelId === "formularios" ? "forms" : "operation");
+      window.BCCWorkspaceProductivity?.init(staffCurrentUser);
+      window.BCCWorkspaceCalendar?.init(staffCurrentUser);
+      if (panelId === "formularios") window.BCCWorkspaceForms?.init(staffCurrentUser);
+      return;
+    }
+
+    if (viewId === "perfil" && !accountEmailManagerBound) {
+      accountEmailManagerBound = true;
+      await window.BCCWorkspaceAccount?.bindEmailManager(staffCurrentUser, { onUserUpdate: updateAccountUser });
+      return;
+    }
+
+    if (["usuarios", "roles", "auditoria"].includes(viewId)) {
+      await window.BCCWorkspaceLoader.load("admin");
+      await window.BCCWorkspaceAdmin?.init(staffCurrentUser, { bindRouter: false });
+      return;
+    }
+
+    const featureId = WORKSPACE_MODULE_BY_VIEW[viewId];
+    if (!featureId) return;
+    await window.BCCWorkspaceLoader.load(featureId);
+    initializeLoadedWorkspaceModule(featureId);
+  } catch (error) {
+    console.error(`No se pudo inicializar la vista ${viewId}.`, error);
+  }
+function initializeLoadedWorkspaceModule(featureId) {
+  const config = WORKSPACE_LAZY_MODULES[featureId];
+  const root = config ? document.querySelector(config.selector) : null;
+  if (!root || root.dataset.workspaceModuleReady === "true") return;
+  const module = window[config.global];
+  if (!module?.init) throw new Error(`El módulo ${featureId} no expuso un inicializador.`);
+  module.init(staffCurrentUser);
+  root.dataset.workspaceModuleReady = "true";
+  window.BCCWorkspaceUtils.refreshIcons(root);
+}
+
 }
 
 function bindAdminViewSimulator(user) {

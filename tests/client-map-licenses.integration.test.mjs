@@ -12,9 +12,10 @@ test("client dashboard exposes the MAP license self-service view", async () => {
   ]);
 
   assert.match(html, /data-client-map-licenses/);
-  assert.match(html, /js\/workspace\/client-map-licenses\.js/);
+  assert.doesNotMatch(html, /<script src="js\/workspace\/client-map-licenses\.js"/);
+  assert.match(dashboard, /"js\/workspace\/client-map-licenses\.js"/);
   assert.match(navigation, /href:\s*"#licencias"/);
-  assert.match(dashboard, /BCCWorkspaceClientMapLicenses\?\.init\(user\)/);
+  assert.match(dashboard, /BCCWorkspaceClientMapLicenses\?\.init\(customerCurrentUser\)/);
 });
 
 test("client license module only uses scoped self-service RPCs", async () => {

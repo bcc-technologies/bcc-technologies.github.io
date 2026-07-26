@@ -106,7 +106,13 @@ function createHarness() {
 
   const context = vm.createContext({
     document,
-    window: { BCCWorkspaceNavigation: { routes: { staff: {} } } },
+    window: {
+      BCCWorkspaceNavigation: { routes: { staff: {} } },
+      BCCWorkspaceLoader: {
+        register() {},
+        load() { return Promise.resolve(); }
+      }
+    },
     console: { error() {} }
   });
   vm.runInContext(staffSource, context, { filename: "staff-dashboard.js" });

@@ -20,7 +20,6 @@
     updateButtonState();
     scanTimer = window.setInterval(scanNow, 60 * 1000);
     pollTimer = window.setInterval(pollWorkspace, 2 * 60 * 1000);
-    window.setTimeout(pollWorkspace, 2500);
   }
 
   function bindButton() {
@@ -65,8 +64,12 @@
       : permission === "denied"
         ? "Notificaciones bloqueadas en el navegador"
         : "Activar notificaciones";
-    button.innerHTML = permission === "granted" ? '<i data-lucide="bell-ring"></i>' : '<i data-lucide="bell"></i>';
-    window.BCCWorkspaceUtils?.refreshIcons(button);
+    const iconName = permission === "granted" ? "bell-ring" : "bell";
+    const currentIcon = button.querySelector("[data-workspace-icon]");
+    if (currentIcon?.dataset.workspaceIcon !== iconName) {
+      button.innerHTML = `<i data-lucide="${iconName}"></i>`;
+      window.BCCWorkspaceUtils?.refreshIcons(button);
+    }
   }
 
   async function pollWorkspace() {
