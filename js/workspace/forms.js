@@ -1,4 +1,5 @@
 (() => {
+  const repository = window.BCCWorkspaceFormRepository;
   const TEMPLATES = {
     client_feedback: {
       audience: "client",
@@ -75,13 +76,15 @@
   let draftQuestions = [];
   let activeForm = null;
   let view = "";
+  let lifecycleSignal = null;
 
   function question(id, label, type, required, options = []) {
     return { id, label, type, required, options };
   }
 
-  async function init(account) {
-    root = document.querySelector("[data-forms-workspace]");
+  async function init(account, context = {}) {
+    root = context.root || document.querySelector("[data-forms-workspace]");
+    lifecycleSignal = context.signal || null;
     if (!root || root.dataset.ready === "true") return;
     root.dataset.ready = "true";
     user = account;
@@ -223,20 +226,23 @@
   }
 
   async function loadForms() {
+    const signal = lifecycleSignal;
     setMessage("Cargando formularios...", "neutral");
     try {
-      const data = await window.BCCAuth.api("/api/workspace/forms");
-      forms = Array.isArray(data.forms) ? data.forms : [];
+      const nextForms = await repository.list(requestOptions(signal));
+      if (!isActive(signal)) return;
+      forms = nextForms;
       if (!canManage()) {
         forms = forms.filter(form => form.status === "published" && form.audience === view);
       }
       if (!canManage() && !isPreview()) {
-        const received = await window.BCCAuth.api("/api/workspace/form-responses/me");
-        responses = Array.isArray(received.responses) ? received.responses : [];
+        responses = await repository.listMine(requestOptions(signal));
+        if (!isActive(signal)) return;
       }
       setMessage("");
       renderForms();
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       setMessage(formsError(error), "error");
       renderForms();
     }
@@ -327,22 +333,19 @@
     const button = builder.querySelector('button[type="submit"]');
     button.disabled = true;
     try {
-      const data = await window.BCCAuth.api("/api/workspace/forms", {
-        method: "POST",
-        body: JSON.stringify({
-          audience: builder.elements.audience.value,
-          title: builder.elements.title.value.trim(),
-          purpose: builder.elements.purpose.value.trim(),
-          questions: collectQuestions()
-        })
-      });
-      forms.unshift(data.form);
+      const savedForm = await repository.create({
+        audience: builder.elements.audience.value,
+        title: builder.elements.title.value.trim(),
+        purpose: builder.elements.purpose.value.trim(),
+        questions: collectQuestions()
+      }, requestOptions());
+      forms.unshift(savedForm);
       setMessage("Formulario guardado como borrador.", "ok");
       renderForms();
     } catch (error) {
-      setMessage(formsError(error), "error");
+      if (!isCancelled(error)) setMessage(formsError(error), "error");
     } finally {
-      button.disabled = false;
+      if (button.isConnected) button.disabled = false;
     }
   }
 
@@ -358,24 +361,21 @@
     const nextStatus = button.dataset.formAction === "publish" ? "published" : "draft";
     button.disabled = true;
     try {
-      const data = await window.BCCAuth.api(`/api/workspace/forms/${encodeURIComponent(form.id)}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: nextStatus })
-      });
-      forms = forms.map(item => item.id === form.id ? data.form : item);
+      const savedForm = await repository.update(form.id, { status: nextStatus }, requestOptions());
+      forms = forms.map(item => item.id === form.id ? savedForm : item);
       setMessage(nextStatus === "published" ? "Formulario publicado." : "Formulario retirado.", "ok");
       renderForms();
     } catch (error) {
+      if (isCancelled(error)) return;
       setMessage(formsError(error), "error");
-      button.disabled = false;
+      if (button.isConnected) button.disabled = false;
     }
   }
 
   async function showResults(form) {
     try {
-      const data = await window.BCCAuth.api(`/api/workspace/forms/${encodeURIComponent(form.id)}/responses`);
+      const entries = await repository.listResponses(form.id, requestOptions());
       const list = root.querySelector("[data-results-list]");
-      const entries = Array.isArray(data.responses) ? data.responses : [];
       root.querySelector("[data-results-title]").textContent = form.title;
       root.querySelector("[data-results-caption]").textContent = `${entries.length} respuestas registradas`;
       list.innerHTML = entries.length ? entries.map(response => `
@@ -388,7 +388,7 @@
       root.querySelector("[data-results-dialog]").showModal();
       refreshIcons();
     } catch (error) {
-      setMessage(formsError(error), "error");
+      if (!isCancelled(error)) setMessage(formsError(error), "error");
     }
   }
 
@@ -485,18 +485,15 @@
     const submit = event.currentTarget.querySelector('button[type="submit"]');
     submit.disabled = true;
     try {
-      const data = await window.BCCAuth.api(`/api/workspace/forms/${encodeURIComponent(activeForm.id)}/response`, {
-        method: "POST",
-        body: JSON.stringify({ answers })
-      });
-      responses = [...responses.filter(item => item.formId !== activeForm.id), data.response];
+      const savedResponse = await repository.submit(activeForm.id, answers, requestOptions());
+      responses = [...responses.filter(item => item.formId !== activeForm.id), savedResponse];
       root.querySelector("[data-response-dialog]").close();
       setMessage("Respuestas enviadas.", "ok");
       renderForms();
     } catch (error) {
-      setMessage(formsError(error), "error");
+      if (!isCancelled(error)) setMessage(formsError(error), "error");
     } finally {
-      submit.disabled = false;
+      if (submit.isConnected) submit.disabled = false;
     }
   }
 
@@ -508,11 +505,41 @@
     window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-forms-message]"), message, tone);
   }
 
-  function formsError(error) {
-    if (/workspace_forms|workspace_form_responses|relation .* does not exist/i.test(error.message || "")) {
-      return "El servicio requiere activar las tablas de formularios en Supabase.";
+  function requestOptions(signal = lifecycleSignal) {
+    return signal ? { signal } : {};
+  }
+
+  function isActive(signal = lifecycleSignal) {
+    return Boolean(root) && !signal?.aborted;
+  }
+
+  function isCancelled(error, signal = lifecycleSignal) {
+    return Boolean(signal?.aborted || error?.code === "cancelled");
+  }
+
+  function activate(context = {}) {
+    lifecycleSignal = context.signal || lifecycleSignal;
+    if (root) renderForms();
+  }
+
+  function destroy() {
+    if (root) {
+      root.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+      root.replaceChildren();
+      delete root.dataset.ready;
     }
-    return error.message || "No fue posible actualizar formularios.";
+    root = null;
+    lifecycleSignal = null;
+    user = null;
+    forms = [];
+    responses = [];
+    draftQuestions = [];
+    activeForm = null;
+    view = "";
+  }
+
+  function formsError(error) {
+    return window.BCCWorkspaceFormContracts.toError(error).message;
   }
 
   function formatDate(value) {
@@ -527,5 +554,5 @@
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
-  window.BCCWorkspaceForms = { init };
+  window.BCCWorkspaceForms = { init, activate, destroy };
 })();

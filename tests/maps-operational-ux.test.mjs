@@ -25,7 +25,7 @@ test("MAP subpanels are canonical nested routes and react to router activation",
   const source = read("js/workspace/maps-licensing.js");
 
   assert.match(navigation, /"maps-licensing": \["summary", "licenses", "evaluations", "permissions", "analytics"\]/);
-  assert.match(registry, /module\.activate\?\.\(context\)/);
+  assert.match(registry, /runtime\.mount\(\{/);
   assert.match(source, /function activate\(context = \{\}\)/);
   assert.match(source, /source: "router"/);
 });

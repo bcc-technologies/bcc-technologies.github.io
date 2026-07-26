@@ -39,13 +39,13 @@
   }
 
   function bindStreams() {
-    document.addEventListener("bcc:workspace-tasks", event => {
-      tasks = Array.isArray(event.detail?.tasks) ? event.detail.tasks : [];
-      if (event.detail?.loaded) scanTasks({ forceAssignments: false });
+    window.BCCWorkspaceEvents.subscribe("tasksChanged", detail => {
+      tasks = detail.tasks;
+      if (detail.loaded) scanTasks({ forceAssignments: false });
     });
-    document.addEventListener("bcc:workspace-events", event => {
-      events = Array.isArray(event.detail?.events) ? event.detail.events : [];
-      if (event.detail?.loaded) scanEvents();
+    window.BCCWorkspaceEvents.subscribe("eventsChanged", detail => {
+      events = detail.events;
+      if (detail.loaded) scanEvents();
     });
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) scanNow();

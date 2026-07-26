@@ -5,10 +5,15 @@
       {
         id: "operation",
         views: ["operacion"],
-        scripts: ["js/auth-workspace-api.js", "js/workspace/forms.js"],
-        initialize({ user }) {
-          window.BCCWorkspaceForms?.init(user);
-        }
+        scripts: [
+          "js/workspace/transport.js",
+          "js/workspace/forms-contracts.js",
+          "js/workspace/forms-repository.js",
+          "js/auth-workspace-api.js",
+          "js/workspace/forms.js"
+        ],
+        selector: "[data-forms-workspace]",
+        global: "BCCWorkspaceForms"
       },
       {
         id: "licenses",
@@ -28,32 +33,60 @@
         id: "operation",
         views: ["resumen", "trabajo"],
         scripts: [
+          "js/workspace/transport.js",
+          "js/workspace/tasks-contracts.js",
+          "js/workspace/tasks-repository.js",
+          "js/workspace/calendar-contracts.js",
+          "js/workspace/calendar-repository.js",
           "js/auth-workspace-api.js",
           "js/workspace/productivity.js",
           "js/workspace/calendar.js"
         ],
-        initialize({ user }) {
-          window.BCCWorkspaceProductivity?.init(user);
-          window.BCCWorkspaceCalendar?.init(user);
-        }
+        mounts: [
+          {
+            id: "tasks",
+            selector: "[data-productivity-workspace]",
+            global: "BCCWorkspaceProductivity"
+          },
+          {
+            id: "calendar",
+            selector: "[data-calendar-workspace]",
+            global: "BCCWorkspaceCalendar"
+          }
+        ]
       },
       {
         id: "forms",
         views: [],
         dependencies: ["operation"],
-        scripts: ["js/workspace/forms.js"],
-        initialize({ user }) {
-          window.BCCWorkspaceForms?.init(user);
-        }
+        scripts: [
+          "js/workspace/forms-contracts.js",
+          "js/workspace/forms-repository.js",
+          "js/workspace/forms.js"
+        ],
+        selector: "[data-forms-workspace]",
+        global: "BCCWorkspaceForms"
       },
       {
         id: "admin",
         views: ["usuarios", "roles", "auditoria"],
-        permission: "admin:view",
-        scripts: ["js/auth-admin-access-api.js", "js/admin-dashboard.js"],
-        async initialize({ user }) {
-          await window.BCCWorkspaceAdmin?.init(user, { bindRouter: false });
-        }
+        permission: "users:manage",
+        scripts: [
+          "js/workspace/transport.js",
+          "js/workspace/admin-access-contracts.js",
+          "js/workspace/admin-access-repository.js",
+          "js/workspace/admin-access-state.js",
+          "js/workspace/admin-access-view.js",
+          "js/auth-admin-access-api.js",
+          "js/workspace/admin-roles.js",
+          "js/workspace/admin-users.js",
+          "js/workspace/admin-audit.js"
+        ],
+        mounts: [
+          { id: "roles", selector: "#roles", global: "BCCWorkspaceAdminRoles" },
+          { id: "users", selector: "#usuarios", global: "BCCWorkspaceAdminUsers" },
+          { id: "audit", selector: "#auditoria", global: "BCCWorkspaceAdminAudit" }
+        ]
       },
       {
         id: "analytics",
@@ -109,6 +142,7 @@
   });
 
   const registeredScopes = new Set();
+  const transitionStates = new Map();
 
   function definitions(scope) {
     return SCOPES[scope] || [];
@@ -123,9 +157,7 @@
   }
 
   function canAccess(definition, user) {
-    if (!definition?.permission) return true;
-    if (user?.role === "admin") return true;
-    return Array.isArray(user?.permissions) && user.permissions.includes(definition.permission);
+    return window.BCCAccessContracts.canAccess(user, definition?.permission);
   }
 
   function register(scope) {
@@ -141,6 +173,34 @@
     registeredScopes.add(scope);
   }
 
+  function mountTargets(definition) {
+    if (Array.isArray(definition?.mounts)) return definition.mounts;
+    if (definition?.selector && definition?.global) {
+      return [{ id: definition.id, selector: definition.selector, global: definition.global }];
+    }
+    return [];
+  }
+
+  async function mountTarget(definition, target, context) {
+    const module = window[target.global];
+    if (!module?.init) throw new Error(`El módulo ${target.id} no expuso un inicializador.`);
+    const root = document.querySelector(target.selector);
+    if (!root) return null;
+    const runtime = window.BCCWorkspaceModuleRuntime;
+    if (!runtime?.mount) throw new Error("Workspace module runtime must be available before mounting features.");
+    const instance = await runtime.mount({
+      id: `${definition.id}:${target.id}`,
+      root,
+      module,
+      context,
+      initialize(moduleContext) {
+        return module.init(context.user, moduleContext);
+      }
+    });
+    window.BCCWorkspaceUtils?.refreshIcons?.(root);
+    return instance;
+  }
+
   async function initialize(scope, featureId, context = {}) {
     register(scope);
     const definition = feature(scope, featureId);
@@ -152,23 +212,69 @@
       return definition;
     }
 
-    const module = window[definition.global];
-    if (!module?.init) throw new Error(`El módulo ${definition.id} no expuso un inicializador.`);
-    const root = definition.selector ? document.querySelector(definition.selector) : null;
-    if (!root) return definition;
-    if (root.dataset.workspaceModuleReady === "true") {
-      await module.activate?.(context);
-      return definition;
+    for (const target of mountTargets(definition)) {
+      if (context.isCurrentTransition?.() === false) return definition;
+      await mountTarget(definition, target, context);
+      if (context.isCurrentTransition?.() === false) {
+        if (context.isFeatureActive?.(definition.id) === false) {
+          const root = document.querySelector(target.selector);
+          if (root) await window.BCCWorkspaceModuleRuntime?.unmount?.(root);
+        }
+        return definition;
+      }
     }
-    await module.init(context.user, context);
-    root.dataset.workspaceModuleReady = "true";
-    window.BCCWorkspaceUtils?.refreshIcons?.(root);
     return definition;
+  }
+
+  async function unmount(scope, featureId) {
+    const definition = feature(scope, featureId);
+    const runtime = window.BCCWorkspaceModuleRuntime;
+    if (!definition || !runtime?.unmount) return false;
+    let changed = false;
+    const targets = mountTargets(definition).slice().reverse();
+    for (const target of targets) {
+      const root = document.querySelector(target.selector);
+      if (root) changed = (await runtime.unmount(root)) || changed;
+    }
+    return changed;
+  }
+
+  async function transition(scope, featureIds = [], context = {}) {
+    register(scope);
+    const revision = (transitionStates.get(scope)?.revision || 0) + 1;
+    const activeIds = [...new Set(featureIds)].filter(id => {
+      const definition = feature(scope, id);
+      return Boolean(definition) && canAccess(definition, context.user);
+    });
+    const active = new Set(activeIds);
+    const state = { revision, active };
+    transitionStates.set(scope, state);
+    const transitionContext = {
+      ...context,
+      transitionRevision: revision,
+      isCurrentTransition() {
+        return transitionStates.get(scope) === state;
+      },
+      isFeatureActive(featureId) {
+        return transitionStates.get(scope)?.active.has(featureId) || false;
+      }
+    };
+
+    for (const definition of definitions(scope).slice().reverse()) {
+      if (!active.has(definition.id)) await unmount(scope, definition.id);
+    }
+    const initialized = [];
+    for (const featureId of activeIds) {
+      if (transitionStates.get(scope) !== state) return initialized;
+      initialized.push(await initialize(scope, featureId, transitionContext));
+    }
+    return initialized;
   }
 
   async function initializeView(scope, viewId, context = {}) {
     const definition = featureForView(scope, viewId);
-    return definition ? initialize(scope, definition.id, context) : null;
+    const initialized = await transition(scope, definition ? [definition.id] : [], context);
+    return initialized[0] || null;
   }
 
   window.BCCWorkspaceFeatureRegistry = Object.freeze({
@@ -179,6 +285,8 @@
     canAccess,
     register,
     initialize,
+    unmount,
+    transition,
     initializeView
   });
 })();

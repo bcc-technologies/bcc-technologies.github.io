@@ -48,7 +48,7 @@
       for (const dependency of dependencies.get(featureId) || []) await load(dependency);
       for (const source of features.get(featureId) || []) await loadScript(source);
       window.performance?.mark?.(`bcc:feature:${featureId}:ready`);
-      document.dispatchEvent(new CustomEvent("bcc:workspace-feature-ready", { detail: { featureId } }));
+      window.BCCWorkspaceEvents.emit("featureReady", { featureId });
     })();
     featurePromises.set(featureId, promise);
     void promise.catch(() => featurePromises.delete(featureId));

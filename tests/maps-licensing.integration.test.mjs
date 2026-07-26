@@ -43,9 +43,9 @@ test("browser platform administration wrappers bind identity to auth.uid", () =>
 });
 
 test("assignable MAP staff roles expose least-privilege local fallbacks", () => {
-  const auth = read("js/auth.js");
+  const access = JSON.parse(read("shared/access-contracts.json"));
 
-  assert.match(auth, /maps_license_manager:\s*\["platform\.licenses\.read", "platform\.licenses\.manage", "platform\.evaluations\.manage", "platform\.analytics\.read"\]/);
-  assert.match(auth, /maps_product_analyst:\s*\["platform\.licenses\.read", "platform\.analytics\.read"\]/);
-  assert.match(auth, /maps_developer:\s*\["map\.dev\.access"/);
+  assert.deepEqual(access.staffRoles.maps_license_manager.permissions, ["platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.analytics.read"]);
+  assert.deepEqual(access.staffRoles.maps_product_analyst.permissions, ["platform.licenses.read", "platform.analytics.read"]);
+  assert.ok(access.staffRoles.maps_developer.permissions.includes("map.dev.access"));
 });

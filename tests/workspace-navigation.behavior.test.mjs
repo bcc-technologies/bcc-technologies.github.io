@@ -111,6 +111,11 @@ function createHarness() {
   const context = vm.createContext({
     document,
     window: {
+      BCCAccessContracts: {
+        canAccess(user, permission) {
+          return !permission || user?.role === "admin" || user?.permissions?.includes(permission);
+        }
+      },
       BCCWorkspaceNavigation: { routes: { staff: {} } },
       BCCWorkspaceLoader: {
         register() {},

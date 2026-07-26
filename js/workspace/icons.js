@@ -126,5 +126,5 @@
   window.BCCWorkspaceIcons = { createIcons };
   createIcons(document);
   window.performance?.mark?.("bcc:icons-ready");
-  document.dispatchEvent(new CustomEvent("bcc:workspace-icons-ready"));
+  window.BCCWorkspaceEvents.emit("iconsReady");
 })();

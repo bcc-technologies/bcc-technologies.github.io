@@ -1,54 +1,12 @@
 (() => {
-  const BASE_ROLE_OPTIONS = [
-    { value: "client", label: "Cliente" },
-    { value: "staff", label: "Personal" },
-    { value: "admin", label: "Administrador" }
-  ];
-
-  const STAFF_ROLE_OPTIONS = [
-    { value: "author", label: "Autor" },
-    { value: "cofounder", label: "Cofounder" },
-    { value: "department_director", label: "Director" },
-    { value: "maps_developer", label: "Desarrollador MAP" },
-    { value: "maps_release_manager", label: "Responsable de releases MAP" },
-    { value: "maps_license_manager", label: "Gestor de licencias MAP" },
-    { value: "maps_product_analyst", label: "Analista de producto MAP" }
-  ];
-
-  const DEPARTMENT_OPTIONS = [
-    { value: "technology", label: "Tecnología" },
-    { value: "finance", label: "Finanzas" },
-    { value: "operations", label: "Operaciones" },
-    { value: "marketing", label: "Marketing" },
-    { value: "hr", label: "Recursos humanos" }
-  ];
-
-  const PERMISSION_LABELS = {
-    "dashboard:view": "Panel de cuenta",
-    "profile:update": "Actualizar perfil",
-    "downloads:view": "Descargas",
-    "support:create": "Solicitar soporte",
-    "staff:view": "Area de personal",
-    "clients:view": "Consulta de clientes",
-    "content:view": "Ver contenido",
-    "content:write": "Editar contenido",
-    "cms:access": "Acceso CMS",
-    "forms:manage": "Gestionar formularios",
-    "department:manage": "Gestion departamental",
-    "strategy:view": "Estrategia",
-    "admin:view": "Administración",
-    "licenses:view": "Ver licencias MAPs",
-    "licenses:manage": "Administrar licencias MAPs",
-    "licenses:assign": "Asignar licencias MAPs",
-    "licenses:audit": "Auditar licencias MAPs",
-    "map.dev.access": "Desarrollo MAP",
-    "map.release.manage": "Publicaciones MAP",
-    "platform.licenses.read": "Consultar licencias MAP",
-    "platform.licenses.manage": "Gestionar licencias MAP",
-    "platform.evaluations.manage": "Gestionar evaluaciones MAP",
-    "platform.permissions.manage": "Gestionar permisos MAP",
-    "platform.analytics.read": "Analíticas MAP"
-  };
+  const AccessContracts = window.BCCAccessContracts;
+  if (!AccessContracts) throw new Error("BCC access contracts must load before workspace utilities.");
+  const {
+    BASE_ROLE_OPTIONS,
+    STAFF_ROLE_OPTIONS,
+    DEPARTMENT_OPTIONS,
+    WORKSPACE_PERMISSION_LABELS: PERMISSION_LABELS
+  } = AccessContracts;
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({

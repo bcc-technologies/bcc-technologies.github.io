@@ -1,4 +1,5 @@
 (() => {
+  const repository = window.BCCWorkspaceTaskRepository;
   const STATUS_ORDER = ["backlog", "in_progress", "done"];
   const STATUS_LABELS = {
     backlog: "Pendiente",
@@ -22,9 +23,11 @@
   let editingTaskId = null;
   let messageTimer = null;
   let root = null;
+  let lifecycleSignal = null;
 
-  async function init(user) {
-    root = document.querySelector("[data-productivity-workspace]");
+  async function init(user, context = {}) {
+    root = context.root || document.querySelector("[data-productivity-workspace]");
+    lifecycleSignal = context.signal || null;
     if (!root || root.dataset.ready === "true") return;
     currentUser = user || null;
     root.dataset.ready = "true";
@@ -186,25 +189,31 @@
   }
 
   async function loadTaskCollaborators() {
+    const signal = lifecycleSignal;
     try {
-      const data = await window.BCCAuth.api("/api/workspace/task-collaborators");
-      taskCollaborators = Array.isArray(data.collaborators) ? data.collaborators : [];
+      const collaborators = await repository.listCollaborators(requestOptions(signal));
+      if (!isActive(signal)) return;
+      taskCollaborators = collaborators;
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       taskCollaborators = [];
     }
-    renderAssigneeOptions();
+    if (isActive(signal)) renderAssigneeOptions();
   }
 
   async function loadTasks() {
+    const signal = lifecycleSignal;
     setMessage("Cargando tareas...", "neutral");
     try {
-      const data = await window.BCCAuth.api("/api/workspace/tasks");
-      tasks = Array.isArray(data.tasks) ? data.tasks : [];
+      const nextTasks = await repository.list(requestOptions(signal));
+      if (!isActive(signal)) return;
+      tasks = nextTasks;
       tasksLoaded = true;
       setMessage("");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       setMessage(productivityError(error), "error");
       tasksLoaded = true;
       renderAll();
@@ -267,14 +276,13 @@
         dueDate: form.elements.dueDate.value || null,
         description: String(form.elements.description.value || "").trim()
       };
-      const data = await window.BCCAuth.api(currentEditingTaskId ? `/api/workspace/tasks/${encodeURIComponent(currentEditingTaskId)}` : "/api/workspace/tasks", {
-        method: currentEditingTaskId ? "PATCH" : "POST",
-        body: JSON.stringify(payload)
-      });
+      const savedTask = currentEditingTaskId
+        ? await repository.update(currentEditingTaskId, payload, requestOptions())
+        : await repository.create(payload, requestOptions());
       if (currentEditingTaskId) {
-        tasks = tasks.map(item => item.id === currentEditingTaskId ? data.task : item);
+        tasks = tasks.map(item => item.id === currentEditingTaskId ? savedTask : item);
       } else {
-        tasks.unshift(data.task);
+        tasks.unshift(savedTask);
       }
       editingTaskId = null;
       document.querySelector("[data-task-dialog]")?.close();
@@ -282,9 +290,9 @@
       renderAll();
       notifyTasksChanged();
     } catch (error) {
-      setMessage(productivityError(error), "error");
+      if (!isCancelled(error)) setMessage(productivityError(error), "error");
     } finally {
-      toggleSubmitting(form, false);
+      if (form.isConnected) toggleSubmitting(form, false);
     }
   }
 
@@ -337,15 +345,13 @@
   async function updateTask(task, updates, control) {
     control.disabled = true;
     try {
-      const data = await window.BCCAuth.api(`/api/workspace/tasks/${encodeURIComponent(task.id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates)
-      });
-      tasks = tasks.map(item => item.id === task.id ? data.task : item);
+      const savedTask = await repository.update(task.id, updates, requestOptions());
+      tasks = tasks.map(item => item.id === task.id ? savedTask : item);
       setMessage("Tarea actualizada.", "ok");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error)) return;
       setMessage(productivityError(error), "error");
       renderAll();
       notifyTasksChanged();
@@ -356,12 +362,13 @@
     if (!window.confirm(`Eliminar la tarea "${task.title}"?`)) return;
     control.disabled = true;
     try {
-      await window.BCCAuth.api(`/api/workspace/tasks/${encodeURIComponent(task.id)}`, { method: "DELETE" });
+      await repository.remove(task.id, requestOptions());
       tasks = tasks.filter(item => item.id !== task.id);
       setMessage("Tarea eliminada.", "ok");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error)) return;
       setMessage(productivityError(error), "error");
       renderAll();
       notifyTasksChanged();
@@ -779,7 +786,7 @@
   function notifyTasksChanged() {
     const detail = { tasks: getTasks(), loaded: tasksLoaded };
     taskSubscribers.forEach(callback => callback(detail.tasks, { loaded: tasksLoaded }));
-    document.dispatchEvent(new CustomEvent("bcc:workspace-tasks", { detail }));
+    window.BCCWorkspaceEvents.emit("tasksChanged", detail);
   }
 
   function clearTaskMessage() {
@@ -804,11 +811,42 @@
     submit.textContent = busy ? "Guardando..." : (editingTaskId ? "Guardar cambios" : "Crear tarea");
   }
 
-  function productivityError(error) {
-    if (/workspace_tasks|relation .* does not exist/i.test(error.message || "")) {
-      return "El modulo requiere activar la tabla de tareas en Supabase.";
+  function requestOptions(signal = lifecycleSignal) {
+    return signal ? { signal } : {};
+  }
+
+  function isActive(signal = lifecycleSignal) {
+    return Boolean(root) && !signal?.aborted;
+  }
+
+  function isCancelled(error, signal = lifecycleSignal) {
+    return Boolean(signal?.aborted || error?.code === "cancelled");
+  }
+
+  function activate(context = {}) {
+    lifecycleSignal = context.signal || lifecycleSignal;
+    if (root) renderAll();
+  }
+
+  function destroy() {
+    if (messageTimer) window.clearTimeout(messageTimer);
+    messageTimer = null;
+    document.querySelector("[data-task-dialog]")?.remove();
+    taskSubscribers.clear();
+    if (root) {
+      root.replaceChildren();
+      delete root.dataset.ready;
     }
-    return error.message || "No fue posible actualizar las tareas.";
+    root = null;
+    lifecycleSignal = null;
+    tasks = [];
+    taskCollaborators = [];
+    tasksLoaded = false;
+    editingTaskId = null;
+  }
+
+  function productivityError(error) {
+    return window.BCCWorkspaceTaskContracts.toError(error).message;
   }
 
   function refreshIcons() {
@@ -823,5 +861,5 @@
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
-  window.BCCWorkspaceProductivity = { init, getTasks, subscribeTasks, openNewTask, openTaskEditor };
+  window.BCCWorkspaceProductivity = { init, activate, destroy, getTasks, subscribeTasks, openNewTask, openTaskEditor };
 })();

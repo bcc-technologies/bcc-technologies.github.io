@@ -8,6 +8,7 @@
     "render:products": "node scripts/render-products-pages.mjs",
     "check:products": "node scripts/render-products-pages.mjs --check",
     "check:runtime": "node scripts/check-runtime-integrity.mjs",
+    "check:contracts": "node scripts/render-access-contracts.mjs --check",
     "smoke:production": "node scripts/smoke-production-dashboard.mjs",
     "test": "node --test tests/*.mjs",
     "test:ci": "node --test tests/*.mjs",

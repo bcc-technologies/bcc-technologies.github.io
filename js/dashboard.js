@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceUtils.refreshIcons();
   document.body.dataset.workspaceReady = "true";
   window.performance?.mark?.("bcc:workspace-ready");
-  document.dispatchEvent(new CustomEvent("bcc:workspace-ready", { detail: { viewId: "client" } }));
+  window.BCCWorkspaceEvents.emit("workspaceReady", { scope: "client", viewId: "client" });
 });
 
 function hydrateUser(user) {
@@ -52,7 +52,6 @@ async function initializeCustomerView(viewId) {
     if (viewId === "cuenta" && !customerEmailManagerBound) {
       customerEmailManagerBound = true;
       await window.BCCWorkspaceAccount?.bindEmailManager(customerCurrentUser, { onUserUpdate: updateAccountUser });
-      return;
     }
 
     await customerFeatureRegistry.initializeView("client", viewId, {

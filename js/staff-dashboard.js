@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   runWorkspaceStep("iconos", () => window.BCCWorkspaceUtils.refreshIcons());
   document.body.dataset.workspaceReady = "true";
   window.performance?.mark?.("bcc:workspace-ready");
-  document.dispatchEvent(new CustomEvent("bcc:workspace-ready", { detail: { viewId: staffWorkspaceRouter?.current?.() || "resumen" } }));
+  window.BCCWorkspaceEvents.emit("workspaceReady", { scope: "staff", viewId: "resumen" });
 });
 
 function runWorkspaceStep(label, callback) {
@@ -225,25 +225,18 @@ function openIntelligencePanel(view, panelId = "") {
 async function initializeWorkspaceView(viewId, panelId = "") {
   try {
     if (viewId === "resumen" || viewId === "trabajo") {
-      await staffFeatureRegistry.initialize("staff", "operation", {
+      const activeFeatures = panelId === "formularios" ? ["operation", "forms"] : ["operation"];
+      await staffFeatureRegistry.transition("staff", activeFeatures, {
         user: staffCurrentUser,
         viewId,
         panelId
       });
-      if (panelId === "formularios") {
-        await staffFeatureRegistry.initialize("staff", "forms", {
-          user: staffCurrentUser,
-          viewId,
-          panelId
-        });
-      }
       return;
     }
 
     if (viewId === "perfil" && !accountEmailManagerBound) {
       accountEmailManagerBound = true;
       await window.BCCWorkspaceAccount?.bindEmailManager(staffCurrentUser, { onUserUpdate: updateAccountUser });
-      return;
     }
 
     await staffFeatureRegistry.initializeView("staff", viewId, {
@@ -318,7 +311,5 @@ function applyWorkspaceAccess(user, options = {}) {
 }
 
 function canAccess(user, permission) {
-  if (!permission) return true;
-  if (user?.role === "admin") return true;
-  return Array.isArray(user?.permissions) && user.permissions.includes(permission);
+  return window.BCCAccessContracts.canAccess(user, permission);
 }

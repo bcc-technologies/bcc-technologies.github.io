@@ -12,10 +12,13 @@
   <script src="js/prefs.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8" defer data-bcc-supabase-js="true"></script>
   <script src="js/supabase-config.js" defer></script>
+  <script src="js/access-contracts.js" defer></script>
+  <script src="js/workspace/events.js" defer></script>
   <script src="js/workspace/icons.js" defer></script>
   <script src="js/workspace/loader.js" defer></script>
   <script src="js/workspace/utils.js" defer></script>
   <script src="js/workspace/ui.js" defer></script>
+  <script src="js/workspace/module-runtime.js" defer></script>
   <script src="js/workspace/feature-registry.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/layout.js" defer></script>
@@ -312,7 +315,7 @@
             </section>
           </section>
         </section>
-        <section class="workspace-view" id="usuarios" data-permission-required="admin:view" data-workspace-view data-view-title="Usuarios" hidden>
+        <section class="workspace-view" id="usuarios" data-permission-required="users:manage" data-workspace-view data-view-title="Usuarios" hidden>
           <section class="users-surface">
             <div class="surface-toolbar">
               <div>
@@ -362,7 +365,7 @@
             </div>
           </section>
         </section>
-        <section class="workspace-view" id="roles" data-permission-required="admin:view" data-workspace-view data-view-title="Roles y permisos" hidden>
+        <section class="workspace-view" id="roles" data-permission-required="users:manage" data-workspace-view data-view-title="Roles y permisos" hidden>
           <section class="role-admin-grid" aria-label="Creación y administración de roles">
             <article class="module-surface role-builder-surface">
               <div class="module-head">
@@ -645,7 +648,7 @@
             </section>
           </section>
         </section>
-        <section class="workspace-view" id="auditoria" data-permission-required="admin:view" data-workspace-view data-view-title="Auditoría" hidden>
+        <section class="workspace-view" id="auditoria" data-permission-required="users:manage" data-workspace-view data-view-title="Auditoría" hidden>
           <aside class="activity-surface audit-view">
             <div class="activity-head">
               <h2>Actividad reciente</h2>
@@ -701,7 +704,7 @@
       </main>
     </div>
   </div>
-  <dialog class="access-drawer" data-access-modal data-permission-required="admin:view">
+  <dialog class="access-drawer" data-access-modal data-permission-required="users:manage">
     <form method="dialog" class="access-drawer-panel">
       <div class="access-modal-head">
         <div>

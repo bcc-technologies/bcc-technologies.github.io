@@ -44,6 +44,7 @@ test("legacy license stores remain compatible while navigation uses the canonica
   const browserApi = readSource("../js/auth-map-licenses-api.js");
   const server = readSource("../accounts-server.mjs");
   const auth = readSource("../js/auth.js");
+  const access = JSON.parse(readSource("../shared/access-contracts.json"));
   const navigation = readSource("../js/workspace/navigation.js");
 
   for (const route of ["/api/admin/licenses", "/status"]) {
@@ -51,12 +52,12 @@ test("legacy license stores remain compatible while navigation uses the canonica
     assert.match(server, new RegExp(route.replaceAll("/", "\\/")));
   }
   for (const permission of ["licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]) {
-    assert.match(auth, new RegExp(permission));
+    assert.ok(access.baseRoles.admin.permissions.includes(permission));
   }
   assert.match(navigation, /id: "map-platform".+permission: "platform\.licenses\.read"/s);
   assert.match(navigation, /"licencias-maps": "maps-licensing"/);
   assert.match(auth, /permissions\.has\("licenses:view"\)\) permissions\.add\("platform\.licenses\.read"/);
-  assert.match(navigation, /href: "#usuarios".+permission: "admin:view"/);
+  assert.match(navigation, /href: "#usuarios".+permission: "users:manage"/);
 });
 
 test("Supabase license schema uses RLS, custom roles, and locked-down RPCs", () => {
