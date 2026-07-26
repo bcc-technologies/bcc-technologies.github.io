@@ -87,8 +87,7 @@
 .maps-license-records{ min-width: 900px; }
 .maps-license-records td:last-child{ text-align: right; }
 
-.maps-license-capacity{ width: 96px; height: 5px; margin-top: 6px; overflow: hidden; border-radius: 999px; background: var(--surface-muted); }
-.maps-license-capacity span{ display: block; height: 100%; border-radius: inherit; background: var(--accent-strong); }
+.maps-license-capacity{ width: 96px; height: 5px; margin-top: 6px; }
 .maps-license-capacity.is-large{ width: 100%; height: 8px; }
 .maps-license-status{ white-space: nowrap; }
 .maps-license-empty.is-compact{ min-height: 116px; padding: 18px; }

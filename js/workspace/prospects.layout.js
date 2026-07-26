@@ -1,17 +1,18 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
   function renderShell(root, { phases, escapeHtml, refreshIcons }) {
     const phaseOptions = phases.map(phase => `<option value="${escapeHtml(phase.id)}">${escapeHtml(phase.label)}</option>`).join("");
-    const searchControl = `<label class="workspace-search prospects-search"><i data-lucide="search"></i><input type="search" data-prospect-search placeholder="Buscar contactos..." autocomplete="off" aria-label="Buscar contactos" /></label>`;
+    const searchControl = `<label class="workspace-search prospects-search">${ui.icon("search", "sm")}<input type="search" data-prospect-search placeholder="Buscar contactos..." autocomplete="off" aria-label="Buscar contactos" /></label>`;
     const phaseControl = `<select data-prospect-phase-filter aria-label="Filtrar por fase"><option value="">Todas las fases</option>${phaseOptions}</select>`;
     root.innerHTML = `
       <section class="prospects-workspace">
         <div class="staff-work-tabs prospects-tabs" role="tablist" aria-label="Subsecciones de CRM">
-          <button id="prospects-tab-home" class="active" type="button" role="tab" aria-selected="true" aria-controls="prospects-panel-home" data-prospects-tab="home"><i data-lucide="layout-dashboard"></i><span>Inicio</span></button>
-          <button id="prospects-tab-pipeline" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-pipeline" data-prospects-tab="pipeline"><i data-lucide="folder-kanban"></i><span>Pipeline</span></button>
-          <button id="prospects-tab-directory" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-directory" data-prospects-tab="directory"><i data-lucide="contact-round"></i><span>Directorio</span></button>
-          <button id="prospects-tab-inbox" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-inbox" data-prospects-tab="inbox"><i data-lucide="inbox"></i><span>Bandeja</span></button>
-          <button id="prospects-tab-templates" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-templates" data-prospects-tab="templates"><i data-lucide="file-text"></i><span>Plantillas</span></button>
-          <button id="prospects-tab-intelligence" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-intelligence" data-prospects-tab="intelligence"><i data-lucide="radar"></i><span>Inteligencia</span></button>
+          <button id="prospects-tab-home" class="active" type="button" role="tab" aria-selected="true" aria-controls="prospects-panel-home" data-prospects-tab="home">${ui.icon("layout-dashboard", "sm")}<span>Inicio</span></button>
+          <button id="prospects-tab-pipeline" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-pipeline" data-prospects-tab="pipeline">${ui.icon("folder-kanban", "sm")}<span>Pipeline</span></button>
+          <button id="prospects-tab-directory" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-directory" data-prospects-tab="directory">${ui.icon("contact-round", "sm")}<span>Directorio</span></button>
+          <button id="prospects-tab-inbox" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-inbox" data-prospects-tab="inbox">${ui.icon("inbox", "sm")}<span>Bandeja</span></button>
+          <button id="prospects-tab-templates" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-templates" data-prospects-tab="templates">${ui.icon("file-text", "sm")}<span>Plantillas</span></button>
+          <button id="prospects-tab-intelligence" type="button" role="tab" aria-selected="false" aria-controls="prospects-panel-intelligence" data-prospects-tab="intelligence">${ui.icon("radar", "sm")}<span>Inteligencia</span></button>
         </div>
         <section id="prospects-panel-home" class="module-surface staff-work-panel prospects-panel-shell active" role="tabpanel" aria-labelledby="prospects-tab-home" data-prospects-panel="home">
           <div class="module-head compact prospects-panel-head">
@@ -23,7 +24,7 @@
         <section id="prospects-panel-pipeline" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-pipeline" data-prospects-panel="pipeline" hidden>
           <div class="module-head compact prospects-panel-head">
             <div><h2>Pipeline operativo</h2><p>Crea, mueve, designa y administra automatizaciones del flujo comercial.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
-            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh><i data-lucide="refresh-cw"></i>Actualizar</button><button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo contacto</button></div>
+            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-ghost btn-compact" type="button" data-prospects-refresh>${ui.icon("refresh-cw", "sm")}Actualizar</button><button class="btn btn-primary" type="button" data-prospect-new>${ui.icon("plus", "sm")}Nuevo contacto</button></div>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
             <section class="workspace-metrics prospects-metrics" aria-label="Resumen del pipeline">
@@ -38,7 +39,7 @@
         <section id="prospects-panel-directory" class="module-surface staff-work-panel prospects-panel-shell" role="tabpanel" aria-labelledby="prospects-tab-directory" data-prospects-panel="directory" hidden>
           <div class="module-head compact prospects-panel-head">
             <div><h2>Directorio y ficha</h2><p>Administra la base y trabaja la comunicación/actividad de cada contacto.</p><p class="prospects-status-message muted-text" data-prospects-message hidden></p></div>
-            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-primary" type="button" data-prospect-new><i data-lucide="plus"></i>Nuevo contacto</button></div>
+            <div class="prospects-panel-actions">${searchControl}${phaseControl}<button class="btn btn-primary" type="button" data-prospect-new>${ui.icon("plus", "sm")}Nuevo contacto</button></div>
           </div>
           <div class="staff-work-panel-body flush prospects-panel-body">
             <section class="prospects-directory-workspace" aria-label="Directorio comercial">
@@ -47,9 +48,9 @@
                 <section class="prospects-directory-list" data-prospects-directory-list aria-label="Directorio de contactos"></section>
                 <aside class="prospect-directory-side" aria-label="Trabajo del contacto seleccionado">
                   <div class="prospect-directory-tabs" role="tablist" aria-label="Detalle del contacto">
-                    <button class="active" type="button" data-directory-section="profile"><i data-lucide="contact-round"></i>Ficha</button>
-                    <button type="button" data-directory-section="communication"><i data-lucide="send"></i>Comunicación</button>
-                    <button type="button" data-directory-section="activity"><i data-lucide="clock-3"></i>Actividad</button>
+                    <button class="active" type="button" data-directory-section="profile">${ui.icon("contact-round", "sm")}Ficha</button>
+                    <button type="button" data-directory-section="communication">${ui.icon("send", "sm")}Comunicación</button>
+                    <button type="button" data-directory-section="activity">${ui.icon("clock-3", "sm")}Actividad</button>
                   </div>
                   <section data-directory-panel="profile"><div class="prospect-directory-detail" data-directory-detail></div></section>
                   <section data-directory-panel="communication" hidden><section class="prospects-email" data-prospect-email-section></section></section>

@@ -30,10 +30,10 @@
       { id: "resources", label: "Recursos", open: true, items: [
         { href: "#conocimiento", label: "Conocimiento", icon: "notebook-tabs" }
       ] },
-      { id: "management", label: "Gestión", permission: "admin:view", items: [
-        { href: "#usuarios", label: "Usuarios", icon: "users-round", permission: "admin:view" },
-        { href: "#roles", label: "Roles y permisos", icon: "key-round", permission: "admin:view" },
-        { href: "#auditoria", label: "Auditoría", icon: "history", permission: "admin:view" }
+      { id: "management", label: "Gestión", permission: "users:manage", items: [
+        { href: "#usuarios", label: "Usuarios", icon: "users-round", permission: "users:manage" },
+        { href: "#roles", label: "Roles y permisos", icon: "key-round", permission: "users:manage" },
+        { href: "#auditoria", label: "Auditoría", icon: "history", permission: "users:manage" }
       ] },
       { id: "map-platform", label: "Plataforma MAP", permission: "platform.licenses.read", items: [
         { href: "#maps-licensing", label: "Licencias y acceso", icon: "map", permission: "platform.licenses.read" }
@@ -255,7 +255,7 @@
   function renderAll() {
     document.querySelectorAll("[data-workspace-nav]").forEach(renderNavigation);
     syncTooltips();
-    document.dispatchEvent(new CustomEvent("bcc:workspace-navigation-ready"));
+    window.BCCWorkspaceEvents.emit("navigationReady");
   }
 
   renderAll();

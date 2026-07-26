@@ -1,4 +1,6 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
+  const repository = window.BCCWorkspaceTaskRepository;
   const STATUS_ORDER = ["backlog", "in_progress", "done"];
   const STATUS_LABELS = {
     backlog: "Pendiente",
@@ -22,9 +24,11 @@
   let editingTaskId = null;
   let messageTimer = null;
   let root = null;
+  let lifecycleSignal = null;
 
-  async function init(user) {
-    root = document.querySelector("[data-productivity-workspace]");
+  async function init(user, context = {}) {
+    root = context.root || document.querySelector("[data-productivity-workspace]");
+    lifecycleSignal = context.signal || null;
     if (!root || root.dataset.ready === "true") return;
     currentUser = user || null;
     root.dataset.ready = "true";
@@ -46,18 +50,18 @@
           <p class="productivity-message" data-task-message hidden></p>
         </div>
         <button class="btn btn-primary productivity-new" type="button" data-task-new>
-          <i data-lucide="plus"></i>Nueva tarea
+          ${ui.icon("plus", "sm")}Nueva tarea
         </button>
       </div>
       <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas">
         <button class="active" type="button" role="tab" aria-selected="true" data-productivity-tab="tasks">
-          <i data-lucide="list-checks"></i>Lista
+          ${ui.icon("list-checks", "sm")}Lista
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="board">
-          <i data-lucide="columns-3"></i>Tablero
+          ${ui.icon("columns-3", "sm")}Tablero
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="matrix">
-          <i data-lucide="layout-grid"></i>Matriz
+          ${ui.icon("layout-grid", "sm")}Matriz
         </button>
       </div>
       <section class="productivity-panel productivity-overview" data-productivity-panel="tasks">
@@ -113,7 +117,7 @@
               <p data-task-dialog-copy>Agrega una actividad a tu tablero privado.</p>
             </div>
             <button class="icon-close" type="button" data-task-close aria-label="Cerrar">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           </div>
           <label>
@@ -186,25 +190,31 @@
   }
 
   async function loadTaskCollaborators() {
+    const signal = lifecycleSignal;
     try {
-      const data = await window.BCCAuth.api("/api/workspace/task-collaborators");
-      taskCollaborators = Array.isArray(data.collaborators) ? data.collaborators : [];
+      const collaborators = await repository.listCollaborators(requestOptions(signal));
+      if (!isActive(signal)) return;
+      taskCollaborators = collaborators;
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       taskCollaborators = [];
     }
-    renderAssigneeOptions();
+    if (isActive(signal)) renderAssigneeOptions();
   }
 
   async function loadTasks() {
+    const signal = lifecycleSignal;
     setMessage("Cargando tareas...", "neutral");
     try {
-      const data = await window.BCCAuth.api("/api/workspace/tasks");
-      tasks = Array.isArray(data.tasks) ? data.tasks : [];
+      const nextTasks = await repository.list(requestOptions(signal));
+      if (!isActive(signal)) return;
+      tasks = nextTasks;
       tasksLoaded = true;
       setMessage("");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       setMessage(productivityError(error), "error");
       tasksLoaded = true;
       renderAll();
@@ -267,14 +277,13 @@
         dueDate: form.elements.dueDate.value || null,
         description: String(form.elements.description.value || "").trim()
       };
-      const data = await window.BCCAuth.api(currentEditingTaskId ? `/api/workspace/tasks/${encodeURIComponent(currentEditingTaskId)}` : "/api/workspace/tasks", {
-        method: currentEditingTaskId ? "PATCH" : "POST",
-        body: JSON.stringify(payload)
-      });
+      const savedTask = currentEditingTaskId
+        ? await repository.update(currentEditingTaskId, payload, requestOptions())
+        : await repository.create(payload, requestOptions());
       if (currentEditingTaskId) {
-        tasks = tasks.map(item => item.id === currentEditingTaskId ? data.task : item);
+        tasks = tasks.map(item => item.id === currentEditingTaskId ? savedTask : item);
       } else {
-        tasks.unshift(data.task);
+        tasks.unshift(savedTask);
       }
       editingTaskId = null;
       document.querySelector("[data-task-dialog]")?.close();
@@ -282,9 +291,9 @@
       renderAll();
       notifyTasksChanged();
     } catch (error) {
-      setMessage(productivityError(error), "error");
+      if (!isCancelled(error)) setMessage(productivityError(error), "error");
     } finally {
-      toggleSubmitting(form, false);
+      if (form.isConnected) toggleSubmitting(form, false);
     }
   }
 
@@ -337,15 +346,13 @@
   async function updateTask(task, updates, control) {
     control.disabled = true;
     try {
-      const data = await window.BCCAuth.api(`/api/workspace/tasks/${encodeURIComponent(task.id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates)
-      });
-      tasks = tasks.map(item => item.id === task.id ? data.task : item);
+      const savedTask = await repository.update(task.id, updates, requestOptions());
+      tasks = tasks.map(item => item.id === task.id ? savedTask : item);
       setMessage("Tarea actualizada.", "ok");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error)) return;
       setMessage(productivityError(error), "error");
       renderAll();
       notifyTasksChanged();
@@ -356,12 +363,13 @@
     if (!window.confirm(`Eliminar la tarea "${task.title}"?`)) return;
     control.disabled = true;
     try {
-      await window.BCCAuth.api(`/api/workspace/tasks/${encodeURIComponent(task.id)}`, { method: "DELETE" });
+      await repository.remove(task.id, requestOptions());
       tasks = tasks.filter(item => item.id !== task.id);
       setMessage("Tarea eliminada.", "ok");
       renderAll();
       notifyTasksChanged();
     } catch (error) {
+      if (isCancelled(error)) return;
       setMessage(productivityError(error), "error");
       renderAll();
       notifyTasksChanged();
@@ -410,23 +418,23 @@
             <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
             <span class="task-status">${escapeHtml(STATUS_LABELS[task.status] || "Pendiente")}</span>
             ${assignmentBadge(task)}
-            ${task.dueDate ? `<span class="task-date ${dueTone(task)}"><i data-lucide="calendar-clock"></i>${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
+            ${task.dueDate ? `<span class="task-date ${dueTone(task)}">${ui.icon("calendar-clock", "xs")}${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
           </div>
         </div>
         <div class="task-actions">
           ${task.canRespond ? `
             <button class="task-icon-action task-accept" type="button" data-task-action="accept" data-task-id="${escapeHtml(task.id)}" aria-label="Aceptar sugerencia">
-              <i data-lucide="check"></i>
+              ${ui.icon("check", "xs")}
             </button>
             <button class="task-icon-action task-reject" type="button" data-task-action="reject" data-task-id="${escapeHtml(task.id)}" aria-label="Rechazar sugerencia">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           ` : ""}
           <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-            <i data-lucide="pencil"></i>
+            ${ui.icon("pencil", "xs")}
           </button>
           <button class="task-icon-action task-delete" type="button" data-task-action="delete" data-task-id="${escapeHtml(task.id)}" aria-label="Eliminar tarea">
-            <i data-lucide="trash-2"></i>
+            ${ui.icon("trash-2", "xs")}
           </button>
         </div>
       </li>
@@ -463,13 +471,13 @@
                 </div>
                 <div class="kanban-actions">
                   <button type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-                    <i data-lucide="pencil"></i>
+                    ${ui.icon("pencil", "xs")}
                   </button>
                   <button type="button" data-task-action="back" data-task-id="${escapeHtml(task.id)}" ${columnIndex === 0 ? "disabled" : ""} aria-label="Mover atras">
-                    <i data-lucide="arrow-left"></i>
+                    ${ui.icon("arrow-left", "xs")}
                   </button>
                   <button type="button" data-task-action="forward" data-task-id="${escapeHtml(task.id)}" ${columnIndex === STATUS_ORDER.length - 1 ? "disabled" : ""} aria-label="Mover adelante">
-                    <i data-lucide="arrow-right"></i>
+                    ${ui.icon("arrow-right", "xs")}
                   </button>
                 </div>
               </article>
@@ -517,7 +525,7 @@
           </div>
         </div>
         <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-          <i data-lucide="pencil"></i>
+          ${ui.icon("pencil", "xs")}
         </button>
       </article>
     `;
@@ -559,7 +567,7 @@
     root.querySelector("[data-kpi-progress]").value = summary.rate;
     reports.forEach(report => {
       if (!summary.total) {
-        report.innerHTML = `<article class="kpi-empty-state"><i data-lucide="chart-no-axes-column-increasing"></i><strong>Sin actividad medible todavia</strong><span>Crea tareas para empezar a medir carga, vencimientos y avance.</span></article>`;
+        report.innerHTML = `${ui.emptyState({ className: "kpi-empty-state is-compact", icon: "chart-no-axes-column-increasing", title: "Sin actividad medible todavía", description: "Crea tareas para empezar a medir carga, vencimientos y avance." })}`;
       } else {
         report.innerHTML = [
           ["Tareas totales", summary.total, "Registro personal"],
@@ -779,7 +787,7 @@
   function notifyTasksChanged() {
     const detail = { tasks: getTasks(), loaded: tasksLoaded };
     taskSubscribers.forEach(callback => callback(detail.tasks, { loaded: tasksLoaded }));
-    document.dispatchEvent(new CustomEvent("bcc:workspace-tasks", { detail }));
+    window.BCCWorkspaceEvents.emit("tasksChanged", detail);
   }
 
   function clearTaskMessage() {
@@ -804,11 +812,42 @@
     submit.textContent = busy ? "Guardando..." : (editingTaskId ? "Guardar cambios" : "Crear tarea");
   }
 
-  function productivityError(error) {
-    if (/workspace_tasks|relation .* does not exist/i.test(error.message || "")) {
-      return "El modulo requiere activar la tabla de tareas en Supabase.";
+  function requestOptions(signal = lifecycleSignal) {
+    return signal ? { signal } : {};
+  }
+
+  function isActive(signal = lifecycleSignal) {
+    return Boolean(root) && !signal?.aborted;
+  }
+
+  function isCancelled(error, signal = lifecycleSignal) {
+    return Boolean(signal?.aborted || error?.code === "cancelled");
+  }
+
+  function activate(context = {}) {
+    lifecycleSignal = context.signal || lifecycleSignal;
+    if (root) renderAll();
+  }
+
+  function destroy() {
+    if (messageTimer) window.clearTimeout(messageTimer);
+    messageTimer = null;
+    document.querySelector("[data-task-dialog]")?.remove();
+    taskSubscribers.clear();
+    if (root) {
+      root.replaceChildren();
+      delete root.dataset.ready;
     }
-    return error.message || "No fue posible actualizar las tareas.";
+    root = null;
+    lifecycleSignal = null;
+    tasks = [];
+    taskCollaborators = [];
+    tasksLoaded = false;
+    editingTaskId = null;
+  }
+
+  function productivityError(error) {
+    return window.BCCWorkspaceTaskContracts.toError(error).message;
   }
 
   function refreshIcons() {
@@ -823,5 +862,5 @@
     return window.BCCWorkspaceUtils.escapeHtml(value);
   }
 
-  window.BCCWorkspaceProductivity = { init, getTasks, subscribeTasks, openNewTask, openTaskEditor };
+  window.BCCWorkspaceProductivity = { init, activate, destroy, getTasks, subscribeTasks, openNewTask, openTaskEditor };
 })();

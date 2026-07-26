@@ -1,0 +1,18 @@
+/* Staff workspace entrypoint.
+   Feature styles are loaded by the feature registry into workspace.features. */
+@layer bcc.tokens, bcc.base, bcc.layout, bcc.components,
+  workspace.core, workspace.shell, workspace.primitives, workspace.account,
+  workspace.skin, workspace.features, workspace.navigation, workspace.experience;
+
+@import url("../00-tokens.css") layer(bcc.tokens);
+@import url("../01-base.css") layer(bcc.base);
+@import url("../02-layout.css") layer(bcc.layout);
+@import url("../03-components.css") layer(bcc.components);
+
+@import url("../workspace/workspace-core.css") layer(workspace.core);
+@import url("../workspace/workspace-shell.css") layer(workspace.shell);
+@import url("../workspace/workspace-components.css") layer(workspace.primitives);
+@import url("../workspace/workspace-account.css") layer(workspace.account);
+@import url("../workspace/workspace-internal.css") layer(workspace.skin);
+@import url("../workspace/workspace-sidebar.css") layer(workspace.navigation);
+@import url("../workspace/workspace-shell-experience.css") layer(workspace.experience);

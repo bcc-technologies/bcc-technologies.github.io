@@ -203,6 +203,7 @@ function createQuery(db, tableName) {
 }
 
 function loadAuthHarness(role = "admin") {
+  const accessCode = fs.readFileSync(path.resolve(process.cwd(), "js/access-contracts.js"), "utf8");
   const code = fs.readFileSync(path.resolve(process.cwd(), "js/auth.js"), "utf8");
   const db = createDb(role);
   const supabaseClient = {
@@ -295,6 +296,7 @@ function loadAuthHarness(role = "admin") {
   context.history = context.window.history;
   context.globalThis = context;
   vm.createContext(context);
+  vm.runInContext(accessCode, context, { filename: "access-contracts.js" });
   vm.runInContext(code, context, { filename: "auth.js" });
 
   return { api: context.window.BCCAuth.api, db };

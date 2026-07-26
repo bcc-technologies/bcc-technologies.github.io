@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { loadDominicanDashboard, runDominicanSync } from "./scripts/dominican-intelligence/sync.mjs";
 import { createMapLicenseStore } from "./js/map-licenses-store.mjs";
+import accessManifest from "./shared/access-contracts.json" with { type: "json" };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,39 +24,18 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 const MAX_BODY_BYTES = 1024 * 1024;
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-const ROLE_PERMISSIONS = {
-  client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
-  staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: [
-    "dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create",
-    "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view",
-    "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit",
-    "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage",
-    "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read",
-    "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"
-  ]
-};
+const permissionsFor = records => Object.fromEntries(
+  Object.entries(records).map(([key, value]) => [key, [...value.permissions]])
+);
+const labelsFor = records => Object.fromEntries(
+  Object.entries(records).map(([key, value]) => [key, value.label])
+);
+const ROLE_PERMISSIONS = permissionsFor(accessManifest.baseRoles);
+const STAFF_ROLE_PERMISSIONS = permissionsFor(accessManifest.staffRoles);
+const DEPARTMENT_PERMISSIONS = permissionsFor(accessManifest.departments);
+const STAFF_ROLES = Object.keys(accessManifest.staffRoles);
+const DEPARTMENTS = Object.keys(accessManifest.departments);
 
-const STAFF_ROLE_PERMISSIONS = {
-  author: ["content:write", "cms:access"],
-  cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"],
-  maps_developer: ["map.dev.access", "maps:developer:access", "maps:developer:read", "maps:developer:write"],
-  maps_release_manager: ["map.dev.access", "map.release.manage", "maps:developer:access", "maps:developer:read", "maps:developer:release"],
-  maps_license_manager: ["platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.analytics.read"],
-  maps_product_analyst: ["platform.licenses.read", "platform.analytics.read"]
-};
-
-const DEPARTMENT_PERMISSIONS = {
-  technology: ["department:technology"],
-  finance: ["department:finance"],
-  operations: ["department:operations"],
-  marketing: ["department:marketing"],
-  hr: ["department:hr"]
-};
-
-const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
-const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
 const CONTENT_TYPES = {
@@ -234,59 +214,11 @@ function permissionsForUser(role, staffRoles = [], departments = [], customRoles
 }
 
 
-const PERMISSION_LABELS = {
-  "dashboard:view": "Ver dashboard",
-  "profile:update": "Actualizar perfil",
-  "downloads:view": "Ver descargas",
-  "support:create": "Crear solicitudes",
-  "staff:view": "Vista de personal",
-  "clients:view": "Ver clientes",
-  "content:view": "Ver contenido",
-  "cms:access": "Acceso CMS",
-  "users:manage": "Administrar usuarios",
-  "forms:manage": "Administrar formularios",
-  "admin:view": "Vista administrador",
-  "licenses:view": "Ver licencias MAPs",
-  "licenses:manage": "Administrar licencias MAPs",
-  "licenses:assign": "Asignar licencias MAPs",
-  "licenses:audit": "Auditar licencias MAPs",
-  "content:write": "Crear contenido",
-  "strategy:view": "Ver estrategia",
-  "department:manage": "Gestionar departamento",
-  "maps:developer:access": "Acceder a desarrolladores de MAPs",
-  "maps:developer:read": "Consultar datos técnicos de MAPs",
-  "maps:developer:write": "Modificar configuraciones de MAPs",
-  "maps:developer:release": "Publicar versiones de MAPs",
-  "map.dev.access": "Acceder al entorno de desarrollo MAP",
-  "map.release.manage": "Gestionar publicaciones de MAP",
-  "platform.licenses.read": "Consultar licencias MAP",
-  "platform.licenses.manage": "Gestionar licencias MAP",
-  "platform.evaluations.manage": "Gestionar evaluaciones MAP",
-  "platform.permissions.manage": "Gestionar permisos de plataforma",
-  "platform.analytics.read": "Consultar analíticas MAP",
-  "department:technology": "Departamento tecnología",
-  "department:finance": "Departamento finanzas",
-  "department:operations": "Departamento operaciones",
-  "department:marketing": "Departamento marketing",
-  "department:hr": "Departamento RR. HH."
-};
-
+const PERMISSION_LABELS = { ...accessManifest.permissionLabels };
 const ROLE_LABELS = {
-  client: "Cliente",
-  staff: "Personal",
-  admin: "Administrador",
-  author: "Autor",
-  cofounder: "Cofounder",
-  department_director: "Director",
-  maps_developer: "Desarrollador MAPs",
-  maps_release_manager: "Responsable de releases MAPs",
-  maps_license_manager: "Gestor de licencias MAP",
-  maps_product_analyst: "Analista de producto MAP",
-  technology: "Tecnología",
-  finance: "Finanzas",
-  operations: "Operaciones",
-  marketing: "Marketing",
-  hr: "Recursos humanos"
+  ...labelsFor(accessManifest.baseRoles),
+  ...labelsFor(accessManifest.staffRoles),
+  ...labelsFor(accessManifest.departments)
 };
 
 function allKnownPermissions() {

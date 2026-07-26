@@ -59,17 +59,25 @@
     if (!root) return;
     root.innerHTML = `
       <section class="client-license-shell">
-        <article class="module-surface client-license-hero">
-          <div>
-            <span class="workspace-eyebrow">MAP Platform</span>
-            <h1>Mis licencias</h1>
-            <p>Consulta vigencia y consumo. Si administras una organización, también puedes asignar y liberar plazas.</p>
-          </div>
-          <div class="client-license-actions">
-            <a class="btn btn-ghost btn-compact" href="/products.html"><i data-lucide="package-search"></i>Ver productos</a>
-            <button class="btn btn-ghost btn-compact" type="button" data-client-license-refresh data-client-license-control ${busy ? "disabled" : ""}><i data-lucide="refresh-cw"></i>Actualizar</button>
-          </div>
-        </article>
+        ${ui.sectionHeader({
+          className: "module-surface client-license-hero",
+          actionsClassName: "client-license-actions",
+          eyebrow: "MAP Platform",
+          title: "Mis licencias",
+          level: 1,
+          description: "Consulta vigencia y consumo. Si administras una organización, también puedes asignar y liberar plazas.",
+          actions: [
+            { label: "Ver productos", href: "/products.html", icon: "package-search", compact: true, className: "btn btn-ghost" },
+            {
+              label: "Actualizar",
+              icon: "refresh-cw",
+              compact: true,
+              disabled: busy,
+              className: "btn btn-ghost",
+              data: { clientLicenseRefresh: true, clientLicenseControl: true }
+            }
+          ]
+        })}
         <p class="client-license-message" data-client-license-message role="status" aria-live="polite" hidden></p>
         ${renderStaffLicense()}
         ${renderPlatformAccess()}
@@ -82,9 +90,12 @@
   function renderCommercialWorkspace() {
     const hasCommercialLicenses = dashboard.licenses.length > 0;
     return `<section class="client-license-commercial ${hasCommercialLicenses ? "has-licenses" : "is-empty"}">
-      <div class="client-license-section-head">
-        <div><span class="workspace-eyebrow">Acceso asociado</span><h2>Licencias comerciales y evaluaciones</h2><p>Sólo mostramos licencias que administras o que están asignadas directamente a tu usuario.</p></div>
-      </div>
+      ${ui.sectionHeader({
+        className: "client-license-section-head",
+        eyebrow: "Acceso asociado",
+        title: "Licencias comerciales y evaluaciones",
+        description: "Sólo mostramos licencias que administras o que están asignadas directamente a tu usuario."
+      })}
       ${hasCommercialLicenses ? `${renderFeaturedLicense()}${renderAttention()}${renderMetrics()}` : ""}
       ${renderLicenses()}
       ${renderSeatManagement()}
@@ -96,14 +107,13 @@
     if (!entitlement) return "";
     const products = Array.isArray(entitlement.product_keys) ? entitlement.product_keys : [];
     return `<article class="module-surface client-license-direct-access is-staff-entitlement">
-      <div class="client-license-section-head">
-        <div>
-          <span class="workspace-eyebrow">Beneficio exclusivo del staff</span>
-          <h2>Licencia MAP Staff</h2>
-          <p>Acceso gratuito a la suite MAP mientras tu perfil de staff permanezca activo. Es personal, no consume plazas y no forma parte del catálogo comercial.</p>
-        </div>
-        <span class="client-license-tag active"><i data-lucide="badge-check"></i>Activa</span>
-      </div>
+      ${ui.sectionHeader({
+        className: "client-license-section-head",
+        eyebrow: "Beneficio exclusivo del staff",
+        title: "Licencia MAP Staff",
+        description: "Acceso gratuito a la suite MAP mientras tu perfil de staff permanezca activo. Es personal, no consume plazas y no forma parte del catálogo comercial.",
+        status: { label: "Activa", status: "success", icon: "badge-check" }
+      })}
       <div class="client-license-badges">
         ${products.map(key => `<span class="client-license-tag">${escapeHtml(productName(key))}</span>`).join("")}
         <span class="client-license-tag">Sin vencimiento</span>
@@ -115,14 +125,13 @@
   function renderPlatformAccess() {
     if (!platformAccess.length) return "";
     return `<article class="module-surface client-license-direct-access is-platform-access">
-      <div class="client-license-section-head">
-        <div>
-          <span class="workspace-eyebrow">Permisos adicionales</span>
-          <h2>Herramientas internas autorizadas</h2>
-          <p>Estos permisos son independientes de la licencia MAP Staff y determinan qué herramientas técnicas o administrativas puedes utilizar.</p>
-        </div>
-        <span class="client-license-tag active"><i data-lucide="shield-check"></i>Autorizado</span>
-      </div>
+      ${ui.sectionHeader({
+        className: "client-license-section-head",
+        eyebrow: "Permisos adicionales",
+        title: "Herramientas internas autorizadas",
+        description: "Estos permisos son independientes de la licencia MAP Staff y determinan qué herramientas técnicas o administrativas puedes utilizar.",
+        status: { label: "Autorizado", status: "success", icon: "shield-check" }
+      })}
       <div class="client-license-badges">
         ${platformAccess.map(key => `<span class="client-license-tag">${escapeHtml(platformAccessLabel(key))}</span>`).join("")}
       </div>
@@ -139,12 +148,12 @@
       || licenses.find(item => item.status === "active")
       || licenses.sort((a, b) => a.statusMeta.priority - b.statusMeta.priority)[0];
     if (!featured) {
-      return internalEntitlements.length ? "" : `<div class="client-license-hero-summary is-empty"><i data-lucide="badge-plus"></i><span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
+      return internalEntitlements.length ? "" : `<div class="client-license-hero-summary is-empty">${ui.icon("badge-plus", "lg")}<span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
     }
 
     return `<div class="client-license-hero-summary">
-      <div class="client-license-hero-product"><i data-lucide="scan-line"></i><div><span>Tu acceso principal</span><strong>${escapeHtml(featured.productName)}</strong><small>${escapeHtml(featured.plan_name || "Licencia MAP")}</small></div></div>
-      <div class="client-license-hero-status"><span class="client-license-tag ${escapeHtml(featured.status)}"><i data-lucide="${escapeHtml(featured.statusMeta.icon)}"></i>${escapeHtml(featured.statusMeta.label)}</span><strong>${featured.ends_at ? `Hasta ${formatDate(featured.ends_at)}` : "Sin vencimiento"}<small>${featured.is_assigned_to_me ? " Acceso asignado a tu usuario" : " Acceso de tu organización"}</small></strong></div>
+      <div class="client-license-hero-product">${ui.icon("scan-line", "lg")}<div><span>Tu acceso principal</span><strong>${escapeHtml(featured.productName)}</strong><small>${escapeHtml(featured.plan_name || "Licencia MAP")}</small></div></div>
+      <div class="client-license-hero-status"><span class="client-license-tag ${escapeHtml(featured.status)}">${ui.icon(featured.statusMeta.icon, "xs")}${escapeHtml(featured.statusMeta.label)}</span><strong>${featured.ends_at ? `Hasta ${formatDate(featured.ends_at)}` : "Sin vencimiento"}<small>${featured.is_assigned_to_me ? " Acceso asignado a tu usuario" : " Acceso de tu organización"}</small></strong></div>
     </div>`;
   }
 
@@ -154,7 +163,7 @@
     const copy = license.status === "expiring"
       ? `Tu licencia ${license.productName} vence el ${formatDate(license.ends_at)}. Coordina la renovación para evitar interrupciones.`
       : `Tu licencia ${license.productName} está ${license.statusMeta.label.toLowerCase()}. Revisa las opciones con tu administrador o soporte.`;
-    return `<aside class="client-license-attention" data-tone="${escapeHtml(license.statusMeta.tone)}"><i data-lucide="${escapeHtml(license.statusMeta.icon)}"></i><div><strong>Requiere atención</strong><span>${escapeHtml(copy)}</span></div><a class="btn btn-ghost btn-compact" href="/contactUs.html">Contactar soporte</a></aside>`;
+    return `<aside class="client-license-attention" data-tone="${escapeHtml(license.statusMeta.tone)}">${ui.icon(license.statusMeta.icon, "md")}<div><strong>Requiere atención</strong><span>${escapeHtml(copy)}</span></div><a class="btn btn-ghost btn-compact" href="/contactUs.html">Contactar soporte</a></aside>`;
   }
 
   function renderMetrics() {
@@ -206,19 +215,19 @@
           <div class="client-license-badges">
             ${item.is_evaluation ? '<span class="client-license-tag">Evaluación</span>' : ""}
             ${item.is_assigned_to_me ? '<span class="client-license-tag">Asignada a mí</span>' : ""}
-            <span class="client-license-tag ${escapeHtml(item.status)}"><i data-lucide="${escapeHtml(item.statusMeta.icon)}"></i>${escapeHtml(item.statusMeta.label)}</span>
+            <span class="client-license-tag ${escapeHtml(item.status)}">${ui.icon(item.statusMeta.icon, "xs")}${escapeHtml(item.statusMeta.label)}</span>
           </div>
         </div>
         <div>
           <div class="client-license-card-head"><span>Uso de plazas</span><strong>${item.assignedSeats} / ${item.seatLimit}</strong></div>
-          <div class="client-license-seat-bar ${item.seatUsage >= 100 ? "is-full" : item.seatUsage >= 80 ? "is-near-capacity" : ""}" aria-label="${item.seatUsage}% de plazas ocupadas"><span style="width:${item.seatUsage}%"></span></div>
+          ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: `client-license-seat-bar ${item.seatUsage >= 100 ? "is-full" : item.seatUsage >= 80 ? "is-near-capacity" : ""}`, tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
         </div>
         <dl class="client-license-details">
           <div><dt>Inicio</dt><dd>${formatDate(item.starts_at)}</dd></div>
           <div><dt>Vencimiento</dt><dd>${item.ends_at ? formatDate(item.ends_at) : "Sin vencimiento"}</dd></div>
           <div><dt>Tu rol</dt><dd>${escapeHtml(roleLabel(item.member_role))}</dd></div>
         </dl>
-        ${item.is_evaluation ? '<p><i data-lucide="info"></i> El ciclo de evaluación es administrado por el equipo BCC.</p>' : ""}
+        ${item.is_evaluation ? `<p>${ui.icon("info", "xs")} El ciclo de evaluación es administrado por el equipo BCC.</p>` : ""}
       </article>`;
     }).join("")}</div>`;
   }
@@ -233,10 +242,12 @@
     const candidates = dashboard.members.filter(item => item.account_id === selected.account_id && !assignedUsers.has(item.user_id));
 
     return `<section id="gestion-plazas">
-      <div class="client-license-section-head">
-        <div><h2>Gestión de plazas</h2><p>Asigna plazas a miembros activos de tu cuenta. El alta de nuevos miembros se gestiona por soporte.</p></div>
-        <a class="btn btn-ghost btn-compact" href="/contactUs.html"><i data-lucide="user-plus"></i>Solicitar miembro</a>
-      </div>
+      ${ui.sectionHeader({
+        className: "client-license-section-head",
+        title: "Gestión de plazas",
+        description: "Asigna plazas a miembros activos de tu cuenta. El alta de nuevos miembros se gestiona por soporte.",
+        actions: [{ label: "Solicitar miembro", href: "/contactUs.html", icon: "user-plus", compact: true, className: "btn btn-ghost" }]
+      })}
       <div class="client-license-management-grid">
         <article class="client-license-card">
           <h2>Asignar una plaza</h2>
@@ -256,7 +267,12 @@
         </article>
         <article class="client-license-card">
           <div class="client-license-card-head"><div><h2>Plazas asignadas</h2><p>${escapeHtml(productName(selected.product_key))} · ${escapeHtml(selected.account_name)}</p></div><span class="client-license-tag">${assignments.length} / ${Number(selected.seat_limit || 0)}</span></div>
-          ${assignments.length ? `<div class="client-license-assignment-list">${assignments.map(renderAssignment).join("")}</div>` : '<div class="client-license-empty"><i data-lucide="users"></i><strong>No hay plazas asignadas.</strong><span>Selecciona un miembro para activar su acceso.</span></div>'}
+          ${assignments.length ? `<div class="client-license-assignment-list">${assignments.map(renderAssignment).join("")}</div>` : ui.emptyState({
+            className: "client-license-empty is-compact",
+            icon: "users",
+            title: "No hay plazas asignadas.",
+            description: "Selecciona un miembro para activar su acceso."
+          })}
         </article>
       </div>
     </section>`;
@@ -275,7 +291,7 @@
   function renderActivity() {
     if (!dashboard.recent_events.length) return "";
     return `<details class="module-surface client-license-activity-disclosure">
-      <summary><span><i data-lucide="history"></i><span><strong>Actividad reciente</strong><small>${dashboard.recent_events.length} movimiento(s) de plazas</small></span></span><i data-lucide="chevron-down"></i></summary>
+      <summary><span>${ui.icon("history", "sm")}<span><strong>Actividad reciente</strong><small>${dashboard.recent_events.length} movimiento(s) de plazas</small></span></span>${ui.icon("chevron-down", "sm")}</summary>
       <div class="client-license-activity-intro">Registro de asignaciones y liberaciones realizadas desde el autoservicio.</div>
       <div class="client-license-activity-list">${dashboard.recent_events.map(event => {
         const member = dashboard.members.find(item => item.user_id === event.subject_user_id);

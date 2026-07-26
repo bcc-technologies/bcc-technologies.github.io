@@ -1,93 +1,17 @@
-const ROLE_PERMISSIONS = {
-  client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
-  staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-  admin: [
-    "dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create",
-    "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view",
-    "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit",
-    "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage",
-    "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read",
-    "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"
-  ]
-};
-
-const STAFF_ROLE_PERMISSIONS = {
-  author: ["content:write", "cms:access"],
-  cofounder: ["content:write", "cms:access", "strategy:view"],
-  department_director: ["content:write", "cms:access", "department:manage", "forms:manage"],
-  maps_developer: ["map.dev.access", "maps:developer:access", "maps:developer:read", "maps:developer:write"],
-  maps_release_manager: ["map.dev.access", "map.release.manage", "maps:developer:access", "maps:developer:read", "maps:developer:release"],
-  maps_license_manager: ["platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.analytics.read"],
-  maps_product_analyst: ["platform.licenses.read", "platform.analytics.read"]
-};
-
-const BASE_ROLE_HIERARCHY = { admin: 0, staff: 50, client: 90 };
-const STAFF_ROLE_HIERARCHY = { cofounder: 10, department_director: 20, maps_release_manager: 30, maps_developer: 35, author: 40 };
-const DEFAULT_CUSTOM_ROLE_HIERARCHY = 50;
-
-const DEPARTMENT_PERMISSIONS = {
-  technology: ["department:technology"],
-  finance: ["department:finance"],
-  operations: ["department:operations"],
-  marketing: ["department:marketing"],
-  hr: ["department:hr"]
-};
-
-const STAFF_ROLES = Object.keys(STAFF_ROLE_PERMISSIONS);
-const DEPARTMENTS = Object.keys(DEPARTMENT_PERMISSIONS);
-
-const PERMISSION_LABELS = {
-  "dashboard:view": "Ver dashboard",
-  "profile:update": "Actualizar perfil",
-  "downloads:view": "Ver descargas",
-  "support:create": "Crear solicitudes",
-  "staff:view": "Vista de personal",
-  "clients:view": "Ver clientes",
-  "content:view": "Ver contenido",
-  "cms:access": "Acceso CMS",
-  "users:manage": "Administrar usuarios",
-  "forms:manage": "Administrar formularios",
-  "admin:view": "Vista administrador",
-  "licenses:view": "Ver licencias MAPs",
-  "licenses:manage": "Administrar licencias MAPs",
-  "licenses:assign": "Asignar licencias MAPs",
-  "licenses:audit": "Auditar licencias MAPs",
-  "content:write": "Crear contenido",
-  "strategy:view": "Ver estrategia",
-  "department:manage": "Gestionar departamento",
-  "maps:developer:access": "Acceder a desarrolladores de MAPs",
-  "maps:developer:read": "Consultar datos técnicos de MAPs",
-  "maps:developer:write": "Modificar configuraciones de MAPs",
-  "maps:developer:release": "Publicar versiones de MAPs",
-  "map.dev.access": "Acceder al entorno de desarrollo MAP",
-  "map.release.manage": "Gestionar publicaciones de MAP",
-  "platform.licenses.read": "Consultar licencias MAP",
-  "platform.licenses.manage": "Gestionar licencias MAP",
-  "platform.evaluations.manage": "Gestionar evaluaciones MAP",
-  "platform.permissions.manage": "Gestionar permisos de plataforma",
-  "platform.analytics.read": "Consultar analíticas MAP",
-  "department:technology": "Departamento tecnología",
-  "department:finance": "Departamento finanzas",
-  "department:operations": "Departamento operaciones",
-  "department:marketing": "Departamento marketing",
-  "department:hr": "Departamento RR. HH."
-};
-
-const ROLE_LABELS = {
-  client: "Cliente",
-  staff: "Personal",
-  admin: "Administrador",
-  author: "Autor",
-  cofounder: "Cofounder",
-  department_director: "Director",
-  maps_developer: "Desarrollador MAPs",
-  maps_release_manager: "Responsable de releases MAPs",
-  technology: "Tecnología",
-  finance: "Finanzas",
-  operations: "Operaciones",
-  marketing: "Marketing",
-  hr: "Recursos humanos"
-};
+const ACCESS_CONTRACTS = window.BCCAccessContracts;
+if (!ACCESS_CONTRACTS) throw new Error("BCC access contracts must load before auth.js.");
+const {
+  ROLE_PERMISSIONS,
+  STAFF_ROLE_PERMISSIONS,
+  BASE_ROLE_HIERARCHY,
+  STAFF_ROLE_HIERARCHY,
+  DEFAULT_CUSTOM_ROLE_HIERARCHY,
+  DEPARTMENT_PERMISSIONS,
+  STAFF_ROLES,
+  DEPARTMENTS,
+  PERMISSION_LABELS,
+  ROLE_LABELS
+} = ACCESS_CONTRACTS;
 
 let currentPageUser = null;
 let currentUserPromise = null;
@@ -1187,8 +1111,9 @@ async function bccApi(path, options = {}) {
   throw new Error(`Endpoint no migrado a Supabase: ${path}`);
 }
 
-async function loadWorkspaceTaskCollaborators(supabase) {
-  const { data, error } = await supabase.rpc("get_workspace_task_collaborators");
+async function loadWorkspaceTaskCollaborators(supabase, signal = null) {
+  const query = supabase.rpc("get_workspace_task_collaborators");
+  const { data, error } = await (signal && typeof query?.abortSignal === "function" ? query.abortSignal(signal) : query);
   if (error) throw error;
   return (Array.isArray(data) ? data : []).map(item => ({
     id: String(item.id || ""),
@@ -1223,11 +1148,12 @@ function resolveWorkspaceTaskAssignment(raw = {}, me = {}, collaborators = []) {
   };
 }
 
-async function loadWorkspaceRoleDefinitions(supabase) {
-  const { data, error } = await supabase
+async function loadWorkspaceRoleDefinitions(supabase, signal = null) {
+  const query = supabase
     .from("workspace_role_definitions")
     .select("id, key, name, description, hierarchy_level, permissions, created_at, updated_at")
     .order("created_at", { ascending: true });
+  const { data, error } = await (signal && typeof query?.abortSignal === "function" ? query.abortSignal(signal) : query);
   if (error) throw error;
   return (data || []).map(publicWorkspaceRoleDefinition);
 }

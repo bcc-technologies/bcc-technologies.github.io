@@ -1,4 +1,6 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
+  const repository = window.BCCWorkspaceCalendarRepository;
   const STATUS_LABELS = {
     backlog: "Pendiente",
     in_progress: "En curso",
@@ -32,16 +34,18 @@
   let selectedDate = localDate();
   let editingEventId = null;
   let unsubscribeTasks = null;
+  let lifecycleSignal = null;
 
-  function init() {
-    root = document.querySelector("[data-calendar-workspace]");
+  async function init(user, context = {}) {
+    root = context.root || document.querySelector("[data-calendar-workspace]");
+    lifecycleSignal = context.signal || null;
     if (!root || root.dataset.ready === "true") return;
     root.dataset.ready = "true";
     root.innerHTML = template();
     bindControls();
     subscribeToTasks();
     render();
-    loadEvents();
+    await loadEvents();
   }
 
   function template() {
@@ -53,7 +57,7 @@
           <p>Eventos, reuniones y tareas con fecha en una agenda operativa.</p>
         </div>
         <button class="btn btn-ghost calendar-task-link" type="button" data-calendar-open-tasks>
-          <i data-lucide="list-checks"></i>Gestionar tareas
+          ${ui.icon("list-checks", "sm")}Gestionar tareas
         </button>
       </div>
       <div class="calendar-summary" data-calendar-summary></div>
@@ -76,10 +80,10 @@
               <span class="status-dot" data-calendar-day-count>0 items</span>
               <div class="calendar-create-actions" aria-label="Crear en calendario">
                 <button class="btn btn-ghost calendar-add-task" type="button" data-calendar-create-task>
-                  <i data-lucide="list-plus"></i>Tarea
+                  ${ui.icon("list-plus", "sm")}Tarea
                 </button>
                 <button class="btn btn-primary calendar-add-task" type="button" data-calendar-create-event>
-                  <i data-lucide="calendar-plus"></i>Evento
+                  ${ui.icon("calendar-plus", "sm")}Evento
                 </button>
               </div>
             </div>
@@ -118,7 +122,7 @@
               <p>Agrega una reunion, hito, llamada o recordatorio a la agenda.</p>
             </div>
             <button class="icon-close" type="button" data-calendar-event-close aria-label="Cerrar">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           </div>
           <label>
@@ -243,13 +247,16 @@
 
 
   async function loadEvents() {
+    const signal = lifecycleSignal;
     try {
-      const data = await window.BCCAuth.api("/api/workspace/events");
-      events = Array.isArray(data.events) ? data.events : [];
+      const nextEvents = await repository.list(requestOptions(signal));
+      if (!isActive(signal)) return;
+      events = nextEvents;
       eventsLoaded = true;
       render();
       notifyEventsChanged();
     } catch (error) {
+      if (isCancelled(error, signal)) return;
       eventsLoaded = true;
       setEventMessage(calendarError(error), "error");
       render();
@@ -309,24 +316,25 @@
     submit.disabled = true;
     submit.textContent = "Guardando...";
     try {
-      const data = await window.BCCAuth.api(currentEventId ? `/api/workspace/events/${encodeURIComponent(currentEventId)}` : "/api/workspace/events", {
-        method: currentEventId ? "PATCH" : "POST",
-        body: JSON.stringify(payload)
-      });
+      const savedEvent = currentEventId
+        ? await repository.update(currentEventId, payload, requestOptions())
+        : await repository.create(payload, requestOptions());
       if (currentEventId) {
-        events = events.map(item => item.id === currentEventId ? data.event : item);
+        events = events.map(item => item.id === currentEventId ? savedEvent : item);
       } else {
-        events.push(data.event);
+        events.push(savedEvent);
       }
       editingEventId = null;
       closeEventDialog();
       render();
       notifyEventsChanged();
     } catch (error) {
-      setEventMessage(calendarError(error), "error");
+      if (!isCancelled(error)) setEventMessage(calendarError(error), "error");
     } finally {
-      submit.disabled = false;
-      submit.textContent = currentEventId ? "Guardar cambios" : "Crear evento";
+      if (submit.isConnected) {
+        submit.disabled = false;
+        submit.textContent = currentEventId ? "Guardar cambios" : "Crear evento";
+      }
     }
   }
 
@@ -336,23 +344,21 @@
     const button = root.querySelector("[data-calendar-event-delete]");
     button.disabled = true;
     try {
-      await window.BCCAuth.api(`/api/workspace/events/${encodeURIComponent(currentEventId)}`, { method: "DELETE" });
+      await repository.remove(currentEventId, requestOptions());
       events = events.filter(event => event.id !== currentEventId);
       editingEventId = null;
       closeEventDialog();
       render();
       notifyEventsChanged();
     } catch (error) {
-      setEventMessage(calendarError(error), "error");
+      if (!isCancelled(error)) setEventMessage(calendarError(error), "error");
     } finally {
-      button.disabled = false;
+      if (button.isConnected) button.disabled = false;
     }
   }
 
   function notifyEventsChanged() {
-    document.dispatchEvent(new CustomEvent("bcc:workspace-events", {
-      detail: { events: events.slice(), loaded: eventsLoaded }
-    }));
+    window.BCCWorkspaceEvents.emit("eventsChanged", { events: events.slice(), loaded: eventsLoaded });
   }
 
   function subscribeToTasks() {
@@ -366,9 +372,10 @@
       return;
     }
 
-    document.addEventListener("bcc:workspace-tasks", event => {
-      tasks = Array.isArray(event.detail?.tasks) ? event.detail.tasks : [];
-      loaded = Boolean(event.detail?.loaded);
+    unsubscribeTasks?.();
+    unsubscribeTasks = window.BCCWorkspaceEvents.subscribe("tasksChanged", detail => {
+      tasks = detail.tasks;
+      loaded = detail.loaded;
       render();
     });
   }
@@ -505,7 +512,7 @@
         <span class="calendar-priority priority-${escapeHtml(task.priority || "medium")}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
         <strong>${escapeHtml(task.title)}</strong>
         <small>${escapeHtml(taskMeta(task))}</small>
-        <i data-lucide="pencil" aria-hidden="true"></i>
+        ${ui.icon("pencil", "xs")}
       </button>
     `).join("");
   }
@@ -516,7 +523,7 @@
         <span class="calendar-event-type">${escapeHtml(EVENT_TYPE_LABELS[event.type] || "Evento")}</span>
         <strong>${escapeHtml(event.title)}</strong>
         <small>${escapeHtml(eventMeta(event))}</small>
-        <i data-lucide="calendar-clock" aria-hidden="true"></i>
+        ${ui.icon("calendar-clock", "xs")}
       </button>
     `).join("");
   }
@@ -611,11 +618,41 @@
     window.BCCWorkspaceUtils.setMessage(root.querySelector("[data-calendar-event-message]"), message, tone);
   }
 
-  function calendarError(error) {
-    if (/workspace_events|relation .* does not exist/i.test(error.message || "")) {
-      return "El calendario requiere activar la tabla de eventos en Supabase.";
+  function requestOptions(signal = lifecycleSignal) {
+    return signal ? { signal } : {};
+  }
+
+  function isActive(signal = lifecycleSignal) {
+    return Boolean(root) && !signal?.aborted;
+  }
+
+  function isCancelled(error, signal = lifecycleSignal) {
+    return Boolean(signal?.aborted || error?.code === "cancelled");
+  }
+
+  function activate(context = {}) {
+    lifecycleSignal = context.signal || lifecycleSignal;
+    if (root) render();
+  }
+
+  function destroy() {
+    unsubscribeTasks?.();
+    unsubscribeTasks = null;
+    if (root) {
+      root.replaceChildren();
+      delete root.dataset.ready;
     }
-    return error.message || "No fue posible actualizar el calendario.";
+    root = null;
+    lifecycleSignal = null;
+    tasks = [];
+    events = [];
+    loaded = false;
+    eventsLoaded = false;
+    editingEventId = null;
+  }
+
+  function calendarError(error) {
+    return window.BCCWorkspaceCalendarContracts.toError(error).message;
   }
 
   function refreshIcons() {
@@ -630,5 +667,5 @@
     return window.BCCWorkspaceUtils.escapeAttr(value);
   }
 
-  window.BCCWorkspaceCalendar = { init };
+  window.BCCWorkspaceCalendar = { init, activate, destroy };
 })();

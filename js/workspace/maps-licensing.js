@@ -60,19 +60,22 @@
   function renderShell() {
     root.innerHTML = `
       <section class="maps-license-shell">
-        <header class="module-surface maps-license-hero">
-          <div>
-            <span class="workspace-eyebrow">MAP Platform</span>
-            <h1>Licencias y acceso</h1>
-            <p class="muted-text">Administra el ciclo de acceso comercial y de evaluación sin mezclar permisos internos ni datos científicos.</p>
-          </div>
-          <div class="maps-license-actions">
-            ${ui.statusBadge({ label: "Datos en vivo", status: "success", icon: "database" })}
-            <button class="btn btn-ghost btn-compact" type="button" data-map-refresh data-map-control>
-              <i data-lucide="refresh-cw"></i>Actualizar
-            </button>
-          </div>
-        </header>
+        ${ui.sectionHeader({
+          className: "module-surface maps-license-hero",
+          actionsClassName: "maps-license-actions",
+          eyebrow: "MAP Platform",
+          title: "Licencias y acceso",
+          level: 1,
+          description: "Administra el ciclo de acceso comercial y de evaluación sin mezclar permisos internos ni datos científicos.",
+          status: { label: "Datos en vivo", status: "success", icon: "database" },
+          actions: [{
+            label: "Actualizar",
+            icon: "refresh-cw",
+            compact: true,
+            className: "btn btn-ghost",
+            data: { mapRefresh: true, mapControl: true }
+          }]
+        })}
         <p class="maps-license-message" data-map-message role="status" aria-live="polite">Cargando datos de plataforma...</p>
         <nav class="maps-license-tabs" role="tablist" aria-label="Secciones de licencias MAP">
           ${PANELS.filter(panelAllowed).map(panel => `
@@ -203,13 +206,15 @@
       </section>
       <div class="maps-license-summary-grid">
         <article class="maps-license-card">
-          <div class="maps-license-section-head">
-            <div><span class="workspace-eyebrow">Distribución</span><h2>Estado por producto</h2></div>
-          </div>
+          ${ui.sectionHeader({
+            className: "maps-license-section-head",
+            eyebrow: "Distribución",
+            title: "Estado por producto"
+          })}
           ${productSummaryTable()}
         </article>
         <aside class="maps-license-card maps-license-operational-note">
-          <i data-lucide="${Number(overview.expiring_licenses || 0) ? "triangle-alert" : "circle-check"}"></i>
+          ${ui.icon(Number(overview.expiring_licenses || 0) ? "triangle-alert" : "circle-check", "md")}
           <div>
             <span class="workspace-eyebrow">Atención operativa</span>
             <h2>${Number(overview.expiring_licenses || 0) ? "Hay vencimientos próximos" : "Sin alertas críticas"}</h2>
@@ -243,21 +248,23 @@
     if (!panel) return;
     panel.innerHTML = `
       <article class="maps-license-card">
-        <div class="maps-license-section-head">
-          <div>
-            <span class="workspace-eyebrow">Inventario comercial</span>
-            <h2>Licencias</h2>
-            <p>Busca y filtra antes de abrir el detalle operativo.</p>
-          </div>
-          ${has("platform.licenses.manage") ? `
-            <button class="btn btn-primary" type="button" data-open-map-layer="map-issue-license-dialog">
-              <i data-lucide="badge-plus"></i>Emitir licencia
-            </button>` : ""}
-        </div>
+        ${ui.sectionHeader({
+          className: "maps-license-section-head",
+          actionsClassName: "maps-license-actions",
+          eyebrow: "Inventario comercial",
+          title: "Licencias",
+          description: "Busca y filtra antes de abrir el detalle operativo.",
+          actions: has("platform.licenses.manage") ? [{
+            label: "Emitir licencia",
+            icon: "badge-plus",
+            className: "btn btn-primary",
+            data: { openMapLayer: "map-issue-license-dialog" }
+          }] : []
+        })}
         <div class="maps-license-toolbar" role="search">
           <label class="maps-license-search">
             <span class="sr-only">Buscar licencias</span>
-            <i data-lucide="search"></i>
+            ${ui.icon("search", "sm")}
             <input type="search" value="${escapeHtml(licenseQuery)}" placeholder="Cuenta, ID, producto o plan" data-map-license-query>
           </label>
           <label><span class="sr-only">Filtrar por estado</span>
@@ -321,7 +328,7 @@
           <td><strong>${escapeHtml(item.account_name)}</strong><small>${escapeHtml(item.license_id)}</small></td>
           <td>${escapeHtml(PRODUCTS[item.product_key] || item.product_key)}<small>${escapeHtml(item.plan_name || item.license_type)}</small></td>
           <td>${licenseStatusBadge(item)}</td>
-          <td><strong>${assigned} / ${capacity}</strong><div class="maps-license-capacity" aria-label="${usage}% ocupado"><span style="width:${usage}%"></span></div></td>
+          <td><strong>${assigned} / ${capacity}</strong>${ui.progress({ value: usage, label: `${usage}% ocupado`, className: "maps-license-capacity" })}</td>
           <td>${formatDate(item.starts_at)}<small>${item.ends_at ? `hasta ${formatDate(item.ends_at)}` : "sin vencimiento"}</small></td>
           <td><button class="btn btn-ghost btn-compact" type="button" data-map-license-detail="${escapeHtml(item.license_id)}">Ver detalle</button></td>
         </tr>`;
@@ -391,7 +398,7 @@
         </dl>
         <section class="maps-license-detail-section">
           <div class="maps-license-section-head"><div><h3>Capacidad</h3><p>${assigned} de ${capacity} plazas asignadas</p></div><strong>${usage}%</strong></div>
-          <div class="maps-license-capacity is-large" aria-label="${usage}% ocupado"><span style="width:${usage}%"></span></div>
+          ${ui.progress({ value: usage, label: `${usage}% ocupado`, className: "maps-license-capacity is-large" })}
         </section>
         ${has("platform.licenses.manage") && assignable ? `
           <section class="maps-license-detail-section">
@@ -429,17 +436,31 @@
     const selected = cohorts.find(item => item.cohort_id === selectedCohortId);
     panel.innerHTML = `
       <article class="maps-license-card">
-        <div class="maps-license-section-head">
-          <div><span class="workspace-eyebrow">Acceso temporal</span><h2>Evaluaciones</h2><p>Selecciona una cohorte para operar sus participantes.</p></div>
-          <div class="maps-license-actions">
-            <button class="btn btn-ghost" type="button" data-open-map-layer="map-evaluation-account-dialog"><i data-lucide="building-2"></i>Nueva cuenta</button>
-            <button class="btn btn-primary" type="button" data-open-map-layer="map-cohort-dialog"><i data-lucide="users-round"></i>Nueva cohorte</button>
-          </div>
-        </div>
+        ${ui.sectionHeader({
+          className: "maps-license-section-head",
+          actionsClassName: "maps-license-actions",
+          eyebrow: "Acceso temporal",
+          title: "Evaluaciones",
+          description: "Selecciona una cohorte para operar sus participantes.",
+          actions: [
+            {
+              label: "Nueva cuenta",
+              icon: "building-2",
+              className: "btn btn-ghost",
+              data: { openMapLayer: "map-evaluation-account-dialog" }
+            },
+            {
+              label: "Nueva cohorte",
+              icon: "users-round",
+              className: "btn btn-primary",
+              data: { openMapLayer: "map-cohort-dialog" }
+            }
+          ]
+        })}
         <div class="maps-license-evaluation-layout">
           <aside class="maps-license-cohort-browser">
             <label class="maps-license-search">
-              <span class="sr-only">Buscar cohortes</span><i data-lucide="search"></i>
+              <span class="sr-only">Buscar cohortes</span>${ui.icon("search", "sm")}
               <input type="search" value="${escapeHtml(cohortQuery)}" placeholder="Buscar cohorte o cuenta" data-map-cohort-query>
             </label>
             <div data-map-cohort-list>${cohortList()}</div>
@@ -489,39 +510,58 @@
   }
 
   function cohortStatusBadge(item) {
+    return ui.statusBadge(cohortStatus(item));
+  }
+
+  function cohortStatus(item) {
     const status = item.cohort_status || "unknown";
-    const tone = status === "active" ? "success" : status === "scheduled" ? "warning" : status === "revoked" ? "danger" : "neutral";
-    const label = ({ active: "Activa", scheduled: "Programada", ended: "Finalizada", revoked: "Revocada" })[status] || status;
-    return ui.statusBadge({ label, status: tone });
+    return {
+      label: ({ active: "Activa", scheduled: "Programada", ended: "Finalizada", revoked: "Revocada" })[status] || status,
+      status: status === "active" ? "success" : status === "scheduled" ? "warning" : status === "revoked" ? "danger" : "neutral"
+    };
   }
 
   function cohortDetail(item) {
     return `
-      <header class="maps-license-section-head">
-        <div>
-          <span class="workspace-eyebrow">${escapeHtml(PRODUCTS[item.product_key] || item.product_key)}</span>
-          <h2>${escapeHtml(item.cohort_name || item.name)}</h2>
-          <p>${escapeHtml(item.account_name)} · ${formatDate(item.starts_at)} — ${formatDate(item.ends_at)}</p>
-        </div>
-        ${cohortStatusBadge(item)}
-      </header>
+      ${ui.sectionHeader({
+        className: "maps-license-section-head",
+        eyebrow: PRODUCTS[item.product_key] || item.product_key,
+        title: item.cohort_name || item.name,
+        description: `${item.account_name} · ${formatDate(item.starts_at)} — ${formatDate(item.ends_at)}`,
+        status: cohortStatus(item)
+      })}
       ${item.purpose ? `<p class="maps-license-cohort-purpose">${escapeHtml(item.purpose)}</p>` : ""}
-      <div class="maps-license-section-head maps-license-participant-head">
-        <div><h3>Participantes</h3><p>${participants.length} acceso(s) registrado(s)</p></div>
-        <button class="btn btn-primary btn-compact" type="button" data-open-map-layer="map-participant-dialog">
-          <i data-lucide="user-plus"></i>Invitar
-        </button>
-      </div>
+      ${ui.sectionHeader({
+        className: "maps-license-section-head maps-license-participant-head",
+        title: "Participantes",
+        level: 3,
+        description: `${participants.length} acceso(s) registrado(s)`,
+        actions: [{
+          label: "Invitar",
+          icon: "user-plus",
+          compact: true,
+          className: "btn btn-primary",
+          data: { openMapLayer: "map-participant-dialog" }
+        }]
+      })}
       ${participantTable()}`;
   }
 
   function participantTable() {
     if (participantError) {
-      return `<div class="workspace-data-state maps-license-empty is-compact" role="alert">
-        <i data-lucide="wifi-off"></i><strong>No pudimos cargar los participantes.</strong>
-        <span>${escapeHtml(participantError)}</span>
-        <button class="btn btn-ghost btn-compact" type="button" data-load-participants="${escapeHtml(selectedCohortId)}">Reintentar</button>
-      </div>`;
+      return ui.dataState({
+        className: "maps-license-empty is-compact",
+        tone: "error",
+        icon: "wifi-off",
+        title: "No pudimos cargar los participantes.",
+        description: participantError,
+        action: {
+          label: "Reintentar",
+          compact: true,
+          className: "btn btn-ghost",
+          data: { loadParticipants: selectedCohortId }
+        }
+      });
     }
     if (!participants.length) {
       return ui.emptyState({
@@ -595,10 +635,13 @@
     const panel = root.querySelector('[data-map-panel="permissions"]');
     if (!panel) return;
     panel.innerHTML = `<article class="maps-license-card">
-      <div class="maps-license-section-head">
-        <div><span class="workspace-eyebrow">Autorización interna</span><h2>Acceso efectivo de plataforma</h2><p>Los roles MAP se sincronizan desde el rol base y los roles internos del perfil.</p></div>
-        <a class="btn btn-ghost" href="#usuarios">Editar perfiles</a>
-      </div>
+      ${ui.sectionHeader({
+        className: "maps-license-section-head",
+        eyebrow: "Autorización interna",
+        title: "Acceso efectivo de plataforma",
+        description: "Los roles MAP se sincronizan desde el rol base y los roles internos del perfil.",
+        actions: [{ label: "Editar perfiles", href: "#usuarios", className: "btn btn-ghost" }]
+      })}
       ${accessUsers.length ? `<div class="maps-license-table-wrap"><table class="maps-license-table">
         <thead><tr><th>Usuario</th><th>Perfil</th><th>Roles MAP</th><th>Permisos efectivos</th></tr></thead>
         <tbody>${accessUsers.map(item => `<tr>
@@ -627,7 +670,11 @@
         ${metric("Licencias por vencer", overview.expiring_licenses, "próximos 30 días")}
       </section>
       <article class="maps-license-card">
-        <div class="maps-license-section-head"><div><span class="workspace-eyebrow">Procedencia</span><h2>Origen de licencias</h2></div></div>
+        ${ui.sectionHeader({
+          className: "maps-license-section-head",
+          eyebrow: "Procedencia",
+          title: "Origen de licencias"
+        })}
         ${Object.keys(sourceCounts).length ? `<div class="maps-license-table-wrap"><table class="maps-license-table">
           <thead><tr><th>Origen</th><th>Licencias</th></tr></thead>
           <tbody>${Object.entries(sourceCounts).map(([source, count]) => `<tr><td>${escapeHtml(source)}</td><td>${count}</td></tr>`).join("")}</tbody>
@@ -804,7 +851,14 @@
   }
 
   function closeLayerButton(label) {
-    return `<button class="workspace-layer-close" type="button" data-close-map-layer aria-label="${escapeHtml(label)}"><i data-lucide="x"></i></button>`;
+    return ui.action({
+      label,
+      ariaLabel: label,
+      icon: "x",
+      iconOnly: true,
+      className: "workspace-layer-close",
+      data: { closeMapLayer: true }
+    });
   }
 
   function filterOption(value, label, selected) {

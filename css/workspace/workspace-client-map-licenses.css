@@ -47,10 +47,7 @@
 .client-license-tag.active { color: var(--success); background: color-mix(in srgb, var(--success) 12%, var(--surface-solid)); }
 .client-license-tag.expiring { color: var(--warning); background: color-mix(in srgb, var(--warning) 13%, var(--surface-solid)); }
 .client-license-tag.expired, .client-license-tag.revoked, .client-license-tag.suspended { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid)); }
-.client-license-seat-bar { height: 7px; overflow: hidden; border-radius: 999px; background: var(--surface-muted); }
-.client-license-seat-bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
-.client-license-seat-bar.is-near-capacity span { background: var(--warning); }
-.client-license-seat-bar.is-full span { background: var(--danger); }
+.client-license-seat-bar { height: 7px; }
 .client-license-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
 .client-license-details dt { color: var(--muted); font-size: .76rem; }
 .client-license-details dd { margin: 3px 0 0; font-weight: 750; overflow-wrap: anywhere; }

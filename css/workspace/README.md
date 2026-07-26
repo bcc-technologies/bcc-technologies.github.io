@@ -1,21 +1,34 @@
-# Workspace CSS modules
+# Workspace visual architecture
 
-`css/pages/dashboard.css` is the ordered manifest for dashboard styles. Keep new dashboard styles in this directory by responsibility:
+Dashboard styles use an explicit cascade and page-specific entrypoints:
 
-- `workspace-core.css`: shared layout primitives, shell tokens, filters, tables and activity feeds.
-- `workspace-shell.css`: structural dashboard shell layout and desktop/mobile placement.
-- `workspace-shell-experience.css`: shell interaction states such as mobile scroll locking, auxiliary footer disclosure and collapse affordances.
-- `workspace-sidebar.css`: the sole owner of navigation geometry, hierarchy, row alignment, active states and collapsed navigation visuals.
-- `workspace-intelligence-analytics.css`: analytics and intelligence views.
-- `workspace-components.css`: shared surfaces, intros, actions, metrics, priority cards, status lists and resource rows. It also owns shared data states, metrics, status badges and confirmation dialogs.
-- `workspace-account.css`: account, profile, email and security surfaces.
-- `workspace-access.css`: admin access drawer, preview and confirmation surfaces.
-- `workspace-prospects.css`: prospect CRM pipeline, forms, emails and timeline.
-- `workspace-productivity.css`: tasks, boards and KPI reporting.
-- `workspace-calendar.css`: operational calendar derived from workspace tasks.
-- `workspace-forms.css`: form builder and response inbox.
-- `workspace-customer.css`: customer dashboard skin. Use workspace variables; do not restyle shell chrome.
-- `workspace-internal.css`: staff/admin dashboard skin. Use workspace variables; do not restyle shell chrome.
-- `workspace-roles.css`: admin role and permission management.
+- `css/pages/dashboard-client.css`: foundations, shared shell, client skin and navigation.
+- `css/pages/dashboard-staff.css`: foundations, shared shell, staff skin and navigation.
+- `css/pages/maps-developer.css`: standalone developer-access page; it does not load the dashboard bundle.
+- `css/workspace/features/*.css`: small manifests loaded on first activation by the feature registry.
 
-Navigation invariants: sidebar rows span the available width, hierarchy only indents row content, labels are explicitly left aligned, and tree guides are positioned independently from buttons.
+## Cascade contract
+
+Both dashboard entrypoints declare the same ordered layers:
+
+1. `bcc.tokens`, `bcc.base`, `bcc.layout`, `bcc.components`
+2. `workspace.core`, `workspace.shell`, `workspace.primitives`, `workspace.account`
+3. `workspace.skin`
+4. `workspace.features`
+5. `workspace.navigation`
+6. `workspace.experience`
+
+Do not rely on HTML link order or unlayered overrides. Feature manifests must import their domain stylesheet with `layer(workspace.features)`. Shared shell styles never import feature CSS.
+
+## Ownership
+
+- `workspace-core.css`: fallback workspace geometry, shared filters, tables and activity feeds.
+- `workspace-shell.css`: page grid, header/content placement, desktop/mobile shell and collapsed shell state.
+- `workspace-components.css`: public manifest for `primitives/{icons,content,states,interactions,layers,compositions}.css`; consumers depend on the manifest, not internal files.
+- `workspace-account.css`: exclusive owner of account layout, profile, email, security and account-menu controls.
+- `workspace-sidebar.css`: final navigation geometry, hierarchy, row alignment, help surface and collapsed navigation visuals.
+- `workspace-shell-experience.css`: interaction-only states such as mobile scroll locking, disclosure and collapse affordances.
+- `workspace-customer.css` and `workspace-internal.css`: page skins. They may set workspace variables but must not own shell geometry.
+- Domain files such as `workspace-prospects.css`, `workspace-productivity.css` and `workspace-maps-licensing.css`: feature-only visuals loaded through `css/workspace/features/`.
+
+Navigation invariants: rows span the rail, hierarchy only indents content, labels remain left aligned, and tree guides are independent from button geometry.

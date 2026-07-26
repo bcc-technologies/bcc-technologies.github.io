@@ -1,11 +1,5 @@
 /* Interaction states shared by the workspace shell.
    Visual navigation geometry remains owned by workspace-sidebar.css. */
-.workspace-help{
-  margin-top: auto;
-  padding: 0;
-  overflow: hidden;
-}
-
 .workspace-help-trigger{
   width: 100%;
   min-height: 38px;
