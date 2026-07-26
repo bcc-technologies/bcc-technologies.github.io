@@ -28,20 +28,30 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.match(repository, /rpc\("get_my_license_dashboard"\)/);
   assert.match(repository, /rpc\("get_my_platform_access"\)/);
   assert.match(repository, /rpc\("get_my_internal_entitlements"\)/);
+  assert.match(repository, /rpc\("get_current_map_trial_offer"\)/);
   assert.match(source, /Licencia MAP Staff/);
   assert.match(source, /Beneficio exclusivo del staff/);
   assert.match(source, /function renderSuite/);
   assert.match(source, /function renderSuiteProduct/);
   assert.match(source, /title: "Tu suite MAP"/);
-  assert.match(source, /Solicitar licencia/);
+  assert.match(source, /type\.ctaLabel/);
   assert.match(source, /function renderInternalAccess/);
-  assert.match(source, /function renderAdditionalAccesses/);
+  assert.match(source, /function renderProductTab/);
+  assert.match(source, /function renderLicenseOfferCard/);
+  assert.match(source, /Probar gratis \$\{trialDays\} días/);
+  assert.match(source, /Early access · luego \$\{trialOffer\.standard_days\} días/);
+  assert.match(source, /name="trial_policy"/);
+  assert.match(source, /name="trial_days"/);
   assert.match(source, /function renderSeatManagementLayer/);
   assert.match(source, /function renderCommercialRequestLayer/);
   assert.match(source, /data-client-license-manage/);
   assert.match(source, /data-client-license-request/);
-  assert.match(source, /productLicenses\.find\(item => item\.canManage\)/);
-  assert.match(source, /refreshSeatManagementLayer\(\{ focusSelect: true \}\)/);
+  assert.match(source, /role="tablist"/);
+  assert.match(source, /role="tab"/);
+  assert.match(source, /role="tabpanel"/);
+  assert.match(source, /function handleKeydown/);
+  assert.match(source, /"ArrowLeft", "ArrowRight", "Home", "End"/);
+  assert.match(source, /refreshSeatManagementLayer/);
   assert.doesNotMatch(source, /href: "#gestion-plazas"/);
   assert.doesNotMatch(source, /function renderSeatManagement\(\)/);
   assert.match(source, /contracts\.PRODUCT_CATALOG/);
@@ -97,6 +107,8 @@ test("MAP commercial requests preserve product context across dashboard and cont
   assert.match(source, /name="product_key"/);
   assert.match(source, /name="seats"/);
   assert.match(source, /name="deployment"/);
+  assert.match(source, /name="license_type"/);
+  assert.match(source, /data: \{ clientLicenseRequest: key, clientLicenseType: type\.key \}/);
   assert.match(source, /new FormData\(form\)/);
   assert.match(contactContext, /new URLSearchParams\(window\.location\.search\)/);
   assert.match(contactContext, /params\.get\("product"\)/);
@@ -106,4 +118,31 @@ test("MAP commercial requests preserve product context across dashboard and cont
   assert.match(englishContact, /\/js\/contact-context\.js/);
   assert.doesNotMatch(spanishContact, /<\/script>\\n\s*<script/);
   assert.doesNotMatch(englishContact, /<\/script>\\n\s*<script/);
+});
+
+
+test("MAP trial policy keeps seven-day standard and fourteen-day early access server-side", async () => {
+  const [sql, staffSource, repository] = await Promise.all([
+    read("supabase/migrations/20260726050000_map_trial_policy.sql"),
+    read("js/workspace/maps-licensing.js"),
+    read("js/workspace/map-repository.js")
+  ]);
+
+  assert.match(sql, /'standard', 'Prueba gratuita', 7, false, true, 0/);
+  assert.match(sql, /'early_access', 'Early access', 14, true, true, 100/);
+  assert.match(sql, /enable row level security/);
+  assert.match(sql, /force row level security/);
+  assert.match(sql, /touch_map_trial_policy_updated_at/);
+  assert.doesNotMatch(sql, /\nas \$\r?\n|\n\$;\r?\n/);
+  assert.match(sql, /to anon, authenticated[\s\S]*using \(is_active\)/);
+  assert.match(sql, /private\.current_map_trial_offer/);
+  assert.match(sql, /sync_map_trial_plan_duration/);
+  assert.match(sql, /license_type\.is_evaluation/);
+  assert.match(sql, /public\.get_current_map_trial_offer/);
+  assert.match(sql, /security invoker[\s\S]*as \$\$[\s\S]*from public\.map_trial_policies[\s\S]*\$\$/);
+  assert.match(sql, /revoke all on function public\.get_current_map_trial_offer\(\) from public/);
+  assert.match(repository, /error\?\.code === "invalid_response"/);
+  assert.match(repository, /TRIAL_OFFER_FALLBACK/);
+  assert.match(staffSource, /trialOffer\.duration_days \* 86400000/);
+  assert.doesNotMatch(staffSource, /30 \* 86400000/);
 });

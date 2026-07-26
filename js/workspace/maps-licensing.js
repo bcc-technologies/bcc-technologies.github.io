@@ -18,6 +18,7 @@
   let users = [];
   let accessUsers = [];
   let cohorts = [];
+  let trialOffer = contracts.TRIAL_OFFER_FALLBACK;
   let participants = [];
   let participantError = "";
   let selectedLicenseId = "";
@@ -152,6 +153,7 @@
       plans = dashboard?.plans || [];
       users = dashboard?.users || [];
       cohorts = dashboard?.cohorts || [];
+      trialOffer = contracts.normalizeTrialOffer(dashboard?.trialOffer);
       accessUsers = dashboard?.access_users || [];
       preserveSelections();
       if (selectedCohortId) {
@@ -593,7 +595,7 @@
       </dialog>
       <dialog id="map-cohort-dialog" class="workspace-layer is-modal">
         <form class="workspace-layer-panel maps-license-form" data-create-cohort>
-          <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Acceso temporal</span><h2>Nueva cohorte</h2><p>Define alcance y vigencia antes de invitar participantes.</p></div>${closeLayerButton("Cerrar formulario")}</header>
+          <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Acceso temporal</span><h2>Nueva cohorte</h2><p>La política vigente ofrece ${trialOffer.duration_days} días (${escapeHtml(trialOffer.display_name)}).</p></div>${closeLayerButton("Cerrar formulario")}</header>
           <div class="workspace-layer-body">${cohortFields()}</div>
           <footer class="workspace-layer-actions"><button class="btn btn-ghost" type="button" data-close-map-layer>Cancelar</button><button class="btn btn-primary" type="submit" data-map-control>Crear cohorte</button></footer>
         </form>
@@ -619,7 +621,7 @@
       <label>Propósito<textarea name="purpose" maxlength="2000" rows="3"></textarea></label>
       <div class="maps-license-form-row">
         <label>Inicio<input name="startsAt" type="datetime-local" value="${localDateValue(new Date())}" required></label>
-        <label>Fin<input name="endsAt" type="datetime-local" value="${localDateValue(new Date(Date.now() + 30 * 86400000))}" required></label>
+        <label>Fin<input name="endsAt" type="datetime-local" value="${localDateValue(new Date(Date.now() + trialOffer.duration_days * 86400000))}" required></label>
       </div>`;
   }
 

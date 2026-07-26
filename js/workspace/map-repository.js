@@ -14,25 +14,41 @@
     }
   }
 
+  async function getTrialOffer() {
+    try {
+      return contracts.normalizeTrialOffer(await rpc("get_current_map_trial_offer"));
+    } catch (error) {
+      if (error?.code === "invalid_response" || /get_current_map_trial_offer|schema cache|function/i.test(error?.message || "")) {
+        return contracts.TRIAL_OFFER_FALLBACK;
+      }
+      throw error;
+    }
+  }
+
   async function getClientDashboard() {
-    const [dashboard, access, entitlements] = await Promise.all([
+    const [dashboard, access, entitlements, trialOffer] = await Promise.all([
       rpc("get_my_license_dashboard"),
       rpc("get_my_platform_access"),
-      rpc("get_my_internal_entitlements")
+      rpc("get_my_internal_entitlements"),
+      getTrialOffer()
     ]);
     return {
       dashboard: contracts.normalizeClientDashboard(dashboard),
       platformAccess: contracts.normalizePlatformAccess(access),
-      entitlements: contracts.normalizeEntitlements(entitlements)
+      entitlements: contracts.normalizeEntitlements(entitlements),
+      trialOffer
     };
   }
 
   async function getAdminDashboard(options = {}) {
-    const payload = await rpc("get_my_platform_admin_dashboard", {
-      p_include_evaluations: Boolean(options.includeEvaluations),
-      p_include_access: Boolean(options.includeAccess)
-    });
-    return contracts.normalizeAdminDashboard(payload);
+    const [payload, trialOffer] = await Promise.all([
+      rpc("get_my_platform_admin_dashboard", {
+        p_include_evaluations: Boolean(options.includeEvaluations),
+        p_include_access: Boolean(options.includeAccess)
+      }),
+      getTrialOffer()
+    ]);
+    return { ...contracts.normalizeAdminDashboard(payload), trialOffer };
   }
 
   const client = Object.freeze({
