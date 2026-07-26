@@ -29,5 +29,8 @@ jobs:
       - name: Check generated products pages
         run: npm run check:products
 
+      - name: Check runtime integrity
+        run: npm run check:runtime
+
       - name: Run stable test suite
         run: npm run test:ci

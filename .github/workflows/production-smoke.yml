@@ -1,0 +1,30 @@
+name: Production smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify published dashboard
+        env:
+          BCC_SMOKE_BASE_URL: https://bcctechnologies.com.do
+          BCC_SUPABASE_URL: ${{ secrets.BCC_SUPABASE_URL }}
+          BCC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.BCC_SUPABASE_PUBLISHABLE_KEY }}
+          BCC_SMOKE_EMAIL: ${{ secrets.BCC_SMOKE_EMAIL }}
+          BCC_SMOKE_PASSWORD: ${{ secrets.BCC_SMOKE_PASSWORD }}
+        run: node scripts/smoke-production-dashboard.mjs

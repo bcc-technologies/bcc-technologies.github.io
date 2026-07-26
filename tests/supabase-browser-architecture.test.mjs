@@ -49,6 +49,22 @@ test("browser Supabase factory creates exactly one shared client", async () => {
   assert.equal(window.BCCSupabaseClient, client);
 });
 
+test("Supabase runtime separates production from local fallback and classifies failures", () => {
+  const window = { location: { hostname: "bcctechnologies.com.do" } };
+  const context = vm.createContext({ window, document: {} });
+  vm.runInContext(read("js/supabase-config.js"), context, { filename: "supabase-config.js" });
+
+  assert.equal(window.BCC_RUNTIME.isLocal, false);
+  assert.equal(window.BCC_RUNTIME.allowLocalAccountFallback, false);
+  assert.equal(window.BCCSupabaseErrors.classify({ status: 401 }), "auth_invalid_credentials");
+  assert.equal(window.BCCSupabaseErrors.classify({ code: "42501" }), "permission_denied");
+  assert.equal(window.BCCSupabaseErrors.classify({ code: "PGRST204" }), "schema_mismatch");
+
+  const localWindow = { location: { hostname: "127.0.0.1" } };
+  vm.runInContext(read("js/supabase-config.js"), vm.createContext({ window: localWindow, document: {} }));
+  assert.equal(localWindow.BCC_RUNTIME.allowLocalAccountFallback, true);
+});
+
 test("license UI and shared MAP contracts use separate namespaces", () => {
   const window = { BCCWorkspaceUtils: { escapeHtml: String } };
   const context = vm.createContext({ window, navigator: {}, document: {} });

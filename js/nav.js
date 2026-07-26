@@ -1580,35 +1580,23 @@
   }
 
   async function currentSupabaseUserForNav() {
-    const config = window.BCC_SUPABASE || {
-      url: 'https://bglkyqiqzrcwegpjrucc.supabase.co',
-      anonKey: 'sb_publishable_X_3U_TNtC9BuVwc-vMCsug_GVFmI5cQ'
-    };
-
-    const sharedClient = window.BCCSupabase?.getClient ? await window.BCCSupabase.getClient() : null;
-
-    if (!sharedClient && !window.supabase?.createClient) {
+    if (!window.BCCSupabase?.getClient) {
       await new Promise((resolve, reject) => {
-        const existing = document.querySelector('script[data-supabase-js], script[data-bcc-supabase-js="true"]');
+        const existing = document.querySelector('script[src="/js/supabase-config.js"], script[src="js/supabase-config.js"]');
         if (existing) {
-          existing.addEventListener('load', resolve, { once: true });
-          existing.addEventListener('error', reject, { once: true });
+          existing.addEventListener("load", resolve, { once: true });
+          existing.addEventListener("error", reject, { once: true });
           return;
         }
-        const script = document.createElement('script');
-        script.dataset.supabaseJs = 'true';
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
+        const script = document.createElement("script");
+        script.src = "/js/supabase-config.js";
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
       });
     }
-
-    const client = sharedClient || window.BCCSupabaseClient || window.BCCAnalyticsSupabaseClient || window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
-    window.BCCSupabaseClient = window.BCCSupabaseClient || client;
-    window.BCCNavSupabaseClient = client;
+    if (!window.BCCSupabase?.getClient) return null;
+    const client = await window.BCCSupabase.getClient();
 
     const { data: sessionData } = await client.auth.getSession();
     const sessionUser = sessionData?.session?.user;
@@ -1658,12 +1646,8 @@
 
     menu.querySelector('[data-public-logout]')?.addEventListener('click', async () => {
       try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: '{}'
-        });
+        const client = await window.BCCSupabase?.getClient?.();
+        await client?.auth?.signOut?.();
       } catch (_e) {}
       window.location.assign('/login.html');
     });

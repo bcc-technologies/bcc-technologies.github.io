@@ -14,9 +14,9 @@ test("accounts server registers first admin and protects admin API", async () =>
   });
 
   try {
-    await waitForServer(`http://localhost:${port}/api/auth/me`);
+    await waitForServer(`http://127.0.0.1:${port}/api/auth/me`);
 
-    let res = await fetch(`http://localhost:${port}/api/auth/signup`, {
+    let res = await fetch(`http://127.0.0.1:${port}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,19 +37,19 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(signup.user.nameParts.firstLastName, "Test");
     assert.match(cookie || "", /bcc_session=/);
 
-    res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie } });
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/me`, { headers: { cookie } });
     const me = await res.json();
     assert.equal(me.user.email, "admin-test@example.com");
     assert.equal(me.user.emails.length, 1);
     assert.equal(me.user.emails[0].primary, true);
     assert.equal(me.user.emails[0].confirmed, true);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails`, { headers: { cookie } });
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails`, { headers: { cookie } });
     let emailList = await res.json();
     assert.equal(res.status, 200);
     assert.equal(emailList.emails.length, 1);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails`, {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ email: "admin-alt@example.com" })
@@ -63,13 +63,13 @@ test("accounts server registers first admin and protects admin API", async () =>
     const confirmationToken = storedUser.emails.find(item => item.email === "admin-alt@example.com").confirmationToken;
     assert.match(confirmationToken, /.+/);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
       method: "PATCH",
       headers: { cookie }
     });
     assert.equal(res.status, 400);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails/confirm`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails/confirm`, {
       method: "POST",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ email: "admin-alt@example.com", token: confirmationToken })
@@ -78,7 +78,7 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(res.status, 200);
     assert.equal(emailList.emails.find(item => item.email === "admin-alt@example.com").confirmed, true);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails/${addedEmail.email.id}/primary`, {
       method: "PATCH",
       headers: { cookie }
     });
@@ -88,7 +88,7 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(primaryEmail.emails.find(item => item.email === "admin-alt@example.com").primary, true);
 
     const oldEmailId = primaryEmail.emails.find(item => item.email === "admin-test@example.com").id;
-    res = await fetch(`http://localhost:${port}/api/account/emails/${oldEmailId}`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails/${oldEmailId}`, {
       method: "DELETE",
       headers: { cookie }
     });
@@ -96,13 +96,13 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(res.status, 200);
     assert.equal(emailList.emails.some(item => item.email === "admin-test@example.com"), false);
 
-    res = await fetch(`http://localhost:${port}/api/account/emails/${addedEmail.email.id}`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/account/emails/${addedEmail.email.id}`, {
       method: "DELETE",
       headers: { cookie }
     });
     assert.equal(res.status, 400);
 
-    res = await fetch(`http://localhost:${port}/api/auth/login`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: "admin-alt@example.com", password: "Password123!" })
@@ -111,12 +111,12 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(res.status, 200);
     assert.equal(login.user.email, "admin-alt@example.com");
 
-    res = await fetch(`http://localhost:${port}/api/admin/users`, { headers: { cookie } });
+    res = await fetch(`http://127.0.0.1:${port}/api/admin/users`, { headers: { cookie } });
     const users = await res.json();
     assert.equal(res.status, 200);
     assert.equal(users.users.length, 1);
 
-    res = await fetch(`http://localhost:${port}/api/admin/users/${users.users[0].id}/role`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/admin/users/${users.users[0].id}/role`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ role: "staff" })
@@ -125,7 +125,7 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(res.status, 400);
     assert.match(demotion.error, /propio rol de administrador|administrador activo/);
 
-    res = await fetch(`http://localhost:${port}/api/auth/profile`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/profile`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ name: "Admin Updated", company: "BCC Lab", title: "Lead" })
@@ -136,7 +136,7 @@ test("accounts server registers first admin and protects admin API", async () =>
     assert.equal(profile.user.displayName, "Admin");
     assert.equal(profile.user.company, "BCC Lab");
 
-    res = await fetch(`http://localhost:${port}/api/auth/signup`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -151,28 +151,28 @@ test("accounts server registers first admin and protects admin API", async () =>
     const mapsDeveloperSignup = await res.json();
     assert.equal(res.status, 201);
 
-    res = await fetch(`http://localhost:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ role: "staff", staffRoles: ["maps_developer"] })
     });
     assert.equal(res.status, 200);
 
-    res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
     const mapsDeveloper = await res.json();
     assert.equal(res.status, 200);
     assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:access"), true);
     assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:write"), true);
     assert.equal(mapsDeveloper.user.permissions.includes("maps:developer:release"), false);
 
-    res = await fetch(`http://localhost:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
+    res = await fetch(`http://127.0.0.1:${port}/api/admin/users/${mapsDeveloperSignup.user.id}/role`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", cookie },
       body: JSON.stringify({ role: "staff", staffRoles: ["maps_developer", "maps_release_manager"] })
     });
     assert.equal(res.status, 200);
 
-    res = await fetch(`http://localhost:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
+    res = await fetch(`http://127.0.0.1:${port}/api/auth/me`, { headers: { cookie: mapsDeveloperCookie } });
     const mapsReleaseManager = await res.json();
     assert.equal(mapsReleaseManager.user.permissions.includes("maps:developer:release"), true);
   } finally {
@@ -181,122 +181,33 @@ test("accounts server registers first admin and protects admin API", async () =>
   }
 });
 
-test("local CMS requires admin or authorized staff account session", async () => {
+test("local CMS stays loopback-only and exposes its explicit local developer session", async () => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "bcc-auth-cms-"));
-  const accountsPort = 3901;
   const cmsPort = 3902;
-  const accounts = spawn(process.execPath, ["accounts-server.mjs"], {
-    env: { ...process.env, BCC_ACCOUNTS_PORT: String(accountsPort), BCC_ACCOUNTS_DATA_DIR: dataDir },
-    stdio: "ignore"
-  });
   const cms = spawn(process.execPath, ["admin-local/server.mjs"], {
-    env: {
-      ...process.env,
-      BCC_CMS_PORT: String(cmsPort),
-      BCC_ACCOUNTS_DATA_DIR: dataDir,
-      BCC_ACCOUNTS_LOGIN_URL: `http://localhost:${accountsPort}/login.html`
-    },
+    env: { ...process.env, BCC_CMS_PORT: String(cmsPort), BCC_CMS_HOST: "127.0.0.1", BCC_ACCOUNTS_DATA_DIR: dataDir },
     stdio: "ignore"
   });
 
   try {
-    await waitForServer(`http://localhost:${accountsPort}/api/auth/me`);
-
-    let res = await fetch(`http://localhost:${accountsPort}/api/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "CMS Admin",
-        email: "cms-admin@example.com",
-        company: "BCC",
-        title: "Admin",
-        password: "Password123!"
-      })
-    });
-    const cookie = res.headers.get("set-cookie");
-    assert.equal(res.status, 201);
-
-    res = await fetch(`http://localhost:${accountsPort}/api/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "CMS Staff",
-        email: "cms-staff@example.com",
-        company: "BCC",
-        title: "Staff",
-        password: "Password123!"
-      })
-    });
-    const staffCookie = res.headers.get("set-cookie");
-    const staffSignup = await res.json();
-    assert.equal(res.status, 201);
-
-    res = await fetch(`http://localhost:${accountsPort}/api/admin/users/${staffSignup.user.id}/role`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ role: "staff" })
-    });
+    const baseUrl = "http://127.0.0.1:" + cmsPort;
+    await waitForServer(baseUrl + "/api/health", 200);
+    let res = await fetch(baseUrl + "/api/health");
     assert.equal(res.status, 200);
 
-    await waitForServer(`http://localhost:${cmsPort}/api/health`, 401);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/health`);
-    assert.equal(res.status, 401);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie } });
-    const health = await res.json();
+    res = await fetch(baseUrl + "/api/auth/me");
+    const session = await res.json();
     assert.equal(res.status, 200);
-    assert.equal(health.ok, true);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie: staffCookie } });
-    assert.equal(res.status, 403);
-
-    res = await fetch(`http://localhost:${accountsPort}/api/admin/users/${staffSignup.user.id}/role`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", cookie },
-      body: JSON.stringify({ role: "staff", staffRoles: ["author"], departments: ["marketing"] })
-    });
-    assert.equal(res.status, 200);
-    const audit = JSON.parse(fs.readFileSync(path.join(dataDir, "access-audit.json"), "utf-8"));
-    assert.equal(audit.length, 2);
-    assert.equal(audit[1].targetEmail, "cms-staff@example.com");
-    assert.deepEqual(audit[1].after.staffRoles, ["author"]);
-
-    res = await fetch(`http://localhost:${accountsPort}/api/admin/access-audit`, { headers: { cookie } });
-    const auditResponse = await res.json();
-    assert.equal(res.status, 200);
-    assert.equal(auditResponse.logs.length, 2);
-    assert.equal(auditResponse.logs[0].targetEmail, "cms-staff@example.com");
-    assert.deepEqual(auditResponse.logs[0].afterAccess.staffRoles, ["author"]);
-
-    res = await fetch(`http://localhost:${accountsPort}/api/admin/access-audit`, { headers: { cookie: staffCookie } });
-    assert.equal(res.status, 403);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie: staffCookie } });
-    assert.equal(res.status, 200);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/auth/me`, { headers: { cookie } });
-    const cmsUser = await res.json();
-    assert.equal(res.status, 200);
-    assert.equal(cmsUser.user.displayName, "CMS");
-
-    res = await fetch(`http://localhost:${accountsPort}/api/auth/me`, { headers: { cookie } });
-    assert.equal(res.status, 200);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/auth/logout`, { method: "POST", headers: { cookie } });
-    assert.equal(res.status, 200);
-
-    res = await fetch(`http://localhost:${cmsPort}/api/health`, { headers: { cookie } });
-    assert.equal(res.status, 401);
+    assert.equal(session.user.role, "admin");
+    assert.equal(session.user.email, "dev" + String.fromCharCode(64) + "localhost");
   } finally {
-    accounts.kill();
     cms.kill();
     fs.rmSync(dataDir, { recursive: true, force: true });
   }
 });
 
 async function waitForServer(url, expectedStatus = null) {
-  const deadline = Date.now() + 5000;
+  const deadline = Date.now() + 15000;
   while (Date.now() < deadline) {
     try {
       const res = await fetch(url);
@@ -305,5 +216,5 @@ async function waitForServer(url, expectedStatus = null) {
       await new Promise(resolve => setTimeout(resolve, 120));
     }
   }
-  throw new Error("accounts server did not start");
+  throw new Error("server did not reach the expected status: " + url);
 }

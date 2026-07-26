@@ -100,6 +100,15 @@ async function loadWorkspaceModule() {
       location: { origin: "https://example.com" },
       setTimeout,
       clearTimeout,
+      BCCWorkspaceUtils: {
+        escapeHtml: String,
+        escapeAttr: String,
+        formatDate: String,
+        formatDateTime: String,
+        refreshIcons() {},
+        renderMessageBlock(target, text, tone) { target.textContent = String(text || ""); target.dataset.tone = tone; },
+        async withTimeout(promise) { return promise; }
+      },
       BCCAuth: {
         async api() {
           return {

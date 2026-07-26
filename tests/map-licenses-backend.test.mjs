@@ -40,7 +40,7 @@ test("local license store validates, persists, and audits status changes", t => 
   assert.equal(createMapLicenseStore({ filePath }).list()[0].status, "suspended");
 });
 
-test("browser and local server expose the same protected license contract", () => {
+test("legacy license stores remain compatible while navigation uses the canonical platform route", () => {
   const browserApi = readSource("../js/auth-map-licenses-api.js");
   const server = readSource("../accounts-server.mjs");
   const auth = readSource("../js/auth.js");
@@ -53,7 +53,9 @@ test("browser and local server expose the same protected license contract", () =
   for (const permission of ["licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]) {
     assert.match(auth, new RegExp(permission));
   }
-  assert.match(navigation, /id: "licenses".+permission: "licenses:view"/s);
+  assert.match(navigation, /id: "map-platform".+permission: "platform\.licenses\.read"/s);
+  assert.match(navigation, /"licencias-maps": "maps-licensing"/);
+  assert.match(auth, /permissions\.has\("licenses:view"\)\) permissions\.add\("platform\.licenses\.read"/);
   assert.match(navigation, /href: "#usuarios".+permission: "admin:view"/);
 });
 

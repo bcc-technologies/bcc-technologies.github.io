@@ -4,7 +4,6 @@ let staffWorkspaceRouter = null;
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
   "product-intelligence": "analytics",
-  "licencias-maps": "licencias-maps",
   "maps-licensing": "maps-licensing",
   "dominican-intelligence": "dominican-intelligence",
   "crm-correos": "prospectos"

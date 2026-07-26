@@ -257,6 +257,7 @@ function loadAuthHarness(role = "admin") {
         assign() {}
       },
       history: { replaceState() {} },
+      BCCSupabase: { async getClient() { return supabaseClient; } },
       BCC_SUPABASE: {
         url: "https://example.supabase.co",
         anonKey: "anon-key"

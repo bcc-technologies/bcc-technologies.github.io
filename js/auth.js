@@ -137,6 +137,8 @@ function permissionsForProfile(role, staffRoles = [], departments = [], customRo
     DEPARTMENTS.forEach(department => (DEPARTMENT_PERMISSIONS[department] || []).forEach(permission => permissions.add(permission)));
   }
   if (permissions.has("licenses:manage") || permissions.has("licenses:assign")) permissions.add("licenses:view");
+  if (permissions.has("licenses:view")) permissions.add("platform.licenses.read");
+  if (permissions.has("licenses:manage") || permissions.has("licenses:assign")) permissions.add("platform.licenses.manage");
   return [...permissions];
 }
 
@@ -250,41 +252,13 @@ function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
 
 async function loadSupabaseClient() {
   if (window.BCCSupabase?.getClient) return window.BCCSupabase.getClient();
-  if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
-  if (!window.BCC_SUPABASE) throw new Error("Falta configuración de Supabase.");
-  if (!window.supabase?.createClient) {
-    await new Promise((resolve, reject) => {
-      const existing = document.querySelector("script[data-bcc-supabase-js=\"true\"], script[data-supabase-js]");
-      if (existing) {
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", () => reject(new Error("No se pudo cargar Supabase.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8";
-      script.dataset.bccSupabaseJs = "true";
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("No se pudo cargar Supabase."));
-      document.head.appendChild(script);
-    });
-  }
-
-  window.BCCSupabaseClient = window.supabase.createClient(
-    window.BCC_SUPABASE.url,
-    window.BCC_SUPABASE.anonKey,
-    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
-  );
-  return window.BCCSupabaseClient;
+  throw new Error("No se cargó el proveedor central de Supabase.");
 }
 
 function reportSupabaseError(context, error) {
-  const code = String(error?.code || error?.name || "supabase_error");
-  if (code === "AuthSessionMissingError") return;
-  console.warn(`[Supabase] ${context}`, {
-    code,
-    status: error?.status || null,
-    message: error?.message || String(error || "Error desconocido")
-  });
+  if (window.BCCSupabaseErrors?.report) return window.BCCSupabaseErrors.report(context, error);
+  console.warn("[Supabase] " + context, { code: String(error?.code || error?.name || "supabase_error") });
+  return null;
 }
 
 async function clearInvalidSupabaseSession(supabase, error) {
@@ -478,7 +452,7 @@ async function currentUser() {
       if (supabase) await clearInvalidSupabaseSession(supabase, error);
     }
 
-    try {
+    if (window.BCC_RUNTIME?.allowLocalAccountFallback) try {
       const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
       if (!res.ok) return null;
       const payload = await res.json().catch(() => null);
@@ -2526,7 +2500,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
         } catch (supabaseError) {
-          reportSupabaseError("Falló el inicio de sesión; se intentará el servidor local.", supabaseError);
+          const normalized = reportSupabaseError("Falló el inicio de sesión.", supabaseError);
+          if (!window.BCC_RUNTIME?.allowLocalAccountFallback) {
+            throw new Error(normalized?.userMessage || supabaseError?.message || "No fue posible iniciar sesión.");
+          }
         }
 
         const res = await fetch("/api/auth/login", {

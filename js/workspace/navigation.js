@@ -35,9 +35,6 @@
         { href: "#roles", label: "Roles y permisos", icon: "key-round", permission: "admin:view" },
         { href: "#auditoria", label: "Auditoría", icon: "history", permission: "admin:view" }
       ] },
-      { id: "licenses", label: "Licencias", permission: "licenses:view", items: [
-        { href: "#licencias-maps", label: "Licencias MAPs", icon: "key-round", permission: "licenses:view" }
-      ] },
       { id: "map-platform", label: "Plataforma MAP", permission: "platform.licenses.read", items: [
         { href: "#maps-licensing", label: "Licencias y acceso", icon: "map", permission: "platform.licenses.read" }
       ] },
@@ -80,7 +77,8 @@
         business: "product-intelligence",
         analytics: "product-intelligence",
         intelligence: "science-radar",
-        prospectos: "crm-correos"
+        prospectos: "crm-correos",
+        "licencias-maps": "maps-licensing"
       },
       panelAliases: {
         productividad: "tareas",

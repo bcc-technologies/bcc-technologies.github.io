@@ -17,8 +17,6 @@
   const RECONCILE_PREFIX = "bcc-analytics-reconciled:";
   let ticking = false;
   let supabaseConfigPromise = null;
-  let supabaseJsPromise = null;
-  let analyticsSupabaseClientPromise = null;
   let analyticsIdentityPromise = null;
   let analyticsAuthListenerBound = false;
 
@@ -175,28 +173,6 @@
     return supabaseConfigPromise;
   }
 
-  function loadSupabaseJs() {
-    if (window.BCCSupabase?.loadLibrary) return window.BCCSupabase.loadLibrary();
-    if (window.supabase?.createClient) return Promise.resolve(window.supabase);
-    if (supabaseJsPromise) return supabaseJsPromise;
-    supabaseJsPromise = new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[data-bcc-supabase-js="true"]');
-      if (existing) {
-        existing.addEventListener("load", () => resolve(window.supabase), { once: true });
-        existing.addEventListener("error", () => reject(new Error("No se pudo cargar Supabase JS.")), { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8";
-      script.async = true;
-      script.dataset.bccSupabaseJs = "true";
-      script.onload = () => resolve(window.supabase);
-      script.onerror = () => reject(new Error("No se pudo cargar Supabase JS."));
-      document.head.appendChild(script);
-    });
-    return supabaseJsPromise;
-  }
-
   async function loadAnalyticsSupabaseClient() {
     if (window.BCCAuth?.loadSupabaseClient) {
       return window.BCCAuth.loadSupabaseClient();
@@ -207,22 +183,7 @@
       window.BCCAnalyticsSupabaseClient = client;
       return client;
     }
-    if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
-    if (window.BCCAnalyticsSupabaseClient) return window.BCCAnalyticsSupabaseClient;
-    if (analyticsSupabaseClientPromise) return analyticsSupabaseClientPromise;
-    analyticsSupabaseClientPromise = Promise.all([loadSupabaseConfig(), loadSupabaseJs()]).then(([config]) => {
-      if (!config?.url || !config?.anonKey || !window.supabase?.createClient) {
-        throw new Error("No fue posible inicializar Supabase para analytics.");
-      }
-      window.BCCSupabaseClient = window.BCCSupabaseClient || window.supabase.createClient(
-        config.url,
-        config.anonKey,
-        { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
-      );
-      window.BCCAnalyticsSupabaseClient = window.BCCSupabaseClient;
-      return window.BCCAnalyticsSupabaseClient;
-    });
-    return analyticsSupabaseClientPromise;
+    throw new Error("No se cargó el proveedor central de Supabase para analytics.");
   }
 
   function bindAnalyticsAuthListener(supabase) {
