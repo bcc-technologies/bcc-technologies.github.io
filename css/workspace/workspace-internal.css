@@ -9,10 +9,6 @@
 .admin-workspace .workspace{
   --workspace-chrome-bg: var(--surface-solid);
   --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
-  --workspace-intro-min-height: 132px;
-  --workspace-intro-title-width: 760px;
-  --workspace-intro-title-size: clamp(1.85rem, 2.65vw, 2.4rem);
-  --workspace-intro-copy-width: 700px;
   --priority-card-border: color-mix(in srgb, var(--line) 84%, var(--surface-muted));
   --priority-card-hover-border: color-mix(in srgb, var(--accent) 26%, var(--line));
   --workspace-metrics-overflow: hidden;
@@ -259,29 +255,8 @@
   gap: 18px;
 }
 
-.staff-hub-hero{
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 24px;
-}
-
-.staff-hub-hero h2,
 .staff-hub-panel h2{
   margin: 0;
-}
-
-.staff-hub-hero h2{
-  font-size: clamp(1.45rem, 2.2vw, 1.9rem);
-  letter-spacing: 0;
-}
-
-.staff-hub-hero p{
-  max-width: 720px;
-  margin: 8px 0 0;
-  color: var(--ink-muted);
-  line-height: 1.55;
 }
 
 .staff-hub-grid{
@@ -422,15 +397,11 @@
   }
 
   .staff-workspace .dashboard-actions,
-  .staff-hub-hero,
   .admin-workspace .dashboard-actions{
     width: 100%;
     justify-content: flex-start;
   }
 
-  .staff-hub-hero{
-    flex-direction: column;
-  }
 
   .admin-action-list{
     grid-template-columns: 1fr;
@@ -450,10 +421,6 @@
     display: none;
   }
 
-  .staff-workspace .workspace-intro,
-  .admin-workspace .workspace-intro{
-    padding: 18px;
-  }
 
   .staff-work-tabs{
     display: grid;
@@ -469,7 +436,6 @@
   }
 
   .staff-workspace .dashboard-actions .btn,
-  .staff-hub-hero .status-pill,
   .admin-workspace .dashboard-actions .btn{
     width: 100%;
   }

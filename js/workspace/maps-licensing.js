@@ -62,13 +62,11 @@
     root.innerHTML = `
       <section class="maps-license-shell">
         ${ui.sectionHeader({
-          className: "module-surface maps-license-hero",
+          className: "workspace-page-header",
           actionsClassName: "maps-license-actions",
-          eyebrow: "MAP Platform",
           title: "Licencias y acceso",
           level: 1,
           description: "Administra el ciclo de acceso comercial y de evaluación sin mezclar permisos internos ni datos científicos.",
-          status: { label: "Datos en vivo", status: "success", icon: "database" },
           actions: [{
             label: "Actualizar",
             icon: "refresh-cw",

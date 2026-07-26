@@ -125,3 +125,29 @@ test("feature registry declares styles for every visual feature and static intel
   assert.match(registry, /id: "intelligence-static"[\s\S]+views:[\s\S]+business-radar[\s\S]+marketing-intelligence/);
   assert.match(registry, /loader\.register\(scripts, dependencies, styles\)/);
 });
+
+
+test("dashboard page headers stay semantic and unboxed", () => {
+  const clientHtml = read("dashboard.html");
+  const staffHtml = read("staff-dashboard.html");
+  const clientMaps = read("js/workspace/client-map-licenses.js");
+  const staffMaps = read("js/workspace/maps-licensing.js");
+  const compositions = read("css/workspace/primitives/compositions.css");
+  const legacyStyles = [
+    read("css/workspace/workspace-customer.css"),
+    read("css/workspace/workspace-internal.css"),
+    read("css/workspace/features/client-licenses.css"),
+    read("css/workspace/features/maps-licensing.css")
+  ].join("\n");
+
+  assert.match(compositions, /\.workspace-page-header\{/);
+  assert.match(compositions, /\.workspace-page-header[\s\S]+border-bottom: 1px solid var\(--line\)/);
+  assert.match(compositions, /@media \(max-width: 900px\)\{[\s\S]+\.workspace-page-header\{[\s\S]+flex-direction: column/);
+  assert.match(clientHtml, /<header class="workspace-page-header">/);
+  assert.match(staffHtml, /<header class="workspace-page-header">/);
+  assert.match(clientMaps, /className: "workspace-page-header"/);
+  assert.match(staffMaps, /className: "workspace-page-header"/);
+  assert.doesNotMatch(clientHtml + staffHtml, /module-surface[^"\n]*(?:hero|intro)/);
+  assert.doesNotMatch(clientMaps + staffMaps, /module-surface (?:client|maps)-license-hero/);
+  assert.doesNotMatch(legacyStyles, /\.(?:staff-hub-hero|customer-record-hero|client-license-hero|maps-license-hero)/);
+});

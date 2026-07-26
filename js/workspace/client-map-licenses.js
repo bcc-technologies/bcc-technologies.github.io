@@ -88,7 +88,7 @@
     root.innerHTML = `
       <section class="client-license-shell">
         ${ui.sectionHeader({
-          className: "module-surface client-license-hero",
+          className: "workspace-page-header",
           actionsClassName: "client-license-actions",
           title: "Licencias MAP",
           level: 1,

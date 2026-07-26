@@ -2,10 +2,6 @@
 @layer workspace.features {
 .client-license-shell { display: grid; gap: 18px; min-width: 0; }
 .client-license-shell > * { min-width: 0; }
-.client-license-hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
-.client-license-hero h1 { margin: 4px 0 8px; color: var(--ink); font-size: clamp(1.55rem, 3vw, 2.3rem); }
-.client-license-hero p { color: var(--muted); }
-.client-license-hero .workspace-eyebrow { color: var(--accent-strong); }
 .client-license-actions, .client-license-badges, .client-license-assignment-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .client-license-message { margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-solid); color: var(--muted); }
 .client-license-message[data-tone="error"] { color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface-solid)); }
@@ -46,7 +42,7 @@
 .client-license-empty { flex-direction: column; border: 1px dashed var(--line); border-radius: 8px; }
 
 @media (max-width: 560px) {
-  .client-license-hero, .client-license-section-head, .client-license-card-head, .client-license-assignment, .client-license-activity-item { display: grid; }
+  .client-license-section-head, .client-license-card-head, .client-license-assignment, .client-license-activity-item { display: grid; }
   .client-license-attention { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
   .client-license-attention .btn { grid-column: 1 / -1; margin-left: 0; text-align: left; }
 }

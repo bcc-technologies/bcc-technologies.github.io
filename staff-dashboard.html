@@ -105,9 +105,8 @@
     <div class="workspace-content">
       <main class="workspace-main">
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
-          <section class="workspace-intro">
+          <header class="workspace-intro">
             <div>
-              <span class="workspace-eyebrow">Panel de personal</span>
               <h1>Hola, <span data-user-name>...</span></h1>
               <p>Gestiona tareas, formularios internos y herramientas habilitadas para tus funciones.</p>
             </div>
@@ -115,7 +114,7 @@
               <a class="btn btn-primary" href="#trabajo" data-work-panel-link="tareas"><i data-lucide="workflow"></i>Operación</a>
               <a class="btn btn-ghost" href="#conocimiento"><i data-lucide="notebook-tabs"></i>Conocimiento</a>
             </div>
-          </section>
+          </header>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos de personal">
             <article class="priority-card primary">
               <i data-lucide="clipboard-check"></i>
@@ -263,14 +262,12 @@
         </section>
         <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Operación" hidden>
           <section class="staff-work-hub" aria-label="Operación de personal">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Operación diaria</span>
-                <h2>Operación</h2>
+                <h1>Operación</h1>
                 <p>Prioridades, KPIs, calendario y formularios internos en una vista accionable, sin paneles escondidos.</p>
               </div>
-              <span class="status-pill enabled">Rutina activa</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de operación">
               <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas</span></button>
               <button type="button" data-work-panel-tab="agenda" aria-selected="false"><i data-lucide="calendar-days"></i><span>Calendario</span></button>
@@ -427,14 +424,12 @@
         </section>
         <section class="workspace-view" id="science-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Science Radar" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Science Radar">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">External Intelligence</span>
-                <h2>Science Radar</h2>
+                <h1>Science Radar</h1>
                 <p>Radar de señales científicas y tecnológicas externas para detectar tendencias, publicaciones y oportunidades de investigación.</p>
               </div>
-              <span class="status-pill enabled">Radar activo</span>
-            </article>
+            </header>
             <section class="module-surface staff-work-panel active">
               <div class="staff-work-panel-body flush">
                 <section data-intelligence-workspace aria-label="Science Radar">
@@ -457,14 +452,12 @@
         </section>
         <section class="workspace-view" id="business-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Business Radar" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Business Radar">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">External Intelligence</span>
-                <h2>Business Radar</h2>
+                <h1>Business Radar</h1>
                 <p>Seguimiento de mercado, competidores, señales comerciales y cambios externos relevantes para la estrategia.</p>
               </div>
-              <span class="status-pill">Preparado</span>
-            </article>
+            </header>
             <article class="module-surface">
               <div class="module-head compact">
                 <h2>Radar comercial</h2>
@@ -481,14 +474,12 @@
         </section>
         <section class="workspace-view" id="product-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Product Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Product Intelligence">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Internal Intelligence</span>
-                <h2>Product Intelligence</h2>
+                <h1>Product Intelligence</h1>
                 <p>Lectura interna de producto: comportamiento del sitio, adopción, señales de uso y salud de propiedades digitales.</p>
               </div>
-              <span class="status-pill enabled">Datos internos</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Product Intelligence">
               <button class="active" type="button" data-intel-panel-tab="website" aria-selected="true"><i data-lucide="globe"></i><span>Website</span></button>
               <button type="button" data-intel-panel-tab="maps" aria-selected="false"><i data-lucide="map"></i><span>MAPs</span></button>
@@ -511,14 +502,12 @@
         </section>
         <section class="workspace-view" id="performance-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Performance Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Performance Intelligence">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Internal Intelligence</span>
-                <h2>Performance Intelligence</h2>
+                <h1>Performance Intelligence</h1>
                 <p>KPIs generales para leer desempeño, carga operativa y resultados internos sin mezclarlo con analytics de producto.</p>
               </div>
-              <span class="status-pill">KPIs</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Performance Intelligence">
               <button class="active" type="button" data-intel-panel-tab="general-kpis" aria-selected="true"><i data-lucide="gauge"></i><span>General KPIs</span></button>
             </div>
@@ -544,14 +533,12 @@
         </section>
         <section class="workspace-view" id="financial-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Financial Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Financial Intelligence">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Internal Intelligence</span>
-                <h2>Financial Intelligence</h2>
+                <h1>Financial Intelligence</h1>
                 <p>Panel financiero para lectura de ingresos, costos, forecast y señales de salud económica.</p>
               </div>
-              <span class="status-pill">Finanzas</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Financial Intelligence">
               <button class="active" type="button" data-intel-panel-tab="finance-dashboard" aria-selected="true"><i data-lucide="circle-dollar-sign"></i><span>Finance Dashboard</span></button>
             </div>
@@ -566,14 +553,12 @@
         </section>
         <section class="workspace-view" id="bureaucracy-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Bureaucracy Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Bureaucracy Intelligence">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Internal Intelligence</span>
-                <h2>Bureaucracy Intelligence</h2>
+                <h1>Bureaucracy Intelligence</h1>
                 <p>Lectura de documentos, procesos, bloqueos administrativos y flujo burocrático interno.</p>
               </div>
-              <span class="status-pill">Documentos</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Bureaucracy Intelligence">
               <button class="active" type="button" data-intel-panel-tab="documents" aria-selected="true"><i data-lucide="files"></i><span>Documents</span></button>
               <button type="button" data-intel-panel-tab="processes" aria-selected="false"><i data-lucide="route"></i><span>Processes</span></button>
@@ -596,14 +581,12 @@
         </section>
         <section class="workspace-view" id="marketing-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Marketing Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Marketing Intelligence">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Internal Intelligence</span>
-                <h2>Marketing Intelligence</h2>
+                <h1>Marketing Intelligence</h1>
                 <p>Rendimiento de audiencia, campañas y contenido sin mezclar correo operativo de CRM.</p>
               </div>
-              <span class="status-pill">Marketing</span>
-            </article>
+            </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Marketing Intelligence">
               <button class="active" type="button" data-intel-panel-tab="audience" aria-selected="true"><i data-lucide="users-round"></i><span>Audience</span></button>
               <button type="button" data-intel-panel-tab="campaigns" aria-selected="false"><i data-lucide="megaphone"></i><span>Campaigns</span></button>
@@ -634,14 +617,12 @@
         </section>
         <section class="workspace-view" id="crm-correos" data-permission-required="department:manage" data-workspace-view data-view-title="CRM · Correos" hidden>
           <section class="staff-work-hub crm-work-hub" aria-label="CRM de correos">
-            <article class="module-surface staff-hub-hero staff-work-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">CRM</span>
-                <h2>Correos</h2>
+                <h1>Correos</h1>
                 <p>Gestión de comunicación comercial: directorio, bandeja, plantillas, automatizaciones y seguimiento por contacto.</p>
               </div>
-              <span class="status-pill enabled">CRM activo</span>
-            </article>
+            </header>
             <section class="module-surface staff-work-panel active">
               <div class="staff-work-panel-body flush">
                 <section data-prospects-workspace aria-label="CRM de correos">
@@ -663,14 +644,12 @@
         </section>
         <section class="workspace-view" id="conocimiento" data-workspace-view data-view-title="Conocimiento" hidden>
           <section class="staff-hub-workspace" aria-label="Conocimiento interno">
-            <article class="module-surface staff-hub-hero">
+            <header class="workspace-page-header">
               <div>
-                <span class="workspace-eyebrow">Base interna</span>
-                <h2>Conocimiento</h2>
+                <h1>Conocimiento</h1>
                 <p>Un punto de entrada para recursos, referencias publicas y materiales internos que ayudan al equipo a trabajar con contexto comun.</p>
               </div>
-              <span class="status-pill">Recursos</span>
-            </article>
+            </header>
             <div class="staff-hub-grid">
               <article class="module-surface staff-hub-panel">
                 <div class="module-head compact">

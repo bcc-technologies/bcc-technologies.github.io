@@ -2,10 +2,7 @@
 @layer workspace.features {
 .maps-license-shell{ display: grid; gap: 18px; min-width: 0; }
 .maps-license-shell > *{ min-width: 0; }
-.maps-license-hero,
 .maps-license-section-head{ display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
-.maps-license-hero h1{ margin: 4px 0 8px; font-size: clamp(1.55rem, 3vw, 2.3rem); }
-.maps-license-hero p,
 .maps-license-section-head p{ max-width: 68ch; margin: 4px 0 0; line-height: 1.5; }
 .maps-license-section-head h2,
 .maps-license-section-head h3{ margin: 4px 0 0; }
@@ -180,7 +177,6 @@
 }
 
 @media (max-width: 680px){
-  .maps-license-hero,
   .maps-license-section-head{ display: grid; }
   .maps-license-section-head > .maps-license-actions,
   .maps-license-section-head > .btn{ width: 100%; }

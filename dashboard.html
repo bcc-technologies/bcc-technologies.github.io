@@ -90,9 +90,8 @@
     <div class="workspace-content">
       <main class="workspace-main">
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
-          <section class="workspace-intro">
+          <header class="workspace-intro">
             <div>
-              <span class="workspace-eyebrow">Dashboard cliente</span>
               <h1>Hola, <span data-user-name>...</span></h1>
               <p>Un espacio compacto para ver tu cuenta, pendientes, soporte, documentos y estado comercial.</p>
             </div>
@@ -101,7 +100,7 @@
               <a class="btn btn-ghost" href="#operacion"><i data-lucide="inbox"></i>Operación</a>
               <a class="btn btn-ghost" href="#comercial"><i data-lucide="briefcase-business"></i>Comercial</a>
             </div>
-          </section>
+          </header>
           <section class="workspace-priority-strip" aria-label="Siguientes pasos">
             <article class="priority-card primary">
               <i data-lucide="inbox"></i>
@@ -281,13 +280,13 @@
 
         <section class="workspace-view" id="operacion" data-workspace-view data-view-title="Operación" hidden>
           <section class="customer-record-workspace" aria-label="Operación de cliente">
-            <article class="module-surface customer-record-hero">
+            <header class="workspace-page-header">
               <div>
-                <h2>Operación</h2>
+                <h1>Operación</h1>
                 <p>Solicitudes, soporte y requerimientos pendientes en un solo lugar.</p>
               </div>
               <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
-            </article>
+            </header>
             <section class="customer-record-grid">
               <article class="module-surface request-empty customer-record-panel">
                 <div class="empty-icon"><i data-lucide="folder-open"></i></div>
@@ -311,13 +310,12 @@
 
         <section class="workspace-view" id="comercial" data-workspace-view data-view-title="Comercial" hidden>
           <section class="customer-record-workspace" aria-label="Comercial de cliente">
-            <article class="module-surface customer-record-hero">
+            <header class="workspace-page-header">
               <div>
-                <h2>Comercial</h2>
+                <h1>Comercial</h1>
                 <p>Estado de cuenta, facturación, documentos privados y recursos relacionados.</p>
               </div>
-              <span class="status-pill enabled"><i data-lucide="lock-keyhole"></i>Acceso privado</span>
-            </article>
+            </header>
             <section class="customer-record-grid">
               <article class="module-surface customer-record-panel">
                 <div class="module-head compact">

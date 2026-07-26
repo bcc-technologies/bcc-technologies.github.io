@@ -344,6 +344,43 @@
   margin-bottom: 25px;
 }
 
+.workspace-page-header{
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 2px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.workspace-page-header > div:first-child,
+.workspace-page-header .workspace-section-header-copy{
+  min-width: 0;
+}
+
+.workspace-page-header h1,
+.workspace-page-header h2{
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: clamp(1.32rem, 2vw, 1.7rem);
+  line-height: 1.2;
+  letter-spacing: -.015em;
+}
+
+.workspace-page-header p{
+  max-width: 68ch;
+  margin: 5px 0 0;
+  color: var(--ink-muted);
+  font-size: .87rem;
+  line-height: 1.5;
+}
+
+.workspace-page-header .workspace-section-header-actions,
+.workspace-page-header .dashboard-actions{
+  flex: 0 0 auto;
+}
+
 .workspace-intro h1{
   margin: 0 0 7px;
   color: var(--ink-strong);
@@ -363,27 +400,28 @@
 }
 
 .workspace-refined .workspace-intro{
-  min-height: var(--workspace-intro-min-height, auto);
-  align-items: var(--workspace-intro-align, flex-start);
-  margin-bottom: 24px;
-  border: var(--workspace-intro-border, 0);
-  border-radius: var(--workspace-intro-radius, 0);
-  background: var(--workspace-intro-bg, transparent);
-  box-shadow: var(--workspace-intro-shadow, none);
-  padding: var(--workspace-intro-padding, 0);
+  min-height: 0;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 2px 0 16px;
 }
 
 .workspace-refined .workspace-intro h1{
-  max-width: var(--workspace-intro-title-width, none);
-  margin-bottom: 7px;
-  font-size: var(--workspace-intro-title-size, clamp(1.7rem, 2.1vw, 2rem));
-  letter-spacing: 0;
+  max-width: none;
+  margin-bottom: 5px;
+  font-size: clamp(1.42rem, 2.15vw, 1.8rem);
+  letter-spacing: -.015em;
 }
 
 .workspace-refined .workspace-intro p{
-  max-width: var(--workspace-intro-copy-width, 630px);
-  font-size: var(--workspace-intro-copy-size, .94rem);
-  line-height: var(--workspace-intro-copy-leading, normal);
+  max-width: 68ch;
+  font-size: .87rem;
+  line-height: 1.5;
 }
 
 .workspace-priority-strip{
@@ -591,8 +629,15 @@
     align-items: stretch;
   }
 
-  .workspace-refined .workspace-intro{
+  .workspace-refined .workspace-intro,
+  .workspace-page-header{
     flex-direction: column;
+  }
+
+  .workspace-page-header .workspace-section-header-actions,
+  .workspace-page-header .dashboard-actions{
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .workspace-metrics{

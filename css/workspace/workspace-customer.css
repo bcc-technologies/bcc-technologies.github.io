@@ -194,10 +194,6 @@
 .customer-workspace .workspace{
   --workspace-chrome-bg: var(--surface-solid);
   --workspace-chrome-shadow: 0 1px 0 var(--line), 0 10px 24px rgba(15, 17, 21, .035);
-  --workspace-intro-min-height: 138px;
-  --workspace-intro-title-width: 720px;
-  --workspace-intro-title-size: clamp(1.85rem, 2.8vw, 2.45rem);
-  --workspace-intro-copy-width: 680px;
   --dashboard-action-icon-size: 16px;
   --workspace-priority-columns: 1.18fr .91fr .91fr;
   --priority-card-min-height: 158px;
@@ -327,24 +323,8 @@
   gap: 18px;
 }
 
-.customer-record-hero{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 22px;
-}
-
-.customer-record-hero h2,
 .customer-record-panel h2{
   margin: 0;
-}
-
-.customer-record-hero p{
-  max-width: 680px;
-  margin: 7px 0 0;
-  color: var(--ink-muted);
-  line-height: 1.5;
 }
 
 .customer-record-grid{
@@ -440,13 +420,8 @@
 }
 
 @media (max-width: 900px){
-  .customer-workspace .workspace-intro,
-  .customer-record-hero{
+  .customer-workspace .workspace-intro{
     align-items: flex-start;
-  }
-
-  .customer-record-hero{
-    display: grid;
   }
 
   .customer-workspace .dashboard-actions{
@@ -469,8 +444,6 @@
     display: none;
   }
 
-  .customer-workspace .workspace-intro,
-  .customer-record-hero,
   .customer-record-panel{
     padding: 18px;
   }
