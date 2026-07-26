@@ -5,10 +5,65 @@
     "map.med": "MAP Med"
   });
 
+  const LICENSE_TYPES = Object.freeze({
+    named_user: Object.freeze({
+      key: "named_user",
+      label: "Usuario individual",
+      shortLabel: "Individual",
+      eyebrow: "Uso personal",
+      description: "Una licencia nominal para trabajar con MAP desde tu propio usuario.",
+      seatLabel: "1 usuario nominal",
+      durationLabel: "Vigencia contractual",
+      defaultSeatLimit: 1,
+      features: Object.freeze(["Acceso personal no compartido", "Proyectos y resultados asociados a tu usuario", "Activación web o desktop"]),
+      icon: "user-round",
+      ctaLabel: "Solicitar individual",
+      isEvaluation: false
+    }),
+    organization: Object.freeze({
+      key: "organization",
+      label: "Equipo u organización",
+      shortLabel: "Organización",
+      eyebrow: "Trabajo colaborativo",
+      description: "Plazas administrables para equipos que necesitan crecer y controlar sus accesos.",
+      seatLabel: "Desde 5 plazas",
+      durationLabel: "Capacidad ampliable",
+      defaultSeatLimit: 5,
+      features: Object.freeze(["Asignación y liberación de plazas", "Administración por propietarios y responsables", "Escalado según el tamaño del equipo"]),
+      icon: "users",
+      ctaLabel: "Cotizar para equipo",
+      isEvaluation: false,
+      recommended: true
+    }),
+    evaluation: Object.freeze({
+      key: "evaluation",
+      label: "Evaluación guiada",
+      shortLabel: "Evaluación",
+      eyebrow: "Validación inicial",
+      description: "Acceso temporal coordinado por BCC para validar el producto en un caso de uso concreto.",
+      seatLabel: "1 participante",
+      durationLabel: "Duración según campaña",
+      defaultSeatLimit: 1,
+      features: Object.freeze(["Objetivo y alcance definidos", "Acceso temporal individual", "Seguimiento administrado por el equipo BCC"]),
+      icon: "flask-conical",
+      ctaLabel: "Solicitar evaluación",
+      isEvaluation: true
+    })
+  });
+
+  const TRIAL_OFFER_FALLBACK = Object.freeze({
+    policy_key: "early_access",
+    display_name: "Early access",
+    duration_days: 14,
+    is_campaign: true,
+    standard_days: 7
+  });
+
   const PRODUCT_CATALOG = Object.freeze({
     "map.nano": Object.freeze({
       category: "Materiales y superficies",
       description: "Convierte imágenes de microestructuras en métricas repetibles para investigación y control de calidad.",
+      licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Rugosidad, porosidad y morfología", "Exportables CSV y PDF", "Despliegue web o desktop"]),
       icon: "scan-line",
       productHref: "/product_maps_nano.html",
@@ -17,6 +72,7 @@
     "map.bio": Object.freeze({
       category: "Biología e imagen",
       description: "Automatiza conteo, clasificación y morfología para flujos de análisis biológico reproducibles.",
+      licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Conteo y clasificación", "Máscaras y mediciones", "Flujos web o desktop"]),
       icon: "activity",
       productHref: "/product_maps.html#map-bio",
@@ -25,6 +81,7 @@
     "map.med": Object.freeze({
       category: "Imagen clínica · I+D",
       description: "Organiza análisis asistido de imágenes médicas para proyectos de investigación y validación.",
+      licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Flujos guiados de imagen", "Resultados trazables", "Configuración por proyecto"]),
       icon: "shield-question",
       productHref: "/product_maps.html#map-med",
@@ -114,6 +171,18 @@
       .filter(Boolean))];
   }
 
+  function normalizeTrialOffer(value) {
+    const source = rows(value)[0] || (isRecord(value) ? value : {});
+    const durationDays = Math.max(1, Math.min(90, Number(source.duration_days) || TRIAL_OFFER_FALLBACK.duration_days));
+    return Object.freeze({
+      policy_key: String(source.policy_key || TRIAL_OFFER_FALLBACK.policy_key),
+      display_name: String(source.display_name || TRIAL_OFFER_FALLBACK.display_name),
+      duration_days: durationDays,
+      is_campaign: source.is_campaign === undefined ? TRIAL_OFFER_FALLBACK.is_campaign : Boolean(source.is_campaign),
+      standard_days: TRIAL_OFFER_FALLBACK.standard_days
+    });
+  }
+
   function effectiveStatus(license, now = Date.now()) {
     const startsAt = new Date(license?.starts_at || 0).getTime();
     const endsAt = new Date(license?.ends_at || 0).getTime();
@@ -151,6 +220,15 @@
     return PRODUCT_CATALOG[key] || null;
   }
 
+  function licenseType(key) {
+    return LICENSE_TYPES[key] || null;
+  }
+
+  function productLicenseTypes(key) {
+    const product = productCatalog(key);
+    return (product?.licenseTypes || []).map(licenseType).filter(Boolean);
+  }
+
   function platformAccessLabel(key) {
     return PLATFORM_ACCESS_LABELS[key] || key;
   }
@@ -175,6 +253,8 @@
   window.BCCWorkspaceMapContracts = Object.freeze({
     PRODUCTS,
     PRODUCT_CATALOG,
+    LICENSE_TYPES,
+    TRIAL_OFFER_FALLBACK,
     STATUS,
     PLATFORM_ACCESS_LABELS,
     MapContractError,
@@ -184,10 +264,13 @@
     normalizeAdminDashboard,
     normalizeEntitlements,
     normalizePlatformAccess,
+    normalizeTrialOffer,
     effectiveStatus,
     toLicenseViewModel,
     productName,
     productCatalog,
+    licenseType,
+    productLicenseTypes,
     platformAccessLabel,
     toError
   });

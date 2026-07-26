@@ -42,12 +42,14 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
   assert.deepEqual(calls, [
     "get_my_license_dashboard",
     "get_my_platform_access",
-    "get_my_internal_entitlements"
+    "get_my_internal_entitlements",
+    "get_current_map_trial_offer"
   ]);
   assert.equal(result.dashboard.licenses.length, 1);
   assert.equal(result.dashboard.members.length, 0);
   assert.deepEqual(Array.from(result.platformAccess), ["map.dev.access"]);
   assert.equal(result.entitlements.length, 1);
+  assert.equal(result.trialOffer.duration_days, 14);
 });
 
 test("MAP repository translates transport failures into a stable domain error", async () => {
@@ -85,11 +87,22 @@ test("MAP commercial catalog exposes honest, reusable purchase metadata", () => 
   const window = runtime(async () => ({ data: null, error: null }));
   const contracts = window.BCCWorkspaceMapContracts;
   assert.deepEqual(Object.keys(contracts.PRODUCT_CATALOG), ["map.nano", "map.bio", "map.med"]);
+  assert.deepEqual(Object.keys(contracts.LICENSE_TYPES), ["named_user", "organization", "evaluation"]);
+  assert.equal(contracts.TRIAL_OFFER_FALLBACK.standard_days, 7);
+  assert.equal(contracts.TRIAL_OFFER_FALLBACK.duration_days, 14);
+  assert.equal(contracts.TRIAL_OFFER_FALLBACK.is_campaign, true);
+  assert.equal(contracts.normalizeTrialOffer([{ policy_key: "standard", display_name: "Prueba gratuita", duration_days: 7, is_campaign: false }]).duration_days, 7);
+  assert.equal(contracts.licenseType("named_user").ctaLabel, "Solicitar individual");
+  assert.equal(contracts.licenseType("organization").ctaLabel, "Cotizar para equipo");
+  assert.equal(contracts.licenseType("organization").defaultSeatLimit, 5);
+  assert.equal(contracts.licenseType("evaluation").isEvaluation, true);
   for (const key of Object.keys(contracts.PRODUCT_CATALOG)) {
     const product = contracts.productCatalog(key);
     assert.equal(product, contracts.PRODUCT_CATALOG[key]);
     assert.ok(product.description.length > 30);
     assert.equal(product.features.length, 3);
+    assert.deepEqual(Array.from(product.licenseTypes), ["named_user", "organization", "evaluation"]);
+    assert.deepEqual(Array.from(contracts.productLicenseTypes(key), type => type.key), Array.from(product.licenseTypes));
     assert.match(product.productHref, /^\//);
     assert.match(product.requestHref, /intent=license/);
     assert.doesNotMatch(JSON.stringify(product), /(?:price|precio|checkout)/i);
