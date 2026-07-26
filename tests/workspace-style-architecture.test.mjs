@@ -26,6 +26,17 @@ test("dashboard pages use scoped layered entrypoints", () => {
   assert.doesNotMatch(staffCss, /workspace-customer\.css|workspace-prospects\.css|workspace-intelligence-analytics\.css/);
 });
 
+test("workspace resets the public fixed-header rule for semantic section headers", () => {
+  const publicLayout = read("css/02-layout.css");
+  const workspaceCore = read("css/workspace/workspace-core.css");
+  const workspaceEntry = read("css/pages/dashboard-client.css");
+
+  assert.match(publicLayout, /header\s*\{[\s\S]*position:\s*fixed/);
+  assert.match(workspaceCore, /\.workspace-shell header\s*\{[\s\S]*position:\s*static;[\s\S]*inset:\s*auto;/);
+  assert.ok(workspaceCore.indexOf(".workspace-shell header{") < workspaceCore.indexOf(".workspace-header{"));
+  assert.ok(workspaceEntry.indexOf("workspace-core.css") < workspaceEntry.indexOf("workspace-components.css"));
+});
+
 test("feature style entrypoints join the declared feature layer", () => {
   const importManifests = ["admin.css", "forms.css", "intelligence.css", "operation.css", "prospects.css"];
   for (const manifest of importManifests) {

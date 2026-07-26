@@ -3,6 +3,16 @@
   overflow-x: hidden;
 }
 
+/* The public-site stylesheet fixes the top-level site header. Workspace
+   sections also use semantic <header> elements, so reset that global chrome
+   contract before the dedicated .workspace-header geometry is applied. */
+.workspace-shell header{
+  position: static;
+  inset: auto;
+  z-index: auto;
+  padding: 0;
+}
+
 .workspace-shell [hidden]{
   display: none !important;
 }
