@@ -95,15 +95,27 @@
 .client-license-card-actions{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .client-license-card-actions .btn{ justify-content: center; }
 .client-license-offer-grid{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
-.client-license-offer-card{ min-width: 0; min-height: 310px; display: flex; flex-direction: column; gap: 13px; padding: 18px; border: 1px solid var(--line); border-radius: var(--workspace-radius-panel); background: var(--surface-solid); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
+.client-license-offer-card{ --client-license-plan-accent: var(--ink-muted); position: relative; min-width: 0; min-height: 390px; display: flex; flex-direction: column; gap: 15px; padding: 22px; border: 1px solid var(--line); border-radius: var(--workspace-radius-panel); background: var(--surface-solid); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
+.client-license-offer-card::before{ content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--client-license-plan-accent); }
+.client-license-offer-card.is-named-user{ --client-license-plan-accent: var(--ink-soft); }
+.client-license-offer-card.is-organization{ --client-license-plan-accent: var(--accent); }
+.client-license-offer-card.is-evaluation{ --client-license-plan-accent: var(--info); }
 .client-license-offer-card:hover{ border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); box-shadow: 0 12px 26px rgba(15, 17, 21, .07); transform: translateY(-2px); }
-.client-license-offer-card.is-recommended{ border-color: color-mix(in srgb, var(--accent) 36%, var(--line)); background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 7%, var(--surface-solid)), var(--surface-solid)); }
+.client-license-offer-card.is-recommended{ border-color: color-mix(in srgb, var(--accent) 46%, var(--line)); background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 8%, var(--surface-solid)), var(--surface-solid)); box-shadow: 0 16px 34px rgba(15, 17, 21, .08); }
 .client-license-offer-card.is-evaluation{ background: linear-gradient(155deg, color-mix(in srgb, var(--info) 5%, var(--surface-solid)), var(--surface-solid)); }
-.client-license-offer-card-head{ min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.client-license-offer-card-head h3{ min-width: 0; flex: 1 1 130px; margin: 0; color: var(--ink); font-size: .96rem; }
-.client-license-offer-icon{ width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--surface-muted); color: var(--accent-strong); }
+.client-license-offer-card-head{ min-height: 44px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.client-license-offer-identity{ min-width: 0; display: flex; align-items: center; gap: 10px; }
+.client-license-offer-identity > div{ min-width: 0; }
+.client-license-offer-card-head h3{ margin: 2px 0 0; color: var(--ink); font-size: 1rem; line-height: 1.2; }
+.client-license-offer-kicker,
+.client-license-offer-benefit-label{ display: block; color: var(--muted); font-size: .67rem; font-weight: 850; letter-spacing: .045em; line-height: 1.2; text-transform: uppercase; }
+.client-license-offer-badges{ display: flex; justify-content: flex-end; gap: 5px; flex-wrap: wrap; }
+.client-license-recommended-badge{ min-height: 25px; display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 4px 8px; border: 1px solid var(--accent-soft-border); background: var(--accent-soft); color: var(--accent-strong); font-size: .7rem; font-weight: 850; white-space: nowrap; }
+.client-license-recommended-badge .workspace-icon{ width: .82rem; height: .82rem; }
+.client-license-offer-icon{ width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--surface-muted); color: var(--accent-strong); }
 .client-license-offer-card > p{ margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.4; }
-.client-license-offer-benefits{ display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.client-license-offer-benefit-block{ display: grid; gap: 9px; }
+.client-license-offer-benefits{ display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .client-license-offer-benefits li{ display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px; align-items: start; color: var(--ink-soft); font-size: .77rem; line-height: 1.35; }
 .client-license-offer-benefits .workspace-icon{ margin-top: 1px; color: var(--success); }
 .client-license-trial-offer{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 8px 9px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid)); }
@@ -113,6 +125,7 @@
 .client-license-offer-meta span{ min-width: 0; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 7px; background: var(--surface-muted); color: var(--ink-soft); font-size: .74rem; font-weight: 750; }
 .client-license-offer-card footer{ width: 100%; display: grid; margin-top: auto; padding-top: 2px; }
 .client-license-offer-card footer .btn{ width: 100%; justify-content: center; }
+.client-license-evaluation-cta{ border-color: color-mix(in srgb, var(--info) 38%, var(--line)); color: color-mix(in srgb, var(--info) 72%, var(--ink)); }
 .client-license-offer-assurance{ display: flex; justify-content: center; align-items: center; gap: 5px; color: var(--muted); font-size: .69rem; line-height: 1.3; text-align: center; }
 .client-license-offer-assurance .workspace-icon{ width: .82rem; height: .82rem; color: var(--success); }
 
@@ -156,6 +169,7 @@
 
 @media (max-width: 980px){
   .client-license-offer-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .client-license-offer-card{ min-height: 370px; }
 }
 
 @media (max-width: 700px){
@@ -163,6 +177,7 @@
   .client-license-current-grid,
   .client-license-offer-grid,
   .client-license-secondary-grid{ grid-template-columns: 1fr; }
+  .client-license-offer-card{ min-height: 340px; padding: 20px; }
   .client-license-card-actions{ display: grid; grid-template-columns: 1fr; }
   .client-license-form-row{ grid-template-columns: 1fr; }
 }

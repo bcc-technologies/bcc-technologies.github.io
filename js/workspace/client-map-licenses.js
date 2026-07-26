@@ -229,17 +229,26 @@
   function renderLicenseOfferCard(key, type, isOwned) {
     const trialDays = trialOffer.duration_days;
     const trialCampaign = trialOffer.is_campaign;
-    return `<article class="client-license-offer-card ${type.recommended ? "is-recommended" : ""} ${type.isEvaluation ? "is-evaluation" : ""}">
+    const typeClass = `is-${String(type.key).replace(/[^a-z0-9]+/gi, "-")}`;
+    const headingId = `license-${productDomId(key)}-${productDomId(type.key)}-title`;
+    return `<article class="client-license-offer-card ${typeClass} ${type.recommended ? "is-recommended" : ""} ${type.isEvaluation ? "is-evaluation" : ""}" aria-labelledby="${headingId}">
       <div class="client-license-offer-card-head">
-        <span class="client-license-offer-icon">${ui.icon(type.icon, "sm")}</span>
-        <h3>${escapeHtml(type.label)}</h3>
-        ${type.recommended ? '<span class="client-license-tag active">Recomendada</span>' : ""}
-        ${isOwned ? '<span class="client-license-tag active">Actual</span>' : ""}
+        <div class="client-license-offer-identity">
+          <span class="client-license-offer-icon">${ui.icon(type.icon, "sm")}</span>
+          <div><span class="client-license-offer-kicker">${escapeHtml(type.eyebrow)}</span><h3 id="${headingId}">${escapeHtml(type.label)}</h3></div>
+        </div>
+        <div class="client-license-offer-badges">
+          ${type.recommended ? `<span class="client-license-recommended-badge">${ui.icon("badge-check", "xs")}Recomendada</span>` : ""}
+          ${isOwned ? '<span class="client-license-tag active">Actual</span>' : ""}
+        </div>
       </div>
       <p>${escapeHtml(type.description)}</p>
-      <ul class="client-license-offer-benefits">
-        ${type.features.slice(0, 2).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}
-      </ul>
+      <div class="client-license-offer-benefit-block">
+        <span class="client-license-offer-benefit-label">Incluye</span>
+        <ul class="client-license-offer-benefits">
+          ${type.features.map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}
+        </ul>
+      </div>
       ${type.isEvaluation ? `<p class="client-license-trial-offer"><strong>${trialDays} días gratis</strong><span>${trialCampaign ? `Early access · luego ${trialOffer.standard_days} días` : "Prueba estándar"}</span></p>` : ""}
       <div class="client-license-offer-meta">
         <span>${ui.icon("users", "xs")}${escapeHtml(type.seatLabel)}</span>
@@ -249,7 +258,7 @@
         ${ui.action({
           label: type.isEvaluation ? `Solicitar ${trialDays} días gratis` : isOwned ? "Solicitar ampliación" : type.ctaLabel,
           icon: type.isEvaluation ? "flask-conical" : "badge-plus",
-          className: type.recommended ? "btn btn-primary" : "btn btn-ghost",
+          className: type.recommended ? "btn btn-primary" : type.isEvaluation ? "btn btn-ghost client-license-evaluation-cta" : "btn btn-ghost",
           data: { clientLicenseRequest: key, clientLicenseType: type.key }
         })}
         <small class="client-license-offer-assurance">${ui.icon("shield-check", "xs")}${type.isEvaluation ? "Sin tarjeta" : "Sin compromiso"} · respuesta en 1 día hábil</small>

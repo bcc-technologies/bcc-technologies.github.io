@@ -37,7 +37,10 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.match(source, /aria-label="Productos y licencias MAP"/);
   assert.match(source, /aria-label="Licencias para \$\{escapeHtml\(productName\(key\)\)\}"/);
   assert.doesNotMatch(source, /Tu suite MAP|Modalidades disponibles|Elige el tipo de licencia/);
-  assert.match(source, /type\.features\.slice\(0, 2\)/);
+  assert.match(source, /type\.features\.map\(feature/);
+  assert.match(source, /client-license-offer-kicker/);
+  assert.match(source, /client-license-recommended-badge/);
+  assert.match(source, /aria-labelledby=\"\$\{headingId\}\"/);
   assert.doesNotMatch(source, /client-license-no-access|client-license-feature-list|client-license-trial-duration|client-license-product-icon/);
   assert.match(source, /type\.ctaLabel/);
   assert.match(source, /function renderInternalAccess/);
