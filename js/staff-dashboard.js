@@ -4,6 +4,7 @@ let staffWorkspaceRouter = null;
 const WORKSPACE_MODULE_BY_VIEW = {
   "science-radar": "intelligence",
   "product-intelligence": "analytics",
+  "licencias-maps": "licencias-maps",
   "maps-licensing": "maps-licensing",
   "dominican-intelligence": "dominican-intelligence",
   "crm-correos": "prospectos"
@@ -32,7 +33,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   runWorkspaceStep("calendario", () => window.BCCWorkspaceCalendar?.init(user));
   runWorkspaceStep("formularios", () => window.BCCWorkspaceForms?.init(user));
   await runWorkspaceAsyncStep("administración", () => window.BCCWorkspaceAdmin?.init(user, { bindRouter: false }));
-  runWorkspaceStep("licencias", () => window.BCCWorkspaceLicenses?.init(user));
   runWorkspaceStep("iconos", () => window.BCCWorkspaceUtils.refreshIcons());
 });
 

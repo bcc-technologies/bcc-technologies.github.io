@@ -1,11 +1,14 @@
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-<<<<<<< HEAD
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
-=======
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read", "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"]
->>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
+  admin: [
+    "dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create",
+    "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view",
+    "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit",
+    "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage",
+    "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read",
+    "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"
+  ]
 };
 
 const STAFF_ROLE_PERMISSIONS = {
@@ -246,6 +249,7 @@ function sanitizeWorkspaceRoleInput(body = {}, existing = []) {
 }
 
 async function loadSupabaseClient() {
+  if (window.BCCSupabase?.getClient) return window.BCCSupabase.getClient();
   if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
   if (!window.BCC_SUPABASE) throw new Error("Falta configuración de Supabase.");
   if (!window.supabase?.createClient) {
@@ -257,7 +261,7 @@ async function loadSupabaseClient() {
         return;
       }
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8";
       script.dataset.bccSupabaseJs = "true";
       script.onload = resolve;
       script.onerror = () => reject(new Error("No se pudo cargar Supabase."));
@@ -271,6 +275,26 @@ async function loadSupabaseClient() {
     { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
   );
   return window.BCCSupabaseClient;
+}
+
+function reportSupabaseError(context, error) {
+  const code = String(error?.code || error?.name || "supabase_error");
+  if (code === "AuthSessionMissingError") return;
+  console.warn(`[Supabase] ${context}`, {
+    code,
+    status: error?.status || null,
+    message: error?.message || String(error || "Error desconocido")
+  });
+}
+
+async function clearInvalidSupabaseSession(supabase, error) {
+  const code = String(error?.code || "").toLowerCase();
+  const message = String(error?.message || "").toLowerCase();
+  const invalidRefreshToken = code === "refresh_token_not_found"
+    || message.includes("refresh token not found")
+    || message.includes("invalid refresh token");
+  if (!invalidRefreshToken) return;
+  try { await supabase.auth.signOut({ scope: "local" }); } catch {}
 }
 
 async function waitForSupabaseSession(timeoutMs = 5000) {
@@ -405,7 +429,9 @@ async function currentUser() {
     try {
       const supabase = await loadSupabaseClient();
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (!userError && userData?.user) {
+      if (userError) throw userError;
+
+      if (userData?.user) {
         let { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
@@ -434,7 +460,8 @@ async function currentUser() {
             custom_roles: []
           };
           const created = await supabase.from("profiles").insert(payload).select("*").single();
-          if (!created.error) profile = created.data;
+          if (created.error) throw created.error;
+          profile = created.data;
         }
 
         const platformPermissions = await platformPermissionsForCurrentUser(supabase);
@@ -445,8 +472,10 @@ async function currentUser() {
         };
         return currentPageUser;
       }
-    } catch (_error) {
-      // Fall back to local account server when Supabase auth is unavailable.
+    } catch (error) {
+      reportSupabaseError("No se pudo resolver el usuario autenticado.", error);
+      const supabase = window.BCCSupabaseClient;
+      if (supabase) await clearInvalidSupabaseSession(supabase, error);
     }
 
     try {
@@ -508,16 +537,9 @@ function isSupabaseAuthCallbackLocation() {
 
 async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
-<<<<<<< HEAD
     if (isSupabaseAuthCallbackLocation()) {
       await waitForSupabaseSession();
       if (isSupabaseAuthHash()) history.replaceState(null, "", location.pathname + location.search);
-=======
-    const hashIsAuthToken = location.hash && new URLSearchParams(location.hash.slice(1)).has("access_token");
-    if (hashIsAuthToken || location.search.includes("code=")) {
-      await waitForSupabaseSession();
-      if (hashIsAuthToken) history.replaceState(null, "", location.pathname + location.search);
->>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
     }
 
     const user = await currentUser();
@@ -2496,14 +2518,15 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const supabase = await loadSupabaseClient();
           const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
           if (!error && data?.user) {
             const user = await currentUser();
             const next = new URLSearchParams(location.search).get("next");
             window.location.assign(next || routeForUser(user || publicProfile(null, data.user)));
             return;
           }
-        } catch (_supabaseError) {
-          // Fall back to local account server login.
+        } catch (supabaseError) {
+          reportSupabaseError("Falló el inicio de sesión; se intentará el servidor local.", supabaseError);
         }
 
         const res = await fetch("/api/auth/login", {

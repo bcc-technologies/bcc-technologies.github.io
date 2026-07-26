@@ -26,11 +26,14 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ROLE_PERMISSIONS = {
   client: ["dashboard:view", "profile:update", "downloads:view", "support:create"],
   staff: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view"],
-<<<<<<< HEAD
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit"]
-=======
-  admin: ["dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create", "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view", "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage", "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read", "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"]
->>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
+  admin: [
+    "dashboard:view", "staff:view", "profile:update", "downloads:view", "support:create",
+    "clients:view", "content:view", "cms:access", "users:manage", "forms:manage", "admin:view",
+    "licenses:view", "licenses:manage", "licenses:assign", "licenses:audit",
+    "map.dev.access", "map.release.manage", "platform.licenses.read", "platform.licenses.manage",
+    "platform.evaluations.manage", "platform.permissions.manage", "platform.analytics.read",
+    "maps:developer:access", "maps:developer:read", "maps:developer:write", "maps:developer:release"
+  ]
 };
 
 const STAFF_ROLE_PERMISSIONS = {

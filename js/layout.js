@@ -176,6 +176,7 @@
   }
 
   function loadSupabaseJs() {
+    if (window.BCCSupabase?.loadLibrary) return window.BCCSupabase.loadLibrary();
     if (window.supabase?.createClient) return Promise.resolve(window.supabase);
     if (supabaseJsPromise) return supabaseJsPromise;
     supabaseJsPromise = new Promise((resolve, reject) => {
@@ -186,7 +187,7 @@
         return;
       }
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8";
       script.async = true;
       script.dataset.bccSupabaseJs = "true";
       script.onload = () => resolve(window.supabase);
@@ -199,6 +200,12 @@
   async function loadAnalyticsSupabaseClient() {
     if (window.BCCAuth?.loadSupabaseClient) {
       return window.BCCAuth.loadSupabaseClient();
+    }
+    await loadSupabaseConfig();
+    if (window.BCCSupabase?.getClient) {
+      const client = await window.BCCSupabase.getClient();
+      window.BCCAnalyticsSupabaseClient = client;
+      return client;
     }
     if (window.BCCSupabaseClient) return window.BCCSupabaseClient;
     if (window.BCCAnalyticsSupabaseClient) return window.BCCAnalyticsSupabaseClient;

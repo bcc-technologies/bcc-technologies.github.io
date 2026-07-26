@@ -112,10 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadSupabaseBrowserClient() {
     if (!window.BCC_SUPABASE?.url || !window.BCC_SUPABASE?.anonKey) return null;
+    if (window.BCCSupabase?.getClient) return window.BCCSupabase.getClient();
     if (!window.supabase?.createClient) {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
         script.onload = resolve;
         script.onerror = () => reject(new Error('No se pudo cargar Supabase.'));
         document.head.appendChild(script);

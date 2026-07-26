@@ -191,6 +191,17 @@ function initializeWorkspaceModule(viewId, user) {
     return;
   }
 
+  if (viewId === "licencias-maps") {
+    mountWorkspaceModule({
+      rootSelector: "[data-licenses-workspace]",
+      module: window.BCCWorkspaceLicenses,
+      key: "licencias-maps",
+      loadingText: "Cargando licencias MAP...",
+      errorText: "No fue posible cargar las licencias MAP. Recarga la página."
+    }, user);
+    return;
+  }
+
   if (viewId === "maps-licensing") {
     mountWorkspaceModule({
       rootSelector: "[data-maps-licensing-workspace]",

@@ -1,6 +1,6 @@
 (() => {
   const PANELS = ["summary", "licenses", "evaluations", "permissions", "analytics"];
-  const PRODUCTS = window.BCCWorkspaceLicenses.PRODUCTS;
+  const PRODUCTS = window.BCCWorkspaceLicenseContracts.PRODUCTS;
   let root = null;
   let currentUser = null;
   let activePanel = "summary";

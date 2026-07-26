@@ -36,14 +36,11 @@
     "forms:manage": "Gestionar formularios",
     "department:manage": "Gestion departamental",
     "strategy:view": "Estrategia",
-<<<<<<< HEAD
-    "admin:view": "Administración"
+    "admin:view": "Administración",
     "licenses:view": "Ver licencias MAPs",
     "licenses:manage": "Administrar licencias MAPs",
     "licenses:assign": "Asignar licencias MAPs",
     "licenses:audit": "Auditar licencias MAPs",
-=======
-    "admin:view": "Administración",
     "map.dev.access": "Desarrollo MAP",
     "map.release.manage": "Publicaciones MAP",
     "platform.licenses.read": "Consultar licencias MAP",
@@ -51,7 +48,6 @@
     "platform.evaluations.manage": "Gestionar evaluaciones MAP",
     "platform.permissions.manage": "Gestionar permisos MAP",
     "platform.analytics.read": "Analíticas MAP"
->>>>>>> 29bc276a8343e633ea8ac23dcaff41447a7f53b0
   };
 
   function escapeHtml(value) {

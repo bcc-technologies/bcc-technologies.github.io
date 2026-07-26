@@ -44,5 +44,5 @@
     };
   }
 
-  window.BCCWorkspaceLicenses = Object.freeze({ PRODUCTS, STATUS, effectiveStatus, toViewModel });
+  window.BCCWorkspaceLicenseContracts = Object.freeze({ PRODUCTS, STATUS, effectiveStatus, toViewModel });
 })();

@@ -299,7 +299,7 @@
   }
 
   function statusLabel(value) {
-    return window.BCCWorkspaceLicenses.STATUS[value]?.label || window.BCCWorkspaceLicenses.STATUS.unknown.label;
+    return window.BCCWorkspaceLicenseContracts.STATUS[value]?.label || window.BCCWorkspaceLicenseContracts.STATUS.unknown.label;
   }
 
   function roleLabel(value) {
@@ -307,11 +307,11 @@
   }
 
   function productName(key) {
-    return window.BCCWorkspaceLicenses.PRODUCTS[key] || key || "MAP";
+    return window.BCCWorkspaceLicenseContracts.PRODUCTS[key] || key || "MAP";
   }
 
   function toLicenseViewModel(license) {
-    return window.BCCWorkspaceLicenses.toViewModel(license);
+    return window.BCCWorkspaceLicenseContracts.toViewModel(license);
   }
 
   function formatDate(value) {

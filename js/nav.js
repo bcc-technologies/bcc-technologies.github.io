@@ -1585,7 +1585,9 @@
       anonKey: 'sb_publishable_X_3U_TNtC9BuVwc-vMCsug_GVFmI5cQ'
     };
 
-    if (!window.supabase?.createClient) {
+    const sharedClient = window.BCCSupabase?.getClient ? await window.BCCSupabase.getClient() : null;
+
+    if (!sharedClient && !window.supabase?.createClient) {
       await new Promise((resolve, reject) => {
         const existing = document.querySelector('script[data-supabase-js], script[data-bcc-supabase-js="true"]');
         if (existing) {
@@ -1595,14 +1597,14 @@
         }
         const script = document.createElement('script');
         script.dataset.supabaseJs = 'true';
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
       });
     }
 
-    const client = window.BCCSupabaseClient || window.BCCAnalyticsSupabaseClient || window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
+    const client = sharedClient || window.BCCSupabaseClient || window.BCCAnalyticsSupabaseClient || window.BCCNavSupabaseClient || window.supabase.createClient(config.url, config.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
     window.BCCSupabaseClient = window.BCCSupabaseClient || client;
