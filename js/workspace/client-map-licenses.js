@@ -4,6 +4,7 @@
   let dashboard = emptyDashboard();
   let selectedLicenseId = "";
   let platformAccess = [];
+  let internalEntitlements = [];
   let busy = false;
 
   function emptyDashboard() {
@@ -33,11 +34,15 @@
     setBusy(true);
     setMessage("Actualizando tus licencias MAP...");
     try {
-      const [payload, accessRows] = await Promise.all([
+      const [payload, accessRows, entitlements] = await Promise.all([
         rpc("get_my_license_dashboard"),
-        rpc("get_my_platform_access")
+        rpc("get_my_platform_access"),
+        rpc("get_my_internal_entitlements")
       ]);
-      platformAccess = [...new Set((accessRows || []).map(item => String(item?.access_key || "").trim()).filter(Boolean))];
+      platformAccess = [...new Set((accessRows || [])
+        .filter(item => item?.access_source === "internal_role")
+        .map(item => String(item?.access_key || "").trim()).filter(Boolean))];
+      internalEntitlements = Array.isArray(entitlements) ? entitlements : [];
       dashboard = normalizeDashboard(payload);
       selectDefaultLicense();
       render();
@@ -84,6 +89,7 @@
           </div>
         </article>
         <p class="client-license-message" data-client-license-message hidden></p>
+        ${renderStaffLicense()}
         ${renderFeaturedLicense()}
         ${renderPlatformAccess()}
         ${renderAttention()}
@@ -100,14 +106,35 @@
     refreshIcons();
   }
 
+  function renderStaffLicense() {
+    const entitlement = internalEntitlements.find(item => item?.entitlement_key === "map.staff");
+    if (!entitlement) return "";
+    const products = Array.isArray(entitlement.product_keys) ? entitlement.product_keys : [];
+    return `<article class="module-surface client-license-direct-access">
+      <div class="client-license-section-head">
+        <div>
+          <span class="workspace-eyebrow">Beneficio exclusivo del staff</span>
+          <h2>Licencia MAP Staff</h2>
+          <p>Acceso gratuito a la suite MAP mientras tu perfil de staff permanezca activo. Es personal, no consume plazas y no forma parte del catálogo comercial.</p>
+        </div>
+        <span class="client-license-tag active"><i data-lucide="badge-check"></i>Activa</span>
+      </div>
+      <div class="client-license-badges">
+        ${products.map(key => `<span class="client-license-tag">${escapeHtml(productName(key))}</span>`).join("")}
+        <span class="client-license-tag">Sin vencimiento</span>
+        <span class="client-license-tag">$0</span>
+      </div>
+    </article>`;
+  }
+
   function renderPlatformAccess() {
     if (!platformAccess.length) return "";
     return `<article class="module-surface client-license-direct-access">
       <div class="client-license-section-head">
         <div>
-          <span class="workspace-eyebrow">Acceso directo</span>
-          <h2>Tu acceso interno a MAP está activo</h2>
-          <p>Este acceso proviene de tu rol de plataforma. No consume una plaza ni genera una licencia comercial.</p>
+          <span class="workspace-eyebrow">Permisos adicionales</span>
+          <h2>Herramientas internas autorizadas</h2>
+          <p>Estos permisos son independientes de la licencia MAP Staff y determinan qué herramientas técnicas o administrativas puedes utilizar.</p>
         </div>
         <span class="client-license-tag active"><i data-lucide="shield-check"></i>Autorizado</span>
       </div>
@@ -128,7 +155,7 @@
       || licenses.find(item => item.status === "active")
       || licenses.sort((a, b) => a.statusMeta.priority - b.statusMeta.priority)[0];
     if (!featured) {
-      return platformAccess.length ? "" : `<div class="client-license-hero-summary is-empty"><i data-lucide="badge-plus"></i><span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
+      return internalEntitlements.length ? "" : `<div class="client-license-hero-summary is-empty"><i data-lucide="badge-plus"></i><span>Tu acceso MAP aparecerá aquí cuando una licencia sea asignada.</span></div>`;
     }
 
     return `<div class="client-license-hero-summary">
@@ -167,7 +194,7 @@
 
   function renderLicenses() {
     if (!dashboard.licenses.length) {
-      return `<div class="client-license-empty"><i data-lucide="${platformAccess.length ? "shield-check" : "badge-x"}"></i><strong>No hay licencias asociadas a tu usuario.</strong><span>${platformAccess.length ? "Tu acceso actual es interno y aparece arriba; por diseño no se presenta como licencia ni consume una plaza." : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza."}</span>${platformAccess.length ? "" : '<a class="btn btn-primary" href="/contactUs.html">Contactar soporte</a>'}</div>`;
+      return `<div class="client-license-empty"><i data-lucide="${internalEntitlements.length ? "shield-check" : "badge-x"}"></i><strong>No hay licencias comerciales asociadas a tu usuario.</strong><span>${internalEntitlements.length ? "Tu licencia MAP Staff está activa y aparece arriba. Las licencias comerciales o de evaluación se mostrarán aquí por separado." : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza."}</span>${internalEntitlements.length ? "" : '<a class="btn btn-primary" href="/contactUs.html">Contactar soporte</a>'}</div>`;
     }
 
     return `<div class="client-license-list">${dashboard.licenses.map(rawLicense => {

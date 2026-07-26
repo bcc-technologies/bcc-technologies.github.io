@@ -28,5 +28,11 @@ licenses, assignments, permissions and operational analytics.
 product-analyst access assignable through the existing audited staff profile
 workflow.
 
+`20260726033539_staff_map_entitlement.sql` grants active staff and administrators
+an automatic, zero-cost MAP Staff entitlement through normalized role-to-capability
+mappings. It never enters the commercial plan or seat model. Developer workspace
+access remains a separate `map.dev.access` permission assigned only to administrators,
+MAP developers and release managers.
+
 The website-side implementation guide is
 [`docs/MAP_EVALUATION_ADMIN_UI.md`](../../docs/MAP_EVALUATION_ADMIN_UI.md).
