@@ -33,7 +33,11 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.match(source, /Beneficio exclusivo del staff/);
   assert.match(source, /function renderSuite/);
   assert.match(source, /function renderSuiteProduct/);
-  assert.match(source, /title: "Tu suite MAP"/);
+  assert.match(source, /title: "Licencias MAP"/);
+  assert.match(source, /aria-label="Productos y licencias MAP"/);
+  assert.match(source, /aria-label="Licencias para \$\{escapeHtml\(productName\(key\)\)\}"/);
+  assert.doesNotMatch(source, /Tu suite MAP|Modalidades disponibles|Elige el tipo de licencia/);
+  assert.doesNotMatch(source, /client-license-no-access|client-license-feature-list|client-license-trial-duration/);
   assert.match(source, /type\.ctaLabel/);
   assert.match(source, /function renderInternalAccess/);
   assert.match(source, /function renderProductTab/);

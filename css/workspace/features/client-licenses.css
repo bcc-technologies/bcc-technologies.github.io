@@ -66,32 +66,25 @@
 .client-license-activity-disclosure .client-license-activity-list{ padding: 0 18px 12px; }
 
 /* Product-led suite navigation and license acquisition. */
-.client-license-suite{ display: grid; gap: 16px; scroll-margin-top: 92px; }
-.client-license-suite > .client-license-section-head{ margin-bottom: 0; }
+.client-license-suite{ display: grid; gap: 12px; scroll-margin-top: 92px; }
 .client-license-product-tabs{ width: fit-content; max-width: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(148px, 1fr); gap: 4px; padding: 4px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-muted); scrollbar-width: thin; }
 .client-license-product-tab{ min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: inherit; font-size: .84rem; font-weight: 800; white-space: nowrap; cursor: pointer; transition: color 150ms ease, background 150ms ease, box-shadow 150ms ease; }
 .client-license-product-tab:hover{ color: var(--ink); background: color-mix(in srgb, var(--surface-solid) 72%, transparent); }
 .client-license-product-tab[aria-selected="true"]{ color: var(--accent-strong); background: var(--surface-solid); box-shadow: 0 2px 8px rgba(15, 17, 21, .08); }
 .client-license-product-tab:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
 .client-license-tab-count{ min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 5px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid)); color: var(--accent-strong); font-size: .7rem; }
-.client-license-product-panel{ min-width: 0; display: grid; gap: 18px; }
+.client-license-product-panel{ min-width: 0; display: grid; gap: 14px; }
 .client-license-product-panel:focus{ outline: none; }
 .client-license-product-panel:focus-visible{ outline: 2px solid var(--accent); outline-offset: 5px; border-radius: var(--workspace-radius-panel); }
-.client-license-product-overview{ min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; }
-.client-license-product-overview h2{ margin: 3px 0 0; color: var(--ink); font-size: clamp(1.2rem, 2vw, 1.55rem); }
-.client-license-product-overview p{ max-width: 760px; margin: 7px 0 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
-.client-license-product-icon{ width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line)); border-radius: 13px; background: color-mix(in srgb, var(--accent) 9%, var(--surface-solid)); color: var(--accent-strong); }
-.client-license-product-icon .workspace-icon{ width: 23px; height: 23px; }
-.client-license-no-access{ min-width: 0; display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 9px; color: var(--muted); background: color-mix(in srgb, var(--surface-muted) 68%, transparent); }
-.client-license-no-access strong,
-.client-license-no-access small{ display: block; }
-.client-license-no-access strong{ color: var(--ink); }
-.client-license-no-access small{ margin-top: 2px; }
+.client-license-product-context{ min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 2px 0 12px; border-bottom: 1px solid var(--line); }
+.client-license-product-context h2{ margin: 2px 0 0; color: var(--ink); font-size: clamp(1.12rem, 2vw, 1.4rem); }
+.client-license-product-context p{ max-width: 720px; margin: 4px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+.client-license-product-icon{ width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: color-mix(in srgb, var(--accent) 9%, var(--surface-solid)); color: var(--accent-strong); }
+.client-license-product-icon .workspace-icon{ width: 19px; height: 19px; }
 .client-license-current-access,
-.client-license-options{ min-width: 0; display: grid; gap: 12px; }
+.client-license-options{ min-width: 0; display: grid; gap: 10px; }
 .client-license-subsection-head{ min-width: 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; }
-.client-license-subsection-head h3{ margin: 3px 0 0; color: var(--ink); font-size: 1.05rem; }
-.client-license-subsection-head p{ margin: 5px 0 0; color: var(--muted); font-size: .84rem; }
+.client-license-subsection-head h3{ margin: 0; color: var(--ink); font-size: .92rem; }
 .client-license-current-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .client-license-current-card{ min-width: 0; display: grid; gap: 12px; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line)); border-radius: var(--workspace-radius-panel); background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, var(--surface-solid)), var(--surface-solid)); }
 .client-license-current-card-head{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -109,28 +102,21 @@
 .client-license-card-actions{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .client-license-card-actions .btn{ justify-content: center; }
 .client-license-offer-grid{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
-.client-license-offer-card{ min-width: 0; min-height: 100%; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 14px; padding: 17px; border: 1px solid var(--line); border-radius: var(--workspace-radius-panel); background: linear-gradient(155deg, var(--surface-solid), color-mix(in srgb, var(--surface-muted) 45%, var(--surface-solid))); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
+.client-license-offer-card{ min-width: 0; min-height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--workspace-radius-panel); background: var(--surface-solid); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
 .client-license-offer-card:hover{ border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); box-shadow: 0 12px 26px rgba(15, 17, 21, .07); transform: translateY(-2px); }
 .client-license-offer-card.is-recommended{ border-color: color-mix(in srgb, var(--accent) 36%, var(--line)); background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 7%, var(--surface-solid)), var(--surface-solid)); }
 .client-license-offer-card.is-evaluation{ background: linear-gradient(155deg, color-mix(in srgb, var(--info) 5%, var(--surface-solid)), var(--surface-solid)); }
-.client-license-offer-card-head{ min-height: 36px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.client-license-offer-icon{ width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 9px; background: var(--surface-muted); color: var(--accent-strong); }
-.client-license-offer-card h4{ margin: 4px 0 0; color: var(--ink); font-size: 1rem; }
-.client-license-offer-card p{ margin: 7px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
-.client-license-trial-duration{ display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius: 9px; background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid)); }
-.client-license-trial-duration > strong{ color: var(--accent-strong); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; }
-.client-license-trial-duration > span,
-.client-license-trial-duration small{ display: block; }
-.client-license-trial-duration > span{ color: var(--ink); font-size: .86rem; font-weight: 850; }
-.client-license-trial-duration small{ margin-top: 2px; color: var(--muted); font-size: .68rem; font-weight: 650; }
-.client-license-offer-meta{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.client-license-offer-card-head{ min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.client-license-offer-card-head h3{ min-width: 0; flex: 1 1 130px; margin: 0; color: var(--ink); font-size: .96rem; }
+.client-license-offer-icon{ width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--surface-muted); color: var(--accent-strong); }
+.client-license-offer-card > p{ margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+.client-license-trial-offer{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 8px 9px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid)); }
+.client-license-trial-offer strong{ color: var(--accent-strong); font-size: .9rem; }
+.client-license-trial-offer span{ color: var(--muted); font-size: .68rem; text-align: right; }
+.client-license-offer-meta{ display: flex; align-items: stretch; gap: 7px; flex-wrap: wrap; }
 .client-license-offer-meta span{ min-width: 0; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 7px; background: var(--surface-muted); color: var(--ink-soft); font-size: .74rem; font-weight: 750; }
-.client-license-feature-list{ display: grid; align-content: start; gap: 9px; margin: 0; padding: 0; list-style: none; }
-.client-license-feature-list li{ display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; color: var(--ink-soft); font-size: .8rem; line-height: 1.4; }
-.client-license-feature-list .workspace-icon{ margin-top: 2px; color: var(--success); }
-.client-license-offer-card footer{ display: grid; gap: 7px; align-self: end; }
+.client-license-offer-card footer{ width: 100%; display: grid; margin-top: auto; padding-top: 2px; }
 .client-license-offer-card footer .btn{ width: 100%; justify-content: center; }
-.client-license-offer-card footer small{ color: var(--muted); font-size: .7rem; line-height: 1.35; text-align: center; }
 
 .client-license-secondary-disclosure{ padding: 0; overflow: hidden; }
 .client-license-secondary-disclosure > summary{ display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; list-style: none; }
@@ -172,16 +158,14 @@
 
 @media (max-width: 980px){
   .client-license-offer-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .client-license-offer-card.is-evaluation{ grid-column: 1 / -1; }
 }
 
 @media (max-width: 700px){
-  .client-license-product-overview{ grid-template-columns: auto minmax(0, 1fr); align-items: start; }
-  .client-license-product-overview > .btn{ grid-column: 1 / -1; width: fit-content; }
+  .client-license-product-context{ grid-template-columns: auto minmax(0, 1fr); align-items: start; }
+  .client-license-product-context > .btn{ grid-column: 1 / -1; width: fit-content; }
   .client-license-current-grid,
   .client-license-offer-grid,
   .client-license-secondary-grid{ grid-template-columns: 1fr; }
-  .client-license-offer-card.is-evaluation{ grid-column: auto; }
   .client-license-card-actions{ display: grid; grid-template-columns: 1fr; }
   .client-license-form-row{ grid-template-columns: 1fr; }
 }
@@ -191,7 +175,6 @@
   .client-license-product-tab{ justify-content: flex-start; }
   .client-license-subsection-head,
   .client-license-current-card-head{ display: grid; align-items: start; }
-  .client-license-offer-meta{ grid-template-columns: 1fr; }
 }
 
 }

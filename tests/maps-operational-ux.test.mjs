@@ -50,7 +50,7 @@ test("workspace layers centralize focus restoration and responsive drawer geomet
   assert.match(mapStyles, /@media \(max-width: 900px\)/);
 });
 
-test("client MAP dashboard separates entitlements, commercial access and secondary activity", () => {
+test("client MAP dashboard keeps product and licenses in one compact product-led flow", () => {
   const source = read("js/workspace/client-map-licenses.js");
   const styles = read("css/workspace/features/client-licenses.css");
 
@@ -64,6 +64,9 @@ test("client MAP dashboard separates entitlements, commercial access and seconda
   assert.match(styles, /\.client-license-product-tabs\{/);
   assert.match(styles, /\.client-license-product-tab\[aria-selected="true"\]/);
   assert.match(styles, /\.client-license-product-panel\{/);
+  assert.match(styles, /\.client-license-product-context\{/);
+  assert.match(styles, /\.client-license-trial-offer\{/);
+  assert.doesNotMatch(styles, /\.client-license-(?:product-overview|no-access|feature-list|trial-duration)/);
   assert.match(styles, /\.client-license-offer-card\{/);
   assert.match(styles, /\.client-license-attention \{ min-width: 0; display: grid;/);
   assert.match(styles, /\.client-license-activity-disclosure/);

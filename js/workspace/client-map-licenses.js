@@ -80,10 +80,9 @@
         ${ui.sectionHeader({
           className: "module-surface client-license-hero",
           actionsClassName: "client-license-actions",
-          eyebrow: "MAP Platform",
-          title: "MAPs",
+          title: "Licencias MAP",
           level: 1,
-          description: "Consulta tu acceso, amplía la suite y administra las plazas de tu organización desde un solo lugar.",
+          description: "Elige un producto para consultar, solicitar o administrar su acceso.",
           actions: [
             {
               label: "Actualizar",
@@ -118,21 +117,11 @@
     const licenses = dashboard.licenses.map(toLicenseViewModel);
     const productKeys = suiteProductKeys();
     if (!productKeys.includes(selectedSuiteProductKey)) selectedSuiteProductKey = productKeys[0] || "map.nano";
-    const activeCount = licenses.filter(item => ["active", "scheduled", "expiring"].includes(item.status)).length;
     const selectedLicenses = licenses
       .filter(item => item.product_key === selectedSuiteProductKey)
       .sort((a, b) => a.statusMeta.priority - b.statusMeta.priority);
 
-    return `<section class="client-license-suite" id="suite-map">
-      ${ui.sectionHeader({
-        className: "client-license-section-head",
-        eyebrow: "Tu acceso y catálogo",
-        title: "Tu suite MAP",
-        description: "Elige un producto para consultar tu acceso y comparar las modalidades de licencia disponibles.",
-        status: activeCount
-          ? { label: `${activeCount} acceso(s) vigente(s)`, status: "success", icon: "check-circle-2" }
-          : { label: "Cotización personalizada", status: "neutral", icon: "badge-plus" }
-      })}
+    return `<section class="client-license-suite" id="suite-map" aria-label="Productos y licencias MAP">
       <div class="client-license-product-tabs" role="tablist" aria-label="Productos de la suite MAP">
         ${productKeys.map(key => renderProductTab(key, licenses)).join("")}
       </div>
@@ -164,14 +153,14 @@
     };
     const panelId = productDomId(key);
     return `<div class="client-license-product-panel" id="suite-panel-${panelId}" role="tabpanel" aria-labelledby="suite-tab-${panelId}" tabindex="0">
-      <header class="module-surface client-license-product-overview">
+      <header class="client-license-product-context">
         <span class="client-license-product-icon">${ui.icon(product.icon, "lg")}</span>
         <div>
           <span class="workspace-eyebrow">${escapeHtml(product.category)}</span>
           <h2>${escapeHtml(productName(key))}</h2>
           <p>${escapeHtml(product.description)}</p>
         </div>
-        <a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Conocer producto</a>
+        <a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>
       </header>
       ${renderCurrentProductAccess(key, product, productLicenses)}
       ${renderLicenseOptions(key, productLicenses)}
@@ -179,13 +168,11 @@
   }
 
   function renderCurrentProductAccess(key, product, productLicenses) {
-    if (!productLicenses.length) {
-      return `<aside class="client-license-no-access">${ui.icon("info", "sm")}<span><strong>Aún no tienes acceso a ${escapeHtml(productName(key))}.</strong><small>Puedes comparar las modalidades disponibles a continuación.</small></span></aside>`;
-    }
+    if (!productLicenses.length) return "";
     return `<section class="client-license-current-access" aria-labelledby="current-access-${productDomId(key)}">
       <div class="client-license-subsection-head">
-        <div><span class="workspace-eyebrow">Acceso asociado</span><h3 id="current-access-${productDomId(key)}">Tu acceso actual</h3></div>
-        <span class="client-license-tag">${productLicenses.length} licencia(s)</span>
+        <h3 id="current-access-${productDomId(key)}">Tu acceso</h3>
+        <span class="client-license-tag">${productLicenses.length}</span>
       </div>
       <div class="client-license-current-grid">${productLicenses.map(item => renderCurrentAccessCard(product, item)).join("")}</div>
     </section>`;
@@ -229,10 +216,7 @@
     const types = contracts.productLicenseTypes(key);
     if (!types.length) return "";
     const ownedTypes = new Set(productLicenses.map(item => item.license_type));
-    return `<section class="client-license-options" aria-labelledby="license-options-${productDomId(key)}">
-      <div class="client-license-subsection-head">
-        <div><span class="workspace-eyebrow">Modalidades disponibles</span><h3 id="license-options-${productDomId(key)}">Elige el tipo de licencia</h3><p>La activación y la cotización se ajustan al alcance de tu proyecto.</p></div>
-      </div>
+    return `<section class="client-license-options" aria-label="Licencias para ${escapeHtml(productName(key))}">
       <div class="client-license-offer-grid">${types.map(type => renderLicenseOfferCard(key, type, ownedTypes.has(type.key))).join("")}</div>
     </section>`;
   }
@@ -242,17 +226,14 @@
     const trialCampaign = trialOffer.is_campaign;
     return `<article class="client-license-offer-card ${type.recommended ? "is-recommended" : ""} ${type.isEvaluation ? "is-evaluation" : ""}">
       <div class="client-license-offer-card-head">
-        <span class="client-license-offer-icon">${ui.icon(type.icon, "md")}</span>
-        <div class="client-license-badges">
-          ${type.recommended ? '<span class="client-license-tag active">Recomendada para equipos</span>' : ""}
-          ${type.isEvaluation ? `<span class="client-license-tag active">${escapeHtml(trialOffer.display_name)} · ${trialDays} días</span>` : ""}
-          ${isOwned ? '<span class="client-license-tag active">Ya tienes esta modalidad</span>' : ""}
-        </div>
+        <span class="client-license-offer-icon">${ui.icon(type.icon, "sm")}</span>
+        <h3>${escapeHtml(type.label)}</h3>
+        ${type.recommended ? '<span class="client-license-tag active">Recomendada</span>' : ""}
+        ${isOwned ? '<span class="client-license-tag active">Actual</span>' : ""}
       </div>
-      <div><span class="workspace-eyebrow">${escapeHtml(type.eyebrow)}</span><h4>${escapeHtml(type.label)}</h4><p>${escapeHtml(type.description)}</p></div>
-      ${type.isEvaluation ? `<div class="client-license-trial-duration"><strong>${trialDays}</strong><span>días gratis<small>${trialCampaign ? `Early access · luego ${trialOffer.standard_days} días` : "Prueba estándar"}</small></span></div>` : ""}
+      <p>${escapeHtml(type.description)}</p>
+      ${type.isEvaluation ? `<p class="client-license-trial-offer"><strong>${trialDays} días gratis</strong><span>${trialCampaign ? `Early access · luego ${trialOffer.standard_days} días` : "Prueba estándar"}</span></p>` : ""}
       <div class="client-license-offer-meta"><span>${ui.icon("users", "xs")}${escapeHtml(type.seatLabel)}</span><span>${ui.icon("calendar-clock", "xs")}${escapeHtml(type.isEvaluation ? `${trialDays} días` : type.durationLabel)}</span></div>
-      <ul class="client-license-feature-list">${type.features.map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
       <footer>
         ${ui.action({
           label: type.isEvaluation ? `Probar gratis ${trialDays} días` : isOwned ? "Solicitar ampliación" : type.ctaLabel,
@@ -260,7 +241,6 @@
           className: type.recommended ? "btn btn-primary" : "btn btn-ghost",
           data: { clientLicenseRequest: key, clientLicenseType: type.key }
         })}
-        <small>${type.isEvaluation ? "Sin costo. Activación coordinada por BCC." : "Cotización personalizada, sin cobro inmediato."}</small>
       </footer>
     </article>`;
   }
