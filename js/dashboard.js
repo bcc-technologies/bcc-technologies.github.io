@@ -1,10 +1,8 @@
 let customerCurrentUser = null;
 let customerEmailManagerBound = false;
 
-window.BCCWorkspaceLoader.register({
-  operation: ["js/auth-workspace-api.js", "js/workspace/forms.js"],
-  licenses: ["js/workspace/license-contracts.js", "js/workspace/client-map-licenses.js"]
-});
+const customerFeatureRegistry = window.BCCWorkspaceFeatureRegistry;
+customerFeatureRegistry.register("client");
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["client"] });
@@ -29,6 +27,12 @@ function hydrateUser(user) {
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = window.BCCWorkspaceUtils.roleLabel(user.role); });
   document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
+  document.querySelectorAll("[data-setup-organization]").forEach(step => {
+    const configured = Boolean(String(user.company || "").trim());
+    step.classList.toggle("complete", configured);
+    const status = step.querySelector("[data-setup-organization-status]");
+    if (status) status.textContent = configured ? "Configurada" : "Opcional";
+  });
   const completed = [user.name, user.email, user.company, user.title].filter(Boolean).length;
   document.querySelectorAll("[data-profile-completion]").forEach(el => { el.textContent = `${completed}/4`; });
 }
@@ -51,16 +55,9 @@ async function initializeCustomerView(viewId) {
       return;
     }
 
-    if (viewId === "operacion") {
-      await window.BCCWorkspaceLoader.load("operation");
-      window.BCCWorkspaceForms?.init(customerCurrentUser);
-      return;
-    }
-
-    if (viewId === "licencias") {
-      await window.BCCWorkspaceLoader.load("licenses");
-      window.BCCWorkspaceClientMapLicenses?.init(customerCurrentUser);
-    }
+    await customerFeatureRegistry.initializeView("client", viewId, {
+      user: customerCurrentUser
+    });
   } catch (error) {
     console.error(`No se pudo inicializar la vista ${viewId}.`, error);
   }

@@ -2,44 +2,8 @@ let staffCurrentUser = null;
 let staffWorkspaceRouter = null;
 let accountEmailManagerBound = false;
 
-const WORKSPACE_MODULE_BY_VIEW = {
-  "science-radar": "intelligence",
-  "product-intelligence": "analytics",
-  "maps-licensing": "maps-licensing",
-  "dominican-intelligence": "dominican-intelligence",
-  "crm-correos": "prospectos"
-};
-const WORKSPACE_LAZY_MODULES = {
-  analytics: { selector: "[data-analytics-workspace]", global: "BCCWorkspaceAnalytics" },
-  "maps-licensing": { selector: "[data-maps-licensing-workspace]", global: "BCCWorkspaceMapsLicensing" },
-  intelligence: { selector: "[data-intelligence-workspace]", global: "BCCWorkspaceIntelligence" },
-  "dominican-intelligence": { selector: "[data-dominican-intelligence-workspace]", global: "BCCWorkspaceDominicanIntelligence" },
-  prospectos: { selector: "[data-prospects-workspace]", global: "BCCWorkspaceProspects" }
-};
-
-
-const WORKSPACE_FEATURES = {
-  operation: [
-    "js/auth-workspace-api.js",
-    "js/workspace/productivity.js",
-    "js/workspace/calendar.js"
-  ],
-  forms: ["js/workspace/forms.js"],
-  admin: ["js/auth-admin-access-api.js", "js/admin-dashboard.js"],
-  analytics: ["js/workspace/analytics.js"],
-  "maps-licensing": ["js/workspace/license-contracts.js", "js/workspace/maps-licensing.js"],
-  intelligence: ["js/workspace/intelligence.js"],
-  "dominican-intelligence": ["js/auth-dominican-intelligence-api.js", "js/workspace/dominican-intelligence.js"],
-  prospectos: [
-    "js/auth-prospects-api.js",
-    "js/workspace/prospects.constants.js",
-    "js/workspace/prospects.layout.js",
-    "js/workspace/prospects.api.js",
-    "js/workspace/prospects.js"
-  ]
-};
-
-window.BCCWorkspaceLoader.register(WORKSPACE_FEATURES, { forms: ["operation"] });
+const staffFeatureRegistry = window.BCCWorkspaceFeatureRegistry;
+staffFeatureRegistry.register("staff");
 
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await window.BCCAuth.requireAuth({ roles: ["staff", "admin"] });
@@ -261,10 +225,18 @@ function openIntelligencePanel(view, panelId = "") {
 async function initializeWorkspaceView(viewId, panelId = "") {
   try {
     if (viewId === "resumen" || viewId === "trabajo") {
-      await window.BCCWorkspaceLoader.load(panelId === "formularios" ? "forms" : "operation");
-      window.BCCWorkspaceProductivity?.init(staffCurrentUser);
-      window.BCCWorkspaceCalendar?.init(staffCurrentUser);
-      if (panelId === "formularios") window.BCCWorkspaceForms?.init(staffCurrentUser);
+      await staffFeatureRegistry.initialize("staff", "operation", {
+        user: staffCurrentUser,
+        viewId,
+        panelId
+      });
+      if (panelId === "formularios") {
+        await staffFeatureRegistry.initialize("staff", "forms", {
+          user: staffCurrentUser,
+          viewId,
+          panelId
+        });
+      }
       return;
     }
 
@@ -274,30 +246,14 @@ async function initializeWorkspaceView(viewId, panelId = "") {
       return;
     }
 
-    if (["usuarios", "roles", "auditoria"].includes(viewId)) {
-      await window.BCCWorkspaceLoader.load("admin");
-      await window.BCCWorkspaceAdmin?.init(staffCurrentUser, { bindRouter: false });
-      return;
-    }
-
-    const featureId = WORKSPACE_MODULE_BY_VIEW[viewId];
-    if (!featureId) return;
-    await window.BCCWorkspaceLoader.load(featureId);
-    initializeLoadedWorkspaceModule(featureId);
+    await staffFeatureRegistry.initializeView("staff", viewId, {
+      user: staffCurrentUser,
+      viewId,
+      panelId
+    });
   } catch (error) {
     console.error(`No se pudo inicializar la vista ${viewId}.`, error);
   }
-function initializeLoadedWorkspaceModule(featureId) {
-  const config = WORKSPACE_LAZY_MODULES[featureId];
-  const root = config ? document.querySelector(config.selector) : null;
-  if (!root || root.dataset.workspaceModuleReady === "true") return;
-  const module = window[config.global];
-  if (!module?.init) throw new Error(`El módulo ${featureId} no expuso un inicializador.`);
-  module.init(staffCurrentUser);
-  root.dataset.workspaceModuleReady = "true";
-  window.BCCWorkspaceUtils.refreshIcons(root);
-}
-
 }
 
 function bindAdminViewSimulator(user) {

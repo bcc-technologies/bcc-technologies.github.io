@@ -1,4 +1,10 @@
 (() => {
+  const contracts = window.BCCWorkspaceMapContracts;
+  const repository = window.BCCWorkspaceMapRepository.client;
+  const utils = window.BCCWorkspaceUtils;
+  const ui = window.BCCWorkspaceUI;
+  const escapeHtml = utils.escapeHtml;
+  const refreshIcons = utils.refreshIcons;
   let root = null;
   let currentUser = null;
   let dashboard = emptyDashboard();
@@ -19,31 +25,18 @@
     root.addEventListener("click", handleClick);
     root.addEventListener("change", handleChange);
     root.addEventListener("submit", handleSubmit);
-    render();
+    root.setAttribute("aria-busy", "true");
     void loadDashboard();
-  }
-
-  async function rpc(name, parameters = {}) {
-    const supabase = await window.BCCAuth.loadSupabaseClient();
-    const { data, error } = await supabase.rpc(name, parameters);
-    if (error) throw new Error(error.message || "No fue posible completar la operación.");
-    return data;
   }
 
   async function loadDashboard({ successMessage = "" } = {}) {
     setBusy(true);
     setMessage("Actualizando tus licencias MAP...");
     try {
-      const [payload, accessRows, entitlements] = await Promise.all([
-        rpc("get_my_license_dashboard"),
-        rpc("get_my_platform_access"),
-        rpc("get_my_internal_entitlements")
-      ]);
-      platformAccess = [...new Set((accessRows || [])
-        .filter(item => item?.access_source === "internal_role")
-        .map(item => String(item?.access_key || "").trim()).filter(Boolean))];
-      internalEntitlements = Array.isArray(entitlements) ? entitlements : [];
-      dashboard = normalizeDashboard(payload);
+      const payload = await repository.getDashboard();
+      platformAccess = payload.platformAccess;
+      internalEntitlements = payload.entitlements;
+      dashboard = payload.dashboard;
       selectDefaultLicense();
       render();
       setMessage(successMessage, successMessage ? "ok" : "neutral");
@@ -53,17 +46,6 @@
     } finally {
       setBusy(false);
     }
-  }
-
-  function normalizeDashboard(value) {
-    const source = value && typeof value === "object" ? value : {};
-    return {
-      accounts: Array.isArray(source.accounts) ? source.accounts : [],
-      licenses: Array.isArray(source.licenses) ? source.licenses : [],
-      members: Array.isArray(source.members) ? source.members : [],
-      assignments: Array.isArray(source.assignments) ? source.assignments : [],
-      recent_events: Array.isArray(source.recent_events) ? source.recent_events : []
-    };
   }
 
   function selectDefaultLicense() {
@@ -88,29 +70,32 @@
             <button class="btn btn-ghost btn-compact" type="button" data-client-license-refresh data-client-license-control ${busy ? "disabled" : ""}><i data-lucide="refresh-cw"></i>Actualizar</button>
           </div>
         </article>
-        <p class="client-license-message" data-client-license-message hidden></p>
+        <p class="client-license-message" data-client-license-message role="status" aria-live="polite" hidden></p>
         ${renderStaffLicense()}
-        ${renderFeaturedLicense()}
         ${renderPlatformAccess()}
-        ${renderAttention()}
-        ${renderMetrics()}
-        <section>
-          <div class="client-license-section-head">
-            <div><h2>Licencias asociadas</h2><p>Sólo mostramos licencias que administras o que están asignadas directamente a tu usuario.</p></div>
-          </div>
-          ${renderLicenses()}
-        </section>
-        ${renderSeatManagement()}
+        ${renderCommercialWorkspace()}
         ${renderActivity()}
       </section>`;
     refreshIcons();
+  }
+
+  function renderCommercialWorkspace() {
+    const hasCommercialLicenses = dashboard.licenses.length > 0;
+    return `<section class="client-license-commercial ${hasCommercialLicenses ? "has-licenses" : "is-empty"}">
+      <div class="client-license-section-head">
+        <div><span class="workspace-eyebrow">Acceso asociado</span><h2>Licencias comerciales y evaluaciones</h2><p>Sólo mostramos licencias que administras o que están asignadas directamente a tu usuario.</p></div>
+      </div>
+      ${hasCommercialLicenses ? `${renderFeaturedLicense()}${renderAttention()}${renderMetrics()}` : ""}
+      ${renderLicenses()}
+      ${renderSeatManagement()}
+    </section>`;
   }
 
   function renderStaffLicense() {
     const entitlement = internalEntitlements.find(item => item?.entitlement_key === "map.staff");
     if (!entitlement) return "";
     const products = Array.isArray(entitlement.product_keys) ? entitlement.product_keys : [];
-    return `<article class="module-surface client-license-direct-access">
+    return `<article class="module-surface client-license-direct-access is-staff-entitlement">
       <div class="client-license-section-head">
         <div>
           <span class="workspace-eyebrow">Beneficio exclusivo del staff</span>
@@ -129,7 +114,7 @@
 
   function renderPlatformAccess() {
     if (!platformAccess.length) return "";
-    return `<article class="module-surface client-license-direct-access">
+    return `<article class="module-surface client-license-direct-access is-platform-access">
       <div class="client-license-section-head">
         <div>
           <span class="workspace-eyebrow">Permisos adicionales</span>
@@ -145,8 +130,7 @@
   }
 
   function platformAccessLabel(key) {
-    const labels = { "map.dev.access": "Desarrollo MAP", "map.release.manage": "Releases MAP", "platform.licenses.read": "Consulta de licencias", "platform.licenses.manage": "Gestión de licencias", "platform.evaluations.manage": "Evaluaciones", "platform.permissions.manage": "Permisos", "platform.analytics.read": "Analíticas" };
-    return labels[key] || key;
+    return contracts.platformAccessLabel(key);
   }
 
   function renderFeaturedLicense() {
@@ -174,6 +158,7 @@
   }
 
   function renderMetrics() {
+    if (!dashboard.licenses.length) return "";
     const viewModels = dashboard.licenses.map(toLicenseViewModel);
     const activeLicenses = viewModels.filter(item => item.status === "active").length;
     const ownSeats = dashboard.assignments.filter(item => item.is_mine).length;
@@ -189,12 +174,24 @@
   }
 
   function metric(label, value, detail) {
-    return `<article class="client-license-metric"><span>${escapeHtml(label)}</span><strong>${Number(value || 0).toLocaleString()}</strong><small>${escapeHtml(detail)}</small></article>`;
+    return ui.metric({ label, value, detail, className: "client-license-metric" });
   }
 
   function renderLicenses() {
     if (!dashboard.licenses.length) {
-      return `<div class="client-license-empty"><i data-lucide="${internalEntitlements.length ? "shield-check" : "badge-x"}"></i><strong>No hay licencias comerciales asociadas a tu usuario.</strong><span>${internalEntitlements.length ? "Tu licencia MAP Staff está activa y aparece arriba. Las licencias comerciales o de evaluación se mostrarán aquí por separado." : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza."}</span>${internalEntitlements.length ? "" : '<a class="btn btn-primary" href="/contactUs.html">Contactar soporte</a>'}</div>`;
+      return ui.emptyState({
+        className: "client-license-empty",
+        icon: internalEntitlements.length ? "shield-check" : "badge-x",
+        title: "No hay licencias comerciales asociadas a tu usuario.",
+        description: internalEntitlements.length
+          ? "Tu licencia MAP Staff está activa y aparece arriba. Las licencias comerciales o de evaluación se mostrarán aquí por separado."
+          : "Si esperabas una licencia, solicita al administrador de tu organización que te asigne una plaza.",
+        action: internalEntitlements.length ? null : {
+          href: "/contactUs.html",
+          label: "Contactar soporte",
+          className: "btn-primary"
+        }
+      });
     }
 
     return `<div class="client-license-list">${dashboard.licenses.map(rawLicense => {
@@ -228,9 +225,7 @@
 
   function renderSeatManagement() {
     const manageable = dashboard.licenses.filter(item => item.can_manage_seats && !item.is_evaluation);
-    if (!manageable.length) {
-      return `<article class="module-surface client-license-section-head"><div><h2>Gestión de plazas</h2><p>Esta función aparece para propietarios y administradores de cuentas organizacionales con una licencia comercial activa.</p></div><i data-lucide="shield-check"></i></article>`;
-    }
+    if (!manageable.length) return "";
 
     const selected = manageable.find(item => item.license_id === selectedLicenseId) || manageable[0];
     const assignments = dashboard.assignments.filter(item => item.license_id === selected.license_id);
@@ -279,8 +274,9 @@
 
   function renderActivity() {
     if (!dashboard.recent_events.length) return "";
-    return `<article class="module-surface">
-      <div class="client-license-section-head"><div><h2>Actividad reciente</h2><p>Registro de asignaciones y liberaciones realizadas desde el autoservicio.</p></div><i data-lucide="history"></i></div>
+    return `<details class="module-surface client-license-activity-disclosure">
+      <summary><span><i data-lucide="history"></i><span><strong>Actividad reciente</strong><small>${dashboard.recent_events.length} movimiento(s) de plazas</small></span></span><i data-lucide="chevron-down"></i></summary>
+      <div class="client-license-activity-intro">Registro de asignaciones y liberaciones realizadas desde el autoservicio.</div>
       <div class="client-license-activity-list">${dashboard.recent_events.map(event => {
         const member = dashboard.members.find(item => item.user_id === event.subject_user_id);
         const isCurrentUser = event.subject_user_id === currentUser?.id;
@@ -288,7 +284,7 @@
         const action = event.event_type === "seat_assigned" ? "Plaza asignada" : "Plaza liberada";
         return `<div class="client-license-activity-item"><div><strong>${action}</strong><small>${escapeHtml(subject)} · ${escapeHtml(productName(event.details?.product_key))}</small></div><time datetime="${escapeHtml(event.occurred_at || "")}">${formatDateTime(event.occurred_at)}</time></div>`;
       }).join("")}</div>
-    </article>`;
+    </details>`;
   }
 
   function handleChange(event) {
@@ -307,7 +303,7 @@
     setBusy(true);
     setMessage("Asignando la plaza...");
     try {
-      await rpc("assign_my_account_license", { p_license_id: values.licenseId, p_user_id: values.userId });
+      await repository.assignSeat(values.licenseId, values.userId);
       await loadDashboard({ successMessage: "La plaza fue asignada correctamente." });
     } catch (error) {
       setBusy(false);
@@ -322,11 +318,16 @@
     }
     const releaseButton = event.target.closest("[data-client-license-release]");
     if (!releaseButton || busy) return;
-    if (!confirm("¿Liberar esta plaza? El usuario perderá el acceso asociado a la licencia.")) return;
+    const confirmed = await ui.confirmAction({
+      title: "Liberar plaza MAP",
+      description: "El usuario perderá el acceso asociado a esta licencia. La plaza quedará disponible inmediatamente.",
+      confirmLabel: "Liberar plaza"
+    });
+    if (!confirmed) return;
     setBusy(true);
     setMessage("Liberando la plaza...");
     try {
-      await rpc("release_my_license_assignment", { p_assignment_id: releaseButton.dataset.clientLicenseRelease });
+      await repository.releaseSeat(releaseButton.dataset.clientLicenseRelease);
       await loadDashboard({ successMessage: "La plaza fue liberada correctamente." });
     } catch (error) {
       setBusy(false);
@@ -336,25 +337,14 @@
 
   function setBusy(value) {
     busy = Boolean(value);
-    root?.querySelectorAll("[data-client-license-control]").forEach(element => {
-      element.disabled = busy || element.dataset.idleDisabled === "true";
+    ui.setBusy(root, busy, {
+      selector: "[data-client-license-control]",
+      label: "Actualizando licencias MAP"
     });
   }
 
   function setMessage(message, tone = "neutral") {
-    const element = root?.querySelector("[data-client-license-message]");
-    if (!element) return;
-    element.textContent = message || "";
-    element.dataset.tone = tone;
-    element.hidden = !message;
-  }
-
-  function effectiveStatus(item) {
-    return toLicenseViewModel(item).status;
-  }
-
-  function statusLabel(value) {
-    return window.BCCWorkspaceLicenseContracts.STATUS[value]?.label || window.BCCWorkspaceLicenseContracts.STATUS.unknown.label;
+    ui.feedback(root?.querySelector("[data-client-license-message]"), message, tone);
   }
 
   function roleLabel(value) {
@@ -362,11 +352,11 @@
   }
 
   function productName(key) {
-    return window.BCCWorkspaceLicenseContracts.PRODUCTS[key] || key || "MAP";
+    return contracts.productName(key);
   }
 
   function toLicenseViewModel(license) {
-    return window.BCCWorkspaceLicenseContracts.toViewModel(license);
+    return contracts.toLicenseViewModel(license);
   }
 
   function formatDate(value) {
@@ -382,28 +372,7 @@
   }
 
   function userMessage(error) {
-    const message = String(error?.message || error || "No fue posible completar la operación.");
-    const translations = [
-      [/Authentication required/i, "Tu sesión expiró. Inicia sesión nuevamente."],
-      [/Only an account owner or administrator/i, "Sólo el propietario o un administrador de la cuenta puede asignar plazas."],
-      [/not an active account member/i, "El usuario seleccionado ya no es un miembro activo de la cuenta."],
-      [/already has this license/i, "El usuario ya tiene asignada esta licencia."],
-      [/already has an active license for this product/i, "El usuario ya tiene una licencia activa para este producto."],
-      [/no remaining seats/i, "La licencia no tiene plazas disponibles."],
-      [/Evaluation access is managed/i, "El acceso de evaluación es administrado por el equipo BCC."],
-      [/Assignment is not active/i, "La plaza ya fue liberada o dejó de estar activa."],
-      [/License is not active/i, "La licencia no está activa."],
-      [/cannot release this assignment/i, "No tienes permiso para liberar esta plaza."]
-    ];
-    return translations.find(([pattern]) => pattern.test(message))?.[1] || message;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
-  }
-
-  function refreshIcons() {
-    window.BCCWorkspaceUtils?.refreshIcons?.();
+    return contracts.toError(error).message;
   }
 
   window.BCCWorkspaceClientMapLicenses = { init };

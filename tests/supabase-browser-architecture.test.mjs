@@ -65,13 +65,20 @@ test("Supabase runtime separates production from local fallback and classifies f
   assert.equal(localWindow.BCC_RUNTIME.allowLocalAccountFallback, true);
 });
 
-test("license UI and shared MAP contracts use separate namespaces", () => {
-  const window = { BCCWorkspaceUtils: { escapeHtml: String } };
-  const context = vm.createContext({ window, navigator: {}, document: {} });
-  vm.runInContext(read("js/workspace/licenses.js"), context, { filename: "licenses.js" });
-  vm.runInContext(read("js/workspace/license-contracts.js"), context, { filename: "license-contracts.js" });
+test("MAP contracts expose one canonical product and status namespace", () => {
+  const window = {};
+  const context = vm.createContext({ window });
+  vm.runInContext(read("js/workspace/map-contracts.js"), context, { filename: "map-contracts.js" });
 
-  assert.equal(typeof window.BCCWorkspaceLicenses.init, "function");
-  assert.equal(typeof window.BCCWorkspaceLicenseContracts.toViewModel, "function");
-  assert.equal(window.BCCWorkspaceLicenseContracts.PRODUCTS["map.nano"], "MAP Nano");
+  assert.deepEqual(
+    Object.keys(window.BCCWorkspaceMapContracts.PRODUCTS),
+    ["map.nano", "map.bio", "map.med"]
+  );
+  assert.equal(window.BCCWorkspaceMapContracts.productName("map.nano"), "MAP Nano");
+  assert.equal(window.BCCWorkspaceMapContracts.toLicenseViewModel({
+    product_key: "map.bio",
+    license_status: "active",
+    seat_limit: 4,
+    assigned_seats: 1
+  }).availableSeats, 3);
 });

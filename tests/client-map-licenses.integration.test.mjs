@@ -5,34 +5,39 @@ import test from "node:test";
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("client dashboard exposes the MAP license self-service view", async () => {
-  const [html, navigation, dashboard] = await Promise.all([
+  const [html, navigation, dashboard, registry] = await Promise.all([
     read("dashboard.html"),
     read("js/workspace/navigation.js"),
-    read("js/dashboard.js")
+    read("js/dashboard.js"),
+    read("js/workspace/feature-registry.js")
   ]);
 
   assert.match(html, /data-client-map-licenses/);
   assert.doesNotMatch(html, /<script src="js\/workspace\/client-map-licenses\.js"/);
-  assert.match(dashboard, /"js\/workspace\/client-map-licenses\.js"/);
+  assert.match(registry, /"js\/workspace\/client-map-licenses\.js"/);
   assert.match(navigation, /href:\s*"#licencias"/);
-  assert.match(dashboard, /BCCWorkspaceClientMapLicenses\?\.init\(customerCurrentUser\)/);
+  assert.match(dashboard, /customerFeatureRegistry\.initializeView\("client", viewId/);
 });
 
-test("client license module only uses scoped self-service RPCs", async () => {
-  const source = await read("js/workspace/client-map-licenses.js");
+test("client license module uses the shared MAP repository boundary", async () => {
+  const [source, repository] = await Promise.all([
+    read("js/workspace/client-map-licenses.js"),
+    read("js/workspace/map-repository.js")
+  ]);
 
-  assert.match(source, /rpc\("get_my_license_dashboard"\)/);
-  assert.match(source, /rpc\("get_my_platform_access"\)/);
-  assert.match(source, /rpc\("get_my_internal_entitlements"\)/);
+  assert.match(repository, /rpc\("get_my_license_dashboard"\)/);
+  assert.match(repository, /rpc\("get_my_platform_access"\)/);
+  assert.match(repository, /rpc\("get_my_internal_entitlements"\)/);
   assert.match(source, /Licencia MAP Staff/);
   assert.match(source, /Beneficio exclusivo del staff/);
-  assert.match(source, /access_source === "internal_role"/);
+  assert.match(await read("js/workspace/map-contracts.js"), /access_source === "internal_role"/);
   assert.ok(source.indexOf("function renderStaffLicense") < source.indexOf("function renderFeaturedLicense"));
   assert.ok(source.indexOf("function renderPlatformAccess") < source.indexOf("function renderFeaturedLicense"));
-  assert.match(source, /rpc\("assign_my_account_license"/);
-  assert.match(source, /rpc\("release_my_license_assignment"/);
+  assert.match(repository, /rpc\("assign_my_account_license"/);
+  assert.match(repository, /rpc\("release_my_license_assignment"/);
   assert.doesNotMatch(source, /\.from\("(?:platform_licenses|license_assignments|license_account_members)"\)/);
-  assert.doesNotMatch(source, /service[_-]?role/i);
+  assert.doesNotMatch(source, /supabase\.rpc|loadSupabaseClient/);
+  assert.doesNotMatch(repository, /service[_-]?role/i);
 });
 
 test("client license migration preserves least privilege", async () => {

@@ -41,19 +41,15 @@ test("seat assignments enforce operational status, uniqueness, and capacity", t 
   assert.equal(reassigned.assignment.id, assigned.assignment.id);
 });
 
-test("assignment contract is shared by UI, browser API, and local server", () => {
-  const ui = readSource("../js/workspace/licenses.js");
+test("canonical dashboard assignments use scoped RPCs while the local fallback stays isolated", () => {
+  const repository = readSource("../js/workspace/map-repository.js");
   const browserApi = readSource("../js/auth-map-licenses-api.js");
   const server = readSource("../accounts-server.mjs");
 
-  for (const marker of [
-    "data-license-assignment-list",
-    "data-assignment-dialog",
-    "data-assign-user",
-    "data-revoke-assignment"
-  ]) {
-    assert.match(ui, new RegExp(marker));
+  for (const rpc of ["assign_my_account_license", "release_my_license_assignment", "assign_my_platform_license"]) {
+    assert.match(repository, new RegExp(rpc));
   }
+  assert.doesNotMatch(repository, /map_licenses.*select|\.from\(/s);
   for (const route of ["assignable-users", "assignments"]) {
     assert.match(browserApi, new RegExp(route));
     assert.match(server, new RegExp(route));

@@ -14,7 +14,9 @@
   <script src="js/supabase-config.js" defer></script>
   <script src="js/workspace/icons.js" defer></script>
   <script src="js/workspace/utils.js" defer></script>
+  <script src="js/workspace/ui.js" defer></script>
   <script src="js/workspace/loader.js" defer></script>
+  <script src="js/workspace/feature-registry.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/layout.js" defer></script>
   <script src="js/workspace/account.js" defer></script>
@@ -131,8 +133,8 @@
             <div class="setup-steps">
               <div class="complete"><i data-lucide="check"></i><strong>Información básica</strong><small data-profile-completion>-</small></div>
               <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
-              <div class="complete"><i data-lucide="check"></i><strong>Organización</strong><small>Configurada</small></div>
-              <div><span>4</span><strong>Primera solicitud</strong><small>Pendiente</small></div>
+              <div data-setup-organization><i data-lucide="building-2"></i><strong>Organización</strong><small data-setup-organization-status>Opcional</small></div>
+              <div><span>4</span><strong>Primera solicitud</strong><small>Cuando la necesites</small></div>
             </div>
           </section>
           <div class="client-operation-grid">
@@ -166,13 +168,13 @@
               </article>
               <article class="module-surface client-status-panel">
                 <div class="module-head compact">
-                  <h2>Estado operativo</h2>
-                  <span class="status-dot">Activo</span>
+                  <h2>Canales de atención</h2>
+                  <span class="status-dot">Orientación</span>
                 </div>
                 <div class="status-list">
-                  <div><i data-lucide="clock-3"></i><span>Respuesta estimada</span><strong>1 día hábil</strong></div>
+                  <div><i data-lucide="clock-3"></i><span>Objetivo de respuesta</span><strong>1 día hábil</strong></div>
                   <div><i data-lucide="mail-check"></i><span>Canal principal</span><strong>Correo registrado</strong></div>
-                  <div><i data-lucide="shield-check"></i><span>Acceso</span><strong>Cuenta verificada</strong></div>
+                  <div><i data-lucide="shield-check"></i><span>Acceso actual</span><strong>Sesión autenticada</strong></div>
                 </div>
               </article>
             </aside>
@@ -314,12 +316,12 @@
               <article class="module-surface customer-record-panel">
                 <div class="module-head compact">
                   <h2>Estado de cuenta</h2>
-                  <span class="status-dot">Sin pendientes</span>
+                  <span class="status-dot">Referencia</span>
                 </div>
                 <dl class="account-details">
                   <div><dt>Organización</dt><dd data-user-company>...</dd></div>
                   <div><dt>Contacto de facturación</dt><dd><span>Correo registrado</span><small data-user-email>...</small></dd></div>
-                  <div><dt>Condición actual</dt><dd>Sin facturas abiertas</dd></div>
+                  <div><dt>Consultas</dt><dd>Coordina el estado con el equipo</dd></div>
                 </dl>
               </article>
               <article class="module-surface customer-record-panel">
@@ -334,7 +336,7 @@
               <article class="module-surface customer-record-panel">
                 <div class="module-head compact">
                   <h2>Facturación</h2>
-                  <span>0 registros</span>
+                  <span>Portal privado</span>
                 </div>
                 <div class="customer-empty-row">
                   <i data-lucide="receipt-text"></i>
@@ -347,7 +349,7 @@
               <article class="module-surface customer-record-panel">
                 <div class="module-head compact">
                   <h2>Documentos</h2>
-                  <span>0 archivos</span>
+                  <span>Portal privado</span>
                 </div>
                 <div class="customer-empty-row">
                   <i data-lucide="folder-lock"></i>

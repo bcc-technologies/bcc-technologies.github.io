@@ -808,3 +808,189 @@
 .muted-text{
   color: var(--ink-muted);
 }
+
+
+/* Shared data-display and decision primitives. */
+.workspace-stat{
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--workspace-radius-panel);
+  background: var(--surface-solid);
+}
+
+.workspace-stat span,
+.workspace-stat small{
+  display: block;
+  color: var(--muted);
+}
+
+.workspace-stat strong{
+  display: block;
+  margin: 6px 0;
+  color: var(--ink);
+  font-size: 1.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.workspace-data-state{
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--workspace-radius-panel);
+  color: var(--muted);
+  text-align: center;
+}
+
+.workspace-data-state > i{
+  width: 28px;
+  height: 28px;
+  color: var(--accent-strong);
+}
+
+.workspace-data-state strong{
+  color: var(--ink);
+}
+
+.workspace-data-state span{
+  max-width: 52ch;
+}
+
+.workspace-status-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 800;
+}
+
+.workspace-status-badge > i{
+  width: .9rem;
+  height: .9rem;
+}
+
+.workspace-status-badge.is-success{ color: var(--success); background: color-mix(in srgb, var(--success) 12%, var(--surface-solid)); }
+.workspace-status-badge.is-warning{ color: var(--warning); background: color-mix(in srgb, var(--warning) 13%, var(--surface-solid)); }
+.workspace-status-badge.is-danger{ color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid)); }
+
+.workspace-confirm-dialog{
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--workspace-radius-feature);
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.workspace-confirm-dialog::backdrop{
+  background: rgba(2, 6, 23, .56);
+  backdrop-filter: blur(3px);
+}
+
+.workspace-confirm-panel{
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 22px;
+}
+
+.workspace-confirm-icon{
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--workspace-radius-control);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid));
+  color: var(--danger);
+}
+
+.workspace-confirm-icon i{ width: 20px; height: 20px; }
+.workspace-confirm-panel h2{ margin: 4px 0 6px; font-size: 1.15rem; }
+.workspace-confirm-panel p{ margin: 0; color: var(--muted); line-height: 1.5; }
+.workspace-confirm-actions{ grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.workspace-confirm-actions [data-tone="danger"]{ border-color: var(--danger); background: var(--danger); color: var(--ink-inverse); }
+
+@media (max-width: 560px){
+  .workspace-confirm-panel{ grid-template-columns: 1fr; }
+  .workspace-confirm-actions{ display: grid; }
+}
+
+
+/* Shared modal and drawer layers. */
+.workspace-layer{
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.workspace-layer::backdrop{
+  background: rgba(2, 6, 23, .58);
+  backdrop-filter: blur(3px);
+}
+
+.workspace-layer.is-modal{
+  width: min(620px, calc(100vw - 32px));
+}
+
+.workspace-layer.is-drawer{
+  width: min(520px, 100vw);
+  height: 100dvh;
+  margin: 0 0 0 auto;
+}
+
+.workspace-layer-panel{
+  width: 100%;
+  max-height: min(88dvh, 820px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--workspace-radius-feature);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+}
+
+.workspace-layer.is-drawer .workspace-layer-panel{
+  height: 100dvh;
+  max-height: none;
+  border-radius: var(--workspace-radius-feature) 0 0 var(--workspace-radius-feature);
+}
+
+.workspace-layer-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.workspace-layer-head h2{ margin: 4px 0 5px; font-size: 1.25rem; }
+.workspace-layer-head p{ margin: 0; color: var(--muted); line-height: 1.5; }
+.workspace-layer-body{ display: grid; gap: 18px; padding: 24px; overflow: auto; overscroll-behavior: contain; }
+.workspace-layer-actions{ display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px; border-top: 1px solid var(--line); }
+.workspace-layer-close{ width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; border: 0; border-radius: var(--workspace-radius-control); background: transparent; color: var(--muted); cursor: pointer; }
+.workspace-layer-close:hover{ background: var(--hover); color: var(--ink); }
+.workspace-layer-close:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+.workspace-layer-close i{ width: 19px; height: 19px; }
+
+@media (max-width: 620px){
+  .workspace-layer.is-modal, .workspace-layer.is-drawer{ width: 100vw; height: 100dvh; }
+  .workspace-layer.is-modal .workspace-layer-panel, .workspace-layer.is-drawer .workspace-layer-panel{ height: 100dvh; max-height: none; border-radius: 0; }
+  .workspace-layer-head, .workspace-layer-body{ padding: 18px; }
+  .workspace-layer-actions{ display: grid; grid-template-columns: 1fr 1fr; padding: 14px 18px; }
+}

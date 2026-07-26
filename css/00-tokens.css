@@ -55,6 +55,10 @@
   --r-sm: 10px;
   --r-md: 14px;
   --r-lg: 18px;
+  --workspace-radius-control: var(--r-sm);
+  --workspace-radius-panel: var(--r-md);
+  --workspace-radius-feature: var(--r-lg);
+  --workspace-section-gap: 18px;
 
   /* Layout */
   --container: 1200px;

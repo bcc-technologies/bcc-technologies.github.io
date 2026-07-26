@@ -1,37 +1,196 @@
-.maps-license-shell { display: grid; gap: 18px; }
-.maps-license-hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
-.maps-license-hero h1 { margin: 4px 0 8px; font-size: clamp(1.55rem, 3vw, 2.3rem); }
-.maps-license-actions, .maps-license-tabs, .maps-license-form-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.maps-license-tabs { padding: 6px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-muted); }
-.maps-license-tabs button { border: 0; border-radius: 10px; padding: 9px 13px; color: var(--muted); background: transparent; cursor: pointer; font: inherit; font-weight: 700; }
-.maps-license-tabs button.is-active { color: var(--text); background: var(--surface-solid); box-shadow: var(--shadow-soft); }
-.maps-license-panel[hidden] { display: none; }
-.maps-license-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.maps-license-metric { padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-solid); }
-.maps-license-metric span, .maps-license-metric small { display: block; color: var(--muted); }
-.maps-license-metric strong { display: block; margin: 6px 0; font-size: 1.65rem; }
-.maps-license-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr); gap: 16px; }
-.maps-license-card { padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-solid); }
-.maps-license-card h2, .maps-license-card h3 { margin-top: 0; }
-.maps-license-table-wrap { overflow: auto; }
-.maps-license-table { width: 100%; border-collapse: collapse; min-width: 720px; }
-.maps-license-table th, .maps-license-table td { padding: 11px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-.maps-license-table th { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
-.maps-license-table td small { display: block; color: var(--muted); margin-top: 3px; }
-.maps-license-status { display: inline-flex; padding: 4px 8px; border-radius: 999px; background: var(--surface-muted); font-size: .78rem; font-weight: 800; }
-.maps-license-status.active { color: var(--success); background: color-mix(in srgb, var(--success) 12%, var(--surface-solid)); }
-.maps-license-status.revoked, .maps-license-status.expired { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid)); }
-.maps-license-form { display: grid; gap: 12px; }
-.maps-license-form label { display: grid; gap: 6px; color: var(--muted); font-size: .86rem; font-weight: 700; }
-.maps-license-form input, .maps-license-form select, .maps-license-form textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-solid); color: var(--text); padding: 10px 11px; font: inherit; }
-.maps-license-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.maps-license-message { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--surface-muted); color: var(--muted); }
-.maps-license-message[data-tone="error"] { color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, var(--surface-solid)); }
-.maps-license-message[data-tone="ok"] { color: var(--success); background: color-mix(in srgb, var(--success) 10%, var(--surface-solid)); }
-.maps-license-cohort-list { display: grid; gap: 10px; }
-.maps-license-cohort { padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-muted); }
-.maps-license-cohort-head { display: flex; justify-content: space-between; gap: 12px; }
-.maps-license-cohort p { color: var(--muted); margin: 6px 0; }
-.maps-license-empty { padding: 30px 16px; text-align: center; color: var(--muted); }
-@media (max-width: 900px) { .maps-license-grid { grid-template-columns: 1fr; } .maps-license-metrics { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .maps-license-hero { display: grid; } .maps-license-metrics, .maps-license-form-row { grid-template-columns: 1fr; } }
+.maps-license-shell{ display: grid; gap: 18px; }
+.maps-license-hero,
+.maps-license-section-head{ display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.maps-license-hero h1{ margin: 4px 0 8px; font-size: clamp(1.55rem, 3vw, 2.3rem); }
+.maps-license-hero p,
+.maps-license-section-head p{ max-width: 68ch; margin: 4px 0 0; line-height: 1.5; }
+.maps-license-section-head h2,
+.maps-license-section-head h3{ margin: 4px 0 0; }
+.maps-license-actions{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.maps-license-tabs{
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--workspace-radius-panel);
+  background: var(--surface-muted);
+  scrollbar-width: thin;
+}
+.maps-license-tabs button{
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: var(--workspace-radius-control);
+  padding: 9px 13px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.maps-license-tabs button:hover{ color: var(--ink); }
+.maps-license-tabs button:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+.maps-license-tabs button.is-active{ color: var(--ink); background: var(--surface-solid); box-shadow: var(--shadow-soft); }
+.maps-license-panel[hidden]{ display: none; }
+
+.maps-license-message{
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--workspace-radius-control);
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+.maps-license-message:empty{ display: none; }
+.maps-license-message[data-tone="error"]{ color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, var(--surface-solid)); }
+.maps-license-message[data-tone="ok"]{ color: var(--success); background: color-mix(in srgb, var(--success) 10%, var(--surface-solid)); }
+
+.maps-license-metrics{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.maps-license-metric{ border-color: var(--border); }
+.maps-license-summary-grid{ display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .8fr); gap: 16px; margin-top: 16px; }
+.maps-license-card{ padding: 20px; border: 1px solid var(--border); border-radius: var(--workspace-radius-panel); background: var(--surface-solid); }
+.maps-license-operational-note{ display: flex; gap: 14px; align-items: flex-start; }
+.maps-license-operational-note > i{ width: 38px; height: 38px; padding: 9px; flex: 0 0 auto; border-radius: 50%; background: var(--surface-muted); color: var(--accent-strong); }
+.maps-license-operational-note h2{ margin: 5px 0; font-size: 1.1rem; }
+.maps-license-operational-note p{ margin: 0; color: var(--muted); line-height: 1.55; }
+
+.maps-license-toolbar{
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(155px, auto) minmax(170px, auto) auto;
+  gap: 9px;
+  align-items: center;
+  margin: 18px 0 12px;
+}
+.maps-license-toolbar select,
+.maps-license-search{
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--workspace-radius-control);
+  background: var(--surface-solid);
+  color: var(--ink);
+}
+.maps-license-toolbar select{ width: 100%; padding: 9px 32px 9px 10px; font: inherit; }
+.maps-license-search{ display: flex; align-items: center; gap: 8px; padding: 0 11px; }
+.maps-license-search:focus-within{ border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.maps-license-search i{ width: 17px; height: 17px; flex: 0 0 auto; color: var(--muted); }
+.maps-license-search input{ width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; }
+.maps-license-result-count{ color: var(--muted); font-size: .82rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.maps-license-table-wrap{ overflow: auto; overscroll-behavior-inline: contain; }
+.maps-license-table{ width: 100%; min-width: 680px; border-collapse: collapse; }
+.maps-license-table th,
+.maps-license-table td{ padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+.maps-license-table th{ color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .045em; white-space: nowrap; }
+.maps-license-table tbody tr:last-child td{ border-bottom: 0; }
+.maps-license-table tbody tr:hover{ background: color-mix(in srgb, var(--surface-muted) 68%, transparent); }
+.maps-license-table td small{ display: block; max-width: 250px; margin-top: 3px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.maps-license-records{ min-width: 900px; }
+.maps-license-records td:last-child{ text-align: right; }
+
+.maps-license-capacity{ width: 96px; height: 5px; margin-top: 6px; overflow: hidden; border-radius: 999px; background: var(--surface-muted); }
+.maps-license-capacity span{ display: block; height: 100%; border-radius: inherit; background: var(--accent-strong); }
+.maps-license-capacity.is-large{ width: 100%; height: 8px; }
+.maps-license-status{ white-space: nowrap; }
+.maps-license-empty.is-compact{ min-height: 116px; padding: 18px; }
+
+.maps-license-form{ display: flex; flex-direction: column; }
+.maps-license-form label{ display: grid; gap: 6px; color: var(--muted); font-size: .86rem; font-weight: 700; }
+.maps-license-form input,
+.maps-license-form select,
+.maps-license-form textarea{
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--workspace-radius-control);
+  background: var(--surface-solid);
+  color: var(--ink);
+  padding: 10px 11px;
+  font: inherit;
+}
+.maps-license-form input:focus,
+.maps-license-form select:focus,
+.maps-license-form textarea:focus{ outline: 2px solid var(--accent); outline-offset: 1px; }
+.maps-license-form-row{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.maps-license-form .workspace-layer-body{ gap: 14px; }
+
+.maps-license-detail-status{ display: flex; justify-content: flex-start; }
+.maps-license-detail-list{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.maps-license-detail-list div{ padding: 12px; border-radius: var(--workspace-radius-control); background: var(--surface-muted); }
+.maps-license-detail-list dt{ color: var(--muted); font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.maps-license-detail-list dd{ margin: 5px 0 0; color: var(--ink); font-weight: 750; }
+.maps-license-detail-section{ display: grid; gap: 12px; padding-top: 18px; border-top: 1px solid var(--border); }
+.maps-license-detail-section h3{ margin: 0; }
+.maps-license-danger-zone{ display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: auto; padding: 16px; border: 1px solid color-mix(in srgb, var(--danger) 24%, var(--border)); border-radius: var(--workspace-radius-panel); }
+.maps-license-danger-zone p{ margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.45; }
+.maps-license-danger-zone .btn{ color: var(--danger); }
+
+.maps-license-evaluation-layout{
+  display: grid;
+  grid-template-columns: minmax(250px, .72fr) minmax(0, 1.55fr);
+  gap: 0;
+  min-height: 460px;
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--workspace-radius-panel);
+}
+.maps-license-cohort-browser{ display: flex; flex-direction: column; gap: 10px; padding: 12px; border-right: 1px solid var(--border); background: var(--surface-muted); }
+.maps-license-cohort-browser > .maps-license-search{ flex: 0 0 auto; background: var(--surface-solid); }
+.maps-license-cohort-list{ display: grid; gap: 6px; }
+.maps-license-cohort{
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--workspace-radius-control);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.maps-license-cohort:hover{ background: var(--surface-solid); }
+.maps-license-cohort:focus-visible{ outline: 2px solid var(--accent); outline-offset: 1px; }
+.maps-license-cohort.is-selected{ border-color: var(--border); background: var(--surface-solid); box-shadow: var(--shadow-soft); }
+.maps-license-cohort-head{ display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.maps-license-cohort-head > span:first-child{ min-width: 0; display: grid; gap: 3px; }
+.maps-license-cohort-head strong,
+.maps-license-cohort-head small{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.maps-license-cohort-head small,
+.maps-license-cohort-meta{ color: var(--muted); font-size: .78rem; }
+.maps-license-cohort-detail{ min-width: 0; padding: 22px; }
+.maps-license-cohort-purpose{ margin: 16px 0; padding: 12px 14px; border-radius: var(--workspace-radius-control); background: var(--surface-muted); color: var(--muted); line-height: 1.5; }
+.maps-license-participant-head{ align-items: center; margin: 20px 0 8px; }
+.maps-license-participants{ min-width: 620px; }
+.maps-license-participants td:last-child{ text-align: right; }
+
+@media (max-width: 1050px){
+  .maps-license-toolbar{ grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, .6fr)); }
+  .maps-license-result-count{ grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px){
+  .maps-license-metrics{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .maps-license-summary-grid{ grid-template-columns: 1fr; }
+  .maps-license-evaluation-layout{ grid-template-columns: 1fr; }
+  .maps-license-cohort-browser{ max-height: 300px; overflow: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+}
+
+@media (max-width: 680px){
+  .maps-license-hero,
+  .maps-license-section-head{ display: grid; }
+  .maps-license-section-head > .maps-license-actions,
+  .maps-license-section-head > .btn{ width: 100%; }
+  .maps-license-section-head > .btn{ justify-content: center; }
+  .maps-license-toolbar{ grid-template-columns: 1fr; }
+  .maps-license-result-count{ grid-column: auto; }
+  .maps-license-card{ padding: 16px; }
+  .maps-license-cohort-detail{ padding: 16px; }
+}
+
+@media (max-width: 500px){
+  .maps-license-metrics,
+  .maps-license-form-row,
+  .maps-license-detail-list{ grid-template-columns: 1fr; }
+  .maps-license-actions .btn{ flex: 1 1 auto; justify-content: center; }
+  .maps-license-danger-zone{ align-items: stretch; flex-direction: column; }
+}

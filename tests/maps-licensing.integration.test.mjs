@@ -8,22 +8,26 @@ test("staff dashboard wires the MAP licensing workspace behind canonical access"
   const html = read("staff-dashboard.html");
   const navigation = read("js/workspace/navigation.js");
   const dashboard = read("js/staff-dashboard.js");
+  const registry = read("js/workspace/feature-registry.js");
 
   assert.match(html, /data-maps-licensing-workspace/);
   assert.match(html, /id="maps-licensing" data-permission-required="platform\.licenses\.read"/);
   assert.doesNotMatch(html, /<script src="js\/workspace\/maps-licensing\.js"/);
-  assert.match(dashboard, /"js\/workspace\/maps-licensing\.js"/);
+  assert.match(registry, /"js\/workspace\/maps-licensing\.js"/);
   assert.match(navigation, /#maps-licensing/);
-  assert.match(dashboard, /"maps-licensing": "maps-licensing"/);
+  assert.match(dashboard, /staffFeatureRegistry\.initializeView\("staff", viewId/);
 });
 
 test("MAP licensing UI uses authenticated Supabase RPCs without the suspended Render service", () => {
   const moduleSource = read("js/workspace/maps-licensing.js");
+  const repository = read("js/workspace/map-repository.js");
 
-  assert.match(moduleSource, /get_my_platform_admin_dashboard/);
-  assert.match(moduleSource, /issue_my_platform_license/);
-  assert.match(moduleSource, /provision_my_evaluation_participant/);
-  assert.doesNotMatch(moduleSource, /map-nano\.onrender\.com|mapRequest\(|fetch\(/);
+  assert.match(repository, /get_my_platform_admin_dashboard/);
+  assert.match(repository, /issue_my_platform_license/);
+  assert.match(repository, /provision_my_evaluation_participant/);
+  assert.doesNotMatch(moduleSource, /supabase\.rpc|loadSupabaseClient|map-nano\.onrender\.com|mapRequest\(|fetch\(/);
+  assert.match(moduleSource, /role="tablist"/);
+  assert.match(moduleSource, /aria-selected/);
   assert.match(moduleSource, /platform\.permissions\.manage/);
   assert.match(moduleSource, /platform\.analytics\.read/);
 });

@@ -4,6 +4,10 @@ Shared dashboard modules live here. Page-level controllers remain in `js/dashboa
 
 - `icons.js`: local Lucide-compatible icon subset and renderer.
 - `utils.js`: shared formatting, escaping, labels, timeouts, message rendering and icon refresh helpers.
+- `ui.js`: shared metrics, data states, status badges, busy/feedback state, accessible tabs and confirmation dialogs.
+- `feature-registry.js`: declarative feature-to-view, permission, dependency, script and mount contract for client and staff.
+- `map-contracts.js`: canonical MAP products, statuses, DTO normalization and domain errors.
+- `map-repository.js`: the only dashboard boundary for authenticated MAP RPC queries and commands.
 - `account.js`: shared account menu, profile form, permissions list and email manager behavior.
 - `shell.js`: shared workspace sidebar, collapse, mobile drawer and search behavior. Use `data-workspace-searchable` for new searchable dashboard actions.
 - `router.js`: shared hash/view router with aliases, active nav state and optional panel targeting.

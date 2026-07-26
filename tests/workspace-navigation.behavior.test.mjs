@@ -7,6 +7,10 @@ const staffSource = fs.readFileSync(
   new URL("../js/staff-dashboard.js", import.meta.url),
   "utf8"
 );
+const featureRegistrySource = fs.readFileSync(
+  new URL("../js/workspace/feature-registry.js", import.meta.url),
+  "utf8"
+);
 
 function createElement({ id = "", hidden = false, permission = "", view = false, href = "" } = {}) {
   const classes = new Set();
@@ -115,6 +119,7 @@ function createHarness() {
     },
     console: { error() {} }
   });
+  vm.runInContext(featureRegistrySource, context, { filename: "feature-registry.js" });
   vm.runInContext(staffSource, context, { filename: "staff-dashboard.js" });
 
   return {

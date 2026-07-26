@@ -7,10 +7,9 @@
 - `workspace-shell-experience.css`: shell interaction states such as mobile scroll locking, auxiliary footer disclosure and collapse affordances.
 - `workspace-sidebar.css`: the sole owner of navigation geometry, hierarchy, row alignment, active states and collapsed navigation visuals.
 - `workspace-intelligence-analytics.css`: analytics and intelligence views.
-- `workspace-components.css`: shared surfaces, intros, actions, metrics, priority cards, status lists and resource rows.
+- `workspace-components.css`: shared surfaces, intros, actions, metrics, priority cards, status lists and resource rows. It also owns shared data states, metrics, status badges and confirmation dialogs.
 - `workspace-account.css`: account, profile, email and security surfaces.
 - `workspace-access.css`: admin access drawer, preview and confirmation surfaces.
-- `workspace-licenses.css`: administrative MAP license list, detail drawer, creation dialog and responsive states.
 - `workspace-prospects.css`: prospect CRM pipeline, forms, emails and timeline.
 - `workspace-productivity.css`: tasks, boards and KPI reporting.
 - `workspace-calendar.css`: operational calendar derived from workspace tasks.

@@ -90,6 +90,7 @@
       },
       panels: {
         trabajo: ["tareas", "agenda", "kpis", "formularios"],
+        "maps-licensing": ["summary", "licenses", "evaluations", "permissions", "analytics"],
         "product-intelligence": ["website", "maps"],
         "performance-intelligence": ["general-kpis"],
         "financial-intelligence": ["finance-dashboard"],
