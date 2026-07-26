@@ -30,14 +30,26 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.match(repository, /rpc\("get_my_internal_entitlements"\)/);
   assert.match(source, /Licencia MAP Staff/);
   assert.match(source, /Beneficio exclusivo del staff/);
-  assert.match(source, /function renderMarketplace/);
-  assert.match(source, /Amplía tu suite/);
+  assert.match(source, /function renderSuite/);
+  assert.match(source, /function renderSuiteProduct/);
+  assert.match(source, /title: "Tu suite MAP"/);
   assert.match(source, /Solicitar licencia/);
+  assert.match(source, /function renderInternalAccess/);
+  assert.match(source, /function renderAdditionalAccesses/);
+  assert.match(source, /function renderSeatManagementLayer/);
+  assert.match(source, /function renderCommercialRequestLayer/);
+  assert.match(source, /data-client-license-manage/);
+  assert.match(source, /data-client-license-request/);
+  assert.match(source, /productLicenses\.find\(item => item\.canManage\)/);
+  assert.match(source, /refreshSeatManagementLayer\(\{ focusSelect: true \}\)/);
+  assert.doesNotMatch(source, /href: "#gestion-plazas"/);
+  assert.doesNotMatch(source, /function renderSeatManagement\(\)/);
   assert.match(source, /contracts\.PRODUCT_CATALOG/);
   assert.match(source, /contracts\.productCatalog/);
+  assert.doesNotMatch(source, /function render(?:FeaturedLicense|Metrics|Licenses|Marketplace|CommercialWorkspace)/);
   assert.match(await read("js/workspace/map-contracts.js"), /access_source === "internal_role"/);
-  assert.ok(source.indexOf("function renderStaffLicense") < source.indexOf("function renderFeaturedLicense"));
-  assert.ok(source.indexOf("function renderPlatformAccess") < source.indexOf("function renderFeaturedLicense"));
+  assert.ok(source.indexOf("function renderSuite") < source.indexOf("function renderInternalAccess"));
+  assert.ok(source.indexOf("function renderInternalAccess") < source.indexOf("function renderActivity"));
   assert.match(repository, /rpc\("assign_my_account_license"/);
   assert.match(repository, /rpc\("release_my_license_assignment"/);
   assert.doesNotMatch(source, /\.from\("(?:platform_licenses|license_assignments|license_account_members)"\)/);
@@ -70,4 +82,28 @@ test("staff MAP entitlement is role-derived and excluded from commercial plans",
   assert.match(sql, /grant execute on function public\.get_my_internal_entitlements\(\)[\s\S]*to authenticated, service_role/i);
   assert.doesNotMatch(sql, /insert into public\.license_plans/i);
   assert.doesNotMatch(sql, /role_capability[\s\S]{0,160}map\.dev\.access/i);
+});
+
+
+test("MAP commercial requests preserve product context across dashboard and contact fallback", async () => {
+  const [source, contactContext, spanishContact, englishContact] = await Promise.all([
+    read("js/workspace/client-map-licenses.js"),
+    read("js/contact-context.js"),
+    read("contactUs.html"),
+    read("en/contactUs.html")
+  ]);
+
+  assert.match(source, /https:\/\/formspree\.io\/f\/xleqdrag/);
+  assert.match(source, /name="product_key"/);
+  assert.match(source, /name="seats"/);
+  assert.match(source, /name="deployment"/);
+  assert.match(source, /new FormData\(form\)/);
+  assert.match(contactContext, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(contactContext, /params\.get\("product"\)/);
+  assert.match(contactContext, /addHiddenField\(form, "intent"/);
+  assert.match(contactContext, /addHiddenField\(form, "product"/);
+  assert.match(spanishContact, /js\/contact-context\.js/);
+  assert.match(englishContact, /\/js\/contact-context\.js/);
+  assert.doesNotMatch(spanishContact, /<\/script>\\n\s*<script/);
+  assert.doesNotMatch(englishContact, /<\/script>\\n\s*<script/);
 });
