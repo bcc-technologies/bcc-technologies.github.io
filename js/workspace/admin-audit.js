@@ -4,6 +4,7 @@
   const state = window.BCCWorkspaceAdminAccessState;
   const view = window.BCCWorkspaceAdminAccessView;
   const utils = window.BCCWorkspaceUtils;
+  const ui = window.BCCWorkspaceUI;
   let root = null;
   let signal = null;
 
@@ -17,6 +18,7 @@
 
   async function refresh() {
     const requestSignal = signal;
+    ui.setBusy(root, true);
     try {
       const auditLogs = await repository.listAudit(requestSignal ? { signal: requestSignal } : {});
       if (requestSignal?.aborted || !root) return;
@@ -24,6 +26,8 @@
       render();
     } catch (error) {
       if (!cancelled(error, requestSignal)) showMessage(error.message, "error");
+    } finally {
+      ui.setBusy(root, false);
     }
   }
 
@@ -31,28 +35,22 @@
     const feed = document.querySelector("[data-audit-feed]");
     if (!feed || !root) return;
     const logs = state.snapshot().auditLogs;
-    feed.replaceChildren(...logs.slice(0, 10).map(auditItem));
+    feed.innerHTML = logs.slice(0, 10).map(auditItem).join("");
     showMessage(logs.length ? "Cambios de permisos registrados." : "Todavía no hay cambios registrados.");
     utils.setText("[data-audit-count]", String(logs.length));
     utils.setText("[data-metric-changes]", String(logs.length));
   }
 
   function auditItem(log) {
-    const item = document.createElement("li");
-    item.innerHTML = `
-      <span class="activity-dot"></span>
-      <div>
-        <strong>${utils.escapeHtml(log.actorEmail || "Administrador")}</strong>
-        <p>${utils.escapeHtml(view.shortAccessChange(log.beforeAccess, log.afterAccess))}</p>
-        <small>${utils.escapeHtml(log.targetEmail || "-")} · ${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</small>
-      </div>
-    `;
-    return item;
+    return ui.activityItem({
+      title: log.actorEmail || "Administrador",
+      description: view.shortAccessChange(log.beforeAccess, log.afterAccess),
+      meta: `${log.targetEmail || "-"} · ${log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}`
+    });
   }
 
   function showMessage(text, tone = "neutral") {
-    const target = document.querySelector("[data-audit-message]");
-    if (target) utils.renderMessageBlock(target, text, tone);
+    ui.feedback(document.querySelector("[data-audit-message]"), text, tone);
   }
 
   function cancelled(error, requestSignal = signal) {

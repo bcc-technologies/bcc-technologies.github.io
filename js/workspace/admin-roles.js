@@ -3,6 +3,7 @@
   const repository = window.BCCWorkspaceAdminAccessRepository;
   const state = window.BCCWorkspaceAdminAccessState;
   const utils = window.BCCWorkspaceUtils;
+  const ui = window.BCCWorkspaceUI;
   let root = null;
   let signal = null;
   let activeFilter = "all";
@@ -104,7 +105,12 @@
     showMessage("[data-role-admin-message]", `${roles.length} de ${allRoles.length} rol(es) visibles.`);
     container.innerHTML = roles.length
       ? roles.map(roleCard).join("")
-      : `<p class="muted-text">No hay roles en esta vista.</p>`;
+      : ui.dataState({
+        className: "role-library-empty",
+        icon: "search-x",
+        title: "No hay roles en esta vista.",
+        description: "Cambia el filtro o crea un rol personalizado."
+      });
     utils.refreshIcons(root);
   }
 
@@ -114,20 +120,20 @@
     return `
       <article class="role-card ${role.locked ? "locked" : "custom"}">
         <div class="role-card-head">
-          <span>${utils.escapeHtml(roleTypeLabel(role.type))}</span>
+          ${ui.chip({ label: roleTypeLabel(role.type), status: role.locked ? "neutral" : "accent" })}
           <strong>${utils.escapeHtml(role.name)}</strong>
           <small>${utils.escapeHtml(role.description || "Sin descripción")}</small>
           <em>Jerarquía ${utils.escapeHtml(role.hierarchyLevel)}</em>
         </div>
         <div class="role-permission-chips">
-          ${labels.map(label => `<span>${utils.escapeHtml(label)}</span>`).join("")}
-          ${overflow > 0 ? `<span>+${overflow}</span>` : ""}
+          ${labels.map(label => ui.chip({ label })).join("")}
+          ${overflow > 0 ? ui.chip({ label: `+${overflow}`, status: "muted" }) : ""}
         </div>
         <div class="role-card-foot">
           <small>${role.permissions.length} permiso(s)</small>
-          ${role.locked ? `<span class="locked-note">Protegido</span>` : `
-            <button class="btn btn-ghost" type="button" data-role-edit="${utils.escapeHtml(role.id)}"><i data-lucide="pencil"></i>Editar</button>
-            <button class="btn btn-ghost" type="button" data-role-delete="${utils.escapeHtml(role.id)}"><i data-lucide="trash-2"></i>Eliminar</button>`}
+          ${role.locked ? ui.chip({ label: "Protegido", status: "muted", icon: "lock-keyhole", className: "locked-note" }) : `
+            ${ui.action({ label: "Editar", icon: "pencil", className: "btn btn-ghost", data: { roleEdit: role.id } })}
+            ${ui.action({ label: "Eliminar", icon: "trash-2", className: "btn btn-ghost", data: { roleDelete: role.id } })}`}
         </div>
       </article>
     `;
@@ -143,6 +149,7 @@
       hierarchyLevel: Number(form.elements.hierarchyLevel?.value || 50),
       permissions: [...form.querySelectorAll('input[name="permissions"]:checked')].map(input => input.value)
     };
+    ui.setBusy(root, true, { selector: "[data-role-form] button, [data-role-form] input, [data-role-form] textarea" });
     try {
       const catalog = id
         ? await repository.updateRole(id, payload, requestOptions())
@@ -156,6 +163,8 @@
       showFormMessage(id ? "Rol actualizado y usuarios sincronizados." : "Rol creado y disponible para usuarios.", "ok");
     } catch (error) {
       if (!cancelled(error)) showFormMessage(error.message, "error");
+    } finally {
+      ui.setBusy(root, false, { selector: "[data-role-form] button, [data-role-form] input, [data-role-form] textarea" });
     }
   }
 
@@ -174,7 +183,14 @@
 
   async function removeRole(id) {
     const role = state.snapshot().roles.find(item => item.id === id && !item.locked);
-    if (!role || !window.confirm(`Eliminar el rol personalizado "${role.name}"?`)) return;
+    if (!role) return;
+    const confirmed = await ui.confirmAction({
+      title: "Eliminar rol personalizado",
+      description: `El rol "${role.name}" dejará de estar disponible y se retirará de los usuarios asignados.`,
+      confirmLabel: "Eliminar rol"
+    });
+    if (!confirmed) return;
+    ui.setBusy(root, true, { selector: "[data-role-delete], [data-role-edit]" });
     try {
       const catalog = await repository.removeRole(id, requestOptions());
       if (signal?.aborted) return;
@@ -186,6 +202,8 @@
       showMessage("[data-role-admin-message]", "Rol eliminado y usuarios sincronizados.", "ok");
     } catch (error) {
       if (!cancelled(error)) showMessage("[data-role-admin-message]", error.message, "error");
+    } finally {
+      ui.setBusy(root, false, { selector: "[data-role-delete], [data-role-edit]" });
     }
   }
 
@@ -225,16 +243,11 @@
   }
 
   function showMessage(selector, text, tone = "neutral") {
-    const target = document.querySelector(selector);
-    if (target) utils.renderMessageBlock(target, text, tone);
+    ui.feedback(document.querySelector(selector), text, tone);
   }
 
   function showFormMessage(text, tone = "neutral") {
-    const message = document.querySelector("[data-role-form-message]");
-    if (!message) return;
-    message.textContent = text;
-    message.dataset.tone = tone;
-    message.hidden = !text;
+    ui.feedback(document.querySelector("[data-role-form-message]"), text, tone);
   }
 
   function activate(context = {}) {

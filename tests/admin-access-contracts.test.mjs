@@ -174,6 +174,12 @@ test("administrative views use independent lifecycle controllers and one reposit
   assert.match(controllers, /function destroy\(\)/);
   assert.match(registry, /admin-access-contracts\.js[\s\S]+admin-access-repository\.js/);
   assert.match(registry, /id: "roles"[\s\S]+id: "users"[\s\S]+id: "audit"/);
+  assert.match(controllers, /window\.BCCWorkspaceUI/);
+  assert.match(controllers, /ui\.tableEmptyRow/);
+  assert.match(controllers, /ui\.activityItem/);
+  assert.match(controllers, /ui\.confirmAction/);
+  assert.match(controllers, /ui\.feedback/);
+  assert.doesNotMatch(controllers, /window\.confirm/);
 });
 
 

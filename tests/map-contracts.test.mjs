@@ -62,12 +62,18 @@ test("MAP repository translates transport failures into a stable domain error", 
 });
 
 test("legacy workspace license UI is no longer part of the dashboard manifest", () => {
-  const manifest = read("css/pages/dashboard.css");
+  const manifests = [
+    read("css/pages/dashboard-client.css"),
+    read("css/pages/dashboard-staff.css"),
+    ...fs.readdirSync(new URL("../css/workspace/features/", import.meta.url))
+      .filter(name => name.endsWith(".css"))
+      .map(name => read(`css/workspace/features/${name}`))
+  ].join("\n");
   const client = read("js/dashboard.js");
   const staff = read("js/staff-dashboard.js");
   const registry = read("js/workspace/feature-registry.js");
 
-  assert.doesNotMatch(manifest, /workspace-licenses\.css/);
+  assert.doesNotMatch(manifests, /workspace-licenses\.css/);
   assert.doesNotMatch(client, /workspace\/licenses\.js|license-contracts\.js/);
   assert.doesNotMatch(staff, /workspace\/licenses\.js|license-contracts\.js/);
   assert.match(registry, /map-contracts\.js[\s\S]+map-repository\.js/);

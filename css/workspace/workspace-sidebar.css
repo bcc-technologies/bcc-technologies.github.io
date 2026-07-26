@@ -1,12 +1,12 @@
 /* IDE-inspired workspace explorer.
    Rows span the rail. Only their content is indented, and text alignment is
    explicit so shared button/link styles cannot visually recenter labels. */
-.workspace-refined .workspace{
-  --workspace-sidebar-width: 240px;
+.workspace-refined .workspace-sidebar{
   --workspace-nav-guide-x: 8px;
   --workspace-nav-content-x: 12px;
   --workspace-nav-row-height: 36px;
   --workspace-nav-icon-size: 14px;
+  transition: width .22s ease, transform .22s ease;
 }
 
 body.workspace-refined .workspace > .workspace-sidebar{
@@ -189,10 +189,33 @@ body.workspace-refined .workspace > .workspace-sidebar{
 }
 
 .workspace-help{
+  margin-top: auto;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--surface-muted) 46%, transparent);
-  padding: 11px 10px;
+  padding: 0;
+}
+
+.workspace-help strong{
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: .82rem;
+}
+
+.workspace-help p{
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+
+.workspace-help a{
+  color: var(--accent-strong);
+  font-size: .78rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .workspace-view-switcher{

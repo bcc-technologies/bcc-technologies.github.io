@@ -4,6 +4,7 @@
   const state = window.BCCWorkspaceAdminAccessState;
   const view = window.BCCWorkspaceAdminAccessView;
   const utils = window.BCCWorkspaceUtils;
+  const ui = window.BCCWorkspaceUI;
   let root = null;
   let signal = null;
 
@@ -34,7 +35,7 @@
     if (!modal) return;
     const options = signal ? { signal } : undefined;
     modal.querySelectorAll("[data-access-modal-close]").forEach(button => {
-      button.addEventListener("click", () => modal.close(), options);
+      button.addEventListener("click", () => ui.closeLayer(modal), options);
     });
     modal.querySelector("[data-access-modal-save]")?.addEventListener("click", saveAccess, options);
     modal.addEventListener("change", updateAccessPreview, options);
@@ -85,9 +86,12 @@
     if (!table || !root) return;
     const users = filteredUsers();
     if (!users.length) {
-      const empty = document.createElement("tr");
-      empty.innerHTML = `<td class="table-empty" colspan="5">No hay cuentas que coincidan con los filtros.</td>`;
-      table.replaceChildren(empty);
+      table.innerHTML = ui.tableEmptyRow({
+        colspan: 5,
+        icon: "search-x",
+        title: "No hay cuentas que coincidan con los filtros.",
+        description: "Prueba otro término o limpia los filtros activos."
+      });
     } else {
       table.replaceChildren(...users.map(userRow));
     }
@@ -112,16 +116,30 @@
         <small>${utils.escapeHtml(user.company || "Sin compañía")}</small>
       </td>
       <td data-label="Rol y área">
-        <span class="role-badge role-${utils.escapeHtml(user.role)}">${utils.escapeHtml(view.roleLabel(user.role))}</span>
+        ${ui.chip({
+          label: view.roleLabel(user.role),
+          status: user.role === "admin" ? "accent" : "neutral",
+          className: `role-badge role-${user.role}`
+        })}
         ${chipList(user.departments, view.departmentOptions(), "Sin área")}
       </td>
       <td data-label="Acceso">
-        <span class="access-state ${view.hasCmsAccess(user) ? "enabled" : ""}">${view.hasCmsAccess(user) ? "CMS habilitado" : "Sin CMS"}</span>
+        ${ui.chip({
+          label: view.hasCmsAccess(user) ? "CMS habilitado" : "Sin CMS",
+          status: view.hasCmsAccess(user) ? "success" : "muted",
+          className: `access-state ${view.hasCmsAccess(user) ? "enabled" : ""}`
+        })}
         ${chipList(user.staffRoles, view.staffRoleOptions(), "Sin rol interno")}
         ${chipList(user.customRoles, view.customRoleOptions(), "Sin rol personalizado")}
       </td>
       <td class="activity-date" data-label="Última actividad">${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Sin acceso"}</td>
-      <td class="table-action"><button class="btn btn-ghost btn-compact" type="button" data-edit-access><i data-lucide="sliders-horizontal"></i>Editar</button></td>
+      <td class="table-action">${ui.action({
+        label: "Editar",
+        icon: "sliders-horizontal",
+        compact: true,
+        className: "btn btn-ghost",
+        data: { editAccess: true }
+      })}</td>
     `;
     row.querySelector("[data-edit-access]")?.addEventListener("click", () => openAccessModal(user), signal ? { signal } : undefined);
     return row;
@@ -129,8 +147,11 @@
 
   function chipList(values, options, emptyLabel) {
     const labels = utils.labelsFor(values || [], options);
-    if (!labels) return `<span class="muted-chip">${utils.escapeHtml(emptyLabel)}</span>`;
-    return `<span class="chip-list">${labels.split(", ").map(label => `<span>${utils.escapeHtml(label)}</span>`).join("")}</span>`;
+    return ui.chipList({
+      items: labels ? labels.split(", ").map(label => ({ label })) : [],
+      emptyLabel,
+      className: labels ? "chip-list" : "muted-chip"
+    });
   }
 
   function applyQuickFilter(filter) {
@@ -168,14 +189,18 @@
     renderChoiceGroup(modal.querySelector("[data-modal-departments]"), view.departmentOptions(), user.departments, "department");
     renderChoiceGroup(modal.querySelector("[data-modal-custom-roles]"), view.customRoleOptions(), user.customRoles, "custom-role");
     updateAccessPreview();
-    modal.showModal();
+    ui.openLayer(modal);
     utils.refreshIcons(modal);
   }
 
   function renderChoiceGroup(container, options, selected, key) {
     if (!container) return;
     if (!options.length) {
-      container.innerHTML = `<p class="muted-text access-empty-state">${key === "custom-role" ? "No hay roles personalizados creados." : "No hay opciones disponibles."}</p>`;
+      container.innerHTML = ui.dataState({
+        className: "access-empty-state is-compact",
+        icon: key === "custom-role" ? "key-round" : "inbox",
+        title: key === "custom-role" ? "No hay roles personalizados creados." : "No hay opciones disponibles."
+      });
       return;
     }
     const active = Array.isArray(selected) ? selected : [];
@@ -227,10 +252,11 @@
       showConfirmation(modal, user, changes, view.isSensitiveAccessChange(user, role, selected.staffRoles, selected.departments, selected.customRoles));
       return;
     }
+    ui.setBusy(modal, true, { selector: "button, input, select" });
     try {
       await repository.updateUserAccess(user.id, { role, ...selected }, signal ? { signal } : {});
       if (signal?.aborted) return;
-      modal.close();
+      ui.closeLayer(modal, "success");
       await Promise.all([
         refresh(),
         window.BCCWorkspaceAdminRoles?.refresh?.(),
@@ -238,6 +264,8 @@
       ]);
     } catch (error) {
       if (!cancelled(error)) showModalMessage(message, error.message, "error");
+    } finally {
+      ui.setBusy(modal, false, { selector: "button, input, select" });
     }
   }
 
@@ -293,15 +321,12 @@
   }
 
   function showMessage(selector, text, tone = "neutral") {
-    const target = document.querySelector(selector);
-    if (target) utils.renderMessageBlock(target, text, tone);
+    ui.feedback(document.querySelector(selector), text, tone);
   }
 
   function showModalMessage(message, text, tone) {
     if (!message) return window.alert(text);
-    message.textContent = text;
-    message.dataset.tone = tone;
-    message.hidden = false;
+    ui.feedback(message, text, tone);
   }
 
   function cancelled(error, requestSignal = signal) {
@@ -310,13 +335,13 @@
 
   function activate(context = {}) {
     signal = context.signal || signal;
-    if (context.viewId !== "usuarios") document.querySelector("[data-access-modal]")?.close();
+    if (context.viewId !== "usuarios") ui.closeLayer(document.querySelector("[data-access-modal]"));
     render();
     renderMetrics();
   }
 
   function destroy() {
-    document.querySelector("[data-access-modal]")?.close();
+    ui.closeLayer(document.querySelector("[data-access-modal]"));
     root = null;
     signal = null;
   }

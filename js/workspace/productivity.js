@@ -1,4 +1,5 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
   const repository = window.BCCWorkspaceTaskRepository;
   const STATUS_ORDER = ["backlog", "in_progress", "done"];
   const STATUS_LABELS = {
@@ -49,18 +50,18 @@
           <p class="productivity-message" data-task-message hidden></p>
         </div>
         <button class="btn btn-primary productivity-new" type="button" data-task-new>
-          <i data-lucide="plus"></i>Nueva tarea
+          ${ui.icon("plus", "sm")}Nueva tarea
         </button>
       </div>
       <div class="productivity-tabs" role="tablist" aria-label="Vistas de tareas">
         <button class="active" type="button" role="tab" aria-selected="true" data-productivity-tab="tasks">
-          <i data-lucide="list-checks"></i>Lista
+          ${ui.icon("list-checks", "sm")}Lista
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="board">
-          <i data-lucide="columns-3"></i>Tablero
+          ${ui.icon("columns-3", "sm")}Tablero
         </button>
         <button type="button" role="tab" aria-selected="false" data-productivity-tab="matrix">
-          <i data-lucide="layout-grid"></i>Matriz
+          ${ui.icon("layout-grid", "sm")}Matriz
         </button>
       </div>
       <section class="productivity-panel productivity-overview" data-productivity-panel="tasks">
@@ -116,7 +117,7 @@
               <p data-task-dialog-copy>Agrega una actividad a tu tablero privado.</p>
             </div>
             <button class="icon-close" type="button" data-task-close aria-label="Cerrar">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           </div>
           <label>
@@ -417,23 +418,23 @@
             <span class="priority priority-${escapeHtml(task.priority)}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
             <span class="task-status">${escapeHtml(STATUS_LABELS[task.status] || "Pendiente")}</span>
             ${assignmentBadge(task)}
-            ${task.dueDate ? `<span class="task-date ${dueTone(task)}"><i data-lucide="calendar-clock"></i>${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
+            ${task.dueDate ? `<span class="task-date ${dueTone(task)}">${ui.icon("calendar-clock", "xs")}${escapeHtml(formatDate(task.dueDate))}</span>` : ""}
           </div>
         </div>
         <div class="task-actions">
           ${task.canRespond ? `
             <button class="task-icon-action task-accept" type="button" data-task-action="accept" data-task-id="${escapeHtml(task.id)}" aria-label="Aceptar sugerencia">
-              <i data-lucide="check"></i>
+              ${ui.icon("check", "xs")}
             </button>
             <button class="task-icon-action task-reject" type="button" data-task-action="reject" data-task-id="${escapeHtml(task.id)}" aria-label="Rechazar sugerencia">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           ` : ""}
           <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-            <i data-lucide="pencil"></i>
+            ${ui.icon("pencil", "xs")}
           </button>
           <button class="task-icon-action task-delete" type="button" data-task-action="delete" data-task-id="${escapeHtml(task.id)}" aria-label="Eliminar tarea">
-            <i data-lucide="trash-2"></i>
+            ${ui.icon("trash-2", "xs")}
           </button>
         </div>
       </li>
@@ -470,13 +471,13 @@
                 </div>
                 <div class="kanban-actions">
                   <button type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-                    <i data-lucide="pencil"></i>
+                    ${ui.icon("pencil", "xs")}
                   </button>
                   <button type="button" data-task-action="back" data-task-id="${escapeHtml(task.id)}" ${columnIndex === 0 ? "disabled" : ""} aria-label="Mover atras">
-                    <i data-lucide="arrow-left"></i>
+                    ${ui.icon("arrow-left", "xs")}
                   </button>
                   <button type="button" data-task-action="forward" data-task-id="${escapeHtml(task.id)}" ${columnIndex === STATUS_ORDER.length - 1 ? "disabled" : ""} aria-label="Mover adelante">
-                    <i data-lucide="arrow-right"></i>
+                    ${ui.icon("arrow-right", "xs")}
                   </button>
                 </div>
               </article>
@@ -524,7 +525,7 @@
           </div>
         </div>
         <button class="task-icon-action" type="button" data-task-action="edit" data-task-id="${escapeHtml(task.id)}" aria-label="Editar tarea">
-          <i data-lucide="pencil"></i>
+          ${ui.icon("pencil", "xs")}
         </button>
       </article>
     `;
@@ -566,7 +567,7 @@
     root.querySelector("[data-kpi-progress]").value = summary.rate;
     reports.forEach(report => {
       if (!summary.total) {
-        report.innerHTML = `<article class="kpi-empty-state"><i data-lucide="chart-no-axes-column-increasing"></i><strong>Sin actividad medible todavia</strong><span>Crea tareas para empezar a medir carga, vencimientos y avance.</span></article>`;
+        report.innerHTML = `${ui.emptyState({ className: "kpi-empty-state is-compact", icon: "chart-no-axes-column-increasing", title: "Sin actividad medible todavía", description: "Crea tareas para empezar a medir carga, vencimientos y avance." })}`;
       } else {
         report.innerHTML = [
           ["Tareas totales", summary.total, "Registro personal"],

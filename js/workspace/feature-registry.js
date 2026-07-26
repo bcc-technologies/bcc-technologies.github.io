@@ -5,7 +5,9 @@
       {
         id: "operation",
         views: ["operacion"],
+        styles: ["css/workspace/features/forms.css"],
         scripts: [
+          "js/workspace/icons/catalogs/operations.js",
           "js/workspace/transport.js",
           "js/workspace/forms-contracts.js",
           "js/workspace/forms-repository.js",
@@ -18,8 +20,10 @@
       {
         id: "licenses",
         views: ["licencias"],
+        styles: ["css/workspace/features/client-licenses.css"],
         permission: "dashboard:view",
         scripts: [
+          "js/workspace/icons/catalogs/maps.js",
           "js/workspace/map-contracts.js",
           "js/workspace/map-repository.js",
           "js/workspace/client-map-licenses.js"
@@ -32,7 +36,9 @@
       {
         id: "operation",
         views: ["resumen", "trabajo"],
+        styles: ["css/workspace/features/operation.css"],
         scripts: [
+          "js/workspace/icons/catalogs/operations.js",
           "js/workspace/transport.js",
           "js/workspace/tasks-contracts.js",
           "js/workspace/tasks-repository.js",
@@ -58,6 +64,7 @@
       {
         id: "forms",
         views: [],
+        styles: ["css/workspace/features/forms.css"],
         dependencies: ["operation"],
         scripts: [
           "js/workspace/forms-contracts.js",
@@ -70,8 +77,10 @@
       {
         id: "admin",
         views: ["usuarios", "roles", "auditoria"],
+        styles: ["css/workspace/features/admin.css"],
         permission: "users:manage",
         scripts: [
+          "js/workspace/icons/catalogs/admin.js",
           "js/workspace/transport.js",
           "js/workspace/admin-access-contracts.js",
           "js/workspace/admin-access-repository.js",
@@ -91,6 +100,7 @@
       {
         id: "analytics",
         views: ["product-intelligence"],
+        styles: ["css/workspace/features/intelligence.css"],
         permission: "department:manage",
         scripts: ["js/workspace/analytics.js"],
         selector: "[data-analytics-workspace]",
@@ -99,8 +109,10 @@
       {
         id: "maps-licensing",
         views: ["maps-licensing"],
+        styles: ["css/workspace/features/maps-licensing.css"],
         permission: "platform.licenses.read",
         scripts: [
+          "js/workspace/icons/catalogs/maps.js",
           "js/workspace/map-contracts.js",
           "js/workspace/map-repository.js",
           "js/workspace/maps-licensing.js"
@@ -111,6 +123,7 @@
       {
         id: "intelligence",
         views: ["science-radar"],
+        styles: ["css/workspace/features/intelligence.css"],
         permission: "department:manage",
         scripts: ["js/workspace/intelligence.js"],
         selector: "[data-intelligence-workspace]",
@@ -119,16 +132,32 @@
       {
         id: "dominican-intelligence",
         views: ["dominican-intelligence"],
+        styles: ["css/workspace/features/intelligence.css"],
         permission: "department:manage",
         scripts: ["js/auth-dominican-intelligence-api.js", "js/workspace/dominican-intelligence.js"],
         selector: "[data-dominican-intelligence-workspace]",
         global: "BCCWorkspaceDominicanIntelligence"
       },
       {
+        id: "intelligence-static",
+        views: [
+          "business-radar",
+          "performance-intelligence",
+          "financial-intelligence",
+          "bureaucracy-intelligence",
+          "marketing-intelligence"
+        ],
+        permission: "department:manage",
+        styles: ["css/workspace/features/intelligence.css"],
+        scripts: []
+      },
+      {
         id: "prospectos",
         views: ["crm-correos"],
+        styles: ["css/workspace/features/prospects.css"],
         permission: "department:manage",
         scripts: [
+          "js/workspace/icons/catalogs/prospects.js",
           "js/auth-prospects-api.js",
           "js/workspace/prospects.constants.js",
           "js/workspace/prospects.layout.js",
@@ -169,7 +198,8 @@
     const dependencies = Object.fromEntries(entries
       .filter(item => item.dependencies?.length)
       .map(item => [item.id, item.dependencies]));
-    loader.register(scripts, dependencies);
+    const styles = Object.fromEntries(entries.map(item => [item.id, item.styles || []]));
+    loader.register(scripts, dependencies, styles);
     registeredScopes.add(scope);
   }
 

@@ -1,4 +1,5 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
   const { PHASES, EMAIL_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
   const ProspectsApi = window.BCCWorkspaceProspectsApi;
   const ProspectsLayout = window.BCCWorkspaceProspectsLayout;
@@ -335,8 +336,8 @@
     board.innerHTML = `
       <div class="prospects-pipeline-toolbar" aria-label="Modo de pipeline">
         <div class="prospects-pipeline-mode" role="tablist" aria-label="Vistas del pipeline">
-          <button class="${pipelineMode === "board" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "board" ? "true" : "false"}" data-pipeline-mode="board"><i data-lucide="columns-3"></i>Flujo</button>
-          <button class="${pipelineMode === "rules" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "rules" ? "true" : "false"}" data-pipeline-mode="rules"><i data-lucide="workflow"></i>Automatizaciones</button>
+          <button class="${pipelineMode === "board" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "board" ? "true" : "false"}" data-pipeline-mode="board">${ui.icon("columns-3", "sm")}Flujo</button>
+          <button class="${pipelineMode === "rules" ? "active" : ""}" type="button" role="tab" aria-selected="${pipelineMode === "rules" ? "true" : "false"}" data-pipeline-mode="rules">${ui.icon("workflow", "sm")}Automatizaciones</button>
         </div>
         <div class="prospects-pipeline-stats" aria-label="Resumen operativo del pipeline">
           <span><strong>${number(currentItems.length)}</strong>En flujo</span>
@@ -367,7 +368,7 @@
                   <small>${escapeHtml(currency(phaseValue))} · ${number(blocked)} requiere acción</small>
                 </header>
                 <div class="prospect-pipeline-card-list">
-                  ${phaseItems.length ? phaseItems.map(item => pipelineOpportunityCard(item)).join("") : `<button class="prospect-pipeline-empty" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Crear oportunidad en ${escapeHtml(phase.label)}</button>`}
+                  ${phaseItems.length ? phaseItems.map(item => pipelineOpportunityCard(item)).join("") : `<button class="prospect-pipeline-empty" type="button" data-prospect-new-inline>${ui.icon("plus", "sm")}Crear oportunidad en ${escapeHtml(phase.label)}</button>`}
                 </div>
               </article>
             `;
@@ -388,12 +389,12 @@
         <section class="prospect-automation-list" aria-label="Automatizaciones del pipeline">
           <div class="prospect-queue-head">
             <div><h3>Reglas operativas</h3><p>Automatizaciones visibles desde el pipeline para reducir trabajo manual.</p></div>
-            <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline><i data-lucide="plus"></i>Crear prospecto</button>
+            <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline>${ui.icon("plus", "sm")}Crear prospecto</button>
           </div>
           ${rules.map(rule => `
             <article class="prospect-automation-card ${rule.enabled ? "is-enabled" : "is-paused"}">
               <div>
-                <span><i data-lucide="${escapeAttr(rule.icon)}"></i>${escapeHtml(rule.scope)}</span>
+                <span>${ui.icon(rule.icon, "sm")}${escapeHtml(rule.scope)}</span>
                 <strong>${escapeHtml(rule.title)}</strong>
                 <p>${escapeHtml(rule.description)}</p>
               </div>
@@ -427,15 +428,15 @@
           <small>${escapeHtml(nextActionLabel(item))} · ${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "Sin monto")}</small>
         </button>
         <div class="prospect-opportunity-actions">
-          ${previousPhase ? `<button type="button" title="Mover a ${escapeAttr(previousPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(previousPhase.id)}"><i data-lucide="arrow-left"></i></button>` : ""}
-          ${nextPhase ? `<button type="button" title="Mover a ${escapeAttr(nextPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}"><i data-lucide="arrow-right"></i></button>` : ""}
-          <button type="button" title="Abrir ficha" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="profile"><i data-lucide="contact-round"></i></button>
-          <button type="button" title="Enviar correo" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="communication"><i data-lucide="send"></i></button>
-          <button type="button" title="Registrar actividad" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="activity"><i data-lucide="clock-3"></i></button>
+          ${previousPhase ? `<button type="button" title="Mover a ${escapeAttr(previousPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(previousPhase.id)}">${ui.icon("arrow-left", "sm")}</button>` : ""}
+          ${nextPhase ? `<button type="button" title="Mover a ${escapeAttr(nextPhase.label)}" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}">${ui.icon("arrow-right", "sm")}</button>` : ""}
+          <button type="button" title="Abrir ficha" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="profile">${ui.icon("contact-round", "sm")}</button>
+          <button type="button" title="Enviar correo" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="communication">${ui.icon("send", "sm")}</button>
+          <button type="button" title="Registrar actividad" data-prospect-open="${escapeAttr(item.id)}" data-directory-open="activity">${ui.icon("clock-3", "sm")}</button>
         </div>
         <div class="prospect-card-meta-row">
-          <span class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}"><i data-lucide="user-check"></i>${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</span>
-          <span class="prospect-automation-hint"><i data-lucide="zap"></i>${escapeHtml(automation)}</span>
+          <span class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}">${ui.icon("user-check", "sm")}${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</span>
+          <span class="prospect-automation-hint">${ui.icon("zap", "sm")}${escapeHtml(automation)}</span>
         </div>
       </article>
     `;
@@ -459,10 +460,10 @@
         <div><dt>Fase siguiente</dt><dd>${escapeHtml(nextPhase?.label || "Cierre")}</dd></div>
       </dl>
       <div class="prospect-summary-actions">
-        ${nextPhase ? `<button type="button" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}"><i data-lucide="arrow-right"></i>Mover</button>` : ""}
-        <button type="button" data-directory-open="profile"><i data-lucide="contact-round"></i>Ficha</button>
-        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
-        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
+        ${nextPhase ? `<button type="button" data-pipeline-move-phase="${escapeAttr(item.id)}" data-pipeline-target-phase="${escapeAttr(nextPhase.id)}">${ui.icon("arrow-right", "sm")}Mover</button>` : ""}
+        <button type="button" data-directory-open="profile">${ui.icon("contact-round", "sm")}Ficha</button>
+        <button type="button" data-directory-open="communication">${ui.icon("send", "sm")}Correo</button>
+        <button type="button" data-directory-open="activity">${ui.icon("clock-3", "sm")}Actividad</button>
       </div>
       <div class="prospect-assignment-editor">
         <label>Responsable
@@ -476,10 +477,10 @@
         <label class="is-wide">Nota
           <input data-pipeline-note-field value="${escapeAttr(item.assignmentNote || "")}" maxlength="240" placeholder="Contexto de designación" />
         </label>
-        <button class="btn btn-primary btn-compact" type="button" data-pipeline-save-assignment="${escapeAttr(item.id)}"><i data-lucide="save"></i>Guardar</button>
+        <button class="btn btn-primary btn-compact" type="button" data-pipeline-save-assignment="${escapeAttr(item.id)}">${ui.icon("save", "sm")}Guardar</button>
       </div>
       <div class="prospect-pipeline-next-step">
-        <span><i data-lucide="workflow"></i>Acción sugerida</span>
+        <span>${ui.icon("workflow", "sm")}Acción sugerida</span>
         <p>${escapeHtml(pipelineNextStep(item))}</p>
       </div>
     `;
@@ -729,7 +730,7 @@
         <span><em class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}">${escapeHtml(ownerLabel(item))}</em></span>
         <span>${escapeHtml(nextActionLabel(item))}</span>
         <span>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</span>
-        <span class="prospect-directory-actions"><i data-lucide="chevron-right"></i></span>
+        <span class="prospect-directory-actions">${ui.icon("chevron-right", "sm")}</span>
       </button>
     `;
   }
@@ -757,9 +758,9 @@
       ${item.assignmentNote ? `<p class="prospect-directory-notes"><strong>Asignación:</strong> ${escapeHtml(item.assignmentNote.slice(0, 220))}</p>` : ""}
       ${item.notes ? `<p class="prospect-directory-notes">${escapeHtml(item.notes.slice(0, 260))}</p>` : ""}
       <div class="prospect-summary-actions">
-        <button type="button" data-directory-edit="${escapeAttr(item.id)}"><i data-lucide="pencil"></i>Editar</button>
-        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
-        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
+        <button type="button" data-directory-edit="${escapeAttr(item.id)}">${ui.icon("pencil", "sm")}Editar</button>
+        <button type="button" data-directory-open="communication">${ui.icon("send", "sm")}Correo</button>
+        <button type="button" data-directory-open="activity">${ui.icon("clock-3", "sm")}Actividad</button>
       </div>
     `;
   }
@@ -833,9 +834,9 @@
         <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
       </dl>
       <div class="prospect-summary-actions">
-        <button type="button" data-directory-open="profile"><i data-lucide="contact-round"></i>Ficha</button>
-        <button type="button" data-directory-open="communication"><i data-lucide="send"></i>Correo</button>
-        <button type="button" data-directory-open="activity"><i data-lucide="clock-3"></i>Actividad</button>
+        <button type="button" data-directory-open="profile">${ui.icon("contact-round", "sm")}Ficha</button>
+        <button type="button" data-directory-open="communication">${ui.icon("send", "sm")}Correo</button>
+        <button type="button" data-directory-open="activity">${ui.icon("clock-3", "sm")}Actividad</button>
       </div>
     `;
   }
@@ -874,7 +875,7 @@
     }
     const prospect = selectedProspect() || emptyProspect();
     form.innerHTML = `
-      <div class="prospect-editor-head"><div><h3>${prospect.id ? "Editar contacto" : "Nuevo contacto"}</h3><p>${prospect.id ? "Actualiza la ficha comercial." : "Crea un nuevo registro en la base comercial."}</p></div><button class="icon-close" type="button" data-directory-editor-close aria-label="Cerrar editor"><i data-lucide="x"></i></button></div>
+      <div class="prospect-editor-head"><div><h3>${prospect.id ? "Editar contacto" : "Nuevo contacto"}</h3><p>${prospect.id ? "Actualiza la ficha comercial." : "Crea un nuevo registro en la base comercial."}</p></div><button class="icon-close" type="button" data-directory-editor-close aria-label="Cerrar editor">${ui.icon("x", "sm")}</button></div>
       <input type="hidden" name="id" value="${escapeAttr(prospect.id || "")}" />
       <div class="prospects-form-grid">
         <label>Nombre
@@ -1087,7 +1088,7 @@
 
     controls.innerHTML = `
       <div class="prospects-template-filterbar">
-        <label class="workspace-search prospects-search"><i data-lucide="search"></i><input type="search" data-template-search placeholder="Buscar plantillas..." value="${escapeAttr(templateSearchTerm)}" autocomplete="off" aria-label="Buscar plantillas" /></label>
+        <label class="workspace-search prospects-search">${ui.icon("search", "sm")}<input type="search" data-template-search placeholder="Buscar plantillas..." value="${escapeAttr(templateSearchTerm)}" autocomplete="off" aria-label="Buscar plantillas" /></label>
         <select data-template-category-filter aria-label="Filtrar plantillas por categoría">
           <option value="">Todas las categorías</option>
           ${categories.map(category => `<option value="${escapeAttr(category)}" ${category === templateCategoryFilter ? "selected" : ""}>${escapeHtml(category)}</option>`).join("")}
@@ -1097,7 +1098,7 @@
           <option value="active" ${templateStatusFilter === "active" ? "selected" : ""}>Activas</option>
           <option value="paused" ${templateStatusFilter === "paused" ? "selected" : ""}>Pausadas</option>
         </select>
-        <button class="btn btn-primary btn-compact" type="button" data-template-new><i data-lucide="plus"></i>Nueva plantilla</button>
+        <button class="btn btn-primary btn-compact" type="button" data-template-new>${ui.icon("plus", "sm")}Nueva plantilla</button>
       </div>
       <div class="prospects-template-stats" aria-label="Resumen de plantillas">
         <span><strong>${number(templates.length)}</strong>Total</span>
@@ -1139,7 +1140,7 @@
       <div class="prospects-form-actions">
         <button class="btn btn-primary" type="submit">${selected.id ? "Guardar cambios" : "Crear plantilla"}</button>
         ${selected.id ? `<button class="btn btn-ghost" type="button" data-template-delete="${escapeAttr(selected.id)}">Eliminar</button>` : ""}
-        ${selected.id ? `<button class="btn btn-ghost" type="button" data-template-duplicate="${escapeAttr(selected.id)}"><i data-lucide="copy"></i>Duplicar</button>` : ""}
+        ${selected.id ? `<button class="btn btn-ghost" type="button" data-template-duplicate="${escapeAttr(selected.id)}">${ui.icon("copy", "sm")}Duplicar</button>` : ""}
       </div>
     `;
 
@@ -1214,9 +1215,9 @@
           ${(item.tags || []).length ? `<span class="prospect-template-tags">${item.tags.slice(0, 3).map(tag => `<em>${escapeHtml(tag)}</em>`).join("")}</span>` : ""}
         </button>
         <div class="prospect-template-card-actions">
-          <button type="button" title="Editar" data-template-open="${escapeAttr(item.id)}"><i data-lucide="pencil"></i></button>
-          <button type="button" title="Duplicar" data-template-duplicate="${escapeAttr(item.id)}"><i data-lucide="copy"></i></button>
-          <button type="button" title="Usar en comunicación" data-template-use="${escapeAttr(item.id)}"><i data-lucide="send"></i></button>
+          <button type="button" title="Editar" data-template-open="${escapeAttr(item.id)}">${ui.icon("pencil", "sm")}</button>
+          <button type="button" title="Duplicar" data-template-duplicate="${escapeAttr(item.id)}">${ui.icon("copy", "sm")}</button>
+          <button type="button" title="Usar en comunicación" data-template-use="${escapeAttr(item.id)}">${ui.icon("send", "sm")}</button>
         </div>
       </article>
     `;
@@ -1239,8 +1240,8 @@
         <p>${escapeHtml(hydratedBody || "Sin contenido")}</p>
       </div>
       <div class="prospect-template-preview-actions">
-        ${template.id ? `<button class="btn btn-ghost btn-compact" type="button" data-template-duplicate="${escapeAttr(template.id)}"><i data-lucide="copy"></i>Duplicar</button>` : ""}
-        ${template.id ? `<button class="btn btn-primary btn-compact" type="button" data-template-use="${escapeAttr(template.id)}"><i data-lucide="send"></i>Usar</button>` : ""}
+        ${template.id ? `<button class="btn btn-ghost btn-compact" type="button" data-template-duplicate="${escapeAttr(template.id)}">${ui.icon("copy", "sm")}Duplicar</button>` : ""}
+        ${template.id ? `<button class="btn btn-primary btn-compact" type="button" data-template-use="${escapeAttr(template.id)}">${ui.icon("send", "sm")}Usar</button>` : ""}
       </div>
     `;
   }

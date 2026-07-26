@@ -1,4 +1,5 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
   const repository = window.BCCWorkspaceFormRepository;
   const TEMPLATES = {
     client_feedback: {
@@ -142,7 +143,7 @@
           </label>
           <div class="builder-question-head">
             <h4>Preguntas</h4>
-            <button class="btn btn-ghost" type="button" data-add-question><i data-lucide="plus"></i>Pregunta</button>
+            <button class="btn btn-ghost" type="button" data-add-question>${ui.icon("plus", "sm")}Pregunta</button>
           </div>
           <div class="builder-questions" data-builder-questions></div>
           <div class="form-builder-actions">
@@ -163,7 +164,7 @@
         <div class="response-dialog-body">
           <div class="response-dialog-head">
             <div><h2 data-results-title>Respuestas</h2><p data-results-caption></p></div>
-            <button class="icon-close" type="button" data-results-close aria-label="Cerrar"><i data-lucide="x"></i></button>
+            <button class="icon-close" type="button" data-results-close aria-label="Cerrar">${ui.icon("x", "sm")}</button>
           </div>
           <div class="result-list" data-results-list></div>
         </div>
@@ -197,7 +198,7 @@
         <form class="response-dialog-body" data-response-form>
           <div class="response-dialog-head">
             <div><h2 data-response-title></h2><p data-response-purpose></p></div>
-            <button class="icon-close" type="button" data-response-close aria-label="Cerrar"><i data-lucide="x"></i></button>
+            <button class="icon-close" type="button" data-response-close aria-label="Cerrar">${ui.icon("x", "sm")}</button>
           </div>
           <div class="response-fields" data-response-fields></div>
           <div class="task-dialog-actions">
@@ -310,7 +311,7 @@
         <label class="question-required">
           <input type="checkbox" data-question-required="${index}" ${item.required ? "checked" : ""} /> Obligatoria
         </label>
-        <button class="task-delete" type="button" data-remove-question="${index}" aria-label="Quitar pregunta"><i data-lucide="trash-2"></i></button>
+        <button class="task-delete" type="button" data-remove-question="${index}" aria-label="Quitar pregunta">${ui.icon("trash-2", "sm")}</button>
       </div>
     `).join("");
     refreshIcons();

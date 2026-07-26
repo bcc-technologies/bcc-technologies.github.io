@@ -10,8 +10,8 @@ function loadRegistry(overrides = {}, documentOverride = null) {
   const loaded = [];
   const window = {
     BCCWorkspaceLoader: {
-      register(features, dependencies) {
-        registered.push({ features, dependencies });
+      register(features, dependencies, styles) {
+        registered.push({ features, dependencies, styles });
       },
       async load(featureId) {
         loaded.push(featureId);
@@ -48,6 +48,8 @@ test("feature registry derives loader definitions and view mappings from one con
   assert.equal(registered.length, 1);
   assert.ok(registered[0].features["maps-licensing"].includes("js/workspace/map-repository.js"));
   assert.deepEqual(Array.from(registered[0].dependencies.forms), ["operation"]);
+  assert.deepEqual(Array.from(registered[0].styles.admin), ["css/workspace/features/admin.css"]);
+  assert.deepEqual(Array.from(registered[0].styles["intelligence-static"]), ["css/workspace/features/intelligence.css"]);
   assert.equal(registry.featureForView("staff", "maps-licensing").id, "maps-licensing");
   assert.equal(registry.featureForView("client", "licencias").id, "licenses");
 });
@@ -65,7 +67,7 @@ test("feature registry loads and mounts a default feature exactly once", async (
   const localWindow = {
     ...window,
     BCCWorkspaceLoader: {
-      register(features, dependencies) { registered.push({ features, dependencies }); },
+      register(features, dependencies, styles) { registered.push({ features, dependencies, styles }); },
       async load(featureId) { loaded.push(featureId); }
     }
   };

@@ -1,4 +1,5 @@
 (() => {
+  const ui = window.BCCWorkspaceUI;
   const repository = window.BCCWorkspaceCalendarRepository;
   const STATUS_LABELS = {
     backlog: "Pendiente",
@@ -56,7 +57,7 @@
           <p>Eventos, reuniones y tareas con fecha en una agenda operativa.</p>
         </div>
         <button class="btn btn-ghost calendar-task-link" type="button" data-calendar-open-tasks>
-          <i data-lucide="list-checks"></i>Gestionar tareas
+          ${ui.icon("list-checks", "sm")}Gestionar tareas
         </button>
       </div>
       <div class="calendar-summary" data-calendar-summary></div>
@@ -79,10 +80,10 @@
               <span class="status-dot" data-calendar-day-count>0 items</span>
               <div class="calendar-create-actions" aria-label="Crear en calendario">
                 <button class="btn btn-ghost calendar-add-task" type="button" data-calendar-create-task>
-                  <i data-lucide="list-plus"></i>Tarea
+                  ${ui.icon("list-plus", "sm")}Tarea
                 </button>
                 <button class="btn btn-primary calendar-add-task" type="button" data-calendar-create-event>
-                  <i data-lucide="calendar-plus"></i>Evento
+                  ${ui.icon("calendar-plus", "sm")}Evento
                 </button>
               </div>
             </div>
@@ -121,7 +122,7 @@
               <p>Agrega una reunion, hito, llamada o recordatorio a la agenda.</p>
             </div>
             <button class="icon-close" type="button" data-calendar-event-close aria-label="Cerrar">
-              <i data-lucide="x"></i>
+              ${ui.icon("x", "sm")}
             </button>
           </div>
           <label>
@@ -511,7 +512,7 @@
         <span class="calendar-priority priority-${escapeHtml(task.priority || "medium")}">${escapeHtml(PRIORITY_LABELS[task.priority] || "Media")}</span>
         <strong>${escapeHtml(task.title)}</strong>
         <small>${escapeHtml(taskMeta(task))}</small>
-        <i data-lucide="pencil" aria-hidden="true"></i>
+        ${ui.icon("pencil", "xs")}
       </button>
     `).join("");
   }
@@ -522,7 +523,7 @@
         <span class="calendar-event-type">${escapeHtml(EVENT_TYPE_LABELS[event.type] || "Evento")}</span>
         <strong>${escapeHtml(event.title)}</strong>
         <small>${escapeHtml(eventMeta(event))}</small>
-        <i data-lucide="calendar-clock" aria-hidden="true"></i>
+        ${ui.icon("calendar-clock", "xs")}
       </button>
     `).join("");
   }

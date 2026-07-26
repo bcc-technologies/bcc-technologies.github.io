@@ -1,0 +1,102 @@
+/* Standalone MAP developer access page. */
+@layer bcc.tokens, bcc.base, maps.page;
+
+@import url("../00-tokens.css") layer(bcc.tokens);
+@import url("../01-base.css") layer(bcc.base);
+
+@layer maps.page {
+  .maps-dev-page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    color: var(--ink);
+  }
+
+  .maps-dev-hero {
+    padding: 32px;
+    border-radius: var(--workspace-radius-feature);
+    background: linear-gradient(135deg, #102a43, #0f766e);
+    color: var(--ink-inverse);
+  }
+
+  .maps-dev-hero h1 {
+    margin: 8px 0;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+  }
+
+  .maps-dev-eyebrow {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: .11em;
+    font-size: .77rem;
+    font-weight: 700;
+    opacity: .8;
+  }
+
+  .maps-dev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .maps-dev-card {
+    border: 1px solid var(--line);
+    border-radius: var(--workspace-radius-panel);
+    padding: 22px;
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .maps-dev-card h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+  }
+
+  .maps-dev-card p {
+    margin-bottom: 0;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  .maps-dev-capabilities {
+    padding-left: 20px;
+    line-height: 1.8;
+  }
+
+  .maps-dev-notice {
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-left: 4px solid #0f766e;
+    border-radius: var(--workspace-radius-control);
+    background: color-mix(in srgb, var(--success) 10%, var(--surface-solid));
+  }
+
+  .maps-dev-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .maps-dev-actions a {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--workspace-radius-control);
+    padding: 11px 16px;
+    text-decoration: none;
+    font-weight: 700;
+    background: #0f766e;
+    color: var(--ink-inverse);
+  }
+
+  .maps-dev-actions a.secondary {
+    background: var(--surface-muted);
+    color: var(--ink);
+  }
+
+  @media (max-width: 580px) {
+    .maps-dev-page { padding: 28px 16px 48px; }
+    .maps-dev-hero { padding: 24px 20px; }
+  }
+}

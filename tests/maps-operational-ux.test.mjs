@@ -16,6 +16,9 @@ test("staff MAP operations use filterable list-detail flows and focused layers",
   assert.match(source, /data-create-cohort/);
   assert.match(source, /data-invite-participant/);
   assert.match(source, /ui\.openLayer/);
+  assert.match(source, /ui\.sectionHeader/);
+  assert.match(source, /ui\.dataState/);
+  assert.match(source, /data: \{ mapRefresh: true, mapControl: true \}/);
   assert.doesNotMatch(source, /\bconfirm\s*\(/);
 });
 
@@ -31,8 +34,8 @@ test("MAP subpanels are canonical nested routes and react to router activation",
 });
 
 test("workspace layers centralize focus restoration and responsive drawer geometry", () => {
-  const ui = read("js/workspace/ui.js");
-  const sharedStyles = read("css/workspace/workspace-components.css");
+  const ui = read("js/workspace/ui/interactions.js");
+  const sharedStyles = read("css/workspace/primitives/layers.css");
   const mapStyles = read("css/workspace/workspace-maps-licensing.css");
 
   assert.match(ui, /const layerTriggers = new WeakMap/);
@@ -51,6 +54,8 @@ test("client MAP dashboard separates entitlements, commercial access and seconda
   assert.match(source, /function renderCommercialWorkspace/);
   assert.match(source, /client-license-commercial/);
   assert.match(source, /client-license-activity-disclosure/);
+  assert.match(source, /ui\.sectionHeader/);
+  assert.match(source, /ui\.emptyState/);
   assert.match(styles, /\.client-license-commercial/);
   assert.match(styles, /\.client-license-activity-disclosure/);
 });
