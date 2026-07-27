@@ -14,6 +14,7 @@ La página de productos ya no se mantiene duplicando HTML a mano. La fuente comp
 - `resources/SUPABASE_INTELLIGENCE_SYNC.md`: despliegue, secretos, Edge Function y workflow de sincronización.
 - `resources/INTELLIGENCE_CONNECTORS.md`: arquitectura de conectores y uso del pipeline.
 - `resources/INTELLIGENCE_TESTING.md`: cobertura actual y cómo correr los tests de `Intelligence`.
+- `docs/MAP_NANO_PRICING.md`: fuente comercial, flujo de solicitudes y límites actuales de la experiencia de planes MAP-Nano.
 
 Comandos útiles:
 

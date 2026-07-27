@@ -1,8 +1,10 @@
 (() => {
   const contracts = window.BCCWorkspaceMapContracts;
   const repository = window.BCCWorkspaceMapRepository.client;
+  const mapNanoPlans = window.BCCMapNanoPlans;
   const utils = window.BCCWorkspaceUtils;
   const ui = window.BCCWorkspaceUI;
+  if (!mapNanoPlans) throw new Error("MAP-Nano commercial plans must load before the client licenses module.");
   const escapeHtml = utils.escapeHtml;
   const refreshIcons = utils.refreshIcons;
   let root = null;
@@ -12,11 +14,15 @@
   let selectedSuiteProductKey = "";
   let selectedRequestProductKey = "map.nano";
   let selectedRequestLicenseType = "named_user";
+  let selectedCommercialPlanId = "";
   let requestBusy = false;
   let platformAccess = [];
+  let effectiveAccess = [];
   let internalEntitlements = [];
   let trialOffer = contracts.TRIAL_OFFER_FALLBACK;
   let busy = false;
+  const COMMERCIAL_REQUEST_STORAGE_KEY = "bcc:map-nano:commercial-request-pending:v1";
+  const COMMERCIAL_REQUEST_MAX_AGE_MS = 45 * 86400000;
 
   function emptyDashboard() {
     return { accounts: [], licenses: [], members: [], assignments: [], recent_events: [] };
@@ -32,6 +38,15 @@
     });
   }
 
+  function trackCommercialPlan(eventName, metadata = {}) {
+    window.BCCAnalytics?.track(eventName, {
+      section: "client_map_nano_plan",
+      product_key: "map.nano",
+      plan_id: metadata.planId || selectedCommercialPlanId || "",
+      request_type: metadata.requestType || ""
+    });
+  }
+
   function init(user) {
     root = document.querySelector("[data-client-map-licenses]");
     if (!root || root.dataset.ready === "true") return;
@@ -42,6 +57,7 @@
     root.addEventListener("change", handleChange);
     root.addEventListener("submit", handleSubmit);
     root.setAttribute("aria-busy", "true");
+    trackCommercialPlan("subscription_page_viewed");
     void loadDashboard();
   }
 
@@ -51,6 +67,7 @@
     try {
       const payload = await repository.getDashboard();
       platformAccess = payload.platformAccess;
+      effectiveAccess = payload.effectiveAccess;
       internalEntitlements = payload.entitlements;
       trialOffer = contracts.normalizeTrialOffer(payload.trialOffer);
       dashboard = payload.dashboard;
@@ -165,9 +182,10 @@
     return `<div class="client-license-product-panel" id="suite-panel-${panelId}" role="tabpanel" aria-labelledby="suite-tab-${panelId}" tabindex="0">
       <header class="client-license-product-summary">
         <p>${escapeHtml(product.description)}</p>
-        <a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>
+        <div class="client-license-product-actions"><a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>${key === "map.nano" ? '<a class="btn btn-ghost btn-compact" href="/map-nano-pricing.html">Ver planes</a>' : ""}</div>
       </header>
       ${renderCurrentProductAccess(key, product, productLicenses)}
+      ${key === "map.nano" ? renderMapNanoPlanSummary(productLicenses) : ""}
       ${renderLicenseOptions(key, productLicenses)}
     </div>`;
   }
@@ -184,15 +202,20 @@
   }
 
   function renderCurrentAccessCard(product, item) {
+    const capabilities = capabilitiesForLicense(item);
+    const commercialPlan = item.product_key === "map.nano" ? mapNanoPlans.planById(mapNanoPlans.planIdForLicense(item)) : null;
     return `<article class="client-license-current-card">
       <div class="client-license-current-card-head">
-        <div><strong>${escapeHtml(contracts.licenseType(item.license_type)?.label || item.plan_name || "Licencia MAP")}</strong><small>${escapeHtml(item.account_name || "Cuenta MAP")}</small></div>
+        <div><strong>${escapeHtml(commercialPlan?.name || item.plan_name || contracts.licenseType(item.license_type)?.label || "Licencia MAP")}</strong><small>${escapeHtml(item.account_name || "Cuenta MAP")}</small></div>
         <span class="client-license-tag ${escapeHtml(item.status)}">${ui.icon(item.statusMeta.icon, "xs")}${escapeHtml(item.statusMeta.label)}</span>
       </div>
       <dl class="client-license-access-facts">
+        <div><dt>Inicio</dt><dd>${item.starts_at ? formatDate(item.starts_at) : "No especificado"}</dd></div>
         <div><dt>Vigencia</dt><dd>${item.ends_at ? `Hasta ${formatDate(item.ends_at)}` : "Sin vencimiento"}</dd></div>
         <div><dt>Modalidad</dt><dd>${escapeHtml(contracts.licenseType(item.license_type)?.shortLabel || (item.is_evaluation ? "Evaluación" : roleLabel(item.member_role)))}</dd></div>
+        ${item.product_key === "map.nano" ? `<div><dt>Facturación</dt><dd>No especificada</dd></div>` : ""}
       </dl>
+      ${capabilities.length ? `<div class="client-license-capability-summary"><span>Capacidades habilitadas</span><div>${capabilities.map(capability => `<span class="client-license-tag">${escapeHtml(platformAccessLabel(capability.access_key))}</span>`).join("")}</div></div>` : item.product_key === "map.nano" ? '<p class="client-license-card-note">Las capacidades técnicas aún no están disponibles para esta asignación.</p>' : ""}
       ${item.seatLimit ? `<div class="client-license-seat-summary">
         <div><span>Uso de plazas</span><strong>${item.assignedSeats} / ${item.seatLimit}</strong></div>
         ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: "client-license-seat-bar", tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
@@ -218,6 +241,7 @@
   }
 
   function renderLicenseOptions(key, productLicenses) {
+    if (key === "map.nano") return renderMapNanoCommercialOptions(productLicenses);
     const types = contracts.productLicenseTypes(key);
     if (!types.length) return "";
     const ownedTypes = new Set(productLicenses.map(item => item.license_type));
@@ -264,6 +288,114 @@
         <small class="client-license-offer-assurance">${ui.icon("shield-check", "xs")}${type.isEvaluation ? "Sin tarjeta" : "Sin compromiso"} · respuesta en 1 día hábil</small>
       </footer>
     </article>`;
+  }
+
+  function capabilitiesForLicense(license) {
+    return effectiveAccess.filter(item => item.access_source === "license" && item.license_id === license.license_id);
+  }
+
+  function accountForLicense(license) {
+    return dashboard.accounts.find(account => account.account_id === license.account_id) || null;
+  }
+
+  function canManageMapNanoCommercialRequest(productLicenses) {
+    if (!productLicenses.length) return true;
+    const accounts = productLicenses.map(accountForLicense).filter(Boolean);
+    const organizationAccounts = accounts.filter(account => account.account_kind === "organization");
+    if (!organizationAccounts.length) return true;
+    return organizationAccounts.some(account => ["owner", "admin"].includes(account.member_role));
+  }
+
+  function storedCommercialRequests() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(COMMERCIAL_REQUEST_STORAGE_KEY) || "[]");
+      const now = Date.now();
+      const requests = Array.isArray(parsed)
+        ? parsed.filter(item => item && typeof item.planId === "string" && Number.isFinite(Date.parse(item.submittedAt)) && now - Date.parse(item.submittedAt) < COMMERCIAL_REQUEST_MAX_AGE_MS)
+        : [];
+      localStorage.setItem(COMMERCIAL_REQUEST_STORAGE_KEY, JSON.stringify(requests));
+      return requests;
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  function pendingCommercialRequest(planId) {
+    return storedCommercialRequests().find(request => request.planId === planId) || null;
+  }
+
+  function rememberCommercialRequest(planId, requestType) {
+    const requests = storedCommercialRequests().filter(request => request.planId !== planId);
+    requests.push({ planId, requestType, submittedAt: new Date().toISOString() });
+    try { localStorage.setItem(COMMERCIAL_REQUEST_STORAGE_KEY, JSON.stringify(requests)); } catch (_error) {}
+  }
+
+  function renderMapNanoPlanSummary(productLicenses) {
+    const activeLicense = productLicenses.find(item => ["active", "scheduled", "expiring"].includes(item.status)) || productLicenses[0] || null;
+    if (!activeLicense) {
+      return `<section class="module-surface client-map-nano-plan-summary is-empty" aria-labelledby="map-nano-plan-summary-title">
+        <div><span class="workspace-eyebrow">Plan y licencia</span><h3 id="map-nano-plan-summary-title">No hay una licencia activa asociada a esta cuenta.</h3><p>Selecciona un plan para iniciar una solicitud. No se emitirá una licencia ni se realizará un cobro desde este dashboard.</p></div>
+        <a class="btn btn-ghost btn-compact" href="/map-nano-pricing.html">Comparar planes</a>
+      </section>`;
+    }
+    const plan = mapNanoPlans.planById(mapNanoPlans.planIdForLicense(activeLicense));
+    const status = mapNanoPlans.statusForLicense(activeLicense);
+    const pending = storedCommercialRequests().filter(request => request.planId !== "project");
+    return `<section class="module-surface client-map-nano-plan-summary" aria-labelledby="map-nano-plan-summary-title">
+      <div class="client-map-nano-plan-summary-head"><div><span class="workspace-eyebrow">Plan y licencia</span><h3 id="map-nano-plan-summary-title">${escapeHtml(plan?.name || activeLicense.plan_name || "Plan no reconocido")}</h3><p>${escapeHtml(activeLicense.account_name || "Organización no especificada")}</p></div><span class="client-license-tag ${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span></div>
+      <dl class="client-map-nano-plan-facts"><div><dt>Inicio</dt><dd>${activeLicense.starts_at ? formatDate(activeLicense.starts_at) : "No especificado"}</dd></div><div><dt>Renovación o vencimiento</dt><dd>${activeLicense.ends_at ? formatDate(activeLicense.ends_at) : "No especificado"}</dd></div><div><dt>Usuarios asignados</dt><dd>${Number.isFinite(activeLicense.assignedSeats) && Number.isFinite(activeLicense.seatLimit) ? `${activeLicense.assignedSeats} de ${activeLicense.seatLimit}` : "No especificado"}</dd></div><div><dt>Facturación</dt><dd>No especificada</dd></div></dl>
+      ${pending.length ? `<p class="client-map-nano-pending-note">Hay ${pending.length} solicitud${pending.length === 1 ? "" : "es"} comercial${pending.length === 1 ? "" : "es"} pendiente${pending.length === 1 ? "" : "s"} registrada${pending.length === 1 ? "" : "s"} en este navegador. Para modificarla, contacta a BCC.</p>` : ""}
+    </section>`;
+  }
+
+  function renderMapNanoCommercialOptions(productLicenses) {
+    const canManage = canManageMapNanoCommercialRequest(productLicenses);
+    const currentPlanId = productLicenses.map(item => mapNanoPlans.planIdForLicense(item)).find(Boolean) || "";
+    return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
+      <div class="client-license-subsection-head"><div><h3>Planes de MAP-Nano</h3><p>Elige el nivel de operación. Las solicitudes se revisan antes de emitir o cambiar una licencia.</p></div><a href="/map-nano-pricing.html">Comparación completa</a></div>
+      <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, currentPlanId, hasLicense: productLicenses.length > 0 })).join("")}</div>
+      ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
+    </section>`;
+  }
+
+  function renderMapNanoPlanCard(plan, context) {
+    const isCurrent = context.currentPlanId === plan.id;
+    const pending = pendingCommercialRequest(plan.id);
+    const requestType = mapNanoPlans.requestTypeForPlan(plan.id, { upgrade: context.hasLicense });
+    const action = isCurrent
+      ? ui.action({ label: "Plan actual", icon: "badge-check", className: "btn btn-ghost", disabled: true })
+      : pending
+        ? `<span class="client-map-nano-plan-pending">Solicitud pendiente desde ${escapeHtml(formatDate(pending.submittedAt))}</span>`
+        : context.canManage
+          ? ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
+          : ui.action({ label: "Contactar al administrador", href: "/contactUs.html?product=map-nano&intent=license", icon: "headset", className: "btn btn-ghost" });
+    const limitText = mapNanoLimitText(plan);
+    return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
+      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || "Licenciamiento anual")}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div>${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div>
+      <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(mapNanoPlans.priceLabel(plan))}</strong>${mapNanoPlans.monthlyLabel(plan) ? `<span>${escapeHtml(mapNanoPlans.monthlyLabel(plan))}</span>` : ""}</div>
+      <p class="client-map-nano-plan-limits">${escapeHtml(limitText)}</p><ul class="client-license-offer-benefits">${plan.features.slice(0, 4).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
+      <footer>${action}${!context.canManage && !isCurrent ? '<small class="client-license-offer-assurance">Solo propietarios o administradores pueden solicitar cambios para una organización.</small>' : ""}</footer>
+    </article>`;
+  }
+
+  function mapNanoLimitText(plan) {
+    const limits = [];
+    if (Number.isFinite(plan.limits?.namedUsers)) limits.push(`${plan.limits.namedUsers} usuario${plan.limits.namedUsers === 1 ? "" : "s"} nominativo${plan.limits.namedUsers === 1 ? "" : "s"}`);
+    if (Number.isFinite(plan.limits?.concurrentUsers)) limits.push(`${plan.limits.concurrentUsers} concurrentes`);
+    if (Number.isFinite(plan.limits?.installations)) limits.push(`${plan.limits.installations} instalaciones`);
+    return limits.length ? `Límites: ${limits.join(" · ")}` : "Límites: se definen según la propuesta.";
+  }
+
+  function renderMapNanoProjectOption(canManage, hasLicense) {
+    const project = mapNanoPlans.PROJECT_ACCESS;
+    const pending = pendingCommercialRequest(project.id);
+    const requestType = mapNanoPlans.requestTypeForPlan(project.id, { upgrade: hasLicense });
+    const action = pending
+      ? `<span class="client-map-nano-plan-pending">Solicitud pendiente desde ${escapeHtml(formatDate(pending.submittedAt))}</span>`
+      : canManage
+        ? ui.action({ label: project.cta.label, icon: "clock-3", className: "btn btn-ghost", data: { mapNanoCommercialRequest: project.id, mapNanoRequestType: requestType } })
+        : ui.action({ label: "Contactar soporte", href: mapNanoPlans.requestUrl(project.id), icon: "headset", className: "btn btn-ghost" });
+    return `<article class="client-map-nano-project-option"><div><span class="workspace-eyebrow">Alternativa por proyecto</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description)}</p></div><div><strong>${escapeHtml(mapNanoPlans.projectPriceLabel(project))}</strong>${action}</div></article>`;
   }
 
   function productDomId(key) {
@@ -394,6 +526,7 @@
   }
 
   function renderCommercialRequestLayer() {
+    if (selectedCommercialPlanId) return renderMapNanoCommercialRequestLayer();
     const key = contracts.PRODUCT_CATALOG[selectedRequestProductKey] ? selectedRequestProductKey : "map.nano";
     const product = contracts.productCatalog(key);
     const allowedTypes = product.licenseTypes || [];
@@ -439,8 +572,38 @@
         </div>
         <footer class="workspace-layer-actions">
           <button class="btn btn-ghost" type="button" data-client-license-close-layer>Cancelar</button>
-          <button class="btn btn-primary" type="submit" data-client-license-request-submit>${type.isEvaluation ? "Solicitar prueba" : "Enviar solicitud"}</button>
+          <button class="btn btn-primary" type="submit" data-client-license-request-submit data-idle-label="${type.isEvaluation ? "Solicitar prueba" : "Enviar solicitud"}">${type.isEvaluation ? "Solicitar prueba" : "Enviar solicitud"}</button>
         </footer>
+      </form>
+    </dialog>`;
+  }
+
+  function renderMapNanoCommercialRequestLayer() {
+    const plan = selectedCommercialPlanId === "project" ? mapNanoPlans.PROJECT_ACCESS : mapNanoPlans.planById(selectedCommercialPlanId);
+    if (!plan) {
+      selectedCommercialPlanId = "";
+      return renderCommercialRequestLayer();
+    }
+    const hasLicense = dashboard.licenses.some(item => item.product_key === "map.nano");
+    const requestType = mapNanoPlans.requestTypeForPlan(plan.id, { upgrade: hasLicense });
+    const defaultName = currentUser?.displayName || currentUser?.name || "";
+    const defaultOrganization = currentUser?.company || "";
+    const isProject = plan.id === "project";
+    return `<dialog class="workspace-layer is-drawer" data-client-license-request-layer aria-labelledby="client-map-nano-request-title">
+      <form class="workspace-layer-panel client-license-request-form" data-client-license-request-form data-map-nano-commercial-request-form data-analytics-form="map-nano-commercial-request">
+        <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Solicitud comercial</span><h2 id="client-map-nano-request-title">${escapeHtml(plan.name)}</h2><p>Esta solicitud se enviará al canal comercial existente. No se realiza ningún cobro ni cambio de licencia automáticamente.</p></div>${closeLayerAction("Cerrar solicitud")}</header>
+        <div class="workspace-layer-body" data-client-license-request-body>
+          <input type="hidden" name="product_key" value="map.nano"><input type="hidden" name="product" value="MAP-Nano"><input type="hidden" name="commercial_plan" value="${escapeHtml(plan.id)}"><input type="hidden" name="intent" value="${escapeHtml(requestType)}"><input type="hidden" name="_subject" value="Solicitud MAP-Nano · ${escapeHtml(plan.name)}">
+          <div class="client-license-form-row"><label>Nombre<input type="text" name="user_name" value="${escapeHtml(defaultName)}" autocomplete="name" required></label><label>Correo<input type="email" name="user_email" value="${escapeHtml(currentUser?.email || "")}" autocomplete="email" required></label></div>
+          <div class="client-license-form-row"><label>Institución u organización<input type="text" name="organization" value="${escapeHtml(defaultOrganization)}" autocomplete="organization" required></label><label>País<input type="text" name="country" autocomplete="country-name" required></label></div>
+          <div class="client-license-form-row"><label>Plan de interés<input type="text" name="plan_name" value="${escapeHtml(plan.name)}" readonly></label><label>Tipo de solicitud<select name="request_type" required><option value="new_license" ${requestType === "new_license" ? "selected" : ""}>Nueva licencia</option><option value="upgrade" ${requestType === "upgrade" ? "selected" : ""}>Actualización</option><option value="institutional_quote" ${requestType === "institutional_quote" ? "selected" : ""}>Cotización institucional</option><option value="project_access" ${requestType === "project_access" ? "selected" : ""}>Acceso por proyecto</option><option value="demo">Demostración</option></select></label></div>
+          <div class="client-license-form-row"><label>Usuarios estimados<input type="number" name="estimated_users" min="1" max="100000" value="${Number(plan.limits?.namedUsers) || 1}" required></label><label>Volumen aproximado<select name="analysis_volume" required><option value="">Selecciona una opción</option><option value="under_100">Menos de 100 imágenes o muestras</option><option value="100_to_1000">100 a 1,000 imágenes o muestras</option><option value="over_1000">Más de 1,000 imágenes o muestras</option><option value="unknown">Aún no definido</option></select></label></div>
+          <label>Mensaje<textarea name="message" rows="5" placeholder="Describe el flujo actual, el tipo de imágenes y cualquier requisito de despliegue o soporte."></textarea></label>
+          ${isProject ? '<p class="client-license-request-fallback">El acceso por proyecto puede incluir acceso temporal de 30 días o análisis asistido, según el alcance.</p>' : ""}
+          <p class="client-license-request-feedback" data-client-license-request-feedback role="status" aria-live="polite"></p>
+          <p class="client-license-request-fallback">Si el envío falla, <a href="${escapeHtml(mapNanoPlans.requestUrl(plan.id, { upgrade: hasLicense }))}">continúa en el formulario de contacto</a>.</p>
+        </div>
+        <footer class="workspace-layer-actions"><button class="btn btn-ghost" type="button" data-client-license-close-layer>Cancelar</button><button class="btn btn-primary" type="submit" data-client-license-request-submit data-idle-label="Enviar solicitud">Enviar solicitud</button></footer>
       </form>
     </dialog>`;
   }
@@ -564,6 +727,7 @@
     }
     const requestButton = event.target.closest("[data-client-license-request]");
     if (requestButton) {
+      selectedCommercialPlanId = "";
       selectedRequestProductKey = requestButton.dataset.clientLicenseRequest;
       selectedRequestLicenseType = requestButton.dataset.clientLicenseType || "named_user";
       const requestedType = contracts.licenseType(selectedRequestLicenseType);
@@ -574,6 +738,27 @@
       });
       const dialog = refreshCommercialRequestLayer();
       ui.openLayer(dialog, { trigger: requestButton });
+      return;
+    }
+    const commercialRequestButton = event.target.closest("[data-map-nano-commercial-request]");
+    if (commercialRequestButton) {
+      selectedCommercialPlanId = commercialRequestButton.dataset.mapNanoCommercialRequest;
+      const requestType = commercialRequestButton.dataset.mapNanoRequestType || mapNanoPlans.requestTypeForPlan(selectedCommercialPlanId);
+      if (pendingCommercialRequest(selectedCommercialPlanId)) {
+        setMessage("Ya existe una solicitud pendiente para este plan en este navegador. Contacta a BCC si necesitas modificarla.", "neutral");
+        return;
+      }
+      trackCommercialPlan("pricing_plan_selected", { planId: selectedCommercialPlanId, requestType });
+      const eventName = selectedCommercialPlanId === "project"
+        ? "project_access_requested"
+        : requestType === "upgrade"
+          ? "upgrade_requested"
+          : selectedCommercialPlanId === "institutional"
+            ? "contact_sales_clicked"
+            : "quote_requested";
+      trackCommercialPlan(eventName, { planId: selectedCommercialPlanId, requestType });
+      const dialog = refreshCommercialRequestLayer();
+      ui.openLayer(dialog, { trigger: commercialRequestButton });
       return;
     }
     if (event.target.closest("[data-client-license-refresh]")) {
@@ -603,6 +788,7 @@
     try {
       const payload = await repository.getDashboard();
       platformAccess = payload.platformAccess;
+      effectiveAccess = payload.effectiveAccess;
       internalEntitlements = payload.entitlements;
       trialOffer = contracts.normalizeTrialOffer(payload.trialOffer);
       dashboard = payload.dashboard;
@@ -622,10 +808,20 @@
     const submit = form.querySelector("[data-client-license-request-submit]");
     const feedback = form.querySelector("[data-client-license-request-feedback]");
     const isEvaluation = form.elements.intent?.value === "evaluation";
+    const isMapNanoCommercial = form.matches("[data-map-nano-commercial-request-form]");
     const productKey = form.elements.product_key?.value || selectedRequestProductKey;
     const licenseType = form.elements.license_type?.value || selectedRequestLicenseType;
+    const commercialPlanId = form.elements.commercial_plan?.value || "";
+    const requestType = form.elements.request_type?.value || form.elements.intent?.value || "";
     const funnelMetadata = { productKey, licenseType, isEvaluation };
+    if (isMapNanoCommercial && pendingCommercialRequest(commercialPlanId)) {
+      feedback.textContent = "Ya existe una solicitud pendiente para este plan en este navegador. Contacta a BCC si necesitas modificarla.";
+      feedback.dataset.tone = "error";
+      requestBusy = false;
+      return;
+    }
     trackLicenseFunnel("map_license_request_submit", funnelMetadata);
+    if (isMapNanoCommercial) trackCommercialPlan("quote_requested", { planId: commercialPlanId, requestType });
     submit.disabled = true;
     submit.textContent = "Enviando...";
     feedback.textContent = "Enviando tu solicitud...";
@@ -638,16 +834,22 @@
       });
       if (!response.ok) throw new Error("No fue posible enviar la solicitud.");
       trackLicenseFunnel("map_license_request_success", funnelMetadata);
+      if (isMapNanoCommercial) {
+        rememberCommercialRequest(commercialPlanId, requestType);
+        trackCommercialPlan(commercialPlanId === "project" ? "project_access_requested" : requestType === "upgrade" ? "upgrade_requested" : "quote_requested", { planId: commercialPlanId, requestType });
+      }
       ui.closeLayer(form.closest("dialog"), "submitted");
+      if (isMapNanoCommercial) render();
       setMessage(isEvaluation ? "Recibimos tu solicitud de prueba. Te responderemos en 1 día hábil." : "Recibimos tu solicitud. Te responderemos en 1 día hábil.", "ok");
     } catch (error) {
       trackLicenseFunnel("map_license_request_error", funnelMetadata);
+      if (isMapNanoCommercial) trackCommercialPlan("quote_request_error", { planId: commercialPlanId, requestType });
       feedback.textContent = "No pudimos enviar la solicitud. Usa el enlace de contacto alternativo.";
       feedback.dataset.tone = "error";
     } finally {
       requestBusy = false;
       submit.disabled = false;
-      submit.textContent = isEvaluation ? "Solicitar prueba" : "Enviar solicitud";
+      submit.textContent = submit.dataset.idleLabel || (isEvaluation ? "Solicitar prueba" : "Enviar solicitud");
     }
   }
 

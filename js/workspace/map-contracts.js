@@ -101,6 +101,10 @@
   });
 
   const PLATFORM_ACCESS_LABELS = Object.freeze({
+    "map.workspace.access": "Acceso al espacio MAP",
+    "map.nano.use": "Análisis MAP-Nano",
+    "map.bio.use": "Análisis MAP-Bio",
+    "map.med.use": "Análisis MAP-Med",
     "map.dev.access": "Desarrollo MAP",
     "map.release.manage": "Releases MAP",
     "platform.licenses.read": "Consulta de licencias",
@@ -169,6 +173,18 @@
       .filter(item => item.access_source === "internal_role")
       .map(item => String(item.access_key || "").trim())
       .filter(Boolean))];
+  }
+
+  function normalizeEffectiveAccess(value) {
+    return rows(value)
+      .filter(item => typeof item.access_key === "string" && item.access_key.trim())
+      .map(item => ({
+        access_key: item.access_key.trim(),
+        access_source: String(item.access_source || "unknown"),
+        product_key: String(item.product_key || ""),
+        license_id: String(item.license_id || ""),
+        valid_until: item.valid_until || null
+      }));
   }
 
   function normalizeTrialOffer(value) {
@@ -264,6 +280,7 @@
     normalizeAdminDashboard,
     normalizeEntitlements,
     normalizePlatformAccess,
+    normalizeEffectiveAccess,
     normalizeTrialOffer,
     effectiveStatus,
     toLicenseViewModel,

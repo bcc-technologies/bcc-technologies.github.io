@@ -190,4 +190,48 @@
   .client-license-current-card-head{ display: grid; align-items: start; }
 }
 
+.client-license-product-actions{ display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.client-license-capability-summary{ display: grid; gap: 6px; padding: 10px; border-radius: 8px; background: var(--surface-muted); }
+.client-license-capability-summary > span{ color: var(--muted); font-size: .72rem; font-weight: 750; }
+.client-license-capability-summary > div{ display: flex; flex-wrap: wrap; gap: 5px; }
+.client-license-capability-summary .client-license-tag{ font-size: .68rem; }
+
+.client-map-nano-plan-summary{ display: grid; gap: 14px; padding: 18px; border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, var(--surface-solid)), var(--surface-solid)); }
+.client-map-nano-plan-summary.is-empty{ grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.client-map-nano-plan-summary h3{ margin: 3px 0 0; color: var(--ink); font-size: 1.1rem; }
+.client-map-nano-plan-summary p{ margin: 5px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+.client-map-nano-plan-summary-head{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.client-map-nano-plan-facts{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.client-map-nano-plan-facts div{ min-width: 0; padding: 10px; border-radius: 8px; background: var(--surface-muted); }
+.client-map-nano-plan-facts dt{ color: var(--muted); font-size: .7rem; }
+.client-map-nano-plan-facts dd{ margin: 3px 0 0; color: var(--ink); font-size: .8rem; font-weight: 750; overflow-wrap: anywhere; }
+.client-map-nano-pending-note{ padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--warning) 32%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--warning) 8%, var(--surface-solid)); }
+.client-map-nano-commercial-options .client-license-subsection-head p{ margin: 5px 0 0; color: var(--muted); font-size: .8rem; }
+.client-map-nano-commercial-options .client-license-subsection-head > a{ color: var(--accent-strong); font-size: .8rem; font-weight: 800; }
+.client-map-nano-plan-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.client-map-nano-plan-card{ min-height: 410px; }
+.client-map-nano-plan-price{ display: grid; gap: 3px; padding: 9px 10px; border-radius: 8px; background: var(--surface-muted); }
+.client-map-nano-plan-price strong{ color: var(--ink); font-size: .94rem; }
+.client-map-nano-plan-price span,
+.client-map-nano-plan-limits{ color: var(--muted); font-size: .72rem; line-height: 1.35; }
+.client-map-nano-plan-pending{ display: block; padding: 9px; border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--warning) 8%, var(--surface-solid)); color: var(--ink-soft); font-size: .74rem; line-height: 1.35; text-align: center; }
+.client-map-nano-project-option{ display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px; border: 1px solid var(--line); border-radius: var(--workspace-radius-panel); background: var(--surface-muted); }
+.client-map-nano-project-option h3{ margin: 3px 0 0; color: var(--ink); font-size: 1rem; }
+.client-map-nano-project-option p{ max-width: 670px; margin: 5px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+.client-map-nano-project-option > div:last-child{ display: grid; justify-items: end; gap: 9px; text-align: right; }
+.client-map-nano-project-option strong{ color: var(--ink); font-size: .9rem; white-space: nowrap; }
+
+@media (max-width: 1180px){
+  .client-map-nano-plan-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .client-map-nano-plan-facts{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px){
+  .client-map-nano-plan-grid,
+  .client-map-nano-plan-facts{ grid-template-columns: 1fr; }
+  .client-map-nano-plan-summary.is-empty,
+  .client-map-nano-project-option{ display: grid; }
+  .client-map-nano-project-option > div:last-child{ justify-items: start; text-align: left; }
+}
+
 }

@@ -19,7 +19,8 @@
     const productKey = params.get("product") || "";
     const intent = params.get("intent") || "";
     const licenseType = params.get("license_type") || "";
-    if (!productKey && !intent && !licenseType) return;
+    const planId = params.get("plan") || "";
+    if (!productKey && !intent && !licenseType && !planId) return;
 
     const form = document.querySelector('form[action*="formspree.io"]');
     if (!form) return;
@@ -27,12 +28,14 @@
     const isEnglish = window.location.pathname.startsWith("/en/");
     const product = PRODUCTS[productKey] || productKey.replace(/[._-]+/g, " ").trim();
     const licenseTypeLabel = LICENSE_TYPES[licenseType] || licenseType.replace(/[_-]+/g, " ").trim();
+    const mapNanoPlan = productKey === "map-nano" ? window.BCCMapNanoPlans?.planById?.(planId) : null;
     const subject = form.querySelector('select[name="subject"]');
     const message = form.querySelector('textarea[name="message"]');
 
     addHiddenField(form, "intent", intent || "contact");
     if (product) addHiddenField(form, "product", product);
     if (licenseType) addHiddenField(form, "license_type", licenseType);
+    if (planId) addHiddenField(form, "commercial_plan", planId);
 
     if (subject && product) {
       const option = document.createElement("option");
@@ -49,6 +52,36 @@
         ? `I would like information about licensing ${product}${licenseTypeLabel ? ` (${licenseTypeLabel})` : ""}.`
         : `Me gustaría recibir información sobre una licencia de ${product}${licenseTypeLabel ? ` (${licenseTypeLabel})` : ""}.`;
     }
+
+    if (mapNanoPlan) addMapNanoCommercialFields(form, message, mapNanoPlan, intent, isEnglish);
+  }
+
+  function addMapNanoCommercialFields(form, message, plan, intent, isEnglish) {
+    if (form.dataset.mapNanoCommercialFields === "true") return;
+    form.dataset.mapNanoCommercialFields = "true";
+    const labels = isEnglish
+      ? { organization: "Institution or organization", country: "Country", users: "Estimated users", volume: "Approximate image or sample volume", newLicense: "New license", upgrade: "Upgrade", institutional: "Institutional quote", project: "Project access", demo: "Demonstration", select: "Select an option", under: "Under 100 images or samples", middle: "100 to 1,000 images or samples", over: "Over 1,000 images or samples", unknown: "Not defined yet" }
+      : { organization: "Institución u organización", country: "País", users: "Usuarios estimados", volume: "Volumen aproximado de imágenes o muestras", newLicense: "Nueva licencia", upgrade: "Actualización", institutional: "Cotización institucional", project: "Acceso por proyecto", demo: "Demostración", select: "Selecciona una opción", under: "Menos de 100 imágenes o muestras", middle: "100 a 1,000 imágenes o muestras", over: "Más de 1,000 imágenes o muestras", unknown: "Aún no definido" };
+    const requestType = intent === "institutional_quote" ? "institutional_quote" : intent === "project_access" ? "project_access" : intent === "upgrade" ? "upgrade" : "new_license";
+    const nameField = form.elements.namedItem("user_name");
+    const emailField = form.elements.namedItem("user_email");
+    if (nameField) nameField.required = true;
+    if (emailField) emailField.required = true;
+    addHiddenField(form, "plan_name", plan.name);
+    const fields = document.createElement("div");
+    fields.className = "map-nano-contact-fields";
+    fields.innerHTML = `
+      <input class="input" type="text" name="organization" autocomplete="organization" placeholder="${escapeHtml(labels.organization)}" required>
+      <input class="input" type="text" name="country" autocomplete="country-name" placeholder="${escapeHtml(labels.country)}" required>
+      <input class="input" type="number" name="estimated_users" min="1" max="100000" value="${Number(plan.limits?.namedUsers) || 1}" required aria-label="${escapeHtml(labels.users)}">
+      <select class="input select" name="request_type" required aria-label="Request type"><option value="new_license" ${requestType === "new_license" ? "selected" : ""}>${escapeHtml(labels.newLicense)}</option><option value="upgrade" ${requestType === "upgrade" ? "selected" : ""}>${escapeHtml(labels.upgrade)}</option><option value="institutional_quote" ${requestType === "institutional_quote" ? "selected" : ""}>${escapeHtml(labels.institutional)}</option><option value="project_access" ${requestType === "project_access" ? "selected" : ""}>${escapeHtml(labels.project)}</option><option value="demo">${escapeHtml(labels.demo)}</option></select>
+      <select class="input select" name="analysis_volume" required aria-label="${escapeHtml(labels.volume)}"><option value="">${escapeHtml(labels.select)}</option><option value="under_100">${escapeHtml(labels.under)}</option><option value="100_to_1000">${escapeHtml(labels.middle)}</option><option value="over_1000">${escapeHtml(labels.over)}</option><option value="unknown">${escapeHtml(labels.unknown)}</option></select>`;
+    message?.before(fields);
+    if (message) message.required = true;
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
   }
 
   function addHiddenField(form, name, value) {

@@ -35,6 +35,7 @@
     return {
       dashboard: contracts.normalizeClientDashboard(dashboard),
       platformAccess: contracts.normalizePlatformAccess(access),
+      effectiveAccess: contracts.normalizeEffectiveAccess(access),
       entitlements: contracts.normalizeEntitlements(entitlements),
       trialOffer
     };

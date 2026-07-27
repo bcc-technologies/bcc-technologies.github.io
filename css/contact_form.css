@@ -99,6 +99,16 @@ body {
   }
 }
 
+#form-content .map-nano-contact-fields{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 10px;
+}
+
+@media (max-width: 560px){
+  #form-content .map-nano-contact-fields{ grid-template-columns: 1fr; }
+}
+
 @keyframes error {
   0%, 100% {transform: translateX(0);}
   10%, 30%, 50%, 70%, 90% {transform: translateX(-6px);}
