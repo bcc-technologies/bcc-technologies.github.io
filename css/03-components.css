@@ -51,7 +51,10 @@
   background: var(--accent);
   color: var(--accent-ink);
 }
-.btn-primary:hover{ transform: translateY(-1px); }
+.btn-primary:hover{
+  color: var(--accent-ink);
+  transform: translateY(-1px);
+}
 
 .btn-ghost{
   background: transparent;

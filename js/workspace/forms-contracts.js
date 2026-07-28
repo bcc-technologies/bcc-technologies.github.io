@@ -24,6 +24,7 @@
       title: String(item.title || ""),
       purpose: String(item.purpose || ""),
       audience: String(item.audience || ""),
+      recipientIds: Array.isArray(item.recipientIds) ? item.recipientIds.map(String) : [],
       status: String(item.status || "draft"),
       questions: Array.isArray(item.questions) ? item.questions.map(question) : []
     };
@@ -41,6 +42,15 @@
     };
   }
 
+  function recipient(value) {
+    const item = object(value);
+    return {
+      id: String(item.id || ""),
+      label: String(item.label || ""),
+      email: String(item.email || "")
+    };
+  }
+
   function collection(payload, key, normalizer) {
     const items = object(payload)[key];
     if (!Array.isArray(items)) throw new Error(`Respuesta inválida: falta ${key}.`);
@@ -54,8 +64,23 @@
   }
 
   function toError(error) {
+    const original = error?.cause || error;
+    const detail = [
+      original?.code,
+      original?.message,
+      original?.details,
+      String(original || "")
+    ].filter(Boolean).join(" ");
+
+    if (/PGRST204|(?:recipient_ids|workspace_forms|workspace_form_responses).{0,120}schema cache|schema cache.{0,120}(?:recipient_ids|workspace_forms|workspace_form_responses)/i.test(detail)) {
+      return new window.BCCWorkspaceTransport.WorkspaceTransportError(
+        "El servicio de formularios se está actualizando. Inténtalo de nuevo en unos segundos.",
+        { code: "schema_updating", cause: error, retryable: true }
+      );
+    }
+
     return window.BCCWorkspaceTransport.toError(error, {
-      schemaPattern: /workspace_forms|workspace_form_responses|relation .* does not exist/i,
+      schemaPattern: /relation\s+(?:\"?public\"?\.)?\"?(?:workspace_forms|workspace_form_responses)\"?\s+does not exist|could not find (?:the )?table .*?(?:workspace_forms|workspace_form_responses).*?schema cache|PGRST205/i,
       schemaMessage: "El servicio requiere activar las tablas de formularios en Supabase.",
       fallbackMessage: "No fue posible actualizar formularios."
     });
@@ -66,6 +91,7 @@
     response,
     forms: payload => collection(payload, "forms", form),
     responses: payload => collection(payload, "responses", response),
+    recipients: payload => collection(payload, "recipients", recipient),
     formFrom: payload => entity(payload, "form", form),
     responseFrom: payload => entity(payload, "response", response),
     toError

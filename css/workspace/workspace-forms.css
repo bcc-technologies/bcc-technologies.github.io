@@ -129,6 +129,19 @@
   resize: vertical;
 }
 
+.form-recipient-field select,
+.response-field select[multiple]{
+  min-height: 136px;
+  padding: 6px;
+}
+
+.form-recipient-field small{
+  color: var(--ink-muted);
+  font-size: .72rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .form-builder-row{
   display: grid;
   grid-template-columns: 1fr 1.24fr;
@@ -261,6 +274,22 @@
 
 .form-inbox .forms-panel-head{
   padding-bottom: 14px;
+}
+
+.form-inbox--received{
+  --form-inbox-gutter: 18px;
+  --form-inbox-gutter-start: 21px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-solid);
+}
+
+.form-inbox--received .forms-panel-head{
+  padding: 20px var(--form-inbox-gutter) 16px var(--form-inbox-gutter-start);
+}
+
+.form-inbox--received .form-inbox-list{
+  padding-inline: var(--form-inbox-gutter) var(--form-inbox-gutter-start);
 }
 
 .inbox-form{

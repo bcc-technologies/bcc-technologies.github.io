@@ -63,7 +63,7 @@ test("public pricing page, dashboard and contact form consume the shared plan ca
   assert.match(pageScript, /pricing_page_viewed/);
   assert.match(pageScript, /pricing_faq_opened/);
   assert.match(dashboardFeature, /"js\/map-nano-plans\.js"/);
-  assert.match(dashboardModule, /Tus planes de MAP-Nano/);
+  assert.match(dashboardModule, /client-map-nano-plan-footnote/);
   assert.match(dashboardModule, /Plan contratado/);
   assert.doesNotMatch(dashboardModule, /renderMapNanoPlanSummary|Plan y licencia/);
   assert.match(dashboardModule, /data-map-nano-commercial-request-form/);
@@ -84,6 +84,33 @@ test("public navigation fixes only the document header, not pricing-card headers
   assert.match(pricingScript, /<header class="map-pricing-plan-head">/);
 });
 
+test("MAP-Nano pricing uses a paced hierarchy with focused plan emphasis", () => {
+  const [styles, pricingScript] = [read("css/pages/map-nano-pricing.css"), read("js/map-nano-pricing.js")];
+
+  assert.match(styles, /--map-pricing-space-flow: clamp\(18px, 2\.4vw, 28px\);/);
+  assert.match(styles, /--map-pricing-space-section: clamp\(58px, 8vw, 104px\);/);
+  assert.match(styles, /--map-pricing-space-bridge: clamp\(30px, 4vw, 52px\);/);
+  assert.match(styles, /\.map-pricing-comparison\{\s*margin: 0;/);
+  assert.match(styles, /\.map-pricing-project\{[^}]*margin: var\(--map-pricing-space-bridge\) 0 0;/);
+  assert.match(styles, /\.map-pricing-return \+ \.map-pricing-faq\{/);
+  assert.match(styles, /\.map-pricing-section \+ \.map-pricing-section\{\s*border-top: 0;/);
+  assert.match(styles, /\.map-pricing-plan-grid\{[^}]*grid-template-columns: \.88fr 1\.12fr 1fr 1\.08fr;/);
+  assert.match(styles, /@media \(max-width: 1080px\)\{\s*\.map-pricing-plan-grid\{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(styles, /\.map-pricing-plan\.is-essential\{ --map-pricing-plan-tone: var\(--info\); \}/);
+  assert.match(styles, /\.map-pricing-plan\.is-facility\{ --map-pricing-plan-tone: var\(--success\); \}/);
+  assert.match(styles, /\.map-pricing-plan:hover\{[^}]*transform: translateY\(-2px\);/);
+  assert.match(styles, /\.map-pricing-plan\.is-highlighted::before\{/);
+  assert.match(styles, /\.map-pricing-project:hover\{[^}]*transform: translateY\(-2px\);/);
+  assert.match(styles, /\.map-pricing-return\{[^}]*border-top: 1px solid var\(--line\);/);
+  assert.match(styles, /\.map-pricing-comparison > summary\{/);
+  assert.match(styles, /\.map-pricing-comparison\[open\] \.map-pricing-comparison-toggle/);
+  assert.match(pricingScript, /<details class="map-pricing-comparison" id="comparar" data-map-pricing-comparison>/);
+  assert.doesNotMatch(pricingScript, /<details class="map-pricing-comparison"[^>]*\bopen\b/);
+  assert.match(pricingScript, /role="img" aria-label="Incluido"/);
+  assert.match(pricingScript, /role="img" aria-label="No incluido"/);
+  assert.match(pricingScript, /querySelector\("\[data-map-pricing-comparison\]"\)\.open = true/);
+});
+
 test("dashboard preserves the repository boundary and remains honest about unavailable billing data", () => {
   const [contracts, repository, dashboard] = [
     read("js/workspace/map-contracts.js"),
@@ -97,7 +124,7 @@ test("dashboard preserves the repository boundary and remains honest about unava
   assert.match(repository, /create_my_map_nano_commercial_request/);
   assert.match(repository, /cancel_my_map_nano_commercial_request/);
   assert.match(dashboard, /Facturación<\/dt><dd>No especificada/);
-  assert.match(dashboard, /Elige el nivel de operación\. Las solicitudes se revisan antes de emitir una licencia/);
+  assert.match(dashboard, /Las solicitudes se revisan antes de emitir una licencia/);
   assert.doesNotMatch(dashboard, /stripe|paddle|checkout/i);
 });
 

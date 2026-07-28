@@ -15,11 +15,11 @@
 
   const planCell = (plan, feature) => {
     if (plan.id === "institutional" && ["api_access", "institutional_reports"].includes(feature.id)) {
-      return '<span class="map-pricing-included">Según alcance</span>';
+      return '<span class="map-pricing-included is-scope" role="img" aria-label="Según alcance" title="Según alcance">≈</span>';
     }
     return catalog.hasEntitlement(plan, feature.id)
-      ? '<span class="map-pricing-included">Incluido</span>'
-      : '<span class="map-pricing-excluded">No incluido</span>';
+      ? '<span class="map-pricing-included" role="img" aria-label="Incluido" title="Incluido">✓</span>'
+      : '<span class="map-pricing-excluded" role="img" aria-label="No incluido" title="No incluido">—</span>';
   };
 
   const limitItems = plan => {
@@ -33,7 +33,7 @@
   const renderPlan = plan => {
     const titleId = `map-pricing-${plan.id}-title`;
     const limits = limitItems(plan);
-    return `<article class="map-pricing-plan ${plan.highlighted ? "is-highlighted" : ""}" aria-labelledby="${titleId}">
+    return `<article class="map-pricing-plan is-${escapeHtml(plan.id)} ${plan.highlighted ? "is-highlighted" : ""}" aria-labelledby="${titleId}">
       <header class="map-pricing-plan-head">
         <div>
           ${plan.badge ? `<span class="map-pricing-badge">${escapeHtml(plan.badge)}</span>` : ""}
@@ -53,19 +53,26 @@
     </article>`;
   };
 
-  const renderComparison = () => `<section class="map-pricing-section map-pricing-comparison" id="comparar" aria-labelledby="map-pricing-comparison-title">
-    <div class="map-pricing-section-head"><p class="map-pricing-eyebrow">Comparación</p><h2 id="map-pricing-comparison-title">Capacidades por plan</h2><p>Los límites y capacidades se muestran como referencia comercial. La configuración final de licencia se confirma en la propuesta y el contrato aplicable.</p></div>
-    <div class="map-pricing-table-wrap" tabindex="0">
-      <table>
-        <caption class="visually-hidden">Comparación de capacidades entre los planes de MAP-Nano</caption>
-        <thead><tr><th scope="col">Capacidad</th>${catalog.PLANS.map(plan => `<th scope="col">${escapeHtml(plan.name.replace("MAP-Nano ", ""))}</th>`).join("")}</tr></thead>
-        <tbody>${catalog.COMPARISON_FEATURES.map(feature => `<tr><th scope="row"><span>${escapeHtml(feature.label)}</span><small>${escapeHtml(feature.description)}</small></th>${catalog.PLANS.map(plan => `<td>${planCell(plan, feature)}</td>`).join("")}</tr>`).join("")}</tbody>
-      </table>
+  const renderComparison = () => `<details class="map-pricing-comparison" id="comparar" data-map-pricing-comparison>
+    <summary aria-labelledby="map-pricing-comparison-title">
+      <span class="map-pricing-comparison-summary-copy"><strong id="map-pricing-comparison-title"><span aria-hidden="true">↔</span> Comparar capacidades</strong><small>4 planes · ${catalog.COMPARISON_FEATURES.length} capacidades</small></span>
+      <span class="map-pricing-comparison-toggle"><span aria-hidden="true"></span><span>Ver detalle</span></span>
+    </summary>
+    <div class="map-pricing-comparison-body">
+      <p class="map-pricing-comparison-note">Los límites y capacidades se muestran como referencia comercial. La configuración final de licencia se confirma en la propuesta y el contrato aplicable.</p>
+      <p class="map-pricing-comparison-legend" aria-label="Leyenda de comparación"><span><i class="map-pricing-included" aria-hidden="true">✓</i> Incluido</span><span><i class="map-pricing-excluded" aria-hidden="true">—</i> No incluido</span><span><i class="map-pricing-included is-scope" aria-hidden="true">≈</i> Según alcance</span></p>
+      <div class="map-pricing-table-wrap" tabindex="0">
+        <table>
+          <caption class="visually-hidden">Comparación de capacidades entre los planes de MAP-Nano</caption>
+          <thead><tr><th scope="col">Capacidad</th>${catalog.PLANS.map(plan => `<th scope="col">${escapeHtml(plan.name.replace("MAP-Nano ", ""))}</th>`).join("")}</tr></thead>
+          <tbody>${catalog.COMPARISON_FEATURES.map(feature => `<tr><th scope="row"><span>${escapeHtml(feature.label)}</span><small>${escapeHtml(feature.description)}</small></th>${catalog.PLANS.map(plan => `<td>${planCell(plan, feature)}</td>`).join("")}</tr>`).join("")}</tbody>
+        </table>
+      </div>
+      <div class="map-pricing-mobile-comparison" aria-label="Comparación de capacidades por plan">
+        ${catalog.PLANS.map(plan => `<details><summary>${escapeHtml(plan.name.replace("MAP-Nano ", ""))}</summary><ul>${catalog.COMPARISON_FEATURES.map(feature => `<li><span>${escapeHtml(feature.label)}</span>${planCell(plan, feature)}</li>`).join("")}</ul></details>`).join("")}
+      </div>
     </div>
-    <div class="map-pricing-mobile-comparison" aria-label="Comparación de capacidades por plan">
-      ${catalog.PLANS.map(plan => `<details><summary>${escapeHtml(plan.name.replace("MAP-Nano ", ""))}</summary><ul>${catalog.COMPARISON_FEATURES.map(feature => `<li><span>${escapeHtml(feature.label)}</span>${planCell(plan, feature)}</li>`).join("")}</ul></details>`).join("")}
-    </div>
-  </section>`;
+  </details>`;
 
   const renderProject = () => {
     const project = catalog.PROJECT_ACCESS;
@@ -95,21 +102,29 @@
 
   root.innerHTML = `
     <section class="map-pricing-hero">
-      <div class="container map-pricing-hero-inner"><p class="map-pricing-eyebrow">MAP-Nano</p><h1>Planes de MAP-Nano</h1><p>Automatización y trazabilidad para análisis de microestructuras, desde el trabajo individual hasta implementaciones institucionales.</p><div class="map-pricing-hero-actions"><a class="btn btn-primary" href="#planes">Ver planes</a><a class="btn btn-ghost" href="#comparar" data-map-pricing-compare>Comparar capacidades</a></div></div>
+      <div class="container map-pricing-hero-inner"><p class="map-pricing-eyebrow">MAP-Nano</p><h1>Planes de MAP-Nano</h1><p>Automatización y trazabilidad para análisis de microestructuras, desde el trabajo individual hasta implementaciones institucionales.</p><div class="map-pricing-hero-actions"><a class="btn btn-primary" href="#planes">Ver planes</a><a class="btn btn-ghost" href="#savings-calculator" data-map-pricing-savings>Calcular ahorro</a><a class="btn btn-ghost" href="#comparar" data-map-pricing-compare>Comparar capacidades</a></div></div>
     </section>
     <main class="map-pricing-main">
       <section class="map-pricing-section" id="planes" aria-labelledby="map-pricing-plans-title"><div class="map-pricing-section-head"><p class="map-pricing-eyebrow">Licenciamiento anual</p><h2 id="map-pricing-plans-title">Elige el nivel de operación que corresponde a tu laboratorio</h2><p>Las solicitudes se revisan con BCC antes de emitir una licencia. No hay checkout automático en esta página.</p></div><div class="map-pricing-plan-grid">${catalog.PLANS.map(renderPlan).join("")}</div></section>
       ${renderComparison()}
       ${renderProject()}
+      <div data-map-nano-savings-calculator></div>
       <section class="map-pricing-return" aria-labelledby="map-pricing-return-title"><div><p class="map-pricing-eyebrow">Uso y retorno</p><h2 id="map-pricing-return-title">El valor depende del flujo de trabajo</h2></div><div><p>En laboratorios con flujo regular de análisis, el ahorro de tiempo técnico puede compensar total o parcialmente el costo de la licencia. El resultado depende del volumen de imágenes, los procedimientos actuales y el nivel de revisión requerido.</p><p>MAP-Nano no reemplaza el microscopio ni elimina la revisión técnica. Reduce trabajo repetitivo y ayuda a estandarizar el análisis.</p></div></section>
       ${renderFaq()}
     </main>`;
+
+  window.BCCMapNanoSavingsCalculator?.render(root.querySelector("[data-map-nano-savings-calculator]"), { context: "public" });
 
   window.BCCAnalytics?.track("pricing_page_viewed", { product_key: "map.nano", section: "map_nano_pricing" }, { onceKey: "pricing:map-nano" });
 
   root.addEventListener("click", event => {
     const compare = event.target.closest("[data-map-pricing-compare]");
-    if (compare) window.BCCAnalytics?.track("pricing_comparison_opened", { product_key: "map.nano" });
+    if (compare) {
+      root.querySelector("[data-map-pricing-comparison]").open = true;
+      window.BCCAnalytics?.track("pricing_comparison_opened", { product_key: "map.nano" });
+    }
+    const savingsLink = event.target.closest("[data-map-pricing-savings]");
+    if (savingsLink) window.BCCAnalytics?.track("savings_calculator_viewed", { product_key: "map.nano", source: "pricing_hero" }, { onceKey: "savings-calculator:hero" });
   });
 
   root.addEventListener("toggle", event => {

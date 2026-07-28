@@ -15,8 +15,14 @@
     list(options = {}) {
       return run(async () => contracts.forms(await transport.request("/api/workspace/forms", options)));
     },
+    listReceived(options = {}) {
+      return run(async () => contracts.forms(await transport.request("/api/workspace/forms/received", options)));
+    },
     listMine(options = {}) {
       return run(async () => contracts.responses(await transport.request("/api/workspace/form-responses/me", options)));
+    },
+    listRecipients(options = {}) {
+      return run(async () => contracts.recipients(await transport.request("/api/workspace/forms/recipients", options)));
     },
     create(values, options = {}) {
       return run(async () => contracts.formFrom(await transport.request("/api/workspace/forms", {

@@ -104,6 +104,7 @@
 
   function render() {
     if (!root) return;
+    const selectedProduct = contracts.productCatalog(selectedSuiteProductKey) || { productHref: "/products.html" };
     root.innerHTML = `
       <section class="client-license-shell">
         ${ui.sectionHeader({
@@ -112,14 +113,14 @@
           title: "Licencias MAP",
           level: 1,
           description: "Elige el producto y la modalidad para llevar tus análisis de la evaluación al trabajo diario.",
+          collapsibleDescription: true,
           actions: [
             {
-              label: "Actualizar",
-              icon: "refresh-cw",
+              label: "Ver producto",
+              icon: "arrow-up-right",
               compact: true,
-              disabled: busy,
               className: "btn btn-ghost",
-              data: { clientLicenseRefresh: true, clientLicenseControl: true }
+              href: selectedProduct.productHref
             }
           ]
         })}
@@ -149,12 +150,16 @@
     const selectedLicenses = licenses
       .filter(item => item.product_key === selectedSuiteProductKey)
       .sort((a, b) => a.statusMeta.priority - b.statusMeta.priority);
+    const selectedCatalog = contracts.productCatalog(selectedSuiteProductKey);
 
     return `<section class="client-license-suite" id="suite-map" aria-label="Productos y licencias MAP">
-      <div class="client-license-product-tabs" role="tablist" aria-label="Productos de la suite MAP">
-        ${productKeys.map(key => renderProductTab(key, licenses)).join("")}
+      <div class="client-license-suite-toolbar">
+        <div class="client-license-product-tabs" role="tablist" aria-label="Productos de la suite MAP">
+          ${productKeys.map(key => renderProductTab(key, licenses)).join("")}
+        </div>
+        ${renderSuiteActions(selectedLicenses)}
       </div>
-      ${renderSuiteProduct(selectedSuiteProductKey, contracts.productCatalog(selectedSuiteProductKey), selectedLicenses)}
+      ${renderSuiteProduct(selectedSuiteProductKey, selectedCatalog, selectedLicenses)}
     </section>`;
   }
 
@@ -170,6 +175,14 @@
     </button>`;
   }
 
+  function renderSuiteActions(productLicenses) {
+    const activeAccessCount = productLicenses.filter(item => ["active", "scheduled", "expiring"].includes(item.status)).length;
+    const accessState = activeAccessCount
+      ? `${activeAccessCount} acceso${activeAccessCount === 1 ? "" : "s"} vigente${activeAccessCount === 1 ? "" : "s"}`
+      : "Sin acceso vigente";
+    return `<div class="client-license-suite-actions"><span class="client-license-product-state ${activeAccessCount ? "is-active" : "is-discover"}">${ui.icon(activeAccessCount ? "badge-check" : "sparkles", "xs")}${accessState}</span></div>`;
+  }
+
   function renderSuiteProduct(key, catalog, productLicenses) {
     const product = catalog || {
       category: "Producto MAP",
@@ -182,10 +195,6 @@
     };
     const panelId = productDomId(key);
     return `<div class="client-license-product-panel" id="suite-panel-${panelId}" role="tabpanel" aria-labelledby="suite-tab-${panelId}" tabindex="0">
-      <header class="client-license-product-summary">
-        <p>${escapeHtml(product.description)}</p>
-        <div class="client-license-product-actions"><a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>${key === "map.nano" ? '<a class="btn btn-ghost btn-compact" href="/map-nano-pricing.html">Ver planes</a>' : ""}</div>
-      </header>
       ${renderCurrentProductAccess(key, product, productLicenses)}
       ${renderLicenseOptions(key, productLicenses)}
     </div>`;
@@ -195,7 +204,7 @@
     if (!productLicenses.length) return "";
     return `<section class="client-license-current-access" aria-labelledby="current-access-${productDomId(key)}">
       <div class="client-license-subsection-head">
-        <h3 id="current-access-${productDomId(key)}">Tu acceso</h3>
+        <div><span class="client-license-subsection-kicker">Estado de acceso</span><h3 id="current-access-${productDomId(key)}">Tu acceso</h3></div>
         <span class="client-license-tag">${productLicenses.length}</span>
       </div>
       <div class="client-license-current-grid">${productLicenses.map(item => renderCurrentAccessCard(product, item)).join("")}</div>
@@ -366,9 +375,12 @@
       .map(item => mapNanoPlans.planIdForLicense(item))
       .filter(Boolean));
     const hasActivePlan = activePlanIds.size > 0;
+    const optionsNote = hasActivePlan
+      ? "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites."
+      : "Las solicitudes se revisan antes de emitir una licencia.";
     return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
-      <div class="client-license-subsection-head"><div><h3>${hasActivePlan ? "Tus planes de MAP-Nano" : "Planes de MAP-Nano"}</h3><p>${hasActivePlan ? "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites." : "Elige el nivel de operación. Las solicitudes se revisan antes de emitir una licencia."}</p></div><a href="/map-nano-pricing.html">Comparación completa</a></div>
       <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, activePlanIds, hasLicense: productLicenses.length > 0 })).join("")}</div>
+      <div class="client-map-nano-plan-footnote"><p>${optionsNote}</p><a href="/map-nano-pricing.html">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
       ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
       ${renderMapNanoCommercialRequestHistory()}
     </section>`;
@@ -411,7 +423,10 @@
       : canManage
         ? ui.action({ label: project.cta.label, icon: "clock-3", className: "btn btn-ghost", data: { mapNanoCommercialRequest: project.id, mapNanoRequestType: requestType } })
         : ui.action({ label: "Contactar soporte", href: mapNanoPlans.requestUrl(project.id), icon: "headset", className: "btn btn-ghost" });
-    return `<article class="client-map-nano-project-option"><div><span class="workspace-eyebrow">Alternativa por proyecto</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description)}</p></div><div><strong>${escapeHtml(mapNanoPlans.projectPriceLabel(project))}</strong>${action}</div></article>`;
+    return `<article class="client-map-nano-project-option">
+      <div class="client-map-nano-project-copy"><span class="client-map-nano-project-mark" aria-hidden="true">${ui.icon("clock-3", "sm")}</span><div><span class="workspace-eyebrow">Alternativa por proyecto</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description)}</p></div></div>
+      <div class="client-map-nano-project-action"><strong>${escapeHtml(mapNanoPlans.projectPriceLabel(project))}</strong>${action}</div>
+    </article>`;
   }
 
   function productDomId(key) {
@@ -798,10 +813,6 @@
         setBusy(false);
         setMessage(userMessage(error), "error");
       }
-      return;
-    }
-    if (event.target.closest("[data-client-license-refresh]")) {
-      if (!busy) await loadDashboard();
       return;
     }
     const releaseButton = event.target.closest("[data-client-license-release]");

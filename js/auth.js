@@ -1303,7 +1303,7 @@ const WORKSPACE_TASK_ASSIGNMENT_STATUSES = ["accepted", "pending", "rejected"];
 const WORKSPACE_EVENT_COLUMNS = "id, title, type, event_date, start_time, end_time, description, location, link, visibility, related_task_id, created_at, updated_at";
 const WORKSPACE_EVENT_TYPES = ["meeting", "call", "milestone", "blocker", "reminder", "availability", "review"];
 const WORKSPACE_EVENT_VISIBILITIES = ["private", "team", "client"];
-const WORKSPACE_FORM_COLUMNS = "id, title, purpose, audience, questions, status, created_at, updated_at";
+const WORKSPACE_FORM_COLUMNS = "id, title, purpose, audience, recipient_ids, questions, status, created_at, updated_at";
 const WORKSPACE_RESPONSE_COLUMNS = "id, form_id, respondent_id, answers, submitted_at";
 const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
 const WORKSPACE_FORM_STATUSES = ["draft", "published"];
@@ -2055,6 +2055,19 @@ function normalizeWorkspaceFormInput(value, requireContent = false) {
     if (!WORKSPACE_FORM_AUDIENCES.includes(payload.audience)) throw new Error("Audiencia invalida.");
     form.audience = payload.audience;
   }
+  if (Object.prototype.hasOwnProperty.call(payload, "recipientIds")) {
+    if (!Array.isArray(payload.recipientIds) || payload.recipientIds.length > 100) {
+      throw new Error("Selecciona hasta 100 destinatarios.");
+    }
+    const recipientIds = [...new Set(payload.recipientIds.map(String))];
+    if (recipientIds.some(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))) {
+      throw new Error("Destinatario invalido.");
+    }
+    form.recipient_ids = recipientIds;
+  }
+  if (requireContent && form.audience === "client" && !form.recipient_ids?.length) {
+    throw new Error("Selecciona al menos una cuenta destinataria.");
+  }
   if (requireContent || Object.prototype.hasOwnProperty.call(payload, "questions")) {
     if (!Array.isArray(payload.questions) || !payload.questions.length || payload.questions.length > 12) {
       throw new Error("Incluye entre 1 y 12 preguntas.");
@@ -2084,6 +2097,7 @@ function publicWorkspaceForm(form) {
     title: form.title,
     purpose: form.purpose,
     audience: form.audience,
+    recipientIds: Array.isArray(form.recipient_ids) ? form.recipient_ids.map(String) : [],
     questions: Array.isArray(form.questions) ? form.questions : [],
     status: form.status,
     createdAt: form.created_at,

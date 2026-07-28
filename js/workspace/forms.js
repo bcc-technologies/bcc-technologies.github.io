@@ -74,8 +74,10 @@
   let user = null;
   let forms = [];
   let responses = [];
+  let recipients = [];
   let draftQuestions = [];
   let activeForm = null;
+  let activeDeliveryForm = null;
   let view = "";
   let lifecycleSignal = null;
 
@@ -93,7 +95,10 @@
     root.innerHTML = canManage() ? adminTemplate() : inboxTemplate();
     bindControls();
     refreshIcons();
-    if (canManage()) chooseTemplate(Object.keys(TEMPLATES)[0]);
+    if (canManage()) {
+      await loadRecipients();
+      chooseTemplate(Object.keys(TEMPLATES)[0]);
+    }
     await loadForms();
   }
 
@@ -135,6 +140,11 @@
               <select data-form-template></select>
             </label>
           </div>
+          <label class="form-recipient-field" data-client-recipients-field>
+            <span>Destinatarios</span>
+            <select data-form-recipients name="recipientIds" multiple size="5" aria-describedby="form-recipients-help"></select>
+            <small id="form-recipients-help">Solo estas cuentas podrán ver el formulario cuando se publique.</small>
+          </label>
           <label>Título
             <input name="title" maxlength="120" required />
           </label>
@@ -168,6 +178,21 @@
           </div>
           <div class="result-list" data-results-list></div>
         </div>
+      </dialog>
+      <dialog class="response-dialog" data-recipients-dialog>
+        <form class="response-dialog-body" data-recipients-form>
+          <div class="response-dialog-head">
+            <div><h2>Destinatarios</h2><p data-recipients-caption></p></div>
+            <button class="icon-close" type="button" data-recipients-close aria-label="Cerrar">${ui.icon("x", "sm")}</button>
+          </div>
+          <label class="response-field">Cuentas cliente
+            <select data-delivery-recipients multiple size="8"></select>
+          </label>
+          <div class="task-dialog-actions">
+            <button class="btn btn-ghost" type="button" data-recipients-close>Cancelar</button>
+            <button class="btn btn-primary" type="submit">Guardar destinatarios</button>
+          </div>
+        </form>
       </dialog>
     `;
   }
@@ -219,6 +244,8 @@
       root.querySelector("[data-form-library]").addEventListener("click", handleLibraryAction);
       root.querySelector("[data-results-close]").addEventListener("click", () => root.querySelector("[data-results-dialog]").close());
       root.querySelector("[data-builder-questions]").addEventListener("click", handleBuilderQuestionAction);
+      root.querySelector("[data-recipients-form]").addEventListener("submit", saveRecipients);
+      root.querySelectorAll("[data-recipients-close]").forEach(button => button.addEventListener("click", () => root.querySelector("[data-recipients-dialog]").close()));
     } else {
       root.querySelector("[data-form-inbox]").addEventListener("click", handleInboxAction);
       root.querySelector("[data-response-form]").addEventListener("submit", submitResponse);
@@ -249,10 +276,37 @@
     }
   }
 
+  async function loadRecipients() {
+    try {
+      recipients = await repository.listRecipients(requestOptions(lifecycleSignal));
+      if (!isActive()) return;
+      renderRecipientOptions();
+    } catch (error) {
+      if (!isCancelled(error)) setMessage("No fue posible cargar las cuentas destinatarias.", "error");
+    }
+  }
+
+  function renderRecipientOptions(select = root?.querySelector("[data-form-recipients]"), selectedIds = []) {
+    if (!select) return;
+    const selected = new Set(selectedIds);
+    select.innerHTML = recipients.map(recipient => `<option value="${escapeHtml(recipient.id)}" ${selected.has(recipient.id) ? "selected" : ""}>${escapeHtml(recipient.label || recipient.email)}</option>`).join("");
+  }
+
+  function syncRecipientField(audience = root?.querySelector("[data-form-audience]")?.value) {
+    const field = root?.querySelector("[data-client-recipients-field]");
+    const select = root?.querySelector("[data-form-recipients]");
+    if (!field || !select) return;
+    const isClient = audience === "client";
+    field.hidden = !isClient;
+    select.disabled = !isClient;
+    select.required = isClient;
+  }
+
   function populateTemplates(audience) {
     const select = root.querySelector("[data-form-template]");
     const choices = Object.entries(TEMPLATES).filter(([, item]) => item.audience === audience);
     select.innerHTML = choices.map(([key, item]) => `<option value="${key}">${escapeHtml(item.label)}</option>`).join("");
+    syncRecipientField(audience);
     if (choices[0]) chooseTemplate(choices[0][0]);
   }
 
@@ -274,6 +328,7 @@
     form.elements.title.value = item.title;
     form.elements.purpose.value = item.purpose;
     draftQuestions = item.questions.map(copyQuestion);
+    syncRecipientField(item.audience);
     renderDraftQuestions();
   }
 
@@ -338,7 +393,8 @@
         audience: builder.elements.audience.value,
         title: builder.elements.title.value.trim(),
         purpose: builder.elements.purpose.value.trim(),
-        questions: collectQuestions()
+        questions: collectQuestions(),
+        recipientIds: selectedRecipientIds(builder)
       }, requestOptions());
       forms.unshift(savedForm);
       setMessage("Formulario guardado como borrador.", "ok");
@@ -359,6 +415,10 @@
       await showResults(form);
       return;
     }
+    if (button.dataset.formAction === "recipients") {
+      openRecipients(form);
+      return;
+    }
     const nextStatus = button.dataset.formAction === "publish" ? "published" : "draft";
     button.disabled = true;
     try {
@@ -369,6 +429,41 @@
     } catch (error) {
       if (isCancelled(error)) return;
       setMessage(formsError(error), "error");
+      if (button.isConnected) button.disabled = false;
+    }
+  }
+
+  function selectedRecipientIds(scope = root) {
+    const select = scope.querySelector("[data-form-recipients]");
+    if (!select || select.disabled) return [];
+    return Array.from(select.selectedOptions).map(option => option.value);
+  }
+
+  function openRecipients(form) {
+    activeDeliveryForm = form;
+    const dialog = root.querySelector("[data-recipients-dialog]");
+    root.querySelector("[data-recipients-caption]").textContent = form.title;
+    const picker = root.querySelector("[data-delivery-recipients]");
+    picker.innerHTML = recipients.map(recipient => `<option value="${escapeHtml(recipient.id)}" ${(form.recipientIds || []).includes(recipient.id) ? "selected" : ""}>${escapeHtml(recipient.label || recipient.email)}</option>`).join("");
+    dialog.showModal();
+  }
+
+  async function saveRecipients(event) {
+    event.preventDefault();
+    if (!activeDeliveryForm) return;
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    const recipientIds = Array.from(root.querySelector("[data-delivery-recipients]").selectedOptions).map(option => option.value);
+    button.disabled = true;
+    try {
+      const savedForm = await repository.update(activeDeliveryForm.id, { recipientIds }, requestOptions());
+      forms = forms.map(item => item.id === savedForm.id ? savedForm : item);
+      activeDeliveryForm = savedForm;
+      root.querySelector("[data-recipients-dialog]").close();
+      setMessage("Destinatarios actualizados.", "ok");
+      renderForms();
+    } catch (error) {
+      if (!isCancelled(error)) setMessage(formsError(error), "error");
+    } finally {
       if (button.isConnected) button.disabled = false;
     }
   }
@@ -429,11 +524,13 @@
         <div class="library-form-top">
           <span class="forms-status ${form.status}">${form.status === "published" ? "Publicado" : "Borrador"}</span>
           <span class="forms-audience">${form.audience === "client" ? "Clientes" : "Personal"}</span>
+          ${form.audience === "client" ? `<span class="forms-audience">${form.recipientIds.length} destinatarios</span>` : ""}
         </div>
         <h4>${escapeHtml(form.title)}</h4>
         <p>${escapeHtml(form.purpose)}</p>
         <div class="library-actions">
           <button class="btn btn-ghost" type="button" data-form-action="responses" data-form-id="${escapeHtml(form.id)}">Respuestas</button>
+          ${form.audience === "client" ? `<button class="btn btn-ghost" type="button" data-form-action="recipients" data-form-id="${escapeHtml(form.id)}">Destinatarios</button>` : ""}
           <button class="btn btn-primary" type="button" data-form-action="${form.status === "published" ? "unpublish" : "publish"}" data-form-id="${escapeHtml(form.id)}">
             ${form.status === "published" ? "Retirar" : "Publicar"}
           </button>
@@ -534,8 +631,10 @@
     user = null;
     forms = [];
     responses = [];
+    recipients = [];
     draftQuestions = [];
     activeForm = null;
+    activeDeliveryForm = null;
     view = "";
   }
 

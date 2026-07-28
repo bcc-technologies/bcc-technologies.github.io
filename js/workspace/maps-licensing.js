@@ -73,6 +73,7 @@
           title: "Licencias y acceso",
           level: 1,
           description: "Administra el ciclo de acceso comercial y de evaluación sin mezclar permisos internos ni datos científicos.",
+          collapsibleDescription: true,
           actions: [{
             label: "Actualizar",
             icon: "refresh-cw",

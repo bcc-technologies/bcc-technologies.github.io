@@ -60,6 +60,12 @@ test("workspace repositories own routes, serialization and DTO normalization", a
     if (path === "/api/workspace/forms/form%2F1/response") {
       return { response: { id: 11, formId: "form/1", answers: { score: "5" } } };
     }
+    if (path === "/api/workspace/forms/received") {
+      return { forms: [{ id: "form/2", title: "Seguimiento", recipientIds: ["client-1"] }] };
+    }
+    if (path === "/api/workspace/forms/recipients") {
+      return { recipients: [{ id: "client-1", label: "Acme", email: "contact@acme.example" }] };
+    }
     throw new Error(`Unexpected request ${path}`);
   });
 
@@ -67,6 +73,8 @@ test("workspace repositories own routes, serialization and DTO normalization", a
   const updated = await window.BCCWorkspaceTaskRepository.update("7", { status: "done" });
   const event = await window.BCCWorkspaceCalendarRepository.create({ title: "Demo" });
   const response = await window.BCCWorkspaceFormRepository.submit("form/1", { score: "5" });
+  const received = await window.BCCWorkspaceFormRepository.listReceived();
+  const recipients = await window.BCCWorkspaceFormRepository.listRecipients();
 
   assert.equal(tasks[0].id, "7");
   assert.equal(tasks[0].title, "");
@@ -75,10 +83,15 @@ test("workspace repositories own routes, serialization and DTO normalization", a
   assert.equal(event.id, "9");
   assert.equal(event.startTime, "");
   assert.equal(response.id, "11");
+  assert.equal(received[0].id, "form/2");
+  assert.deepEqual(Array.from(received[0].recipientIds), ["client-1"]);
+  assert.equal(recipients[0].email, "contact@acme.example");
   assert.equal(calls[1].options.body, JSON.stringify({ status: "done" }));
   assert.equal(calls[2].options.body, JSON.stringify({ title: "Demo" }));
   assert.equal(calls[3].path, "/api/workspace/forms/form%2F1/response");
   assert.equal(calls[3].options.body, JSON.stringify({ answers: { score: "5" } }));
+  assert.equal(calls[4].path, "/api/workspace/forms/received");
+  assert.equal(calls[5].path, "/api/workspace/forms/recipients");
 });
 
 test("workspace transport exposes stable network, schema and timeout errors", async () => {
@@ -96,6 +109,25 @@ test("workspace transport exposes stable network, schema and timeout errors", as
   await assert.rejects(
     schemaWindow.BCCWorkspaceFormRepository.list(),
     error => error.code === "schema_unavailable" && /tablas de formularios/.test(error.message)
+  );
+
+  const schemaCacheWindow = runtime(async () => {
+    throw Object.assign(
+      new Error("Could not find the 'recipient_ids' column of 'workspace_forms' in the schema cache"),
+      { code: "PGRST204" }
+    );
+  });
+  await assert.rejects(
+    schemaCacheWindow.BCCWorkspaceFormRepository.list(),
+    error => error.code === "schema_updating" && error.retryable && /actualizando/.test(error.message)
+  );
+
+  const permissionWindow = runtime(async () => {
+    throw new Error("permission denied for table workspace_forms");
+  });
+  await assert.rejects(
+    permissionWindow.BCCWorkspaceFormRepository.list(),
+    error => error.code === "forbidden" && /permiso/.test(error.message)
   );
 
   let timeoutSignal = null;

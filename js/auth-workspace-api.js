@@ -150,12 +150,38 @@
       }
 
       if (path === "/api/workspace/forms" && (!options.method || options.method === "GET")) {
+        const me = await authorizedUser();
         const { data, error } = await abortable(supabase
           .from("workspace_forms")
           .select(columns.forms)
           .order("created_at", { ascending: false }), options.signal);
         if (error) throw error;
-        return handled({ ok: true, forms: data.map(publicWorkspaceForm) });
+        const formMapper = me?.permissions.includes("forms:manage")
+          ? publicWorkspaceForm
+          : form => publicWorkspaceForm({ ...form, recipient_ids: [] });
+        return handled({ ok: true, forms: data.map(formMapper) });
+      }
+
+      if (path === "/api/workspace/forms/received" && (!options.method || options.method === "GET")) {
+        const me = await authorizedUser();
+        if (!me) throw new Error("No autenticado.");
+        const { data, error } = await abortable(supabase
+          .from("workspace_forms")
+          .select(columns.forms)
+          .eq("audience", "client")
+          .eq("status", "published")
+          .contains("recipient_ids", [me.id])
+          .order("created_at", { ascending: false }), options.signal);
+        if (error) throw error;
+        return handled({ ok: true, forms: data.map(form => publicWorkspaceForm({ ...form, recipient_ids: [] })) });
+      }
+
+      if (path === "/api/workspace/forms/recipients" && (!options.method || options.method === "GET")) {
+        const me = await authorizedUser();
+        if (!me?.permissions.includes("forms:manage")) throw new Error("Permiso insuficiente.");
+        const { data, error } = await abortable(supabase.rpc("list_workspace_form_recipients"), options.signal);
+        if (error) throw error;
+        return handled({ ok: true, recipients: data || [] });
       }
 
       if (path === "/api/workspace/forms" && options.method === "POST") {

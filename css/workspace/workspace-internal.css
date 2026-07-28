@@ -22,6 +22,45 @@
   max-width: 1280px;
 }
 
+.staff-workspace .staff-home-layout{
+  margin-bottom: 0;
+}
+
+.staff-workspace .staff-priority-surface,
+.staff-workspace .staff-context-surface,
+.staff-workspace .staff-editorial-surface{
+  padding: 24px;
+}
+
+.staff-workspace .staff-priority-surface .workspace-action-list{
+  margin-top: 18px;
+}
+
+.staff-workspace .staff-context-surface .account-details{
+  margin: 0;
+}
+
+.staff-workspace .staff-context-surface .account-details dd strong,
+.staff-workspace .staff-context-surface .account-details dd small{
+  display: block;
+}
+
+.staff-workspace .staff-context-surface .account-details dd small{
+  margin-top: 3px;
+  color: var(--ink-muted);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.staff-workspace .staff-editorial-surface .workspace-section-heading{
+  margin-bottom: 0;
+}
+
+.staff-workspace .staff-editorial-surface .text-link{
+  display: inline-flex;
+  margin-top: 14px;
+}
+
 .staff-workspace .staff-work-section{
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
@@ -253,6 +292,70 @@
 .staff-hub-workspace{
   display: grid;
   gap: 18px;
+}
+
+.staff-workspace .staff-knowledge-library,
+.staff-workspace .staff-knowledge-guide,
+.staff-workspace .staff-knowledge-note{
+  padding: 24px;
+}
+
+.staff-workspace .staff-knowledge-library .workspace-action-list{
+  margin-top: 18px;
+}
+
+.staff-workspace .staff-knowledge-guide .staff-guide-list{
+  gap: 0;
+}
+
+.staff-workspace .staff-knowledge-guide .staff-guide-list > div{
+  min-height: auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding: 13px 0;
+}
+
+.staff-workspace .staff-knowledge-guide .staff-guide-list > div:first-child{
+  border-top: 0;
+  padding-top: 0;
+}
+
+.staff-workspace .staff-knowledge-guide .staff-guide-list > div:last-child{
+  padding-bottom: 0;
+}
+
+.staff-workspace .staff-knowledge-note{
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.staff-workspace .staff-knowledge-note > svg{
+  width: 40px;
+  height: 40px;
+  border-radius: var(--workspace-radius-control);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  color: var(--accent-strong);
+  padding: 10px;
+}
+
+.staff-workspace .staff-knowledge-note h2,
+.staff-workspace .staff-knowledge-note p{
+  margin: 0;
+}
+
+.staff-workspace .staff-knowledge-note h2{
+  font-size: .95rem;
+}
+
+.staff-workspace .staff-knowledge-note p{
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: .84rem;
+  line-height: 1.45;
 }
 
 .staff-hub-panel h2{

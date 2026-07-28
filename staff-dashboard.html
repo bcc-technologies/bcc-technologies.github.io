@@ -106,85 +106,47 @@
       <main class="workspace-main">
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
           <header class="workspace-intro">
-            <div>
-              <h1>Hola, <span data-user-name>...</span></h1>
-              <p>Gestiona tareas, formularios internos y herramientas habilitadas para tus funciones.</p>
-            </div>
+            <details class="workspace-context">
+              <summary><h1>Hola, <span data-user-name>...</span></h1></summary>
+              <p>Organiza tu jornada y entra directamente al trabajo que requiere seguimiento.</p>
+            </details>
             <div class="dashboard-actions">
               <a class="btn btn-primary" href="#trabajo" data-work-panel-link="tareas"><i data-lucide="workflow"></i>Operación</a>
-              <a class="btn btn-ghost" href="#conocimiento"><i data-lucide="notebook-tabs"></i>Conocimiento</a>
             </div>
           </header>
-          <section class="workspace-priority-strip" aria-label="Siguientes pasos de personal">
-            <article class="priority-card primary">
-              <i data-lucide="clipboard-check"></i>
-              <div>
-                <span>Operación</span>
-                <strong>Revisar tareas y KPIs</strong>
-                <p>Organiza prioridades, estado y avance de actividades privadas.</p>
-              </div>
-              <a href="#trabajo" data-work-panel-link="tareas">Abrir</a>
-            </article>
-            <article class="priority-card">
-              <i data-lucide="calendar-days"></i>
-              <div>
-                <span>Agenda</span>
-                <strong>Ver calendario operativo</strong>
-                <p>Hitos, reuniones y seguimiento de la jornada interna.</p>
-              </div>
-              <a href="#trabajo" data-work-panel-link="agenda">Abrir</a>
-            </article>
-            <article class="priority-card">
-              <i data-lucide="notebook-tabs"></i>
-              <div>
-                <span>Conocimiento</span>
-                <strong>Consultar recursos internos</strong>
-                <p>Materiales, referencias y accesos utiles para el equipo.</p>
-              </div>
-              <a href="#conocimiento">Abrir</a>
-            </article>
-          </section>
-          <section class="workspace-metrics account-metrics refined-metrics" aria-label="Estado de personal">
-            <div><span>Rol base</span><strong data-user-role>...</strong><small>Cuenta interna</small></div>
-            <div><span>Roles internos</span><strong data-staff-role-count>-</strong><small data-staff-role-summary>Sin asignación</small></div>
-            <div><span>Departamentos</span><strong data-department-count>-</strong><small data-department-summary>Sin asignación</small></div>
-            <div><span>CMS</span><strong data-cms-status>-</strong><small>Según permisos actuales</small></div>
-          </section>
-          <section class="workspace-section staff-work-section" aria-label="Operación">
-            <article class="module-surface staff-access-surface">
-              <div class="module-head">
+          <section class="workspace-focus-grid staff-home-layout" aria-label="Resumen de trabajo">
+            <article class="module-surface staff-priority-surface">
+              <div class="workspace-section-heading">
                 <div>
-                  <h2>Accesos de operación</h2>
-                  <p>Herramientas disponibles segun tus funciones actuales.</p>
-                </div>
-                <span class="status-pill" data-cms-pill>CMS no asignado</span>
-              </div>
-              <div class="tool-rows">
-                <div data-cms-tool data-permission-required="cms:access">
-                  <i data-lucide="panels-top-left"></i>
-                  <div><strong>Sistema de contenido</strong><span data-cms-description>Necesitas un rol autorizado para ingresar.</span></div>
-                </div>
-                <div>
-                  <i data-lucide="file-text"></i>
-                  <div><strong>Contenido publicado</strong><span>Consulta articulos y materiales disponibles.</span></div>
-                </div>
-                <div>
-                  <i data-lucide="messages-square"></i>
-                  <div><strong>Solicitudes</strong><span>Coordina consultas con el equipo BCC.</span></div>
+                  <h2>Tu jornada</h2>
+                  <p>Comienza por el área que necesitas actualizar o revisar.</p>
                 </div>
               </div>
+              <nav class="workspace-action-list" aria-label="Áreas de trabajo">
+                <a href="#trabajo" data-work-panel-link="tareas"><i data-lucide="list-checks"></i><div><strong>Tareas</strong><span>Organiza prioridades, avance y trabajo pendiente.</span></div><i data-lucide="chevron-right"></i></a>
+                <a href="#trabajo" data-work-panel-link="agenda"><i data-lucide="calendar-days"></i><div><strong>Agenda</strong><span>Consulta hitos, reuniones y planificación operativa.</span></div><i data-lucide="chevron-right"></i></a>
+                <a href="#trabajo" data-work-panel-link="formularios"><i data-lucide="clipboard-list"></i><div><strong>Formularios</strong><span>Responde requerimientos y flujos internos asignados.</span></div><i data-lucide="chevron-right"></i></a>
+              </nav>
             </article>
-            <aside class="module-surface staff-shift-panel">
-              <div class="module-head compact">
-                <h2>Guía de la jornada</h2>
-                <span class="status-dot">Sugerida</span>
-              </div>
-              <div class="status-list">
-                <a href="#trabajo" data-work-panel-link="tareas"><i data-lucide="list-checks"></i><span>Prioridad</span><strong>Actualizar avance</strong></a>
-                <a href="#trabajo" data-work-panel-link="agenda"><i data-lucide="calendar-clock"></i><span>Agenda</span><strong>Revisar proximos hitos</strong></a>
-                <a href="#trabajo" data-work-panel-link="formularios"><i data-lucide="clipboard-list"></i><span>Formularios</span><strong>Responder pendientes</strong></a>
-                <a href="#perfil"><i data-lucide="badge-check"></i><span>Cuenta</span><strong>Validar permisos</strong></a>
-              </div>
+            <aside class="workspace-focus-rail staff-context-rail">
+              <article class="module-surface staff-context-surface">
+                <div class="workspace-section-heading">
+                  <div><h2>Tu contexto</h2><p>Resumen de las responsabilidades activas en tu cuenta.</p></div>
+                  <a class="text-link" href="#perfil">Ver perfil</a>
+                </div>
+                <dl class="account-details">
+                  <div><dt>Rol base</dt><dd data-user-role>...</dd></div>
+                  <div><dt>Roles internos</dt><dd><strong data-staff-role-count>-</strong><small data-staff-role-summary>Sin asignación</small></dd></div>
+                  <div><dt>Departamentos</dt><dd><strong data-department-count>-</strong><small data-department-summary>Sin asignación</small></dd></div>
+                </dl>
+              </article>
+              <article class="module-surface staff-editorial-surface" data-cms-tool data-permission-required="cms:access">
+                <div class="workspace-section-heading">
+                  <div><h2>Espacio editorial</h2><p data-cms-description>Acceso a la gestión de contenido del sitio.</p></div>
+                  <span class="status-pill" data-cms-pill>CMS no asignado</span>
+                </div>
+                <a class="text-link" href="/cms.html" data-cms-access>Ir al CMS</a>
+              </article>
             </aside>
           </section>
         </section>
@@ -263,10 +225,10 @@
         <section class="workspace-view" id="trabajo" data-workspace-view data-view-title="Operación" hidden>
           <section class="staff-work-hub" aria-label="Operación de personal">
             <header class="workspace-page-header">
-              <div>
-                <h1>Operación</h1>
+              <details class="workspace-context">
+                <summary><h1>Operación</h1></summary>
                 <p>Prioridades, KPIs, calendario y formularios internos en una vista accionable, sin paneles escondidos.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de operación">
               <button class="active" type="button" data-work-panel-tab="tareas" aria-selected="true"><i data-lucide="list-checks"></i><span>Tareas</span></button>
@@ -425,10 +387,10 @@
         <section class="workspace-view" id="science-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Science Radar" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Science Radar">
             <header class="workspace-page-header">
-              <div>
-                <h1>Science Radar</h1>
+              <details class="workspace-context">
+                <summary><h1>Science Radar</h1></summary>
                 <p>Radar de señales científicas y tecnológicas externas para detectar tendencias, publicaciones y oportunidades de investigación.</p>
-              </div>
+              </details>
             </header>
             <section class="module-surface staff-work-panel active">
               <div class="staff-work-panel-body flush">
@@ -453,10 +415,10 @@
         <section class="workspace-view" id="business-radar" data-permission-required="department:manage" data-workspace-view data-view-title="Business Radar" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Business Radar">
             <header class="workspace-page-header">
-              <div>
-                <h1>Business Radar</h1>
+              <details class="workspace-context">
+                <summary><h1>Business Radar</h1></summary>
                 <p>Seguimiento de mercado, competidores, señales comerciales y cambios externos relevantes para la estrategia.</p>
-              </div>
+              </details>
             </header>
             <article class="module-surface">
               <div class="module-head compact">
@@ -475,10 +437,10 @@
         <section class="workspace-view" id="product-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Product Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Product Intelligence">
             <header class="workspace-page-header">
-              <div>
-                <h1>Product Intelligence</h1>
+              <details class="workspace-context">
+                <summary><h1>Product Intelligence</h1></summary>
                 <p>Lectura interna de producto: comportamiento del sitio, adopción, señales de uso y salud de propiedades digitales.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Product Intelligence">
               <button class="active" type="button" data-intel-panel-tab="website" aria-selected="true"><i data-lucide="globe"></i><span>Website</span></button>
@@ -503,10 +465,10 @@
         <section class="workspace-view" id="performance-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Performance Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Performance Intelligence">
             <header class="workspace-page-header">
-              <div>
-                <h1>Performance Intelligence</h1>
+              <details class="workspace-context">
+                <summary><h1>Performance Intelligence</h1></summary>
                 <p>KPIs generales para leer desempeño, carga operativa y resultados internos sin mezclarlo con analytics de producto.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Performance Intelligence">
               <button class="active" type="button" data-intel-panel-tab="general-kpis" aria-selected="true"><i data-lucide="gauge"></i><span>General KPIs</span></button>
@@ -534,10 +496,10 @@
         <section class="workspace-view" id="financial-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Financial Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Financial Intelligence">
             <header class="workspace-page-header">
-              <div>
-                <h1>Financial Intelligence</h1>
+              <details class="workspace-context">
+                <summary><h1>Financial Intelligence</h1></summary>
                 <p>Panel financiero para lectura de ingresos, costos, forecast y señales de salud económica.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Financial Intelligence">
               <button class="active" type="button" data-intel-panel-tab="finance-dashboard" aria-selected="true"><i data-lucide="circle-dollar-sign"></i><span>Finance Dashboard</span></button>
@@ -554,10 +516,10 @@
         <section class="workspace-view" id="bureaucracy-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Bureaucracy Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Bureaucracy Intelligence">
             <header class="workspace-page-header">
-              <div>
-                <h1>Bureaucracy Intelligence</h1>
+              <details class="workspace-context">
+                <summary><h1>Bureaucracy Intelligence</h1></summary>
                 <p>Lectura de documentos, procesos, bloqueos administrativos y flujo burocrático interno.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Bureaucracy Intelligence">
               <button class="active" type="button" data-intel-panel-tab="documents" aria-selected="true"><i data-lucide="files"></i><span>Documents</span></button>
@@ -582,10 +544,10 @@
         <section class="workspace-view" id="marketing-intelligence" data-permission-required="department:manage" data-workspace-view data-view-title="Marketing Intelligence" hidden>
           <section class="staff-work-hub intelligence-work-hub" aria-label="Marketing Intelligence">
             <header class="workspace-page-header">
-              <div>
-                <h1>Marketing Intelligence</h1>
+              <details class="workspace-context">
+                <summary><h1>Marketing Intelligence</h1></summary>
                 <p>Rendimiento de audiencia, campañas y contenido sin mezclar correo operativo de CRM.</p>
-              </div>
+              </details>
             </header>
             <div class="staff-work-tabs" role="tablist" aria-label="Subsecciones de Marketing Intelligence">
               <button class="active" type="button" data-intel-panel-tab="audience" aria-selected="true"><i data-lucide="users-round"></i><span>Audience</span></button>
@@ -618,10 +580,10 @@
         <section class="workspace-view" id="crm-correos" data-permission-required="department:manage" data-workspace-view data-view-title="CRM · Correos" hidden>
           <section class="staff-work-hub crm-work-hub" aria-label="CRM de correos">
             <header class="workspace-page-header">
-              <div>
-                <h1>Correos</h1>
+              <details class="workspace-context">
+                <summary><h1>Correos</h1></summary>
                 <p>Gestión de comunicación comercial: directorio, bandeja, plantillas, automatizaciones y seguimiento por contacto.</p>
-              </div>
+              </details>
             </header>
             <section class="module-surface staff-work-panel active">
               <div class="staff-work-panel-body flush">
@@ -645,40 +607,36 @@
         <section class="workspace-view" id="conocimiento" data-workspace-view data-view-title="Conocimiento" hidden>
           <section class="staff-hub-workspace" aria-label="Conocimiento interno">
             <header class="workspace-page-header">
-              <div>
-                <h1>Conocimiento</h1>
-                <p>Un punto de entrada para recursos, referencias publicas y materiales internos que ayudan al equipo a trabajar con contexto comun.</p>
-              </div>
+              <details class="workspace-context">
+                <summary><h1>Conocimiento</h1></summary>
+                <p>Recursos y referencias para trabajar con un contexto común.</p>
+              </details>
             </header>
-            <div class="staff-hub-grid">
-              <article class="module-surface staff-hub-panel">
-                <div class="module-head compact">
-                  <h2>Recursos BCC</h2>
-                  <span class="status-dot">Disponible</span>
+            <div class="workspace-focus-grid staff-knowledge-layout">
+              <article class="module-surface staff-knowledge-library">
+                <div class="workspace-section-heading">
+                  <div><h2>Recursos BCC</h2><p>Consulta materiales públicos, herramientas autorizadas y el espacio editorial.</p></div>
                 </div>
-                <div class="staff-resource-list">
-                  <a href="/blog.html"><i data-lucide="newspaper"></i><span>Blog</span><strong>Contenido publicado</strong></a>
-                  <a href="/science.html"><i data-lucide="microscope"></i><span>Ciencia</span><strong>Investigacion y referencias</strong></a>
-                  <a href="/products.html"><i data-lucide="boxes"></i><span>Productos</span><strong>Soluciones y capacidades</strong></a>
-                  <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><span>Editorial</span><strong>Gestion editorial interna</strong></a>
-                  <a href="/maps-developer.html" data-permission-required="map.dev.access" hidden><i data-lucide="code-2"></i><span>Desarrolladores MAPs</span><strong>Herramientas técnicas autorizadas</strong></a>
-                </div>
+                <nav class="workspace-action-list" aria-label="Recursos disponibles">
+                  <a href="/blog.html"><i data-lucide="newspaper"></i><div><strong>Contenido publicado</strong><span>Artículos, novedades y perspectiva de BCC.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/science.html"><i data-lucide="microscope"></i><div><strong>Ciencia e investigación</strong><span>Referencias, capacidades e investigación aplicada.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/products.html"><i data-lucide="boxes"></i><div><strong>Productos y capacidades</strong><span>Soluciones, aplicaciones y alcance técnico.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/cms.html" data-cms-access data-permission-required="cms:access" hidden><i data-lucide="file-pen-line"></i><div><strong>Editorial</strong><span>Gestiona contenido autorizado para publicación.</span></div><i data-lucide="external-link"></i></a>
+                  <a href="/maps-developer.html" data-permission-required="map.dev.access" hidden><i data-lucide="code-2"></i><div><strong>Desarrollo MAPs</strong><span>Herramientas técnicas disponibles para tu rol.</span></div><i data-lucide="external-link"></i></a>
+                </nav>
               </article>
-              <article class="module-surface staff-hub-panel">
-                <div class="module-head compact">
-                  <h2>Guias rapidas</h2>
-                  <span class="status-dot">Equipo</span>
-                </div>
-                <div class="staff-guide-list">
-                  <div><span>Accesos</span><strong>Valida tus permisos desde Mi perfil.</strong></div>
-                  <div><span>Operación</span><strong>Gestiona avance y formularios desde la vista de operación.</strong></div>
-                  <div><span>Contenido</span><strong>El acceso al CMS depende de roles internos asignados.</strong></div>
-                </div>
-              </article>
-              <aside class="module-surface staff-hub-panel staff-hub-note">
-                <i data-lucide="library"></i>
-                <h2>Biblioteca interna</h2>
-                <p>La estructura ya queda preparada para conectar documentos privados, manuales y procesos cuando el repositorio de conocimiento crezca.</p>
+              <aside class="workspace-focus-rail staff-knowledge-rail">
+                <article class="module-surface staff-knowledge-guide">
+                  <div class="workspace-section-heading"><div><h2>Guías rápidas</h2><p>Los puntos de partida para el trabajo cotidiano.</p></div></div>
+                  <div class="staff-guide-list">
+                    <div><span>Accesos</span><strong>Valida permisos y datos desde Mi perfil.</strong></div>
+                    <div><span>Operación</span><strong>Actualiza tareas y formularios desde Operación.</strong></div>
+                  </div>
+                </article>
+                <article class="module-surface staff-knowledge-note">
+                  <i data-lucide="library"></i>
+                  <div><h2>Biblioteca interna</h2><p>Cuando existan manuales o procesos privados, se integrarán aquí como una colección consultable.</p></div>
+                </article>
               </aside>
             </div>
           </section>

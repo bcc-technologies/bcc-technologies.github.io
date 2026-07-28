@@ -32,6 +32,10 @@
     const list = document.querySelector(options.listSelector || "[data-account-emails]");
     const addForm = document.querySelector(options.addFormSelector || "[data-email-add-form]");
     const confirmForm = document.querySelector(options.confirmFormSelector || "[data-email-confirm-form]");
+    const confirmation = document.querySelector(options.confirmationSelector || "[data-email-confirmation]");
+    const disclosure = addForm?.closest(".account-email-disclosure") || confirmForm?.closest(".account-email-disclosure");
+    const disclosureLabel = disclosure?.querySelector("[data-email-disclosure-label]");
+    const disclosureNote = disclosure?.querySelector("[data-email-disclosure-note]");
     const messageSelector = options.messageSelector || "[data-email-message]";
     if (!list) return;
 
@@ -57,6 +61,19 @@
       renderAccountEmails(emails);
     };
 
+    const syncEmailConfirmation = ({ reveal = false } = {}) => {
+      if (!confirmation || !confirmForm) return;
+      const pending = emails.find(item => !item.confirmed);
+      confirmation.hidden = !pending;
+      if (disclosureLabel) disclosureLabel.textContent = pending ? "Confirmar correo pendiente" : "Gestionar correos";
+      if (disclosureNote) disclosureNote.textContent = pending ? "Introduce el código recibido" : "Añadir un correo";
+      if (!pending) return;
+      if (confirmForm.elements.email && confirmForm.elements.email.value !== pending.email) {
+        confirmForm.elements.email.value = pending.email;
+      }
+      if (reveal && disclosure) disclosure.open = true;
+    };
+
     const renderAccountEmails = items => {
       if (!items.length) {
         list.innerHTML = `<p class="muted-text">No hay correos registrados.</p>`;
@@ -64,7 +81,11 @@
       }
       list.replaceChildren(...items.map(item => {
         const row = document.createElement("div");
-        row.className = "account-email-row";
+        row.className = [
+          "account-email-row",
+          item.primary && "is-primary",
+          !item.confirmed && "is-pending"
+        ].filter(Boolean).join(" ");
         row.dataset.emailId = item.id;
 
         const meta = document.createElement("div");
@@ -94,6 +115,7 @@
         row.append(meta, actions);
         return row;
       }));
+      syncEmailConfirmation();
       refreshIcons();
     };
 
@@ -125,14 +147,16 @@
       event.preventDefault();
       setMessage("");
       try {
+        const addedEmail = addForm.elements.email.value;
         const data = await window.BCCAuth.api("/api/account/emails", {
           method: "POST",
-          body: JSON.stringify({ email: addForm.elements.email.value })
+          body: JSON.stringify({ email: addedEmail })
         });
         emails = data.emails || emails;
         renderAccountEmails(emails);
-        if (confirmForm?.elements.email) confirmForm.elements.email.value = addForm.elements.email.value;
+        if (!confirmation && confirmForm?.elements.email) confirmForm.elements.email.value = addedEmail;
         addForm.reset();
+        syncEmailConfirmation({ reveal: true });
         setMessage("Correo agregado. Revisa ese buzón para obtener el código de confirmación.");
       } catch (error) {
         setMessage(error.message, "error");
@@ -169,10 +193,25 @@
     form.elements.name.value = user.name || "";
     form.elements.company.value = user.company || "";
     form.elements.title.value = user.title || "";
+    const message = document.querySelector(options.messageSelector || "[data-profile-message]");
+    const saveButton = form.querySelector('button[type="submit"]');
+    const fields = [form.elements.name, form.elements.company, form.elements.title].filter(Boolean);
+    const snapshot = () => fields.map(field => field.value).join("\u0000");
+    let baseline = snapshot();
+
+    const syncSaveState = () => {
+      const dirty = snapshot() !== baseline;
+      form.dataset.dirty = String(dirty);
+      if (saveButton) saveButton.disabled = !dirty;
+      if (dirty && message?.dataset.tone === "ok") message.hidden = true;
+    };
+
+    fields.forEach(field => field.addEventListener("input", syncSaveState));
+    syncSaveState();
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
-      const message = document.querySelector(options.messageSelector || "[data-profile-message]");
+      if (snapshot() === baseline) return;
       try {
         const data = await window.BCCAuth.api("/api/auth/profile", {
           method: "PATCH",
@@ -183,6 +222,8 @@
           })
         });
         options.onUserUpdate?.(data.user);
+        baseline = snapshot();
+        syncSaveState();
         if (message) {
           message.textContent = "Cambios guardados.";
           message.dataset.tone = "ok";

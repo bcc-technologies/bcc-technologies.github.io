@@ -86,6 +86,21 @@ test("workspace section headers expose structured, escaped actions and kebab-cas
   assert.match(header, /Actualizar &lt;ahora&gt;/);
 });
 
+test("workspace page context is optionally disclosed from the title", () => {
+  const ui = loadUi();
+  const header = ui.sectionHeader({
+    title: "Operación",
+    description: "Contexto <bajo demanda>",
+    level: 1,
+    collapsibleDescription: true
+  });
+
+  assert.match(header, /<details class="workspace-context">/);
+  assert.match(header, /<summary><h1>Operación<\/h1><\/summary>/);
+  assert.match(header, /Contexto &lt;bajo demanda&gt;/);
+  assert.doesNotMatch(header, /workspace-context-label|chevron-down/);
+});
+
 test("workspace data, table and activity states preserve semantics and escape content", () => {
   const ui = loadUi();
   const error = ui.dataState({

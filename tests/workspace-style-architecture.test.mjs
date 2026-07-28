@@ -151,3 +151,91 @@ test("dashboard page headers stay semantic and unboxed", () => {
   assert.doesNotMatch(clientMaps + staffMaps, /module-surface (?:client|maps)-license-hero/);
   assert.doesNotMatch(legacyStyles, /\.(?:staff-hub-hero|customer-record-hero|client-license-hero|maps-license-hero)/);
 });
+
+test("client account views reserve cards for activity and records, not page structure", () => {
+  const clientHtml = read("dashboard.html");
+  const accountStyles = read("css/workspace/workspace-account.css");
+  const accountScript = read("js/workspace/account.js");
+  const compositions = read("css/workspace/primitives/compositions.css");
+  const view = (id, nextId) => clientHtml.match(new RegExp(
+    `<section class="workspace-view" id="${id}"[\\s\\S]*?(?=<section class="workspace-view" id="${nextId}")`
+  ))?.[0] || "";
+  const overview = view("resumen", "licencias");
+  const account = view("cuenta", "operacion");
+  const operation = view("operacion", "comercial");
+  const commercial = clientHtml.match(/<section class="workspace-view" id="comercial"[\s\S]*?<\/main>/)?.[0] || "";
+
+  assert.equal((overview.match(/module-surface/g) || []).length, 0);
+  assert.match(overview, /class="client-briefing"/);
+  assert.match(overview, /class="client-service-lane"/);
+  assert.match(overview, /class="client-account-brief"/);
+  assert.match(overview, /class="client-support-inline"/);
+  assert.match(account, /class="account-settings-workspace"/);
+  assert.match(account, /workspace-section-index/);
+  assert.match(account, /account-email-disclosure/);
+  assert.match(account, /data-email-confirmation/);
+  assert.match(account, /account-permission-disclosure/);
+  assert.doesNotMatch(account, /Sesión protegida/);
+  assert.doesNotMatch(account, /module-surface/);
+  assert.equal((operation.match(/module-surface/g) || []).length, 0);
+  assert.match(operation, /class="client-operation-board"/);
+  assert.match(operation, /class="[^"]*client-requirements-flow"/);
+  assert.equal((commercial.match(/module-surface/g) || []).length, 0);
+  assert.match(commercial, /class="workspace-ledger commercial-ledger"/);
+  assert.match(commercial, /class="commercial-context-block"/);
+  assert.match(accountStyles, /\.account-settings-section\{[\s\S]+border-top: 1px solid var\(--line\)/);
+  assert.match(accountStyles, /\.account-email-disclosure,/);
+  assert.match(accountStyles, /\.profile-form \.btn:disabled/);
+  assert.match(accountStyles, /\.account-email-row\.is-primary/);
+  assert.match(accountStyles, /\.account-profile-section \.profile-form/);
+  assert.match(accountScript, /item\.primary && "is-primary"/);
+  assert.match(compositions, /\.workspace-ledger\{/);
+});
+
+test("client operation is an assigned-form inbox, not a form-management surface", () => {
+  const clientHtml = read("dashboard.html");
+  const registry = read("js/workspace/feature-registry.js");
+  const inbox = read("js/workspace/forms-inbox.js");
+  const customerStyles = read("css/workspace/workspace-customer.css");
+  const staffForms = read("js/workspace/forms.js");
+  const workspaceApi = read("js/auth-workspace-api.js");
+  const migration = read("supabase/migrations/20260728060000_client_form_delivery.sql");
+  const operation = clientHtml.match(/<section class="workspace-view" id="operacion"[\s\S]*?(?=<section class="workspace-view" id="comercial")/)?.[0] || "";
+
+  assert.match(operation, /data-client-form-inbox/);
+  assert.doesNotMatch(operation, /data-forms-workspace|Crear solicitud/);
+  assert.match(registry, /id: "form-inbox"[\s\S]+forms-inbox\.js[\s\S]+data-client-form-inbox/);
+  assert.doesNotMatch(inbox, /repository\.(?:create|update|listResponses)/);
+  assert.match(inbox, /repository\.listReceived/);
+  assert.match(inbox, /form-inbox-eyebrow/);
+  assert.match(inbox, /inbox-form-sequence/);
+  assert.match(customerStyles, /\.customer-workspace \.form-inbox--received\{/);
+  assert.match(customerStyles, /--form-inbox-gutter: clamp\(22px, 2\.6vw, 30px\)/);
+  assert.match(customerStyles, /--form-inbox-gutter-start: calc\(var\(--form-inbox-gutter\) \+ 3px\)/);
+  assert.match(customerStyles, /\.customer-workspace \.inbox-form-sequence\{/);
+  assert.match(staffForms, /repository\.listRecipients/);
+  assert.match(workspaceApi, /\/api\/workspace\/forms\/received/);
+  assert.match(migration, /recipient_ids uuid\[\]/);
+  assert.match(migration, /create or replace function private\.can_manage_workspace_forms/);
+  assert.match(migration, /grant execute on function private\.can_manage_workspace_forms\(\) to authenticated/);
+  assert.match(migration, /Recipients read delivered workspace forms/);
+  assert.match(migration, /Recipients submit delivered workspace forms/);
+});
+
+test("page descriptions stay available as discreet title disclosures", () => {
+  const clientHtml = read("dashboard.html");
+  const staffHtml = read("staff-dashboard.html");
+  const compositions = read("css/workspace/primitives/compositions.css");
+  const content = read("js/workspace/ui/content.js");
+  const clientMaps = read("js/workspace/client-map-licenses.js");
+  const staffMaps = read("js/workspace/maps-licensing.js");
+
+  assert.match(clientHtml, /<details class="workspace-context">[\s\S]*?<summary><h1>Cuenta<\/h1>/);
+  assert.match(staffHtml, /<details class="workspace-context">[\s\S]*?<summary><h1>Operación<\/h1>/);
+  assert.match(compositions, /\.workspace-context > summary\{/);
+  assert.match(compositions, /\.workspace-context > summary h1::after/);
+  assert.doesNotMatch(clientHtml + staffHtml + content, /workspace-context-label/);
+  assert.match(content, /collapsibleDescription = false/);
+  assert.match(clientMaps, /collapsibleDescription: true/);
+  assert.match(staffMaps, /collapsibleDescription: true/);
+});

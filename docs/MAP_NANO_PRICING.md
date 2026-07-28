@@ -118,6 +118,66 @@ móvil, MAP-Nano Project, retorno económico prudente y FAQ. El dashboard añade
 el resumen de plan, el estado vacío honesto, las capacidades técnicas recibidas
 por el backend y formularios de solicitud.
 
+## Calculadora de ahorro y retorno
+
+La calculadora pública está en
+[`/map-nano-pricing.html#savings-calculator`](../map-nano-pricing.html#savings-calculator).
+Se renderiza mediante [`js/map-nano-savings-calculator.js`](../js/map-nano-savings-calculator.js),
+que expone `window.BCCMapNanoSavingsCalculator.render(root, options)` para que
+pueda reutilizarse sin duplicar la interfaz. La página pública la inicializa con
+`context: "public"`; el dashboard no muestra una segunda calculadora.
+
+La matemática vive separada en
+[`js/map-nano-savings.js`](../js/map-nano-savings.js). Su función pura
+`BCCMapNanoSavings.calculate(input)` conserva precisión interna y devuelve las
+imágenes anuales, minutos y horas ahorradas, valor bruto, costo anual, ahorro
+neto, ROI, recuperación y punto de equilibrio. El modelo es:
+
+```text
+imágenes anuales = imágenes/mes × meses de operación
+horas ahorradas = imágenes anuales × (minutos actuales − minutos con MAP-Nano) / 60
+ahorro bruto = horas ahorradas × costo efectivo/hora + costos sustituibles declarados
+ahorro neto = ahorro bruto − costo anual del plan
+ROI = ahorro neto / costo anual del plan × 100
+```
+
+Los reprocesos sólo se suman cuando el usuario los activa. Si el tiempo con
+MAP-Nano es mayor, o el volumen/costo es bajo, la calculadora conserva el
+resultado negativo; no fuerza un escenario favorable. Tampoco calcula ROI,
+recuperación o equilibrio cuando el precio, el ahorro mensual o el valor por
+imagen no son válidos. Institutional queda en **Requiere cotización** hasta que
+el usuario escriba una estimación de precio.
+
+Los precios no se duplican: Essential, Professional y Facility se leen de
+`BCCMapNanoPlans.PLANS`; Institutional usa `annualPrice: null` y no toma su
+precio inicial como si fuera una cotización cerrada. Los valores iniciales son
+Professional, 50 imágenes/mes, 12 meses, 40 minutos actuales, 10 minutos con
+MAP-Nano y US$25/h. Los presets editables viven en `PRESETS` dentro del
+componente: `small`, `active` y `facility`.
+
+La calculadora no añade una librería de gráficos. El repositorio no tenía
+infraestructura de visualización reutilizable y una tabla comparativa accesible
+entre Essential, Professional y Facility comunica el mismo punto de equilibrio
+sin introducir una dependencia nueva.
+
+El enlace de escenario usa parámetros `calc_*` de URL, normalizados al cargar,
+sin datos personales. Al abrir una CTA, [`js/contact-context.js`](../js/contact-context.js)
+adjunta esos datos como `savings_estimate_*` al formulario público y los
+identifica como una estimación proporcionada por el usuario; no se guardan como
+hechos financieros verificados. Para ajustar fórmulas, modifica sólo
+`map-nano-savings.js`; para presets, copy, campos o CTA, modifica
+`map-nano-savings-calculator.js`.
+
+Pruebas de cálculo e integración estática:
+
+```bash
+node --test tests/map-nano-savings.test.mjs
+```
+
+Cubren el escenario Professional base, volumen cero, sin diferencia de tiempo,
+MAP-Nano más lento, costo/hora cero, precios del catálogo, Institutional,
+reprocesos y costos sustituibles.
+
 ## Analítica
 
 Se reutiliza `window.BCCAnalytics` cuando está disponible. Se registran, sin

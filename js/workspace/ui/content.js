@@ -21,17 +21,24 @@
     </span>`;
   }
 
-  function sectionHeader({ eyebrow = "", title, description = "", level = 2, className = "", actionsClassName = "", actions = [], status = null }) {
+  function sectionHeader({ eyebrow = "", title, description = "", level = 2, className = "", actionsClassName = "", actions = [], status = null, collapsibleDescription = false }) {
     const headingLevel = Math.max(1, Math.min(6, Number(level) || 2));
     const trailing = [
       status ? statusBadge(status) : "",
       ...actions.map(action)
     ].filter(Boolean).join("");
+    const heading = `<h${headingLevel}>${escapeHtml(title)}</h${headingLevel}>`;
+    const descriptionMarkup = description ? `<p>${escapeHtml(description)}</p>` : "";
+    const copy = collapsibleDescription && description
+      ? `<details class="workspace-context">
+          <summary>${heading}</summary>
+          ${descriptionMarkup}
+        </details>`
+      : `${heading}${descriptionMarkup}`;
     return `<header class="${classes("workspace-section-header", className)}">
       <div class="workspace-section-header-copy">
         ${eyebrow ? `<span class="workspace-eyebrow">${escapeHtml(eyebrow)}</span>` : ""}
-        <h${headingLevel}>${escapeHtml(title)}</h${headingLevel}>
-        ${description ? `<p>${escapeHtml(description)}</p>` : ""}
+        ${copy}
       </div>
       ${trailing ? `<div class="${classes("workspace-section-header-actions", actionsClassName)}">${trailing}</div>` : ""}
     </header>`;

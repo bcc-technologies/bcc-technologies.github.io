@@ -54,6 +54,27 @@
     }
 
     if (mapNanoPlan) addMapNanoCommercialFields(form, message, mapNanoPlan, intent, isEnglish);
+    if (productKey === "map-nano") addMapNanoSavingsEstimateFields(form, params);
+  }
+
+  function addMapNanoSavingsEstimateFields(form, params) {
+    const fields = {
+      savings_estimate_source: "MAP-Nano savings calculator (user-provided estimate)",
+      savings_estimate_images_per_month: params.get("calc_images"),
+      savings_estimate_operating_months: params.get("calc_months"),
+      savings_estimate_current_minutes: params.get("calc_current_minutes"),
+      savings_estimate_maps_minutes: params.get("calc_maps_minutes"),
+      savings_estimate_hourly_cost_usd: params.get("calc_hourly_cost"),
+      savings_estimate_gross_usd: params.get("calc_gross"),
+      savings_estimate_net_usd: params.get("calc_net"),
+      savings_estimate_roi_percent: params.get("calc_roi"),
+      savings_estimate_payback_months: params.get("calc_payback"),
+      savings_estimate_break_even_images_per_month: params.get("calc_break_even"),
+      savings_estimate_advanced_assumptions: params.get("calc_advanced")
+    };
+    Object.entries(fields).forEach(([name, value]) => {
+      if (value !== null && value !== "") addHiddenField(form, name, value);
+    });
   }
 
   function addMapNanoCommercialFields(form, message, plan, intent, isEnglish) {

@@ -91,99 +91,50 @@
       <main class="workspace-main">
         <section class="workspace-view" id="resumen" data-workspace-view data-view-title="Inicio">
           <header class="workspace-intro">
-            <div>
-              <h1>Hola, <span data-user-name>...</span></h1>
-              <p>Un espacio compacto para ver tu cuenta, pendientes, soporte, documentos y estado comercial.</p>
-            </div>
+            <details class="workspace-context">
+              <summary><h1>Hola, <span data-user-name>...</span></h1></summary>
+              <p>Revisa lo que necesita tu atención y accede a los servicios de tu cuenta.</p>
+            </details>
             <div class="dashboard-actions">
               <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
-              <a class="btn btn-ghost" href="#operacion"><i data-lucide="inbox"></i>Operación</a>
-              <a class="btn btn-ghost" href="#comercial"><i data-lucide="briefcase-business"></i>Comercial</a>
             </div>
           </header>
-          <section class="workspace-priority-strip" aria-label="Siguientes pasos">
-            <article class="priority-card primary">
-              <i data-lucide="inbox"></i>
-              <div>
-                <span>Operación</span>
-                <strong>Solicitudes y requerimientos</strong>
-                <p>Canaliza soporte y responde pendientes asignados por el equipo.</p>
+          <section class="client-briefing" aria-label="Resumen de cuenta">
+            <div class="client-briefing-stage">
+              <span class="client-briefing-index" aria-hidden="true">00</span>
+              <div class="client-briefing-copy">
+                <span class="workspace-signal-label">Estado de operación</span>
+                <h2>Todo está al día</h2>
+                <p>No tienes solicitudes ni documentos pendientes. Cuando inicies un requerimiento, su seguimiento aparecerá aquí.</p>
               </div>
-              <a href="#operacion">Abrir</a>
-            </article>
-            <article class="priority-card">
-              <i data-lucide="user-round-cog"></i>
-              <div>
-                <span>Cuenta</span>
-                <strong>Perfil, correos y seguridad</strong>
-                <p>Mantén actualizada la información de contacto y acceso.</p>
-              </div>
-              <a href="#cuenta">Ver</a>
-            </article>
-            <article class="priority-card">
-              <i data-lucide="folder-lock"></i>
-              <div>
-                <span>Comercial</span>
-                <strong>Facturación y documentos</strong>
-                <p>Consulta el estado comercial y los archivos compartidos.</p>
-              </div>
-              <a href="#comercial">Abrir</a>
-            </article>
-          </section>
-          <section class="setup-progress module-surface" aria-label="Configuración de cuenta">
-            <div class="module-head compact">
-              <h2>Configuración de cuenta</h2>
-              <a href="#cuenta">Ver detalles <i data-lucide="chevron-right"></i></a>
+              <div class="client-briefing-orbit" aria-hidden="true"><i data-lucide="inbox"></i></div>
             </div>
-            <div class="setup-steps">
-              <div class="complete"><i data-lucide="check"></i><strong>Información básica</strong><small data-profile-completion>-</small></div>
-              <div class="complete"><i data-lucide="check"></i><strong>Correo de acceso</strong><small>Registrado</small></div>
-              <div data-setup-organization><i data-lucide="building-2"></i><strong>Organización</strong><small data-setup-organization-status>Opcional</small></div>
-              <div><span>4</span><strong>Primera solicitud</strong><small>Cuando la necesites</small></div>
-            </div>
-          </section>
-          <div class="client-operation-grid">
-            <section class="client-actions-column">
-              <article class="module-surface quick-actions">
-                <h2>Acciones frecuentes</h2>
-                <div class="resource-rows">
-                  <a href="/contactUs.html"><i data-lucide="headset"></i><div><strong>Solicitar soporte</strong><span>Abre una consulta para el equipo.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="#operacion"><i data-lucide="file-check-2"></i><div><strong>Ver pendientes</strong><span>Solicitudes y requerimientos.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="#licencias"><i data-lucide="badge-check"></i><div><strong>Administrar licencias MAP</strong><span>Consulta vigencia y gestiona las plazas de tu cuenta.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="#comercial"><i data-lucide="receipt-text"></i><div><strong>Facturación y documentos</strong><span>Estado comercial y archivos.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="external-link"></i></a>
+            <aside class="client-briefing-context">
+              <section class="client-account-brief">
+                <div class="workspace-section-heading">
+                  <div><h2>Cuenta</h2><p>Información principal de tu espacio.</p></div>
+                  <a class="text-link" href="#cuenta">Editar</a>
                 </div>
-              </article>
-              <article class="module-surface client-resources">
-                <h2>Recursos recomendados</h2>
-                <div class="resource-rows">
-                  <a href="/blog.html"><i data-lucide="library-big"></i><div><strong>Biblioteca BCC</strong><span>Recursos, novedades y documentación pública.</span></div><i data-lucide="external-link"></i></a>
-                  <a href="/science.html"><i data-lucide="flask-conical"></i><div><strong>Ciencia y desarrollo</strong><span>Capacidades e investigaciones.</span></div><i data-lucide="external-link"></i></a>
-                </div>
-              </article>
-            </section>
-            <aside class="account-rail client-summary">
-              <article class="module-surface">
-                <h2>Resumen de cuenta</h2>
                 <dl class="account-details">
                   <div><dt>Organización</dt><dd data-user-company>...</dd></div>
-                  <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
-                  <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
+                  <div><dt>Contacto</dt><dd data-user-email>...</dd></div>
+                  <div><dt>Acceso</dt><dd data-user-role>...</dd></div>
                 </dl>
-              </article>
-              <article class="module-surface client-status-panel">
-                <div class="module-head compact">
-                  <h2>Canales de atención</h2>
-                  <span class="status-dot">Orientación</span>
+              </section>
+              <section class="client-support-inline" aria-label="Atención BCC">
+                <i data-lucide="headset"></i>
+                <div>
+                  <strong>Atención BCC</strong>
+                  <p>¿Necesitas orientación sobre tu cuenta o una solución?</p>
+                  <a class="text-link" href="/contactUs.html">Contactar soporte</a>
                 </div>
-                <div class="status-list">
-                  <div><i data-lucide="clock-3"></i><span>Objetivo de respuesta</span><strong>1 día hábil</strong></div>
-                  <div><i data-lucide="mail-check"></i><span>Canal principal</span><strong>Correo registrado</strong></div>
-                  <div><i data-lucide="shield-check"></i><span>Acceso actual</span><strong>Sesión autenticada</strong></div>
-                </div>
-              </article>
+              </section>
             </aside>
-          </div>
+          </section>
+          <nav class="client-service-lane" aria-label="Servicios de cuenta">
+            <a href="#operacion"><i data-lucide="file-check-2"></i><div><span>Operación</span><strong>Solicitudes y requerimientos</strong><small>Consulta el seguimiento de tu operación.</small></div><i data-lucide="external-link"></i></a>
+            <a href="#licencias"><i data-lucide="badge-check"></i><div><span>Producto</span><strong>Licencias MAP</strong><small>Revisa vigencia y plazas disponibles.</small></div><i data-lucide="external-link"></i></a>
+          </nav>
         </section>
 
         <section class="workspace-view" id="licencias" data-workspace-view data-view-title="MAPs" hidden>
@@ -199,111 +150,124 @@
         </section>
 
         <section class="workspace-view" id="cuenta" data-workspace-view data-view-title="Cuenta" hidden>
-          <div class="profile-workspace profile-workspace-expanded">
-            <article class="module-surface">
-              <div class="module-head">
-                <div>
-                  <h2>Datos de cuenta</h2>
-                  <p>Manten actualizados tus datos para comunicaciones, solicitudes y documentos.</p>
-                </div>
-                <span class="status-pill enabled"><i data-lucide="check-circle-2"></i>Cuenta activa</span>
+          <section class="account-settings-workspace" aria-label="Configuración de cuenta">
+            <header class="workspace-page-header">
+              <details class="workspace-context">
+                <summary><h1>Cuenta</h1></summary>
+                <p>Administra los datos y correos que usamos para tu cuenta y sus comunicaciones.</p>
+              </details>
+              <span class="status-pill enabled"><i data-lucide="check-circle-2"></i>Cuenta activa</span>
+            </header>
+            <div class="account-settings-layout">
+              <div class="account-settings-main">
+                <section class="account-settings-section account-profile-section">
+                  <div class="workspace-section-heading workspace-section-heading--indexed">
+                    <span class="workspace-section-index" aria-hidden="true">01</span>
+                    <div><h2>Datos de cuenta</h2><p>Mantén actualizada la información para solicitudes, documentos y comunicaciones.</p></div>
+                  </div>
+                  <form class="profile-form workspace-profile-form" data-profile-form>
+                    <p class="auth-message" data-profile-message hidden></p>
+                    <label>
+                      Nombre completo
+                      <input type="text" name="name" autocomplete="name" required />
+                    </label>
+                    <label>
+                      Compania
+                      <input type="text" name="company" autocomplete="organization" />
+                    </label>
+                    <label>
+                      Cargo
+                      <input type="text" name="title" autocomplete="organization-title" />
+                    </label>
+                    <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                  </form>
+                </section>
+                <section class="account-settings-section account-email-manager">
+                  <div class="workspace-section-heading workspace-section-heading--indexed">
+                    <span class="workspace-section-index" aria-hidden="true">02</span>
+                    <div><h2>Correos de la cuenta</h2><p>Elige el correo principal y gestiona direcciones adicionales.</p></div>
+                  </div>
+                  <p class="auth-message" data-email-message hidden></p>
+                  <div class="account-email-list" data-account-emails></div>
+                  <details class="account-email-disclosure">
+                    <summary><span data-email-disclosure-label>Gestionar correos</span><small data-email-disclosure-note>Añadir un correo</small></summary>
+                    <div class="account-email-disclosure-body">
+                      <form class="account-email-form" data-email-add-form>
+                        <label>
+                          Correo adicional
+                          <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
+                        </label>
+                        <button class="btn btn-primary" type="submit">Agregar correo</button>
+                      </form>
+                      <div class="account-email-confirmation" data-email-confirmation hidden>
+                        <form class="account-email-form confirm" data-email-confirm-form>
+                          <label>
+                            Correo a confirmar
+                            <input type="email" name="email" autocomplete="email" required />
+                          </label>
+                          <label>
+                            Código de confirmación
+                            <input type="text" name="token" autocomplete="one-time-code" required />
+                          </label>
+                          <button class="btn btn-ghost" type="submit">Confirmar correo</button>
+                        </form>
+                      </div>
+                    </div>
+                  </details>
+                </section>
               </div>
-              <form class="profile-form workspace-profile-form" data-profile-form>
-                <p class="auth-message" data-profile-message hidden></p>
-                <label>
-                  Nombre completo
-                  <input type="text" name="name" autocomplete="name" required />
-                </label>
-                <label>
-                  Compania
-                  <input type="text" name="company" autocomplete="organization" />
-                </label>
-                <label>
-                  Cargo
-                  <input type="text" name="title" autocomplete="organization-title" />
-                </label>
-                <button class="btn btn-primary" type="submit">Guardar cambios</button>
-              </form>
-            </article>
-            <article class="module-surface account-email-manager">
-              <div class="module-head">
-                <div>
-                  <h2>Correos de la cuenta</h2>
-                  <p>Agrega correos confirmados y elige cual sera el principal. El codigo se envia al buzon agregado y no se muestra en pantalla.</p>
-                </div>
-              </div>
-              <p class="auth-message" data-email-message hidden></p>
-              <div class="account-email-list" data-account-emails></div>
-              <form class="account-email-form" data-email-add-form>
-                <label>
-                  Correo adicional
-                  <input type="email" name="email" autocomplete="email" placeholder="nombre@empresa.com" required />
-                </label>
-                <button class="btn btn-primary" type="submit">Agregar correo</button>
-              </form>
-              <form class="account-email-form confirm" data-email-confirm-form>
-                <label>
-                  Correo a confirmar
-                  <input type="email" name="email" autocomplete="email" required />
-                </label>
-                <label>
-                  Codigo de confirmacion
-                  <input type="text" name="token" autocomplete="one-time-code" required />
-                </label>
-                <button class="btn btn-ghost" type="submit">Confirmar correo</button>
-              </form>
-            </article>
-            <article class="module-surface security-view">
-              <div class="module-head">
-                <div>
-                  <h2>Seguridad y acceso</h2>
-                  <p>Estado de sesión, perfil y capacidades habilitadas.</p>
-                </div>
-                <span class="status-pill enabled"><i data-lucide="shield-check"></i>Sesión activa</span>
-              </div>
-              <dl class="account-details">
-                <div><dt>Organización</dt><dd data-user-company>...</dd></div>
-                <div><dt>Contacto principal</dt><dd><span>Contacto registrado</span><small data-user-email>...</small></dd></div>
-                <div><dt>Nivel de acceso</dt><dd data-user-role>...</dd></div>
-              </dl>
-              <div class="security-summary">
-                <div><i data-lucide="check-circle-2"></i><strong>Sesión protegida</strong><span>Acceso autenticado activo</span></div>
-                <div><i data-lucide="shield-check"></i><strong>Perfil actualizado</strong><span>Revisa tus datos periódicamente</span></div>
-              </div>
-            </article>
-            <article class="module-surface">
-              <h2>Capacidades activas</h2>
-              <ul class="permission-list permission-readable" data-permissions></ul>
-            </article>
-          </div>
+              <aside class="account-settings-rail">
+                <section class="account-settings-section security-view account-access-summary">
+                  <div class="account-access-heading">
+                    <div><span class="account-section-kicker">Estado de acceso</span><h2>Cuenta protegida</h2></div>
+                    <i data-lucide="shield-check" aria-hidden="true"></i>
+                  </div>
+                  <div class="security-summary">
+                    <div><i data-lucide="mail-check"></i><strong>Correo principal</strong><span data-user-email>...</span></div>
+                  </div>
+                  <details class="account-permission-disclosure">
+                    <summary>Capacidades activas</summary>
+                    <p>Accesos disponibles para tu cuenta.</p>
+                    <ul class="permission-list permission-readable" data-permissions></ul>
+                  </details>
+                </section>
+              </aside>
+            </div>
+          </section>
         </section>
 
         <section class="workspace-view" id="operacion" data-workspace-view data-view-title="Operación" hidden>
           <section class="customer-record-workspace" aria-label="Operación de cliente">
             <header class="workspace-page-header">
-              <div>
-                <h1>Operación</h1>
-                <p>Solicitudes, soporte y requerimientos pendientes en un solo lugar.</p>
-              </div>
-              <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="plus"></i>Crear solicitud</a>
+              <details class="workspace-context">
+                <summary><h1>Operación</h1></summary>
+                <p>Consulta los formularios y requerimientos que el equipo haya enviado a tu cuenta.</p>
+              </details>
             </header>
-            <section class="customer-record-grid">
-              <article class="module-surface request-empty customer-record-panel">
-                <div class="empty-icon"><i data-lucide="folder-open"></i></div>
-                <h2>Aún no tienes solicitudes</h2>
-                <p>Cuando crees una solicitud, podrás darle seguimiento desde este panel.</p>
-                <a class="btn btn-primary" href="/contactUs.html">Crear mi primera solicitud</a>
-              </article>
-              <article class="module-surface customer-record-panel">
-                <h2>Soporte y productos</h2>
-                <div class="resource-rows">
-                  <a href="/contactUs.html"><i data-lucide="life-buoy"></i><div><strong>Contactar soporte</strong><span>Consulta dudas, requerimientos o seguimiento.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Consultar productos</strong><span>Explora soluciones disponibles.</span></div><i data-lucide="external-link"></i></a>
+            <section class="client-operation-board" aria-label="Seguimiento de solicitudes">
+              <div class="client-operation-stage">
+                <span class="client-operation-index" aria-hidden="true">01</span>
+                <div class="client-operation-copy">
+                  <span class="workspace-signal-label">Bandeja de operación</span>
+                  <h2>Revisa los formularios enviados a tu cuenta</h2>
+                  <p>Aquí encontrarás únicamente los requerimientos que BCC haya dirigido a ti. Tus respuestas quedan asociadas a tu cuenta.</p>
                 </div>
-              </article>
+                <div class="client-operation-figure" aria-hidden="true"><i data-lucide="folder-open"></i></div>
+              </div>
+              <aside class="client-operation-aside">
+                <section class="client-operation-note">
+                  <span>Acceso personal</span>
+                  <strong>Solo formularios asignados</strong>
+                  <p>Esta bandeja no permite crear, publicar ni ver requerimientos de otras cuentas.</p>
+                </section>
+              </aside>
             </section>
-            <section class="customer-requirements-block">
-              <section data-forms-workspace data-forms-view="client" aria-label="Requerimientos y retroalimentación"></section>
+            <section class="customer-requirements-block client-requirements-flow">
+              <header class="workspace-section-heading workspace-section-heading--indexed">
+                <span class="workspace-section-index" aria-hidden="true">02</span>
+                <div><h2>Formularios recibidos</h2><p>Responde o consulta los formularios que el equipo haya compartido contigo.</p></div>
+              </header>
+              <section data-client-form-inbox aria-label="Formularios recibidos"></section>
             </section>
           </section>
         </section>
@@ -311,65 +275,49 @@
         <section class="workspace-view" id="comercial" data-workspace-view data-view-title="Comercial" hidden>
           <section class="customer-record-workspace" aria-label="Comercial de cliente">
             <header class="workspace-page-header">
-              <div>
-                <h1>Comercial</h1>
-                <p>Estado de cuenta, facturación, documentos privados y recursos relacionados.</p>
-              </div>
+              <details class="workspace-context">
+                <summary><h1>Comercial</h1></summary>
+                <p>Facturas, documentos y consultas comerciales asociadas a tu cuenta.</p>
+              </details>
+              <a class="btn btn-primary" href="/contactUs.html"><i data-lucide="message-square-text"></i>Contactar al equipo</a>
             </header>
-            <section class="customer-record-grid">
-              <article class="module-surface customer-record-panel">
-                <div class="module-head compact">
-                  <h2>Estado de cuenta</h2>
-                  <span class="status-dot">Referencia</span>
-                </div>
-                <dl class="account-details">
-                  <div><dt>Organización</dt><dd data-user-company>...</dd></div>
-                  <div><dt>Contacto de facturación</dt><dd><span>Correo registrado</span><small data-user-email>...</small></dd></div>
-                  <div><dt>Consultas</dt><dd>Coordina el estado con el equipo</dd></div>
-                </dl>
-              </article>
-              <article class="module-surface customer-record-panel">
-                <h2>Acciones comerciales</h2>
-                <div class="resource-rows">
-                  <a href="/contactUs.html"><i data-lucide="file-plus-2"></i><div><strong>Solicitar factura</strong><span>Envía datos fiscales o requerimientos.</span></div><i data-lucide="chevron-right"></i></a>
-                  <a href="/contactUs.html"><i data-lucide="message-square-text"></i><div><strong>Consultar pago o documento</strong><span>Contacta al equipo administrativo.</span></div><i data-lucide="chevron-right"></i></a>
-                </div>
-              </article>
-            </section>
-            <section class="customer-record-grid">
-              <article class="module-surface customer-record-panel">
-                <div class="module-head compact">
-                  <h2>Facturación</h2>
-                  <span>Portal privado</span>
-                </div>
-                <div class="customer-empty-row">
-                  <i data-lucide="receipt-text"></i>
+            <section class="workspace-focus-grid commercial-workspace">
+              <article class="workspace-ledger commercial-ledger">
+                <header class="workspace-ledger-head">
                   <div>
-                    <strong>No hay facturas publicadas en el portal.</strong>
-                    <span>Cuando el equipo comparta facturas o comprobantes, aparecerán aquí.</span>
+                    <span class="workspace-ledger-stamp">Registro privado</span>
+                    <h2>Documentos compartidos</h2>
+                    <p>Las facturas, comprobantes, contratos y entregables publicados para tu cuenta se verán aquí.</p>
                   </div>
-                </div>
-              </article>
-              <article class="module-surface customer-record-panel">
-                <div class="module-head compact">
-                  <h2>Documentos</h2>
-                  <span>Portal privado</span>
-                </div>
-                <div class="customer-empty-row">
+                  <span class="workspace-ledger-index" aria-hidden="true">01</span>
+                </header>
+                <div class="workspace-ledger-empty">
                   <i data-lucide="folder-lock"></i>
                   <div>
-                    <strong>No hay documentos privados publicados.</strong>
-                    <span>Los contratos, reportes o entregables asignados a tu cuenta aparecerán aquí.</span>
+                    <h3>Aún no hay documentos disponibles</h3>
+                    <p>Cuando el equipo comparta un archivo privado, quedará registrado en este espacio con su fecha y estado.</p>
                   </div>
                 </div>
               </article>
-            </section>
-            <section class="module-surface customer-record-panel">
-              <h2>Recursos relacionados</h2>
-              <div class="resource-rows">
-                <a href="/blog.html"><i data-lucide="book-open"></i><div><strong>Biblioteca pública</strong><span>Documentación general y novedades BCC.</span></div><i data-lucide="external-link"></i></a>
-                <a href="/products.html"><i data-lucide="package-search"></i><div><strong>Catálogo técnico</strong><span>Consulta capacidades y soluciones.</span></div><i data-lucide="external-link"></i></a>
-              </div>
+              <aside class="workspace-focus-rail commercial-context-rail">
+                <section class="commercial-context-block">
+                  <div class="workspace-section-heading">
+                    <div><h2>Cuenta comercial</h2><p>Usaremos este correo para las comunicaciones administrativas.</p></div>
+                  </div>
+                  <dl class="account-details">
+                    <div><dt>Organización</dt><dd data-user-company>...</dd></div>
+                    <div><dt>Contacto</dt><dd data-user-email>...</dd></div>
+                  </dl>
+                </section>
+                <section class="commercial-help-inline" aria-label="Ayuda comercial">
+                  <i data-lucide="receipt-text"></i>
+                  <div>
+                    <strong>¿Necesitas una factura?</strong>
+                    <p>Envía los datos fiscales o consulta un pago directamente con el equipo.</p>
+                    <a class="text-link" href="/contactUs.html">Iniciar consulta</a>
+                  </div>
+                </section>
+              </aside>
             </section>
           </section>
         </section>

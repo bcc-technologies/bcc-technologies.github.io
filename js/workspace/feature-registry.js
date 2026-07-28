@@ -3,7 +3,7 @@
   const SCOPES = Object.freeze({
     client: Object.freeze([
       {
-        id: "operation",
+        id: "form-inbox",
         views: ["operacion"],
         styles: ["css/workspace/features/forms.css"],
         scripts: [
@@ -12,10 +12,10 @@
           "js/workspace/forms-contracts.js",
           "js/workspace/forms-repository.js",
           "js/auth-workspace-api.js",
-          "js/workspace/forms.js"
+          "js/workspace/forms-inbox.js"
         ],
-        selector: "[data-forms-workspace]",
-        global: "BCCWorkspaceForms"
+        selector: "[data-client-form-inbox]",
+        global: "BCCWorkspaceFormInbox"
       },
       {
         id: "licenses",
