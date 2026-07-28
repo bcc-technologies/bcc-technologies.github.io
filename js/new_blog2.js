@@ -100,9 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const excerpt = safeText(p?.excerpt || p?.summary || '');
     const cover = safeText(p?.cover || p?.image || '');
     const file = safeText(p?.file || p?.path || p?.body || p?.bodyUrl || '');
+    // is_published: undefined/null means no explicit flag (treat as published for static posts)
+    const isPublished = p?.is_published !== undefined ? Boolean(p.is_published) : null;
 
     const bodyPath = file ? file : (id ? `${DEFAULT_POST_DIR}${id}.md` : '');
-    return { id, title, date, tags, section, excerpt, cover, bodyPath, lang: postLang };
+    return { id, title, date, tags, section, excerpt, cover, bodyPath, lang: postLang, isPublished };
   }
 
   function postUrl(article) {
@@ -125,7 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
       translationId: row.translation_id,
       tags: row.tags,
       excerpt: row.excerpt,
-      cover: row.cover
+      cover: row.cover,
+      is_published: row.is_published
     });
     post.bodyMarkdown = safeText(row.body_markdown || '');
     post.source = 'supabase';
@@ -138,17 +141,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const posts = Array.isArray(json?.posts) ? json.posts : [];
-      return posts.map(normalizePost).filter(p => p.id && p.lang === pageLang);
+      return posts.map(normalizePost).filter(p =>
+        // Keep static posts unless explicitly marked as draft (is_published: false)
+        p.id && p.lang === pageLang && p.isPublished !== false
+      );
     } catch (error) {
       console.warn(error);
       return [];
     }
   }
 
-  async function fetchSupabaseIndex() {
+  async function fetchSupabasePublished() {
     try {
       const supabaseClient = await loadSupabaseBrowserClient();
       if (!supabaseClient) return [];
+      // Only fetch published posts for display
       const { data, error } = await supabaseClient
         .from('cms_posts')
         .select(CMS_POST_COLUMNS)
@@ -164,10 +171,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function fetchSupabaseDraftIds() {
+    // Fetch only the IDs of unpublished posts so we can suppress any static
+    // entries that have a Supabase draft counterpart.
+    try {
+      const supabaseClient = await loadSupabaseBrowserClient();
+      if (!supabaseClient) return new Set();
+      const { data, error } = await supabaseClient
+        .from('cms_posts')
+        .select('id')
+        .eq('is_published', false)
+        .eq('lang', pageLang);
+      if (error) throw error;
+      return new Set((Array.isArray(data) ? data : []).map(r => safeText(r?.id)));
+    } catch (error) {
+      // Non-critical: if this fails we just won't suppress static drafts
+      console.warn('No se pudieron obtener los IDs de borradores.', error);
+      return new Set();
+    }
+  }
+
   async function fetchIndex() {
-    const [staticPosts, supabasePosts] = await Promise.all([fetchStaticIndex(), fetchSupabaseIndex()]);
-    const byId = new Map(staticPosts.map(post => [post.id, post]));
+    const [staticPosts, supabasePosts, draftIds] = await Promise.all([
+      fetchStaticIndex(),
+      fetchSupabasePublished(),
+      fetchSupabaseDraftIds()
+    ]);
+
+    // Build map starting with static posts, excluding any that are drafts in Supabase
+    const byId = new Map(
+      staticPosts
+        .filter(p => !draftIds.has(p.id))
+        .map(post => [post.id, post])
+    );
+
+    // Published Supabase posts override/add on top of static
     supabasePosts.forEach(post => byId.set(post.id, post));
+
     return [...byId.values()].filter(p => p.id && p.lang === pageLang);
   }
 
