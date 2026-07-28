@@ -22,7 +22,8 @@
    Toggle via html.is-at-top (see layout.js)
    ========================================================== */
 
-header{
+/* Only the document chrome is fixed. Component headers must remain in flow. */
+body > header{
   position: fixed;
   top: 12px;
   left: 0;
@@ -59,7 +60,7 @@ header{
 }
 
 /* At top: compact + adhered + elongated */
-html.is-at-top header{ top: 0; padding: 0; }
+html.is-at-top body > header{ top: 0; padding: 0; }
 html.is-at-top .header-container{
   width: 100%;
   max-width: none;
@@ -112,11 +113,11 @@ nav h1{
 }
 
 /* Works with <img class="logo"> inside h1 */
-header .header-container nav h1 img{
+body > header .header-container nav h1 img{
   height: 34px;
   width: auto;
 }
-html.is-at-top header .header-container nav h1 img{ height: 30px; }
+html.is-at-top body > header .header-container nav h1 img{ height: 30px; }
 
 .logo{
   height: 34px;
@@ -208,7 +209,7 @@ nav a.is-current::after{
   transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
 }
 
-header .nav-actions .pref-btn{
+body > header .nav-actions .pref-btn{
   height: 32px;
   min-width: 32px;
   padding: 0 8px;

@@ -76,6 +76,14 @@ test("public pricing page, dashboard and contact form consume the shared plan ca
   assert.match(contactContext, /estimated_users/);
 });
 
+test("public navigation fixes only the document header, not pricing-card headers", () => {
+  const [layout, pricingScript] = [read("css/02-layout.css"), read("js/map-nano-pricing.js")];
+
+  assert.match(layout, /body > header\s*\{\s*position:\s*fixed;/);
+  assert.doesNotMatch(layout, /(^|\n)header\s*\{\s*position:\s*fixed;/);
+  assert.match(pricingScript, /<header class="map-pricing-plan-head">/);
+});
+
 test("dashboard preserves the repository boundary and remains honest about unavailable billing data", () => {
   const [contracts, repository, dashboard] = [
     read("js/workspace/map-contracts.js"),
