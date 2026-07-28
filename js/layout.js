@@ -277,15 +277,15 @@
       const config = await loadSupabaseConfig();
       if (!config?.url || !config?.anonKey) return;
       const identity = await resolveAnalyticsIdentity();
-      const authToken = identity.accessToken || config.anonKey;
+      const headers = {
+        "Content-Type": "application/json",
+        apikey: config.anonKey
+      };
+      if (identity.accessToken) headers.Authorization = `Bearer ${identity.accessToken}`;
       await fetch(`${config.url}/rest/v1/rpc/record_analytics_event`, {
         method: "POST",
         keepalive: true,
-        headers: {
-          "Content-Type": "application/json",
-          apikey: config.anonKey,
-          Authorization: `Bearer ${authToken}`
-        },
+        headers,
         body: JSON.stringify(payload)
       });
     } catch (_error) {
