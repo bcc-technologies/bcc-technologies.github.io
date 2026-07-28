@@ -187,7 +187,6 @@
         <div class="client-license-product-actions"><a class="btn btn-ghost btn-compact" href="${escapeHtml(product.productHref)}">Ver producto</a>${key === "map.nano" ? '<a class="btn btn-ghost btn-compact" href="/map-nano-pricing.html">Ver planes</a>' : ""}</div>
       </header>
       ${renderCurrentProductAccess(key, product, productLicenses)}
-      ${key === "map.nano" ? renderMapNanoPlanSummary(productLicenses) : ""}
       ${renderLicenseOptions(key, productLicenses)}
     </div>`;
   }
@@ -360,35 +359,23 @@
     </section>`;
   }
 
-  function renderMapNanoPlanSummary(productLicenses) {
-    const activeLicense = productLicenses.find(item => ["active", "scheduled", "expiring"].includes(item.status)) || productLicenses[0] || null;
-    if (!activeLicense) {
-      return `<section class="module-surface client-map-nano-plan-summary is-empty" aria-labelledby="map-nano-plan-summary-title">
-        <div><span class="workspace-eyebrow">Plan y licencia</span><h3 id="map-nano-plan-summary-title">No hay una licencia activa asociada a esta cuenta.</h3><p>Selecciona un plan para iniciar una solicitud. No se emitirá una licencia ni se realizará un cobro desde este dashboard.</p>${renderMapNanoCommercialRequestHistory()}</div>
-        <a class="btn btn-ghost btn-compact" href="/map-nano-pricing.html">Comparar planes</a>
-      </section>`;
-    }
-    const plan = mapNanoPlans.planById(mapNanoPlans.planIdForLicense(activeLicense));
-    const status = mapNanoPlans.statusForLicense(activeLicense);
-    return `<section class="module-surface client-map-nano-plan-summary" aria-labelledby="map-nano-plan-summary-title">
-      <div class="client-map-nano-plan-summary-head"><div><span class="workspace-eyebrow">Plan y licencia</span><h3 id="map-nano-plan-summary-title">${escapeHtml(plan?.name || activeLicense.plan_name || "Plan no reconocido")}</h3><p>${escapeHtml(activeLicense.account_name || "Organización no especificada")}</p></div><span class="client-license-tag ${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span></div>
-      <dl class="client-map-nano-plan-facts"><div><dt>Inicio</dt><dd>${activeLicense.starts_at ? formatDate(activeLicense.starts_at) : "No especificado"}</dd></div><div><dt>Renovación o vencimiento</dt><dd>${activeLicense.ends_at ? formatDate(activeLicense.ends_at) : "No especificado"}</dd></div><div><dt>Usuarios asignados</dt><dd>${Number.isFinite(activeLicense.assignedSeats) && Number.isFinite(activeLicense.seatLimit) ? `${activeLicense.assignedSeats} de ${activeLicense.seatLimit}` : "No especificado"}</dd></div><div><dt>Facturación</dt><dd>No especificada</dd></div></dl>
+  function renderMapNanoCommercialOptions(productLicenses) {
+    const canManage = canManageMapNanoCommercialRequest(productLicenses);
+    const activePlanIds = new Set(productLicenses
+      .filter(item => ["active", "scheduled", "expiring"].includes(item.status))
+      .map(item => mapNanoPlans.planIdForLicense(item))
+      .filter(Boolean));
+    const hasActivePlan = activePlanIds.size > 0;
+    return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
+      <div class="client-license-subsection-head"><div><h3>${hasActivePlan ? "Tus planes de MAP-Nano" : "Planes de MAP-Nano"}</h3><p>${hasActivePlan ? "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites." : "Elige el nivel de operación. Las solicitudes se revisan antes de emitir una licencia."}</p></div><a href="/map-nano-pricing.html">Comparación completa</a></div>
+      <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, activePlanIds, hasLicense: productLicenses.length > 0 })).join("")}</div>
+      ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
       ${renderMapNanoCommercialRequestHistory()}
     </section>`;
   }
 
-  function renderMapNanoCommercialOptions(productLicenses) {
-    const canManage = canManageMapNanoCommercialRequest(productLicenses);
-    const currentPlanId = productLicenses.map(item => mapNanoPlans.planIdForLicense(item)).find(Boolean) || "";
-    return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
-      <div class="client-license-subsection-head"><div><h3>Planes de MAP-Nano</h3><p>Elige el nivel de operación. Las solicitudes se revisan antes de emitir o cambiar una licencia.</p></div><a href="/map-nano-pricing.html">Comparación completa</a></div>
-      <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, currentPlanId, hasLicense: productLicenses.length > 0 })).join("")}</div>
-      ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
-    </section>`;
-  }
-
   function renderMapNanoPlanCard(plan, context) {
-    const isCurrent = context.currentPlanId === plan.id;
+    const isCurrent = context.activePlanIds.has(plan.id);
     const requestType = mapNanoPlans.requestTypeForPlan(plan.id, { upgrade: context.hasLicense });
     const pending = pendingCommercialRequest(plan.id, requestType);
     const action = isCurrent
@@ -399,8 +386,8 @@
           ? ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
           : ui.action({ label: "Contactar al administrador", href: "/contactUs.html?product=map-nano&intent=license", icon: "headset", className: "btn btn-ghost" });
     const limitText = mapNanoLimitText(plan);
-    return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
-      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || "Licenciamiento anual")}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div>${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div>
+    return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""} ${isCurrent ? "is-current" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
+      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || "Licenciamiento anual")}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
       <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(mapNanoPlans.priceLabel(plan))}</strong>${mapNanoPlans.monthlyLabel(plan) ? `<span>${escapeHtml(mapNanoPlans.monthlyLabel(plan))}</span>` : ""}</div>
       <p class="client-map-nano-plan-limits">${escapeHtml(limitText)}</p><ul class="client-license-offer-benefits">${plan.features.slice(0, 4).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
       <footer>${action}${!context.canManage && !isCurrent ? '<small class="client-license-offer-assurance">Solo propietarios o administradores pueden solicitar cambios para una organización.</small>' : ""}</footer>

@@ -196,16 +196,8 @@
 .client-license-capability-summary > div{ display: flex; flex-wrap: wrap; gap: 5px; }
 .client-license-capability-summary .client-license-tag{ font-size: .68rem; }
 
-.client-map-nano-plan-summary{ display: grid; gap: 14px; padding: 18px; border-color: color-mix(in srgb, var(--accent) 28%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, var(--surface-solid)), var(--surface-solid)); }
-.client-map-nano-plan-summary.is-empty{ grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-.client-map-nano-plan-summary h3{ margin: 3px 0 0; color: var(--ink); font-size: 1.1rem; }
-.client-map-nano-plan-summary p{ margin: 5px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
-.client-map-nano-plan-summary-head{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.client-map-nano-plan-facts{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0; }
-.client-map-nano-plan-facts div{ min-width: 0; padding: 10px; border-radius: 8px; background: var(--surface-muted); }
-.client-map-nano-plan-facts dt{ color: var(--muted); font-size: .7rem; }
-.client-map-nano-plan-facts dd{ margin: 3px 0 0; color: var(--ink); font-size: .8rem; font-weight: 750; overflow-wrap: anywhere; }
 .client-map-nano-pending-note{ padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--warning) 32%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--warning) 8%, var(--surface-solid)); }
+.client-map-nano-plan-card.is-current{ border-color: color-mix(in srgb, var(--accent) 48%, var(--line)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent); }
 .client-map-nano-request-history{ display: grid; gap: 8px; padding-top: 2px; }
 .client-map-nano-request-history h4{ margin: 0; color: var(--ink); font-size: .88rem; }
 .client-map-nano-request-history p{ margin: 3px 0 0; }
@@ -237,8 +229,6 @@
 
 @media (max-width: 700px){
   .client-map-nano-plan-grid,
-  .client-map-nano-plan-facts{ grid-template-columns: 1fr; }
-  .client-map-nano-plan-summary.is-empty,
   .client-map-nano-project-option{ display: grid; }
   .client-map-nano-request-item{ align-items: flex-start; flex-direction: column; }
   .client-map-nano-project-option > div:last-child{ justify-items: start; text-align: left; }

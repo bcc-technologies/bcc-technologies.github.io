@@ -63,7 +63,9 @@ test("public pricing page, dashboard and contact form consume the shared plan ca
   assert.match(pageScript, /pricing_page_viewed/);
   assert.match(pageScript, /pricing_faq_opened/);
   assert.match(dashboardFeature, /"js\/map-nano-plans\.js"/);
-  assert.match(dashboardModule, /renderMapNanoPlanSummary/);
+  assert.match(dashboardModule, /Tus planes de MAP-Nano/);
+  assert.match(dashboardModule, /Plan contratado/);
+  assert.doesNotMatch(dashboardModule, /renderMapNanoPlanSummary|Plan y licencia/);
   assert.match(dashboardModule, /data-map-nano-commercial-request-form/);
   assert.match(dashboardModule, /pendingCommercialRequest/);
   assert.match(dashboardModule, /data-map-nano-commercial-cancel/);
@@ -87,7 +89,7 @@ test("dashboard preserves the repository boundary and remains honest about unava
   assert.match(repository, /create_my_map_nano_commercial_request/);
   assert.match(repository, /cancel_my_map_nano_commercial_request/);
   assert.match(dashboard, /Facturación<\/dt><dd>No especificada/);
-  assert.match(dashboard, /No hay una licencia activa asociada a esta cuenta/);
+  assert.match(dashboard, /Elige el nivel de operación\. Las solicitudes se revisan antes de emitir una licencia/);
   assert.doesNotMatch(dashboard, /stripe|paddle|checkout/i);
 });
 
