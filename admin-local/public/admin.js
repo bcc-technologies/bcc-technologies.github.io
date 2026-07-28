@@ -150,6 +150,28 @@ function postPayloadForSupabase(payload) {
   };
 }
 
+function postIsPublished() {
+  return Boolean($("#postPublished")?.checked);
+}
+
+function setPostPublished(value) {
+  const control = $("#postPublished");
+  if (control) control.checked = Boolean(value);
+}
+
+function refreshPostPublicationControls() {
+  const hasSavedId = Boolean($("#postId")?.value.trim());
+  const isPublished = postIsPublished();
+  const state = $("#postPublicationState");
+  const publish = $("#btnPublishPost");
+  const unpublish = $("#btnUnpublishPost");
+  if (state) state.textContent = isPublished
+    ? "Publicado: visible en la web oficial."
+    : "Borrador: no visible en la web oficial.";
+  if (publish) publish.hidden = !hasSavedId || isPublished;
+  if (unpublish) unpublish.hidden = !hasSavedId || !isPublished;
+}
+
 async function webApi(path, opts = {}) {
   const supabase = window.CMS_SUPABASE;
   if (!supabase) throw new Error("Supabase no inicializado.");
@@ -216,6 +238,15 @@ async function webApi(path, opts = {}) {
     if (error) throw error;
     WEB_POST_BODY_CACHE.set(row.id, row.body_markdown);
     return { ok: true, id: data?.id || row.id };
+  }
+
+  if (path === "/api/posts/publish") {
+    const payload = JSON.parse(String(opts.body || "{}"));
+    const id = String(payload.id || "").trim();
+    if (!id) throw new Error("Guarda el borrador antes de publicarlo.");
+    const { data, error } = await supabase.rpc("publish_cms_post", { p_post_id: id });
+    if (error) throw error;
+    return { ok: true, post: data };
   }
 
   if (path === "/api/posts/delete") {
@@ -758,7 +789,7 @@ function refreshPostHeader() {
   if (chips) {
     const payload = collectPostPayload();
     const hasSavedId = Boolean(id);
-    const isPublished = $("#postPublished")?.checked !== false;
+    const isPublished = postIsPublished();
     const stateChip = hasSavedId
       ? `<span class="doc-meta-chip ${isPublished ? "is-published" : "is-saved"}">${isPublished ? "Estado" : "Guardado"}<strong>${isPublished ? "Publicado" : "Guardado"}</strong></span>`
       : `<span class="doc-meta-chip is-draft">Estado<strong>Draft local</strong></span>`;
@@ -1470,11 +1501,12 @@ function clearPostEditor() {
   if ($("#postResources")) $("#postResources").value = "";
   $("#postCover").value = "";
   $("#postExcerpt").value = "";
-  if ($("#postPublished")) $("#postPublished").checked = true;
+  setPostPublished(false);
   $("#postBody").value = "";
   updateEditorDerivedViews();
   refreshActiveLanguage("");
   refreshPostHeader();
+  refreshPostPublicationControls();
   lastAutosaveSignature = signatureForPayload(collectPostPayload());
   autosaveDirty = false;
   setAutosaveStatus("clean", "Autosave listo");
@@ -1514,7 +1546,7 @@ $("#btnSavePost").addEventListener("click", async () => {
       excerpt: $("#postExcerpt").value.trim(),
       cover: $("#postCover").value.trim(),
       body: $("#postBody").value,
-      isPublished: $("#postPublished")?.checked !== false
+      isPublished: postIsPublished()
     };
 
     const r = await api("/api/posts/upsert", {
@@ -1532,6 +1564,42 @@ $("#btnSavePost").addEventListener("click", async () => {
     setAutosaveStatus("clean", "Guardado");
   } catch (e) {
     toast(`Error: ${e.message}`, false);
+  }
+});
+
+$("#btnPublishPost")?.addEventListener("click", async () => {
+  try {
+    const id = $("#postId")?.value.trim() || currentPostId;
+    if (!id) return toast("Guarda el borrador antes de publicarlo.", false);
+    if (!window.confirm("¿Publicar esta entrada en la web oficial?")) return;
+    await api("/api/posts/publish", { method: "POST", body: JSON.stringify({ id }) });
+    setPostPublished(true);
+    refreshPostPublicationControls();
+    refreshPostHeader();
+    toast("Publicado. Usa ‘Publicar cambios’ para regenerar el HTML ahora.");
+    await refreshAll();
+    await loadPost(id);
+  } catch (e) {
+    toast(`No se pudo publicar: ${e.message}`, false);
+  }
+});
+
+$("#btnUnpublishPost")?.addEventListener("click", async () => {
+  try {
+    const id = $("#postId")?.value.trim() || currentPostId;
+    if (!id || !window.confirm("¿Retirar esta entrada de la web oficial?")) return;
+    const payload = collectPostPayload();
+    payload.id = id;
+    payload.isPublished = false;
+    await api("/api/posts/upsert", { method: "POST", body: JSON.stringify(payload) });
+    setPostPublished(false);
+    refreshPostPublicationControls();
+    refreshPostHeader();
+    toast("Retirado. Usa ‘Publicar cambios’ para regenerar el HTML ahora.");
+    await refreshAll();
+    await loadPost(id);
+  } catch (e) {
+    toast(`No se pudo retirar: ${e.message}`, false);
   }
 });
 
@@ -2529,7 +2597,7 @@ function collectPostPayload() {
     excerpt: $("#postExcerpt")?.value.trim() || "",
     cover: $("#postCover")?.value.trim() || "",
     body: $("#postBody")?.value || "",
-    isPublished: $("#postPublished")?.checked !== false
+    isPublished: postIsPublished()
   };
 }
 
@@ -2554,11 +2622,12 @@ function applyPostPayload(payload, options = {}) {
   if ($("#postResources")) $("#postResources").value = (payload.resourceIds || payload.resources || []).join(", ");
   $("#postCover").value = payload.cover || "";
   $("#postExcerpt").value = payload.excerpt || "";
-  if ($("#postPublished")) $("#postPublished").checked = payload.isPublished !== false;
+  setPostPublished(payload.isPublished === true);
   $("#postBody").value = payload.body || "";
   updateEditorDerivedViews();
   refreshActiveLanguage(currentPostId);
   refreshPostHeader();
+  refreshPostPublicationControls();
   persistEditorSession({ payload, draftStorageKey: options.draftStorageKey });
   if (options.schedule === false) {
     lastAutosaveSignature = signatureForPayload(payload);

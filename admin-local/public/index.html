@@ -144,7 +144,7 @@
                   <button class="lang-chip" id="btnPostLangEn" data-lang="en" type="button" aria-label="Versión en inglés" title="Versión en inglés">EN</button>
                 </div>
 
-                <button class="btn btn-primary icon-btn" id="btnSavePost" type="button" aria-label="Guardar entrada" title="Guardar entrada">
+                <button class="btn btn-primary icon-btn" id="btnSavePost" type="button" aria-label="Guardar borrador" title="Guardar borrador">
                   <span aria-hidden="true">✓</span>
                 </button>
 
@@ -195,10 +195,12 @@
 
                     <div class="field-block">
                       <span>Publicación</span>
-                      <label class="check-row">
-                        <input id="postPublished" type="checkbox" checked />
-                        <span>Publicar en la web oficial</span>
-                      </label>
+                      <p class="muted" id="postPublicationState">Borrador: no visible en la web oficial.</p>
+                      <input id="postPublished" type="checkbox" hidden disabled />
+                      <div class="button-row">
+                        <button class="btn" id="btnPublishPost" type="button" hidden>Publicar en la web oficial</button>
+                        <button class="btn" id="btnUnpublishPost" type="button" hidden>Retirar de la web</button>
+                      </div>
                     </div>
                     <label class="field-block">
                       <span>Sección</span>
