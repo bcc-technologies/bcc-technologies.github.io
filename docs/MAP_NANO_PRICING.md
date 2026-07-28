@@ -62,18 +62,30 @@ licencia.
 - [`js/contact-context.js`](../js/contact-context.js) amplía el formulario de
   contacto existente con institución, país, usuarios estimados, volumen y tipo
   de solicitud cuando llega un plan MAP-Nano.
-- El dashboard envía el formulario enriquecido al endpoint Formspree ya usado
-  por BCC. Sólo confirma éxito tras una respuesta HTTP correcta.
-- Para evitar reenvíos accidentales, el dashboard guarda localmente la marca
-  no sensible de una solicitud aceptada por Formspree durante 45 días para ese
-  plan y navegador. Esto no es un historial canónico ni cubre otros
-  dispositivos.
+- El dashboard persiste solicitudes de MAP-Nano mediante las RPCs autenticadas
+  `create_my_map_nano_commercial_request`,
+  `get_my_map_nano_commercial_requests` y
+  `cancel_my_map_nano_commercial_request`. No publica la tabla de contactos.
+- `map_nano_commercial_requests` tiene RLS de denegación directa, índices por
+  solicitante/cuenta y un índice único parcial que impide que el mismo cambio
+  permanezca abierto dos veces para una cuenta (o para un usuario sin cuenta).
+- El historial se consulta desde el repositorio MAP, cubre otros dispositivos y
+  permite cancelar una solicitud `pending` o `in_review`. Cancelarla libera la
+  deduplicación para volver a enviar un alcance cambiado.
+- El dashboard de staff incorpora la pestaña **Solicitudes** para
+  `platform.licenses.manage`. La cola devuelve hasta 200 registros, permite
+  filtrar y buscar, y registra una decisión `in_review`, `resolved` o
+  `declined`; una nota es obligatoria al cerrar una solicitud.
+- Formspree se conserva para el formulario público y los demás flujos MAP que
+  todavía no tienen un backend comercial; el dashboard no lo usa para duplicar
+  una solicitud MAP-Nano persistida.
 
-La dependencia pendiente es un backend de solicitudes comerciales con una
-entidad, estado y lectura por organización. Cuando exista, se debe reemplazar
-ese marcador local por un adaptador del repositorio MAP que persista y consulte
-solicitudes mediante RPCs con RLS. Entonces se podrán ofrecer historial,
-cancelación/edición y prevención de duplicados entre dispositivos.
+Las migraciones remotas `20260728041132_map_nano_commercial_requests`,
+`20260728041359_fix_map_nano_commercial_request_create_rpc`,
+`20260728042221_remove_unused_map_nano_request_manager_helper` y
+`20260728043321_map_nano_commercial_request_staff_queue` contienen el contrato
+de persistencia y revisión. La segunda corrige una ambigüedad detectada en la
+verificación transaccional de la primera; no dejó registros de prueba.
 
 ## Permisos
 
@@ -86,11 +98,17 @@ cuenta existente.
 La gestión de plazas sigue utilizando exclusivamente las RPCs de autoservicio
 existentes.
 
+La cola comercial usa `get_my_map_nano_commercial_request_queue` y
+`review_my_map_nano_commercial_request`. Ambas verifican la identidad y
+`platform.licenses.manage` en una función privada; la tabla y los contactos no
+se publican para usuarios autenticados ni anónimos.
+
 ## Rutas y componentes
 
 - Página pública: [`/map-nano-pricing.html`](../map-nano-pricing.html)
 - Página de producto enlazada: [`/product_maps_nano.html`](../product_maps_nano.html)
 - Dashboard: [`/dashboard.html#licencias`](../dashboard.html)
+- Dashboard de staff: [`/staff-dashboard.html#maps-licensing/commercial`](../staff-dashboard.html)
 - Render público: [`js/map-nano-pricing.js`](../js/map-nano-pricing.js)
 - Estilos públicos: [`css/pages/map-nano-pricing.css`](../css/pages/map-nano-pricing.css)
 - Módulo de dashboard: [`js/workspace/client-map-licenses.js`](../js/workspace/client-map-licenses.js)
@@ -115,4 +133,3 @@ datos sensibles, `pricing_page_viewed`, `pricing_plan_selected`,
 - el modelo contractual exacto para usuarios nominativos y concurrentes;
 - la definición técnica y contractual de despliegue local, API y LIMS;
 - facturación, impuestos, renovación y cualquier integración de pagos;
-- la entidad canónica para solicitudes e historial comercial.

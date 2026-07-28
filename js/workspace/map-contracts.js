@@ -100,6 +100,15 @@
     unknown: { label: "Sin estado", tone: "neutral", icon: "circle-help", priority: 7 }
   });
 
+  const COMMERCIAL_REQUEST_STATUS = Object.freeze({
+    pending: { label: "Pendiente", tone: "warning" },
+    in_review: { label: "En revisión", tone: "warning" },
+    resolved: { label: "Resuelta", tone: "success" },
+    declined: { label: "No aprobada", tone: "danger" },
+    cancelled: { label: "Cancelada", tone: "neutral" },
+    unknown: { label: "Sin estado", tone: "neutral" }
+  });
+
   const PLATFORM_ACCESS_LABELS = Object.freeze({
     "map.workspace.access": "Acceso al espacio MAP",
     "map.nano.use": "Análisis MAP-Nano",
@@ -125,9 +134,13 @@
     [/no remaining seats/i, "La licencia no tiene plazas disponibles."],
     [/Evaluation access is managed/i, "El acceso de evaluación es administrado por el equipo BCC."],
     [/Assignment is not active/i, "La plaza ya fue liberada o dejó de estar activa."],
+    [/open commercial request already exists|duplicate key value violates unique constraint.*map_nano_commercial_requests_one_open_change/i, "Ya existe una solicitud comercial abierta para este plan."],
+    [/commercial request is not open or cannot be cancelled/i, "La solicitud ya no está abierta o no tienes permiso para cancelarla."],
+    [/resolution note is required/i, "Agrega una nota de resolución antes de cerrar la solicitud."],
+    [/commercial request is not open for review/i, "La solicitud ya no está disponible para revisión."],
     [/License is not active/i, "La licencia no está activa."],
     [/cannot release this assignment/i, "No tienes permiso para liberar esta plaza."],
-    [/permission denied|insufficient permission|not authorized/i, "No tienes permisos para completar esta operación."],
+    [/permission denied|insufficient permission|not authorized|not allowed/i, "No tienes permisos para completar esta operación."],
     [/Failed to fetch|NetworkError|fetch resource|network request failed/i, "No pudimos conectar con MAP. Revisa tu conexión e inténtalo nuevamente."]
   ]);
 
@@ -197,6 +210,53 @@
       is_campaign: source.is_campaign === undefined ? TRIAL_OFFER_FALLBACK.is_campaign : Boolean(source.is_campaign),
       standard_days: TRIAL_OFFER_FALLBACK.standard_days
     });
+  }
+
+  function normalizeCommercialRequests(value) {
+    return rows(value)
+      .filter(item => typeof item.request_id === "string" && typeof item.plan_key === "string")
+      .map(item => ({
+        request_id: item.request_id,
+        account_id: typeof item.account_id === "string" ? item.account_id : "",
+        plan_key: item.plan_key,
+        request_type: String(item.request_type || ""),
+        status: String(item.status || "unknown"),
+        organization_name: String(item.organization_name || ""),
+        created_at: item.created_at || null,
+        updated_at: item.updated_at || null,
+        cancelled_at: item.cancelled_at || null,
+        can_cancel: Boolean(item.can_cancel)
+      }));
+  }
+
+  function normalizeCommercialRequestQueue(value) {
+    return rows(value)
+      .filter(item => typeof item.request_id === "string" && typeof item.plan_key === "string")
+      .map(item => ({
+        request_id: item.request_id,
+        account_id: typeof item.account_id === "string" ? item.account_id : "",
+        plan_key: item.plan_key,
+        request_type: String(item.request_type || ""),
+        status: String(item.status || "unknown"),
+        contact_name: String(item.contact_name || ""),
+        contact_email: String(item.contact_email || ""),
+        organization_name: String(item.organization_name || ""),
+        country: String(item.country || ""),
+        estimated_users: Math.max(0, Number(item.estimated_users) || 0),
+        analysis_volume: String(item.analysis_volume || "unknown"),
+        message: String(item.message || ""),
+        created_at: item.created_at || null,
+        updated_at: item.updated_at || null,
+        cancelled_at: item.cancelled_at || null,
+        cancellation_note: String(item.cancellation_note || ""),
+        reviewed_at: item.reviewed_at || null,
+        reviewed_by_name: String(item.reviewed_by_name || ""),
+        resolution_note: String(item.resolution_note || "")
+      }));
+  }
+
+  function commercialRequestStatus(status) {
+    return COMMERCIAL_REQUEST_STATUS[String(status || "").toLowerCase()] || COMMERCIAL_REQUEST_STATUS.unknown;
   }
 
   function effectiveStatus(license, now = Date.now()) {
@@ -272,6 +332,7 @@
     LICENSE_TYPES,
     TRIAL_OFFER_FALLBACK,
     STATUS,
+    COMMERCIAL_REQUEST_STATUS,
     PLATFORM_ACCESS_LABELS,
     MapContractError,
     isRecord,
@@ -282,6 +343,8 @@
     normalizePlatformAccess,
     normalizeEffectiveAccess,
     normalizeTrialOffer,
+    normalizeCommercialRequests,
+    normalizeCommercialRequestQueue,
     effectiveStatus,
     toLicenseViewModel,
     productName,
@@ -289,6 +352,7 @@
     licenseType,
     productLicenseTypes,
     platformAccessLabel,
+    commercialRequestStatus,
     toError
   });
 })();

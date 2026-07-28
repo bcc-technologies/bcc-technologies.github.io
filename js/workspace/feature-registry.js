@@ -114,6 +114,7 @@
         permission: "platform.licenses.read",
         scripts: [
           "js/workspace/icons/catalogs/maps.js",
+          "js/map-nano-plans.js",
           "js/workspace/map-contracts.js",
           "js/workspace/map-repository.js",
           "js/workspace/maps-licensing.js"

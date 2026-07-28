@@ -88,6 +88,8 @@
 .maps-license-table td small{ display: block; max-width: 250px; margin-top: 3px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
 .maps-license-records{ min-width: 900px; }
 .maps-license-records td:last-child{ text-align: right; }
+.maps-license-commercial-records{ min-width: 1120px; }
+.maps-license-commercial-records td:last-child{ text-align: right; }
 
 .maps-license-capacity{ width: 96px; height: 5px; margin-top: 6px; }
 .maps-license-capacity.is-large{ width: 100%; height: 8px; }
@@ -123,6 +125,13 @@
 .maps-license-danger-zone{ display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: auto; padding: 16px; border: 1px solid color-mix(in srgb, var(--danger) 24%, var(--border)); border-radius: var(--workspace-radius-panel); }
 .maps-license-danger-zone p{ margin: 4px 0 0; color: var(--muted); font-size: .86rem; line-height: 1.45; }
 .maps-license-danger-zone .btn{ color: var(--danger); }
+.maps-license-commercial-message{ margin: 0; padding: 12px 14px; border-radius: var(--workspace-radius-control); background: var(--surface-muted); color: var(--ink); line-height: 1.55; white-space: pre-wrap; }
+.maps-license-commercial-review{ display: grid; gap: 6px; padding: 14px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border)); border-radius: var(--workspace-radius-control); background: color-mix(in srgb, var(--accent) 5%, var(--surface-solid)); }
+.maps-license-commercial-review.is-muted{ border-color: var(--border); background: var(--surface-muted); }
+.maps-license-commercial-review h3,
+.maps-license-commercial-review p{ margin: 0; }
+.maps-license-commercial-review p{ color: var(--muted); font-size: .86rem; }
+.maps-license-commercial-review blockquote{ margin: 4px 0 0; padding: 0 0 0 10px; border-left: 3px solid var(--accent); color: var(--ink); line-height: 1.5; white-space: pre-wrap; }
 
 .maps-license-evaluation-layout{
   display: grid;

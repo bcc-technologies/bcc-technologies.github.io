@@ -1,0 +1,4 @@
+-- The remote migration corrected an ambiguous unqualified `status` reference
+-- in the creation RPC. The canonical source above already contains the corrected
+-- qualified `returning request.status` expression so clean environments remain
+-- valid when migrations are replayed from scratch.

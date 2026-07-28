@@ -3,9 +3,10 @@
   const repository = window.BCCWorkspaceMapRepository.staff;
   const utils = window.BCCWorkspaceUtils;
   const ui = window.BCCWorkspaceUI;
+  const mapNanoPlans = window.BCCMapNanoPlans;
   const escapeHtml = utils.escapeHtml;
   const refreshIcons = utils.refreshIcons;
-  const PANELS = ["summary", "licenses", "evaluations", "permissions", "analytics"];
+  const PANELS = ["summary", "licenses", "commercial", "evaluations", "permissions", "analytics"];
   const PRODUCTS = contracts.PRODUCTS;
 
   let root = null;
@@ -27,6 +28,11 @@
   let licenseStatusFilter = "all";
   let licenseProductFilter = "all";
   let cohortQuery = "";
+  let commercialRequests = [];
+  let commercialRequestsAvailable = true;
+  let commercialRequestQuery = "";
+  let commercialRequestStatusFilter = "all";
+  let selectedCommercialRequestId = "";
   let busy = false;
   let tabsController = null;
 
@@ -114,6 +120,7 @@
   }
 
   function panelAllowed(panel) {
+    if (panel === "commercial") return has("platform.licenses.manage");
     if (panel === "permissions") return has("platform.permissions.manage");
     if (panel === "analytics") return has("platform.analytics.read");
     if (panel === "evaluations") return has("platform.evaluations.manage");
@@ -124,6 +131,7 @@
     return ({
       summary: "Resumen",
       licenses: "Licencias",
+      commercial: "Solicitudes",
       evaluations: "Evaluaciones",
       permissions: "Permisos",
       analytics: "Analíticas"
@@ -141,10 +149,15 @@
     setBusy(true);
     setMessage("Actualizando licencias y accesos...");
     try {
-      const dashboard = await repository.getDashboard({
-        includeEvaluations: has("platform.evaluations.manage"),
-        includeAccess: has("platform.permissions.manage")
-      });
+      const [dashboard, commercialRequestState] = await Promise.all([
+        repository.getDashboard({
+          includeEvaluations: has("platform.evaluations.manage"),
+          includeAccess: has("platform.permissions.manage")
+        }),
+        has("platform.licenses.manage")
+          ? repository.getCommercialRequestQueue()
+          : Promise.resolve({ available: false, requests: [] })
+      ]);
       overview = dashboard?.overview || {};
       licenses = dashboard?.licenses || [];
       accounts = dashboard?.accounts || [];
@@ -153,6 +166,8 @@
       cohorts = dashboard?.cohorts || [];
       trialOffer = contracts.normalizeTrialOffer(dashboard?.trialOffer);
       accessUsers = dashboard?.access_users || [];
+      commercialRequests = commercialRequestState.requests;
+      commercialRequestsAvailable = commercialRequestState.available;
       preserveSelections();
       if (selectedCohortId) {
         participantError = "";
@@ -181,12 +196,17 @@
       selectedCohortId = cohorts[0]?.cohort_id || "";
       participants = [];
     }
+    if (!commercialRequests.some(item => item.request_id === selectedCommercialRequestId)) {
+      selectedCommercialRequestId = "";
+    }
   }
 
   function renderAll() {
     renderSummary();
     renderLicenses();
     renderLicenseDetail();
+    renderCommercialRequests();
+    renderCommercialRequestDetail();
     renderEvaluations();
     renderPermissions();
     renderAnalytics();
@@ -347,10 +367,209 @@
     });
   }
 
+  function renderCommercialRequests() {
+    const panel = root.querySelector('[data-map-panel="commercial"]');
+    if (!panel) return;
+    if (!commercialRequestsAvailable) {
+      panel.innerHTML = `<article class="maps-license-card">${ui.dataState({
+        tone: "warning",
+        icon: "wifi-off",
+        title: "La cola comercial no está disponible todavía.",
+        description: "Actualiza el backend de MAP-Nano antes de revisar solicitudes comerciales."
+      })}</article>`;
+      return;
+    }
+    const pending = commercialRequests.filter(item => item.status === "pending").length;
+    const inReview = commercialRequests.filter(item => item.status === "in_review").length;
+    const closed = commercialRequests.filter(item => ["resolved", "declined"].includes(item.status)).length;
+    panel.innerHTML = `
+      <section class="maps-license-metrics maps-license-request-metrics" aria-label="Resumen de solicitudes comerciales">
+        ${metric("Pendientes", pending, "requieren primera respuesta")}
+        ${metric("En revisión", inReview, "seguimiento comercial activo")}
+        ${metric("Cerradas", closed, "resueltas o no aprobadas")}
+        ${metric("Registradas", commercialRequests.length, "máximo 200 más recientes")}
+      </section>
+      <article class="maps-license-card">
+        ${ui.sectionHeader({
+          className: "maps-license-section-head",
+          eyebrow: "MAP-Nano · gestión comercial",
+          title: "Solicitudes",
+          description: "Los datos de contacto se muestran solo a responsables de licencias para dar seguimiento y documentar la decisión."
+        })}
+        <div class="maps-license-toolbar maps-license-request-toolbar" role="search">
+          <label class="maps-license-search">
+            <span class="sr-only">Buscar solicitudes</span>
+            ${ui.icon("search", "sm")}
+            <input type="search" value="${escapeHtml(commercialRequestQuery)}" placeholder="Contacto, organización, correo o plan" data-map-commercial-request-query>
+          </label>
+          <label><span class="sr-only">Filtrar por estado</span>
+            <select data-map-commercial-request-status-filter>
+              ${filterOption("all", "Todos los estados", commercialRequestStatusFilter)}
+              ${Object.entries(contracts.COMMERCIAL_REQUEST_STATUS).filter(([key]) => key !== "unknown").map(([key, meta]) => filterOption(key, meta.label, commercialRequestStatusFilter)).join("")}
+            </select>
+          </label>
+          <span class="maps-license-result-count" data-map-commercial-request-count></span>
+        </div>
+        <div data-map-commercial-request-results>${commercialRequestResults()}</div>
+      </article>`;
+  }
+
+  function matchingCommercialRequests() {
+    const query = commercialRequestQuery.trim().toLocaleLowerCase("es");
+    return commercialRequests.filter(item => {
+      const text = [
+        item.contact_name,
+        item.contact_email,
+        item.organization_name,
+        item.country,
+        commercialPlanName(item.plan_key),
+        commercialRequestTypeLabel(item.request_type)
+      ].join(" ").toLocaleLowerCase("es");
+      return (!query || text.includes(query))
+        && (commercialRequestStatusFilter === "all" || item.status === commercialRequestStatusFilter);
+    });
+  }
+
+  function commercialRequestResults() {
+    const matches = matchingCommercialRequests();
+    queueMicrotask(() => {
+      const count = root?.querySelector("[data-map-commercial-request-count]");
+      if (count) count.textContent = `${matches.length} de ${commercialRequests.length}`;
+    });
+    if (!matches.length) {
+      return ui.emptyState({
+        className: "maps-license-empty",
+        icon: commercialRequests.length ? "search-x" : "activity",
+        title: commercialRequests.length ? "No hay coincidencias." : "No hay solicitudes comerciales.",
+        description: commercialRequests.length
+          ? "Prueba otra búsqueda o elimina el filtro de estado."
+          : "Las solicitudes de MAP-Nano aparecerán aquí cuando los clientes las envíen."
+      });
+    }
+    return `<div class="maps-license-table-wrap"><table class="maps-license-table maps-license-commercial-records">
+      <thead><tr><th>Solicitud</th><th>Contacto</th><th>Organización</th><th>Alcance</th><th>Estado</th><th>Recibida</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+      <tbody>${matches.map(item => `<tr>
+        <td><strong>${escapeHtml(commercialPlanName(item.plan_key))}</strong><small>${escapeHtml(commercialRequestTypeLabel(item.request_type))}</small></td>
+        <td><strong>${escapeHtml(item.contact_name)}</strong><small>${escapeHtml(item.contact_email)}</small></td>
+        <td><strong>${escapeHtml(item.organization_name)}</strong><small>${escapeHtml(item.country)}</small></td>
+        <td><strong>${Number(item.estimated_users || 0)} usuario(s)</strong><small>${escapeHtml(analysisVolumeLabel(item.analysis_volume))}</small></td>
+        <td>${commercialRequestStatusBadge(item)}</td>
+        <td>${formatDate(item.created_at)}</td>
+        <td><button class="btn btn-ghost btn-compact" type="button" data-map-commercial-request-detail="${escapeHtml(item.request_id)}">Ver detalle</button></td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+  }
+
+  function commercialPlanName(planKey) {
+    if (planKey === "project") return mapNanoPlans.PROJECT_ACCESS.name;
+    return mapNanoPlans.planById(planKey)?.name || `MAP-Nano · ${planKey || "Plan sin identificar"}`;
+  }
+
+  function commercialRequestTypeLabel(requestType) {
+    return ({
+      new_license: "Nueva licencia",
+      upgrade: "Ampliación o mejora",
+      institutional_quote: "Cotización institucional",
+      project_access: "Acceso por proyecto",
+      demo: "Demostración"
+    })[requestType] || "Solicitud comercial";
+  }
+
+  function analysisVolumeLabel(value) {
+    return ({
+      under_100: "Menos de 100 imágenes/mes",
+      "100_to_1000": "100–1,000 imágenes/mes",
+      over_1000: "Más de 1,000 imágenes/mes",
+      unknown: "Volumen por definir"
+    })[value] || "Volumen por definir";
+  }
+
+  function commercialRequestStatusBadge(item) {
+    const meta = contracts.commercialRequestStatus(item.status);
+    return ui.statusBadge({
+      label: meta.label,
+      status: meta.tone,
+      className: `maps-license-status commercial-${item.status}`
+    });
+  }
+
+  function renderCommercialRequestDetail() {
+    const target = root?.querySelector("[data-map-commercial-request-detail-content]");
+    if (!target) return;
+    const item = commercialRequests.find(request => request.request_id === selectedCommercialRequestId);
+    if (!item) {
+      target.innerHTML = ui.emptyState({ title: "Solicitud no disponible.", icon: "activity" });
+      return;
+    }
+    const canReview = ["pending", "in_review"].includes(item.status);
+    const reviewHistory = item.reviewed_at ? `
+      <section class="maps-license-commercial-review">
+        <h3>Última revisión</h3>
+        <p>${escapeHtml(item.reviewed_by_name || "Responsable de licencias")} · ${formatDate(item.reviewed_at)}</p>
+        ${item.resolution_note ? `<blockquote>${escapeHtml(item.resolution_note)}</blockquote>` : ""}
+      </section>` : "";
+    const cancellation = item.cancelled_at ? `
+      <section class="maps-license-commercial-review is-muted">
+        <h3>Cancelada por el solicitante</h3>
+        <p>${formatDate(item.cancelled_at)}</p>
+        ${item.cancellation_note ? `<blockquote>${escapeHtml(item.cancellation_note)}</blockquote>` : ""}
+      </section>` : "";
+    target.innerHTML = `
+      <header class="workspace-layer-head">
+        <div>
+          <span class="workspace-eyebrow">Solicitud MAP-Nano</span>
+          <h2>${escapeHtml(commercialPlanName(item.plan_key))}</h2>
+          <p>${escapeHtml(commercialRequestTypeLabel(item.request_type))} · recibida el ${formatDate(item.created_at)}</p>
+        </div>
+        ${closeLayerButton("Cerrar detalle")}
+      </header>
+      <div class="workspace-layer-body">
+        <div class="maps-license-detail-status">${commercialRequestStatusBadge(item)}</div>
+        <dl class="maps-license-detail-list">
+          <div><dt>Contacto</dt><dd>${escapeHtml(item.contact_name || "—")}</dd></div>
+          <div><dt>Correo</dt><dd>${escapeHtml(item.contact_email || "—")}</dd></div>
+          <div><dt>Organización</dt><dd>${escapeHtml(item.organization_name || "—")}</dd></div>
+          <div><dt>País</dt><dd>${escapeHtml(item.country || "—")}</dd></div>
+          <div><dt>Usuarios estimados</dt><dd>${Number(item.estimated_users || 0)}</dd></div>
+          <div><dt>Volumen</dt><dd>${escapeHtml(analysisVolumeLabel(item.analysis_volume))}</dd></div>
+        </dl>
+        <section class="maps-license-detail-section">
+          <h3>Contexto del solicitante</h3>
+          <p class="maps-license-commercial-message">${escapeHtml(item.message || "No dejó un mensaje adicional.")}</p>
+        </section>
+        ${reviewHistory}
+        ${cancellation}
+        ${canReview ? `
+          <section class="maps-license-detail-section">
+            <h3>Actualizar revisión</h3>
+            <p class="muted-text">Documenta una nota antes de resolver o declinar la solicitud.</p>
+            <form class="maps-license-form" data-map-commercial-request-review-form>
+              <input type="hidden" name="requestId" value="${escapeHtml(item.request_id)}">
+              <label>Estado
+                <select name="status" data-map-commercial-review-status required>
+                  ${filterOption("in_review", "En revisión", "in_review")}
+                  ${filterOption("resolved", "Resuelta", "in_review")}
+                  ${filterOption("declined", "No aprobada", "in_review")}
+                </select>
+              </label>
+              <label data-map-commercial-resolution-label>Nota de revisión (opcional)
+                <textarea name="resolutionNote" data-map-commercial-resolution-note maxlength="2000" rows="5" placeholder="Próximo paso, decisión o contexto comercial"></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit" data-map-control>Guardar revisión</button>
+            </form>
+          </section>` : ""}
+      </div>`;
+    syncCommercialReviewForm(target.querySelector("[data-map-commercial-request-review-form]"));
+    refreshIcons(target);
+  }
+
   function licenseLayers() {
     return `
       <dialog id="map-license-detail-dialog" class="workspace-layer is-drawer" data-map-license-detail-dialog>
         <div class="workspace-layer-panel" data-map-license-detail-content></div>
+      </dialog>
+      <dialog id="map-commercial-request-detail-dialog" class="workspace-layer is-drawer" data-map-commercial-request-detail-dialog>
+        <div class="workspace-layer-panel" data-map-commercial-request-detail-content></div>
       </dialog>
       <dialog id="map-issue-license-dialog" class="workspace-layer is-modal">
         <form class="workspace-layer-panel maps-license-form" data-issue-license-form>
@@ -708,6 +927,14 @@
       return;
     }
 
+    const commercialRequestButton = event.target.closest("[data-map-commercial-request-detail]");
+    if (commercialRequestButton) {
+      selectedCommercialRequestId = commercialRequestButton.dataset.mapCommercialRequestDetail;
+      renderCommercialRequestDetail();
+      ui.openLayer(root.querySelector("[data-map-commercial-request-detail-dialog]"), { trigger: commercialRequestButton });
+      return;
+    }
+
     const participantButton = event.target.closest("[data-load-participants]");
     if (participantButton) return void loadParticipants(participantButton.dataset.loadParticipants);
 
@@ -729,6 +956,10 @@
       if (list) list.innerHTML = cohortList();
       refreshIcons(list);
     }
+    if (event.target.matches("[data-map-commercial-request-query]")) {
+      commercialRequestQuery = event.target.value;
+      renderCommercialRequestResultRegion();
+    }
   }
 
   function handleChange(event) {
@@ -739,6 +970,13 @@
     if (event.target.matches("[data-map-license-product-filter]")) {
       licenseProductFilter = event.target.value;
       renderLicenseResultRegion();
+    }
+    if (event.target.matches("[data-map-commercial-request-status-filter]")) {
+      commercialRequestStatusFilter = event.target.value;
+      renderCommercialRequestResultRegion();
+    }
+    if (event.target.matches("[data-map-commercial-review-status]")) {
+      syncCommercialReviewForm(event.target.form);
     }
     if (event.target.matches('[name="planId"]')) {
       const seats = event.target.selectedOptions[0]?.dataset.seats;
@@ -753,6 +991,12 @@
     refreshIcons(results);
   }
 
+  function renderCommercialRequestResultRegion() {
+    const results = root.querySelector("[data-map-commercial-request-results]");
+    if (results) results.innerHTML = commercialRequestResults();
+    refreshIcons(results);
+  }
+
   async function handleSubmit(event) {
     const form = event.target.closest("form");
     if (!form || !root.contains(form)) return;
@@ -762,6 +1006,7 @@
     const data = Object.fromEntries(new FormData(form));
     try {
       setMessage("Guardando cambios...");
+      let successMessage = "Cambio guardado y acceso recalculado.";
       if (form.matches("[data-issue-license-form]")) {
         await repository.issueLicense({ ...data, startsAt: isoDate(data.startsAt), endsAt: data.endsAt ? isoDate(data.endsAt) : null });
       }
@@ -777,9 +1022,19 @@
       if (form.matches("[data-invite-participant]")) {
         await repository.inviteEvaluationParticipant(data.cohortId, data.email);
       }
+      if (form.matches("[data-map-commercial-request-review-form]")) {
+        await repository.reviewCommercialRequest({
+          requestId: data.requestId,
+          status: data.status,
+          resolutionNote: data.resolutionNote
+        });
+        successMessage = data.status === "in_review"
+          ? "La solicitud quedó marcada en revisión."
+          : "La decisión comercial quedó registrada.";
+      }
       ui.closeLayer(form.closest("dialog"), "success");
       form.reset();
-      await loadDashboard({ successMessage: "Cambio guardado y acceso recalculado." });
+      await loadDashboard({ successMessage });
     } catch (error) {
       setMessage(contracts.toError(error).message, "error");
       setBusy(false);
@@ -850,6 +1105,19 @@
     if (input) input.value = selectedCohortId;
   }
 
+  function syncCommercialReviewForm(form) {
+    if (!form) return;
+    const status = form.elements.status?.value;
+    const note = form.elements.resolutionNote;
+    const label = form.querySelector("[data-map-commercial-resolution-label]");
+    if (!note || !label) return;
+    const required = ["resolved", "declined"].includes(status);
+    note.required = required;
+    label.firstChild.textContent = required
+      ? "Nota de resolución (obligatoria)"
+      : "Nota de revisión (opcional)";
+  }
+
   function closeLayerButton(label) {
     return ui.action({
       label,
@@ -873,7 +1141,7 @@
   function setBusy(value) {
     busy = Boolean(value);
     ui.setBusy(root, busy, {
-      selector: "[data-map-control], [data-map-refresh], [data-revoke-license], [data-revoke-participant]",
+      selector: "[data-map-control], [data-map-refresh], [data-revoke-license], [data-revoke-participant], [data-map-commercial-request-detail]",
       label: "Actualizando plataforma MAP"
     });
   }

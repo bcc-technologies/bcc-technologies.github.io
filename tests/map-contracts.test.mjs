@@ -43,13 +43,16 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
     "get_my_license_dashboard",
     "get_my_platform_access",
     "get_my_internal_entitlements",
-    "get_current_map_trial_offer"
+    "get_current_map_trial_offer",
+    "get_my_map_nano_commercial_requests"
   ]);
   assert.equal(result.dashboard.licenses.length, 1);
   assert.equal(result.dashboard.members.length, 0);
   assert.deepEqual(Array.from(result.platformAccess), ["map.dev.access"]);
   assert.equal(result.entitlements.length, 1);
   assert.equal(result.trialOffer.duration_days, 14);
+  assert.equal(result.commercialRequestsAvailable, true);
+  assert.equal(result.commercialRequests.length, 0);
 });
 
 test("MAP repository translates transport failures into a stable domain error", async () => {
@@ -61,6 +64,54 @@ test("MAP repository translates transport failures into a stable domain error", 
     window.BCCWorkspaceMapRepository.client.getDashboard(),
     error => error.code === "network_error" && /No pudimos conectar con MAP/.test(error.message)
   );
+});
+
+test("staff commercial queue normalizes contact data and sends a scoped review decision", async () => {
+  const calls = [];
+  const window = runtime(async (name, parameters) => {
+    calls.push({ name, parameters });
+    if (name === "get_my_map_nano_commercial_request_queue") {
+      return {
+        data: [{
+          request_id: "request-1",
+          account_id: "account-1",
+          plan_key: "facility",
+          request_type: "new_license",
+          status: "pending",
+          contact_name: "Ana Laboratorio",
+          contact_email: "ana@example.com",
+          organization_name: "Laboratorio Norte",
+          country: "República Dominicana",
+          estimated_users: "5",
+          analysis_volume: "100_to_1000",
+          message: null,
+          created_at: "2026-07-28T00:00:00Z"
+        }, null],
+        error: null
+      };
+    }
+    if (name === "review_my_map_nano_commercial_request") return { data: "request-1", error: null };
+    return { data: null, error: null };
+  });
+
+  const queue = await window.BCCWorkspaceMapRepository.staff.getCommercialRequestQueue();
+  assert.equal(queue.available, true);
+  assert.equal(queue.requests.length, 1);
+  assert.equal(queue.requests[0].estimated_users, 5);
+  assert.equal(queue.requests[0].contact_email, "ana@example.com");
+
+  await window.BCCWorkspaceMapRepository.staff.reviewCommercialRequest({
+    requestId: "request-1",
+    status: "resolved",
+    resolutionNote: "Se preparó la propuesta."
+  });
+  assert.deepEqual(calls.map(call => call.name), [
+    "get_my_map_nano_commercial_request_queue",
+    "review_my_map_nano_commercial_request"
+  ]);
+  assert.equal(calls[1].parameters.p_request_id, "request-1");
+  assert.equal(calls[1].parameters.p_status, "resolved");
+  assert.equal(calls[1].parameters.p_resolution_note, "Se preparó la propuesta.");
 });
 
 test("legacy workspace license UI is no longer part of the dashboard manifest", () => {

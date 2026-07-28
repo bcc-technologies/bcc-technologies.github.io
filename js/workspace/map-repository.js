@@ -25,19 +25,51 @@
     }
   }
 
+  function isMissingCommercialRequestRpc(error) {
+    return error?.code === "invalid_response"
+      || /map_nano_commercial_request|schema cache|function/i.test(error?.message || "");
+  }
+
+  async function getCommercialRequests() {
+    try {
+      return {
+        available: true,
+        requests: contracts.normalizeCommercialRequests(await rpc("get_my_map_nano_commercial_requests"))
+      };
+    } catch (error) {
+      if (isMissingCommercialRequestRpc(error)) return { available: false, requests: [] };
+      throw error;
+    }
+  }
+
+  async function getCommercialRequestQueue() {
+    try {
+      return {
+        available: true,
+        requests: contracts.normalizeCommercialRequestQueue(await rpc("get_my_map_nano_commercial_request_queue"))
+      };
+    } catch (error) {
+      if (isMissingCommercialRequestRpc(error)) return { available: false, requests: [] };
+      throw error;
+    }
+  }
+
   async function getClientDashboard() {
-    const [dashboard, access, entitlements, trialOffer] = await Promise.all([
+    const [dashboard, access, entitlements, trialOffer, commercialRequestState] = await Promise.all([
       rpc("get_my_license_dashboard"),
       rpc("get_my_platform_access"),
       rpc("get_my_internal_entitlements"),
-      getTrialOffer()
+      getTrialOffer(),
+      getCommercialRequests()
     ]);
     return {
       dashboard: contracts.normalizeClientDashboard(dashboard),
       platformAccess: contracts.normalizePlatformAccess(access),
       effectiveAccess: contracts.normalizeEffectiveAccess(access),
       entitlements: contracts.normalizeEntitlements(entitlements),
-      trialOffer
+      trialOffer,
+      commercialRequests: commercialRequestState.requests,
+      commercialRequestsAvailable: commercialRequestState.available
     };
   }
 
@@ -60,11 +92,34 @@
     }),
     releaseSeat: assignmentId => rpc("release_my_license_assignment", {
       p_assignment_id: assignmentId
+    }),
+    getCommercialRequests,
+    createCommercialRequest: values => rpc("create_my_map_nano_commercial_request", {
+      p_plan_key: values.planKey,
+      p_request_type: values.requestType,
+      p_contact_name: values.contactName,
+      p_contact_email: values.contactEmail,
+      p_organization_name: values.organizationName,
+      p_country: values.country,
+      p_estimated_users: Number(values.estimatedUsers),
+      p_analysis_volume: values.analysisVolume,
+      p_message: values.message || null,
+      p_account_id: values.accountId || null
+    }),
+    cancelCommercialRequest: (requestId, cancellationNote = null) => rpc("cancel_my_map_nano_commercial_request", {
+      p_request_id: requestId,
+      p_cancellation_note: cancellationNote
     })
   });
 
   const staff = Object.freeze({
     getDashboard: getAdminDashboard,
+    getCommercialRequestQueue,
+    reviewCommercialRequest: values => rpc("review_my_map_nano_commercial_request", {
+      p_request_id: values.requestId,
+      p_status: values.status,
+      p_resolution_note: values.resolutionNote || null
+    }),
     issueLicense: values => rpc("issue_my_platform_license", {
       p_account_id: values.accountId,
       p_plan_id: values.planId,
