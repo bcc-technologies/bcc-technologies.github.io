@@ -26,12 +26,12 @@ function hydrateUser(user) {
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = window.BCCWorkspaceUtils.roleLabel(user.role); });
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || (window.BCCWorkspaceI18n?.t?.("Sin compañía registrada") || "Sin compañía registrada"); });
   document.querySelectorAll("[data-setup-organization]").forEach(step => {
     const configured = Boolean(String(user.company || "").trim());
     step.classList.toggle("complete", configured);
     const status = step.querySelector("[data-setup-organization-status]");
-    if (status) status.textContent = configured ? "Configurada" : "Opcional";
+    if (status) status.textContent = window.BCCWorkspaceI18n?.t?.(configured ? "Configurada" : "Opcional") || (configured ? "Configurada" : "Opcional");
   });
   const completed = [user.name, user.email, user.company, user.title].filter(Boolean).length;
   document.querySelectorAll("[data-profile-completion]").forEach(el => { el.textContent = `${completed}/4`; });

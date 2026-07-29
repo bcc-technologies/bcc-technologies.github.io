@@ -50,6 +50,7 @@
     instance.ready = (async () => {
       instance.value = await initialize(moduleContext);
       if (abortController.signal.aborted || mounted.get(root) !== instance) return instance;
+      window.BCCWorkspaceI18n?.localizeTree?.(root);
       root.dataset.workspaceModuleReady = "true";
       root.dataset.workspaceModuleId = id;
       return instance;

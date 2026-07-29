@@ -3,6 +3,7 @@
   window.BCCWorkspaceIconLibrary.registerCatalog("core", {
     "arrow-left": '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
     "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    "arrow-up-right": '<path d="M7 17 17 7"/><path d="M7 7h10v10"/>',
     "badge-check": '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.75z"/><path d="m9 12 2 2 4-4"/>',
     "bar-chart-3": '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
     "bell": '<path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.85 18 12.57 18 8a6 6 0 0 0-12 0c0 4.57-1.41 5.85-2.74 7.33Z"/>',

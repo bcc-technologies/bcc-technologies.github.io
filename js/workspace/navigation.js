@@ -1,4 +1,5 @@
 (() => {
+  const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
   const STORAGE_VERSION = 2;
   const storagePrefix = `bcc-workspace-nav:v${STORAGE_VERSION}`;
   const NAVIGATION = {
@@ -134,12 +135,14 @@
   }
 
   function renderLink(item, groupLabel) {
+    const translatedGroupLabel = translate(groupLabel);
+    const translatedLabel = translate(item.label);
     const link = document.createElement("a");
     link.href = item.href;
     link.className = "workspace-nav-item";
-    link.dataset.navLabel = item.label;
-    link.dataset.navGroupLabel = groupLabel;
-    link.setAttribute("aria-label", item.label);
+    link.dataset.navLabel = translatedLabel;
+    link.dataset.navGroupLabel = translatedGroupLabel;
+    link.setAttribute("aria-label", translatedLabel);
     if (item.active) link.classList.add("active");
     access(link, item);
     if (item.icon) {
@@ -148,18 +151,19 @@
       link.append(icon);
     }
     const label = document.createElement("span");
-    label.textContent = item.label;
+    label.textContent = translatedLabel;
     link.append(label);
     link.addEventListener("mouseenter", () => {
       const clipped = label.scrollWidth > label.clientWidth;
       link.title = document.body.classList.contains("workspace-collapsed")
-        ? `${groupLabel}: ${item.label}`
-        : clipped ? item.label : "";
+        ? `${translatedGroupLabel}: ${translatedLabel}`
+        : clipped ? translatedLabel : "";
     });
     return link;
   }
 
   function renderGroup(definition, navKey) {
+    const translatedLabel = translate(definition.label);
     const group = document.createElement("section");
     const childrenId = `workspace-nav-${navKey}-${definition.id}`;
     group.className = "workspace-nav-group";
@@ -171,11 +175,11 @@
     trigger.className = "workspace-nav-group-trigger";
     trigger.type = "button";
     trigger.setAttribute("aria-controls", childrenId);
-    trigger.dataset.navLabel = definition.label;
+    trigger.dataset.navLabel = translatedLabel;
     const chevron = document.createElement("i");
     chevron.dataset.lucide = "chevron-right";
     const label = document.createElement("span");
-    label.textContent = definition.label;
+    label.textContent = translatedLabel;
     trigger.append(chevron, label);
 
     const children = document.createElement("div");

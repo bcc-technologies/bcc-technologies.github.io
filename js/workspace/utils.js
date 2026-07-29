@@ -7,6 +7,7 @@
     DEPARTMENT_OPTIONS,
     WORKSPACE_PERMISSION_LABELS: PERMISSION_LABELS
   } = AccessContracts;
+  const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -23,11 +24,11 @@
   }
 
   function roleLabel(role, options = BASE_ROLE_OPTIONS) {
-    return options.find(option => option.value === role)?.label || role;
+    return translate(options.find(option => option.value === role)?.label || role);
   }
 
   function permissionLabel(permission, labels = PERMISSION_LABELS) {
-    return labels[permission] || "";
+    return translate(labels[permission] || "");
   }
 
   function labelsFor(values = [], options = [], config = {}) {
@@ -35,7 +36,7 @@
     const source = Array.isArray(values) ? values : [];
     const active = unique ? [...new Set(source)] : source;
     const labels = new Map(options.map(option => [option.value, option.label]));
-    return active.map(value => labels.get(value) || value).join(", ");
+    return active.map(value => translate(labels.get(value) || value)).join(", ");
   }
 
   function sameSet(left = [], right = []) {
@@ -54,7 +55,7 @@
   function formatDate(value, options = {}) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return options.empty ?? "";
-    return date.toLocaleDateString(options.locale || "es-DO", options.dateOptions || {
+    return date.toLocaleDateString(options.locale || (window.BCCWorkspaceI18n?.locale?.() === "en" ? "en-US" : "es-DO"), options.dateOptions || {
       day: "numeric",
       month: "short",
       year: "numeric"
@@ -64,7 +65,7 @@
   function formatDateTime(value, options = {}) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return options.empty ?? "-";
-    return date.toLocaleString(options.locale || "es-DO", options.dateOptions || {
+    return date.toLocaleString(options.locale || (window.BCCWorkspaceI18n?.locale?.() === "en" ? "en-US" : "es-DO"), options.dateOptions || {
       month: "short",
       day: "2-digit",
       hour: "2-digit",
@@ -74,7 +75,7 @@
 
   function formatLocalDate(value, options = {}) {
     if (!value) return options.empty ?? "";
-    return new Date(`${value}T12:00:00`).toLocaleDateString(options.locale || "es-DO", options.dateOptions || {
+    return new Date(`${value}T12:00:00`).toLocaleDateString(options.locale || (window.BCCWorkspaceI18n?.locale?.() === "en" ? "en-US" : "es-DO"), options.dateOptions || {
       day: "numeric",
       month: "short"
     });
@@ -101,16 +102,16 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "workspace-message-copy";
-    button.textContent = "Copiar detalle";
+    button.textContent = translate("Copiar detalle");
     button.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(content);
-        button.textContent = "Copiado";
+        button.textContent = translate("Copiado");
         window.setTimeout(() => {
-          button.textContent = "Copiar detalle";
+          button.textContent = translate("Copiar detalle");
         }, 1400);
       } catch {
-        button.textContent = "No se pudo copiar";
+        button.textContent = translate("No se pudo copiar");
       }
     });
     target.append(button);

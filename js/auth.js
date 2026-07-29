@@ -15,6 +15,9 @@ const {
 
 let currentPageUser = null;
 let currentUserPromise = null;
+let authStateListenerBound = false;
+const AUTH_DIAGNOSTIC_STORAGE_KEY = "bcc:auth-diagnostics:v1";
+const AUTH_DIAGNOSTIC_LIMIT = 16;
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
 function normalizeList(value, allowed) {
@@ -186,13 +189,111 @@ function reportSupabaseError(context, error) {
 }
 
 async function clearInvalidSupabaseSession(supabase, error) {
+  if (!isTerminalSessionFailure(error)) return false;
+  try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+  return true;
+}
+
+function authErrorCategory(error) {
+  return window.BCCSupabaseErrors?.classify?.(error) || "unknown";
+}
+
+function isTerminalSessionFailure(error) {
+  const category = authErrorCategory(error);
   const code = String(error?.code || "").toLowerCase();
   const message = String(error?.message || "").toLowerCase();
-  const invalidRefreshToken = code === "refresh_token_not_found"
+  return category === "auth_session_missing"
+    || category === "auth_refresh_invalid"
+    || code === "refresh_token_not_found"
     || message.includes("refresh token not found")
     || message.includes("invalid refresh token");
-  if (!invalidRefreshToken) return;
-  try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+}
+
+function isEnglishWorkspace() {
+  return String(document.documentElement?.lang || "").toLowerCase().startsWith("en");
+}
+
+function authCopy(key) {
+  const english = isEnglishWorkspace();
+  const copy = {
+    unavailableTitle: english ? "We could not open your workspace" : "No pudimos abrir tu espacio",
+    retry: english ? "Try again" : "Reintentar",
+    returnToSite: english ? "Back to website" : "Volver al sitio",
+    network: english
+      ? "Your session is still stored on this device, but the service could not be reached. Check your connection and try again."
+      : "Tu sesión sigue guardada en este dispositivo, pero no pudimos conectar con el servicio. Revisa tu conexión y vuelve a intentarlo.",
+    server: english
+      ? "The service is temporarily unavailable. Your session has not been closed; please try again shortly."
+      : "El servicio no está disponible temporalmente. Tu sesión no se ha cerrado; vuelve a intentarlo en unos momentos.",
+    permission: english
+      ? "Your session is active, but we could not read the permissions for this workspace. Try again; if it persists, contact support."
+      : "Tu sesión está activa, pero no pudimos leer los permisos de este espacio. Inténtalo otra vez; si continúa, contacta a soporte.",
+    profileMissing: english
+      ? "Your account is still being prepared. Wait a moment and try again."
+      : "Tu cuenta todavía se está preparando. Espera un momento y vuelve a intentarlo.",
+    generic: english
+      ? "We could not verify the information needed to open this workspace. Your session has not been closed."
+      : "No pudimos verificar la información necesaria para abrir este espacio. Tu sesión no se ha cerrado."
+  };
+  return copy[key] || "";
+}
+
+function authRecoveryMessage(state) {
+  if (state?.reason === "profile_missing") return authCopy("profileMissing");
+  if (state?.category === "network") return authCopy("network");
+  if (state?.category === "server") return authCopy("server");
+  if (state?.category === "permission_denied") return authCopy("permission");
+  return authCopy("generic");
+}
+
+function recordAuthDiagnostic(event, detail = {}) {
+  const entry = {
+    at: new Date().toISOString(),
+    event: String(event || "unknown").slice(0, 80),
+    category: String(detail.category || "").slice(0, 80),
+    reason: String(detail.reason || "").slice(0, 80),
+    path: String(location.pathname || "/").slice(0, 240)
+  };
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(AUTH_DIAGNOSTIC_STORAGE_KEY) || "[]");
+    const history = Array.isArray(stored) ? stored.slice(-AUTH_DIAGNOSTIC_LIMIT + 1) : [];
+    history.push(entry);
+    window.sessionStorage.setItem(AUTH_DIAGNOSTIC_STORAGE_KEY, JSON.stringify(history));
+  } catch {}
+  document.dispatchEvent?.(new CustomEvent("bcc:auth-state", { detail: entry }));
+  return entry;
+}
+
+function authResolution(kind, details = {}) {
+  return Object.freeze({
+    kind,
+    user: details.user || null,
+    category: details.category || "",
+    reason: details.reason || "",
+    error: details.error || null
+  });
+}
+
+function readAuthDiagnostics() {
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(AUTH_DIAGNOSTIC_STORAGE_KEY) || "[]");
+    return Array.isArray(stored) ? stored : [];
+  } catch {
+    return [];
+  }
+}
+
+function bindAuthStateListener(supabase) {
+  if (authStateListenerBound || !supabase?.auth?.onAuthStateChange) return;
+  authStateListenerBound = true;
+  supabase.auth.onAuthStateChange((event, session) => {
+    const normalizedEvent = String(event || "UNKNOWN");
+    if (normalizedEvent === "SIGNED_OUT" || normalizedEvent === "USER_UPDATED") currentPageUser = null;
+    currentUserPromise = null;
+    recordAuthDiagnostic(`supabase:${normalizedEvent.toLowerCase()}`, {
+      reason: session ? "session_present" : "session_absent"
+    });
+  });
 }
 
 async function waitForSupabaseSession(timeoutMs = 5000) {
@@ -319,85 +420,111 @@ async function platformPermissionsForCurrentUser(supabase) {
   }
 }
 
-async function currentUser() {
-  if (currentPageUser) return currentPageUser;
+async function resolveLocalFallback() {
+  if (!window.BCC_RUNTIME?.allowLocalAccountFallback) return null;
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+    if (!res.ok) return null;
+    const payload = await res.json().catch(() => null);
+    return payload?.ok && payload?.user ? payload.user : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+async function resolveAuthState() {
+  if (currentPageUser) return authResolution("authenticated", { user: currentPageUser });
   if (currentUserPromise) return currentUserPromise;
 
   currentUserPromise = (async () => {
+    let supabase = null;
     try {
-      const supabase = await loadSupabaseClient();
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      supabase = await loadSupabaseClient();
+      bindAuthStateListener(supabase);
 
-      if (userData?.user) {
-        const profileRequest = supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userData.user.id)
-          .maybeSingle();
-        const accessRequest = platformPermissionsForCurrentUser(supabase);
-        const [profileResult, platformPermissions] = await Promise.all([profileRequest, accessRequest]);
-        let profile = profileResult.data;
-
-        if (profileResult.error) throw profileResult.error;
-
-        if (!profile) {
-          const metadata = userData.user.user_metadata || {};
-          const parsed = parsePersonName(metadata.full_name || metadata.name || "");
-          const payload = {
-            id: userData.user.id,
-            email: userData.user.email || "",
-            full_name: parsed.fullName,
-            first_name: parsed.firstName,
-            middle_names: parsed.middleNames,
-            first_last_name: parsed.firstLastName,
-            second_last_name: parsed.secondLastName,
-            display_name: parsed.displayName,
-            company: metadata.company || "",
-            title: metadata.title || "",
-            role: "client",
-            staff_roles: [],
-            departments: [],
-            custom_roles: []
-          };
-          const created = await supabase.from("profiles").insert(payload).select("*").single();
-          if (created.error) throw created.error;
-          profile = created.data;
+      // In the browser this restores and refreshes the persisted session. The
+      // profile request below remains the server-validated authority for roles.
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        const category = authErrorCategory(sessionError);
+        if (await clearInvalidSupabaseSession(supabase, sessionError)) {
+          recordAuthDiagnostic("session_unavailable", { category, reason: "terminal_session_error" });
+          return authResolution("unauthenticated", { category, reason: "terminal_session_error" });
         }
-
-        const user = publicProfile(profile, userData.user);
-        currentPageUser = {
-          ...user,
-          permissions: [...new Set([...(user?.permissions || []), ...platformPermissions])]
-        };
-        return currentPageUser;
+        reportSupabaseError("No se pudo restaurar la sesión.", sessionError);
+        recordAuthDiagnostic("session_unavailable", { category, reason: "session_restore_error" });
+        return authResolution("recoverable_error", { category, reason: "session_restore_error", error: sessionError });
       }
+
+      const session = sessionData?.session;
+      if (!session?.user?.id) {
+        recordAuthDiagnostic("session_unavailable", { reason: "no_session" });
+        return authResolution("unauthenticated", { reason: "no_session" });
+      }
+
+      const profileRequest = supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      const accessRequest = platformPermissionsForCurrentUser(supabase);
+      const [profileResult, platformPermissions] = await Promise.all([profileRequest, accessRequest]);
+
+      if (profileResult.error) {
+        const category = authErrorCategory(profileResult.error);
+        if (await clearInvalidSupabaseSession(supabase, profileResult.error)) {
+          recordAuthDiagnostic("session_unavailable", { category, reason: "terminal_profile_auth_error" });
+          return authResolution("unauthenticated", { category, reason: "terminal_profile_auth_error" });
+        }
+        reportSupabaseError("No se pudo cargar el perfil del espacio.", profileResult.error);
+        recordAuthDiagnostic("profile_unavailable", { category, reason: "profile_query_error" });
+        return authResolution("recoverable_error", { category, reason: "profile_query_error", error: profileResult.error });
+      }
+
+      if (!profileResult.data) {
+        // Profile provisioning belongs to the auth/database onboarding path. Do
+        // not turn a read of the dashboard into a client-side write operation.
+        recordAuthDiagnostic("profile_unavailable", { reason: "profile_missing" });
+        return authResolution("recoverable_error", { reason: "profile_missing" });
+      }
+
+      const user = publicProfile(profileResult.data, session.user);
+      currentPageUser = {
+        ...user,
+        permissions: [...new Set([...(user?.permissions || []), ...platformPermissions])]
+      };
+      recordAuthDiagnostic("authenticated", { reason: "profile_ready" });
+      return authResolution("authenticated", { user: currentPageUser });
     } catch (error) {
-      reportSupabaseError("No se pudo resolver el usuario autenticado.", error);
-      const supabase = window.BCCSupabaseClient;
-      if (supabase) await clearInvalidSupabaseSession(supabase, error);
-    }
-
-    if (window.BCC_RUNTIME?.allowLocalAccountFallback) try {
-      const res = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
-      if (!res.ok) return null;
-      const payload = await res.json().catch(() => null);
-      if (payload?.ok && payload?.user) {
-        currentPageUser = payload.user;
-        return payload.user;
+      const category = authErrorCategory(error);
+      if (supabase && await clearInvalidSupabaseSession(supabase, error)) {
+        recordAuthDiagnostic("session_unavailable", { category, reason: "terminal_auth_error" });
+        return authResolution("unauthenticated", { category, reason: "terminal_auth_error" });
       }
-    } catch (_error) {
-      // Ignore and continue with a null user.
+      reportSupabaseError("No se pudo resolver el usuario autenticado.", error);
+      recordAuthDiagnostic("auth_unavailable", { category, reason: "unexpected_auth_error" });
+      return authResolution("recoverable_error", { category, reason: "unexpected_auth_error", error });
     }
-
-    return null;
   })();
 
   try {
-    return await currentUserPromise;
+    const resolved = await currentUserPromise;
+    if (resolved.kind !== "authenticated") {
+      const fallbackUser = await resolveLocalFallback();
+      if (fallbackUser) {
+        currentPageUser = fallbackUser;
+        return authResolution("authenticated", { user: fallbackUser });
+      }
+    }
+    return resolved;
   } finally {
     currentUserPromise = null;
   }
+}
+
+async function currentUser() {
+  const state = await resolveAuthState();
+  return state.user;
 }
 
 
@@ -419,6 +546,8 @@ function authMessage(text, tone = "error") {
 }
 
 function routeForUser(user) {
+  const localizedRoute = window.BCCI18n?.workspaceRouteForUser?.(user);
+  if (localizedRoute) return localizedRoute;
   if (user?.permissions?.includes("admin:view")) return "/staff-dashboard.html";
   if (user?.permissions?.includes("staff:view")) return "/staff-dashboard.html";
   return "/dashboard.html";
@@ -435,6 +564,73 @@ function isSupabaseAuthCallbackLocation() {
   return query.has("code") || isSupabaseAuthHash();
 }
 
+function currentReturnPath() {
+  const hash = isSupabaseAuthHash() ? "" : String(location.hash || "");
+  return `${location.pathname || "/"}${location.search || ""}${hash}`;
+}
+
+function safeLocalReturnPath(value) {
+  if (!value) return "";
+  try {
+    const target = new URL(String(value), location.origin);
+    if (target.origin !== location.origin || !target.pathname.startsWith("/")) return "";
+    const hash = isSupabaseAuthHash(target.hash) ? "" : target.hash;
+    return `${target.pathname}${target.search}${hash}`;
+  } catch {
+    return "";
+  }
+}
+
+function loginPath() {
+  return isEnglishWorkspace() ? "/en/login.html" : "/login.html";
+}
+
+function loginPathForCurrentLocation() {
+  return `${loginPath()}?next=${encodeURIComponent(currentReturnPath())}`;
+}
+
+function renderAuthRecovery(state) {
+  const host = document.querySelector(".workspace-main") || document.querySelector("main") || document.body;
+  if (!host) return;
+
+  let recovery = document.querySelector("[data-auth-recovery]");
+  if (!recovery) {
+    recovery = document.createElement("section");
+    recovery.className = "workspace-auth-recovery";
+    recovery.dataset.authRecovery = "true";
+    recovery.setAttribute("role", "status");
+    recovery.setAttribute("aria-live", "polite");
+    host.replaceChildren(recovery);
+  }
+
+  recovery.replaceChildren();
+  const panel = document.createElement("div");
+  panel.className = "workspace-auth-recovery-panel";
+  const title = document.createElement("h1");
+  title.textContent = authCopy("unavailableTitle");
+  const message = document.createElement("p");
+  message.textContent = authRecoveryMessage(state);
+  const actions = document.createElement("div");
+  actions.className = "workspace-auth-recovery-actions";
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "btn btn-primary";
+  retry.textContent = authCopy("retry");
+  retry.addEventListener("click", () => window.location.reload());
+  const back = document.createElement("a");
+  back.className = "text-link";
+  back.href = isEnglishWorkspace() ? "/en/index.html" : "/index.html";
+  back.textContent = authCopy("returnToSite");
+  actions.append(retry, back);
+  panel.append(title, message, actions);
+  recovery.append(panel);
+  document.body.dataset.authRecovery = "true";
+  document.dispatchEvent?.(new CustomEvent("bcc:auth-recovery", {
+    detail: { category: state?.category || "", reason: state?.reason || "" }
+  }));
+  queueMicrotask(() => retry.focus());
+}
+
 async function requireAuth({ admin = false, roles = null, permission = "" } = {}) {
   try {
     if (isSupabaseAuthCallbackLocation()) {
@@ -442,11 +638,17 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
       if (isSupabaseAuthHash()) history.replaceState(null, "", location.pathname + location.search);
     }
 
-    const user = await currentUser();
-    if (!user) {
-      window.location.replace(`/login.html?next=${encodeURIComponent(location.pathname)}`);
+    const state = await resolveAuthState();
+    if (state.kind === "unauthenticated") {
+      window.location.replace(loginPathForCurrentLocation());
       return null;
     }
+    if (state.kind !== "authenticated" || !state.user) {
+      renderAuthRecovery(state);
+      return null;
+    }
+
+    const user = state.user;
     window.performance?.mark?.("bcc:auth-ready");
     document.dispatchEvent?.(new CustomEvent("bcc:auth-ready"));
     if (admin && !user.permissions.includes("admin:view")) {
@@ -463,18 +665,20 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
     }
     return user;
   } catch (error) {
-    console.error(error);
-    window.location.replace(`/login.html?next=${encodeURIComponent(location.pathname)}`);
+    const category = authErrorCategory(error);
+    reportSupabaseError("No se pudo preparar el acceso al espacio.", error);
+    recordAuthDiagnostic("auth_unavailable", { category, reason: "require_auth_error" });
+    renderAuthRecovery(authResolution("recoverable_error", { category, reason: "require_auth_error", error }));
     return null;
   }
 }
 
 async function logout() {
   const supabase = await loadSupabaseClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
   currentPageUser = null;
   currentUserPromise = null;
-  window.location.assign("/login.html");
+  window.location.assign(loginPath());
 }
 
 async function updateProfile(payload) {
@@ -641,7 +845,7 @@ async function bccApi(path, options = {}) {
   }
 
   if (path === "/api/auth/logout") {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     currentPageUser = null;
     currentUserPromise = null;
     return { ok: true };
@@ -2398,7 +2602,17 @@ function publicWorkspaceProspectActivity(activity) {
   };
 }
 
-window.BCCAuth = { api: bccApi, requireAuth, logout, routeForUser, currentUser, updateProfile, loadSupabaseClient };
+window.BCCAuth = {
+  api: bccApi,
+  requireAuth,
+  logout,
+  routeForUser,
+  currentUser,
+  resolveAuthState,
+  readAuthDiagnostics,
+  updateProfile,
+  loadSupabaseClient
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-account-trigger]").forEach(button => {
@@ -2421,7 +2635,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll("[data-logout]").forEach(button => {
-    button.addEventListener("click", () => logout().catch(() => window.location.assign("/login.html")));
+    button.addEventListener("click", () => logout().catch(() => window.location.assign(loginPath())));
   });
 
   const loginForm = document.querySelector("[data-login-form]");
@@ -2439,7 +2653,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (error) throw error;
           if (!error && data?.user) {
             const user = await currentUser();
-            const next = new URLSearchParams(location.search).get("next");
+            const next = safeLocalReturnPath(new URLSearchParams(location.search).get("next"));
             window.location.assign(next || routeForUser(user || publicProfile(null, data.user)));
             return;
           }
@@ -2573,7 +2787,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (error) throw error;
         authMessage("Contraseña actualizada. Ya puedes entrar con tu nueva contraseña.", "ok");
         resetPasswordForm.hidden = true;
-        setTimeout(() => window.location.assign("/login.html"), 1600);
+        setTimeout(() => window.location.assign(loginPath()), 1600);
       } catch (error) {
         authMessage(error.message);
       }

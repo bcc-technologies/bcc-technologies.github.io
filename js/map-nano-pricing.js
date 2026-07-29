@@ -4,6 +4,7 @@
 
   const root = document.querySelector("[data-map-nano-pricing]");
   if (!root) return;
+  const localizeMarkup = value => window.BCCMapNanoLocale?.markup?.(value) || value;
 
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({
     "&": "&amp;",
@@ -33,7 +34,7 @@
   const renderPlan = plan => {
     const titleId = `map-pricing-${plan.id}-title`;
     const limits = limitItems(plan);
-    return `<article class="map-pricing-plan is-${escapeHtml(plan.id)} ${plan.highlighted ? "is-highlighted" : ""}" aria-labelledby="${titleId}">
+    return localizeMarkup(`<article class="map-pricing-plan is-${escapeHtml(plan.id)} ${plan.highlighted ? "is-highlighted" : ""}" aria-labelledby="${titleId}">
       <header class="map-pricing-plan-head">
         <div>
           ${plan.badge ? `<span class="map-pricing-badge">${escapeHtml(plan.badge)}</span>` : ""}
@@ -50,10 +51,10 @@
       <div class="map-pricing-plan-features"><h3>Incluye</h3><ul>${plan.features.map(feature => `<li>${escapeHtml(feature)}</li>`).join("")}</ul></div>
       ${plan.exclusions?.length ? `<details class="map-pricing-exclusions"><summary>Limitaciones de este nivel</summary><ul>${plan.exclusions.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></details>` : ""}
       <a class="btn ${plan.highlighted ? "btn-primary" : "btn-ghost"} map-pricing-cta" href="${escapeHtml(catalog.requestUrl(plan.id))}" data-map-pricing-plan="${escapeHtml(plan.id)}" data-analytics-event="${plan.id === "institutional" ? "contact_sales_clicked" : "pricing_plan_selected"}" data-analytics-label="${escapeHtml(plan.name)}">${escapeHtml(plan.cta.label)}</a>
-    </article>`;
+    </article>`);
   };
 
-  const renderComparison = () => `<details class="map-pricing-comparison" id="comparar" data-map-pricing-comparison>
+  const renderComparison = () => localizeMarkup(`<details class="map-pricing-comparison" id="comparar" data-map-pricing-comparison>
     <summary aria-labelledby="map-pricing-comparison-title">
       <span class="map-pricing-comparison-summary-copy"><strong id="map-pricing-comparison-title"><span aria-hidden="true">↔</span> Comparar capacidades</strong><small>4 planes · ${catalog.COMPARISON_FEATURES.length} capacidades</small></span>
       <span class="map-pricing-comparison-toggle"><span aria-hidden="true"></span><span>Ver detalle</span></span>
@@ -72,14 +73,14 @@
         ${catalog.PLANS.map(plan => `<details><summary>${escapeHtml(plan.name.replace("MAP-Nano ", ""))}</summary><ul>${catalog.COMPARISON_FEATURES.map(feature => `<li><span>${escapeHtml(feature.label)}</span>${planCell(plan, feature)}</li>`).join("")}</ul></details>`).join("")}
       </div>
     </div>
-  </details>`;
+  </details>`);
 
   const renderProject = () => {
     const project = catalog.PROJECT_ACCESS;
-    return `<section class="map-pricing-project" aria-labelledby="map-pricing-project-title">
+    return localizeMarkup(`<section class="map-pricing-project" aria-labelledby="map-pricing-project-title">
       <div><p class="map-pricing-eyebrow">Alternativa por proyecto</p><h2 id="map-pricing-project-title">${escapeHtml(project.name)}</h2><p>${escapeHtml(project.description)}</p></div>
       <div class="map-pricing-project-action"><strong>${escapeHtml(catalog.projectPriceLabel(project))}</strong><span>El alcance puede incluir acceso temporal de 30 días o análisis asistido.</span><a class="btn btn-ghost" href="${escapeHtml(catalog.requestUrl(project.id))}" data-map-pricing-plan="project" data-analytics-event="project_access_requested" data-analytics-label="MAP-Nano Project">${escapeHtml(project.cta.label)}</a></div>
-    </section>`;
+    </section>`);
   };
 
   const faqs = [
@@ -95,12 +96,12 @@
     ["¿Facility e Institutional pueden comprarse directamente?", "No. Ambos niveles comienzan con una solicitud comercial o cotización para confirmar usuarios, soporte, despliegue y alcance." ]
   ];
 
-  const renderFaq = () => `<section class="map-pricing-section map-pricing-faq" aria-labelledby="map-pricing-faq-title">
+  const renderFaq = () => localizeMarkup(`<section class="map-pricing-section map-pricing-faq" aria-labelledby="map-pricing-faq-title">
     <div class="map-pricing-section-head"><p class="map-pricing-eyebrow">Preguntas frecuentes</p><h2 id="map-pricing-faq-title">Decisiones informadas antes de contratar</h2></div>
     <div class="map-pricing-faq-list">${faqs.map(([question, answer], index) => `<details data-map-pricing-faq="${index}"><summary>${escapeHtml(question)}</summary><p>${escapeHtml(answer)}</p></details>`).join("")}</div>
-  </section>`;
+  </section>`);
 
-  root.innerHTML = `
+  root.innerHTML = localizeMarkup(`
     <section class="map-pricing-hero">
       <div class="container map-pricing-hero-inner"><p class="map-pricing-eyebrow">MAP-Nano</p><h1>Planes de MAP-Nano</h1><p>Automatización y trazabilidad para análisis de microestructuras, desde el trabajo individual hasta implementaciones institucionales.</p><div class="map-pricing-hero-actions"><a class="btn btn-primary" href="#planes">Ver planes</a><a class="btn btn-ghost" href="#savings-calculator" data-map-pricing-savings>Calcular ahorro</a><a class="btn btn-ghost" href="#comparar" data-map-pricing-compare>Comparar capacidades</a></div></div>
     </section>
@@ -111,7 +112,7 @@
       <div data-map-nano-savings-calculator></div>
       <section class="map-pricing-return" aria-labelledby="map-pricing-return-title"><div><p class="map-pricing-eyebrow">Uso y retorno</p><h2 id="map-pricing-return-title">El valor depende del flujo de trabajo</h2></div><div><p>En laboratorios con flujo regular de análisis, el ahorro de tiempo técnico puede compensar total o parcialmente el costo de la licencia. El resultado depende del volumen de imágenes, los procedimientos actuales y el nivel de revisión requerido.</p><p>MAP-Nano no reemplaza el microscopio ni elimina la revisión técnica. Reduce trabajo repetitivo y ayuda a estandarizar el análisis.</p></div></section>
       ${renderFaq()}
-    </main>`;
+    </main>`);
 
   window.BCCMapNanoSavingsCalculator?.render(root.querySelector("[data-map-nano-savings-calculator]"), { context: "public" });
 

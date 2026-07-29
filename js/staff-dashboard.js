@@ -1,6 +1,8 @@
 let staffCurrentUser = null;
 let staffWorkspaceRouter = null;
 let accountEmailManagerBound = false;
+const workspaceText = value => window.BCCWorkspaceI18n?.t?.(value) || value;
+const localizeLabels = value => String(value || "").split(", ").map(workspaceText).join(", ");
 
 const staffFeatureRegistry = window.BCCWorkspaceFeatureRegistry;
 staffFeatureRegistry.register("staff");
@@ -41,23 +43,25 @@ function runWorkspaceStep(label, callback) {
 function hydrateUser(user) {
   const staffRoles = Array.isArray(user.staffRoles) ? user.staffRoles : [];
   const departments = Array.isArray(user.departments) ? user.departments : [];
-  const permissions = Array.isArray(user.permissions) ? user.permissions : [];
   const cmsEnabled = canAccess(user, "cms:access");
+  const staffRoleSummary = window.BCCWorkspaceUtils.labelsFor(staffRoles, window.BCCWorkspaceUtils.STAFF_ROLE_OPTIONS, { unique: false });
+  const departmentSummary = window.BCCWorkspaceUtils.labelsFor(departments, window.BCCWorkspaceUtils.DEPARTMENT_OPTIONS, { unique: false });
   document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.displayName || user.name; });
   document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
   document.querySelectorAll("[data-user-role]").forEach(el => { el.textContent = window.BCCWorkspaceUtils.roleLabel(user.role); });
-  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || "Sin compañía registrada"; });
+  document.querySelectorAll("[data-user-company]").forEach(el => { el.textContent = user.company || (window.BCCWorkspaceI18n?.t?.("Sin compañía registrada") || "Sin compañía registrada"); });
   window.BCCWorkspaceUtils.setText("[data-staff-role-count]", staffRoles.length);
-  window.BCCWorkspaceUtils.setText("[data-staff-role-summary]", window.BCCWorkspaceUtils.labelsFor(staffRoles, window.BCCWorkspaceUtils.STAFF_ROLE_OPTIONS, { unique: false }) || "Sin asignación");
   window.BCCWorkspaceUtils.setText("[data-department-count]", departments.length);
-  window.BCCWorkspaceUtils.setText("[data-department-summary]", window.BCCWorkspaceUtils.labelsFor(departments, window.BCCWorkspaceUtils.DEPARTMENT_OPTIONS, { unique: false }) || "Sin asignación");
-  window.BCCWorkspaceUtils.setText("[data-cms-status]", cmsEnabled ? "Activo" : "No");
   const cmsPill = document.querySelector("[data-cms-pill]");
   if (cmsPill) {
-    cmsPill.textContent = cmsEnabled ? "CMS habilitado" : "CMS no asignado";
+    cmsPill.textContent = workspaceText(cmsEnabled ? "CMS habilitado" : "CMS no asignado");
     cmsPill.classList.toggle("enabled", cmsEnabled);
   }
-  window.BCCWorkspaceUtils.setText("[data-cms-description]", cmsEnabled ? "Tienes permisos para crear y administrar contenido." : "Necesitas un rol autorizado para ingresar.");
+  window.BCCWorkspaceUtils.setText("[data-staff-role-summary]", staffRoleSummary ? localizeLabels(staffRoleSummary) : workspaceText("Sin asignación"));
+  window.BCCWorkspaceUtils.setText("[data-department-summary]", departmentSummary ? localizeLabels(departmentSummary) : workspaceText("Sin asignación"));
+  window.BCCWorkspaceUtils.setText("[data-cms-status]", workspaceText(cmsEnabled ? "Activo" : "No"));
+  if (cmsPill) cmsPill.textContent = workspaceText(cmsEnabled ? "CMS habilitado" : "CMS no asignado");
+  window.BCCWorkspaceUtils.setText("[data-cms-description]", workspaceText(cmsEnabled ? "Tienes permisos para crear y administrar contenido." : "Necesitas un rol autorizado para ingresar."));
 }
 
 function bindStaffWorkspaceRouter() {
@@ -103,7 +107,7 @@ function activateWorkspaceFallback(viewId = "resumen") {
     else link.removeAttribute("aria-current");
   });
   const title = document.querySelector("[data-workspace-view-title]");
-  if (title && target?.dataset.viewTitle) title.textContent = target.dataset.viewTitle;
+  if (title && target?.dataset.viewTitle) title.textContent = workspaceText(target.dataset.viewTitle);
   document.body.dataset.workspaceRouterState = "fallback";
   return target || null;
 }

@@ -64,7 +64,9 @@
       script.addEventListener("error", onError, { once: true });
       if (!existing) {
         script.src = source;
-        script.async = true;
+        // Dynamic classic scripts are async by default. Keep execution ordered
+        // while allowing the whole feature batch to download concurrently.
+        script.async = false;
         script.dataset.workspaceFeatureScript = "true";
         document.head.append(script);
       }
@@ -74,13 +76,24 @@
     return promise;
   }
 
+  async function loadOrderedScripts(sources = []) {
+    // Start every download before awaiting the first one. `async = false`
+    // preserves the declared dependency order at execution time.
+    const pending = sources.map(loadScript);
+    for (const script of pending) await script;
+  }
+
+  async function loadStyles(sources = []) {
+    await Promise.all(sources.map(loadStyle));
+  }
+
   function load(featureId) {
     if (!features.has(featureId)) return Promise.resolve();
     if (featurePromises.has(featureId)) return featurePromises.get(featureId);
     const promise = (async () => {
       for (const dependency of dependencies.get(featureId) || []) await load(dependency);
-      for (const source of styles.get(featureId) || []) await loadStyle(source);
-      for (const source of features.get(featureId) || []) await loadScript(source);
+      await loadStyles(styles.get(featureId) || []);
+      await loadOrderedScripts(features.get(featureId) || []);
       window.performance?.mark?.(`bcc:feature:${featureId}:ready`);
       window.BCCWorkspaceEvents.emit("featureReady", { featureId });
     })();

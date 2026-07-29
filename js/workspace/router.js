@@ -1,4 +1,5 @@
 (() => {
+  const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
   function bind(options = {}) {
     const views = [...document.querySelectorAll("[data-workspace-view]")];
     if (!views.length) return null;
@@ -47,8 +48,8 @@
       });
 
       const activeView = views.find(view => view.id === nextId);
-      if (title && activeView?.dataset.viewTitle) title.textContent = activeView.dataset.viewTitle;
-      if (activeView?.dataset.viewTitle) document.title = `${activeView.dataset.viewTitle} - BCC`;
+      if (title && activeView?.dataset.viewTitle) title.textContent = translate(activeView.dataset.viewTitle);
+      if (activeView?.dataset.viewTitle) document.title = `${translate(activeView.dataset.viewTitle)} - BCC`;
 
       options.onShow?.({ requestedId, nextId, panelId, activeView });
 

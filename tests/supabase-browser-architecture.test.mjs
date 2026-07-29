@@ -59,10 +59,29 @@ test("Supabase runtime separates production from local fallback and classifies f
   assert.equal(window.BCCSupabaseErrors.classify({ status: 401 }), "auth_invalid_credentials");
   assert.equal(window.BCCSupabaseErrors.classify({ code: "42501" }), "permission_denied");
   assert.equal(window.BCCSupabaseErrors.classify({ code: "PGRST204" }), "schema_mismatch");
+  assert.equal(window.BCCSupabaseErrors.classify({ message: "JWT expired" }), "auth_session_invalid");
 
   const localWindow = { location: { hostname: "127.0.0.1" } };
   vm.runInContext(read("js/supabase-config.js"), vm.createContext({ window: localWindow, document: {} }));
   assert.equal(localWindow.BCC_RUNTIME.allowLocalAccountFallback, true);
+});
+
+test("workspace auth distinguishes a missing session from recoverable profile and network failures", () => {
+  const auth = read("js/auth.js");
+  const layout = read("js/layout.js");
+
+  assert.match(auth, /async function resolveAuthState\(\)/);
+  assert.match(auth, /await supabase\.auth\.getSession\(\)/);
+  assert.match(auth, /return authResolution\("unauthenticated"/);
+  assert.match(auth, /return authResolution\("recoverable_error"/);
+  assert.match(auth, /if \(state\.kind === "unauthenticated"\)/);
+  assert.match(auth, /if \(state\.kind !== "authenticated" \|\| !state\.user\)/);
+  assert.match(auth, /function renderAuthRecovery\(state\)/);
+  assert.match(auth, /function safeLocalReturnPath\(value\)/);
+  assert.match(auth, /function currentReturnPath\(\)/);
+  assert.match(auth, /signOut\(\{ scope: "local" \}\)/);
+  assert.doesNotMatch(auth, /\.from\("profiles"\)\.insert\(/);
+  assert.doesNotMatch(layout, /window\.BCCAuth\?\.currentUser/);
 });
 
 test("MAP contracts expose one canonical product and status namespace", () => {

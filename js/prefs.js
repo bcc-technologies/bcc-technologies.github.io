@@ -38,6 +38,8 @@
   }
 
   function mapPathToLang(pathname, lang) {
+    const explicitRoute = window.BCCI18n?.routeForPath?.(pathname, lang);
+    if (explicitRoute) return explicitRoute;
     const path = pathname || '/';
     if (lang === 'en') {
       if (path.toLowerCase().startsWith('/en/')) return path;
@@ -79,7 +81,7 @@
   }
 
   function resolveLangTarget(lang) {
-    return getAlternateHref(lang) || getSwitchHref(lang) || mapPathToLang(window.location.pathname, lang);
+    return getAlternateHref(lang) || getSwitchHref(lang) || window.BCCI18n?.routeForPath?.(window.location.pathname, lang) || mapPathToLang(window.location.pathname, lang);
   }
 
   function isAutoLangLanding() {
@@ -126,12 +128,34 @@
     });
   }
 
+  function updateLanguageSwitches() {
+    const current = getPathLang();
+    const target = current === 'en' ? 'es' : 'en';
+    const targetPath = resolveLangTarget(target);
+    const label = target === 'en'
+      ? 'Cambiar a inglés'
+      : 'Switch to Spanish';
+    document.querySelectorAll('[data-language-switch]').forEach((switcher) => {
+      if (!targetPath) {
+        switcher.hidden = true;
+        return;
+      }
+      switcher.hidden = false;
+      switcher.setAttribute('href', `${targetPath}${window.location.search}${window.location.hash}`);
+      switcher.setAttribute('aria-label', label);
+      switcher.setAttribute('title', label);
+      const text = switcher.querySelector('span') || switcher;
+      text.textContent = target.toUpperCase();
+    });
+  }
+
   function init() {
     const savedTheme = getSaved(THEME_KEY);
     if (savedTheme === 'dark' || savedTheme === 'light') {
       document.documentElement.dataset.theme = savedTheme;
     }
     updateThemeButtons(getCurrentTheme());
+    updateLanguageSwitches();
 
     document.querySelectorAll('[data-action="toggle-theme"]').forEach((btn) => {
       btn.addEventListener('click', () => {

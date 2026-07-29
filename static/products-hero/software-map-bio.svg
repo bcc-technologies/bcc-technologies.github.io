@@ -15,33 +15,33 @@
 
   <style>
     :root{
-      --blue-0:#f8fbff;
-      --blue-1:#dcecff;
-      --blue-2:#acd4ff;
-      --blue-3:#60a5fa;
-      --blue-4:#2563eb;
-      --blue-5:#1e3a8a;
+      --blue-0:#f6faf8;
+      --blue-1:#d9e8e2;
+      --blue-2:#b8cdc5;
+      --blue-3:#73938c;
+      --blue-4:#3f6f69;
+      --blue-5:#294f4c;
 
-      --coral-0:#fff2ed;
-      --coral-1:#ffc4b2;
-      --coral-2:#ed4624;
-      --coral-3:#b92f1b;
+      --coral-0:#fcf4f0;
+      --coral-1:#e3c0b2;
+      --coral-2:#a8634e;
+      --coral-3:#7e4335;
 
-      --ink-0:#c9d8e8;
-      --ink-1:#9fb8d4;
-      --ink-2:#5f7e9e;
-      --ink-3:#324a63;
+      --ink-0:#c7d7d1;
+      --ink-1:#96aea5;
+      --ink-2:#66817e;
+      --ink-3:#30464a;
 
-      --soft-blue:rgba(59,130,246,.14);
-      --soft-coral:rgba(237,70,36,.15);
+      --soft-blue:rgba(63,111,105,.16);
+      --soft-coral:rgba(168,99,78,.16);
 
-      --line-blue:rgba(59,130,246,.84);
-      --line-coral:rgba(237,70,36,.92);
+      --line-blue:rgba(63,111,105,.80);
+      --line-coral:rgba(168,99,78,.86);
 
-      --pipeline:rgba(95,126,158,.28);
+      --pipeline:rgba(102,129,126,.38);
 
-      --panel-fill:rgba(255,255,255,.84);
-      --panel-stroke:rgba(50,74,99,.14);
+      --panel-fill:rgba(255,255,255,.91);
+      --panel-stroke:rgba(48,70,74,.18);
     }
 
     .pipeline{
@@ -56,33 +56,44 @@
 
     .cell-normal{
       fill:url(#cell-normal-fill);
-      stroke:var(--ink-0);
-      stroke-width:3;
+      stroke:var(--blue-2);
+      stroke-width:2.6;
       filter:url(#shadow-blue);
     }
 
     .cell-defect{
       fill:url(#cell-defect-fill);
-      stroke:#e6b6a9;
-      stroke-width:3;
+      stroke:var(--coral-1);
+      stroke-width:2.6;
       filter:url(#shadow-coral);
     }
 
     .nucleus-normal{
       fill:var(--blue-5);
-      fill-opacity:.14;
+      fill-opacity:.19;
       stroke:var(--blue-4);
-      stroke-opacity:.08;
+      stroke-opacity:.20;
       stroke-width:1.5;
     }
 
     .nucleus-defect{
       fill:var(--coral-2);
-      fill-opacity:.14;
+      fill-opacity:.18;
       stroke:var(--coral-2);
-      stroke-opacity:.18;
+      stroke-opacity:.28;
       stroke-width:1.5;
     }
+
+    .cell-fiber{
+      fill:none;
+      stroke-linecap:round;
+      stroke-width:1.2;
+    }
+
+    .cell-fiber.normal{ stroke:rgba(255,255,255,.28); }
+    .cell-fiber.defect{ stroke:rgba(255,248,244,.25); }
+    .cell-speck.normal{ fill:rgba(63,111,105,.13); }
+    .cell-speck.defect{ fill:rgba(168,99,78,.13); }
 
     .contour-soft{
       fill:none;
@@ -126,25 +137,25 @@
     }
 
     .analysis-model{
-      opacity:.98;
+      opacity:1;
     }
 
     .fit-ellipse{
       fill:none;
-      stroke:rgba(37,99,235,.16);
-      stroke-width:1.5;
+      stroke:rgba(63,111,105,.26);
+      stroke-width:1.7;
       stroke-dasharray:5 5;
     }
 
     .measure-line{
-      stroke:rgba(37,99,235,.36);
-      stroke-width:2;
+      stroke:rgba(63,111,105,.50);
+      stroke-width:2.2;
       stroke-linecap:round;
     }
 
     .measure-line.soft{
-      stroke:rgba(37,99,235,.18);
-      stroke-width:1.4;
+      stroke:rgba(63,111,105,.30);
+      stroke-width:1.6;
       stroke-dasharray:4 5;
     }
 
@@ -156,7 +167,7 @@
 
     .landmark{
       fill:#ffffff;
-      stroke:rgba(37,99,235,.72);
+      stroke:rgba(63,111,105,.84);
       stroke-width:1.5;
     }
 
@@ -169,14 +180,14 @@
     .hotspot-ring{
       fill:none;
       stroke:var(--coral-2);
-      stroke-width:2.8;
+      stroke-width:3.1;
       stroke-linecap:round;
       stroke-dasharray:6 5;
       animation:hotspotPulse 2.8s ease-in-out infinite;
     }
 
     .hotspot-fill{
-      fill:rgba(237,70,36,.08);
+      fill:rgba(186,122,98,.08);
       stroke:none;
     }
 
@@ -214,13 +225,13 @@
     }
 
     .panel-divider{
-      stroke:rgba(50,74,99,.10);
+      stroke:rgba(48,70,74,.14);
       stroke-width:1;
     }
 
     .badge{
-      fill:rgba(237,70,36,.08);
-      stroke:rgba(237,70,36,.20);
+      fill:rgba(168,99,78,.10);
+      stroke:rgba(168,99,78,.28);
       stroke-width:1;
     }
 
@@ -232,7 +243,7 @@
 
     .callout{
       fill:none;
-      stroke:rgba(237,70,36,.42);
+      stroke:rgba(168,99,78,.50);
       stroke-width:2;
       stroke-linecap:round;
       stroke-dasharray:4 5;
@@ -280,27 +291,27 @@
 
   <defs>
     <radialGradient id="cell-normal-fill" cx="34%" cy="28%" r="78%">
-      <stop offset="0%" stop-color="#f8fbff"/>
-      <stop offset="60%" stop-color="#dcecff"/>
-      <stop offset="100%" stop-color="#acd4ff"/>
+      <stop offset="0%" stop-color="#f6faf8"/>
+      <stop offset="60%" stop-color="#d9e8e2"/>
+      <stop offset="100%" stop-color="#b8cdc5"/>
     </radialGradient>
 
     <radialGradient id="cell-defect-fill" cx="34%" cy="28%" r="78%">
-      <stop offset="0%" stop-color="#fff2ed"/>
-      <stop offset="64%" stop-color="#ffc4b2"/>
-      <stop offset="100%" stop-color="#ed4624"/>
+      <stop offset="0%" stop-color="#fcf4f0"/>
+      <stop offset="64%" stop-color="#e3c0b2"/>
+      <stop offset="100%" stop-color="#a8634e"/>
     </radialGradient>
 
     <filter id="shadow-blue" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#93c5fd" flood-opacity=".14"/>
+      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#8eaaa1" flood-opacity=".18"/>
     </filter>
 
     <filter id="shadow-coral" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#ed4624" flood-opacity=".14"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#a8634e" flood-opacity=".18"/>
     </filter>
 
     <filter id="panel-shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2563eb" flood-opacity=".08"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#3f6f69" flood-opacity=".11"/>
     </filter>
 
     <path id="cell-reference-shape" d="
@@ -335,6 +346,14 @@
       C432 231 442 233 450 241
       C446 251 437 256 427 253
       C421 249 419 243 423 236 Z" />
+
+    <clipPath id="reference-cell-clip">
+      <use href="#cell-reference-shape"/>
+    </clipPath>
+
+    <clipPath id="defect-cell-clip">
+      <use href="#cell-defect-shape"/>
+    </clipPath>
   </defs>
 
   <path
@@ -352,6 +371,14 @@
 
     <g class="pulse">
       <use href="#cell-reference-shape" class="cell-normal"/>
+      <g clip-path="url(#reference-cell-clip)">
+        <path d="M97 196 C125 178 169 178 198 200" class="cell-fiber normal"/>
+        <path d="M94 238 C125 255 169 260 202 236" class="cell-fiber normal"/>
+        <circle cx="117" cy="190" r="4" class="cell-speck normal"/>
+        <circle cx="183" cy="200" r="3.2" class="cell-speck normal"/>
+        <circle cx="177" cy="251" r="4.5" class="cell-speck normal"/>
+        <circle cx="123" cy="252" r="2.8" class="cell-speck normal"/>
+      </g>
       <ellipse cx="149" cy="217" rx="38" ry="28" class="nucleus-normal"/>
     </g>
 
@@ -410,6 +437,13 @@
 
     <g class="pulse" style="animation-delay:-.6s">
       <use href="#cell-defect-shape" class="cell-defect"/>
+      <g clip-path="url(#defect-cell-clip)">
+        <path d="M441 183 C467 162 514 160 548 182" class="cell-fiber defect"/>
+        <path d="M458 229 C485 247 524 250 552 230" class="cell-fiber defect"/>
+        <circle cx="462" cy="172" r="3.4" class="cell-speck defect"/>
+        <circle cx="534" cy="184" r="4.1" class="cell-speck defect"/>
+        <circle cx="522" cy="243" r="3.1" class="cell-speck defect"/>
+      </g>
       <ellipse cx="491" cy="203" rx="41" ry="29" class="nucleus-defect"/>
 
       <use href="#defect-hotspot-region" class="hotspot-fill"/>

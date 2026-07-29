@@ -1621,6 +1621,8 @@
   }
 
   function dashboardUrlForRole(role) {
+    const localizedRoute = window.BCCI18n?.workspaceRouteForUser?.({ role });
+    if (localizedRoute) return localizedRoute;
     if (role === 'admin') return '/staff-dashboard.html';
     if (role === 'staff') return '/staff-dashboard.html';
     return '/dashboard.html';

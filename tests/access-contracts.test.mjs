@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { spawnSync } from "node:child_process";
+import { WORKSPACE_DASHBOARD_ASSETS } from "../scripts/workspace-assets.manifest.mjs";
 
 const rootUrl = new URL("../", import.meta.url);
 const read = path => fs.readFileSync(new URL(path, rootUrl), "utf8");
@@ -59,8 +60,16 @@ test("every page loads access contracts before auth", () => {
     "admin-local/public/index.html"
   ];
 
+  const workspacePages = new Map(Object.values(WORKSPACE_DASHBOARD_ASSETS).map(dashboard => [dashboard.page, dashboard]));
   pages.forEach(path => {
     const html = read(path);
+    const dashboard = workspacePages.get(path);
+    if (dashboard) {
+      const bundle = read(dashboard.scriptFile);
+      assert.match(html, new RegExp(`${dashboard.scriptFile.replaceAll("/", "\\/").replaceAll(".", "\\.")}\\?v=[a-f0-9]{16}`));
+      assert.ok(bundle.indexOf("/* Source: js/access-contracts.js */") < bundle.indexOf("/* Source: js/auth.js */"));
+      return;
+    }
     const contractsIndex = html.indexOf("access-contracts.js");
     const authIndex = html.indexOf("auth.js");
     assert.ok(contractsIndex >= 0, `${path} debe cargar access-contracts.js`);
@@ -69,11 +78,12 @@ test("every page loads access contracts before auth", () => {
 });
 
 test("workspace bootstrap loads contracts and lifecycle services before their consumers", () => {
-  for (const path of ["dashboard.html", "staff-dashboard.html"]) {
-    const html = read(path);
-    assert.ok(html.indexOf("access-contracts.js") < html.indexOf("workspace/utils.js"));
-    assert.ok(html.indexOf("workspace/events.js") < html.indexOf("workspace/icons.js"));
-    assert.ok(html.indexOf("workspace/module-runtime.js") < html.indexOf("workspace/feature-registry.js"));
+  for (const dashboard of Object.values(WORKSPACE_DASHBOARD_ASSETS)) {
+    const bundle = read(dashboard.scriptFile);
+    const sourceIndex = source => bundle.indexOf(`/* Source: ${source} */`);
+    assert.ok(sourceIndex("js/access-contracts.js") < sourceIndex("js/workspace/utils.js"));
+    assert.ok(sourceIndex("js/workspace/events.js") < sourceIndex("js/workspace/icons.js"));
+    assert.ok(sourceIndex("js/workspace/module-runtime.js") < sourceIndex("js/workspace/feature-registry.js"));
   }
 });
 

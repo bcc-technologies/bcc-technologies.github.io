@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { WORKSPACE_DASHBOARD_ASSETS } from "../scripts/workspace-assets.manifest.mjs";
 
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -12,8 +13,8 @@ test("dashboard pages use scoped layered entrypoints", () => {
   const clientCss = read("css/pages/dashboard-client.css");
   const staffCss = read("css/pages/dashboard-staff.css");
 
-  assert.match(clientHtml, /css\/pages\/dashboard-client\.css/);
-  assert.match(staffHtml, /css\/pages\/dashboard-staff\.css/);
+  assert.match(clientHtml, new RegExp(`${WORKSPACE_DASHBOARD_ASSETS.client.cssFile.replaceAll("/", "\\/").replaceAll(".", "\\.")}\\?v=[a-f0-9]{16}`));
+  assert.match(staffHtml, new RegExp(`${WORKSPACE_DASHBOARD_ASSETS.staff.cssFile.replaceAll("/", "\\/").replaceAll(".", "\\.")}\\?v=[a-f0-9]{16}`));
   assert.match(developerHtml, /css\/pages\/maps-developer\.css/);
   for (const html of [clientHtml, staffHtml, developerHtml]) {
     assert.doesNotMatch(html, /css\/pages\/dashboard\.css/);
@@ -24,6 +25,11 @@ test("dashboard pages use scoped layered entrypoints", () => {
   assert.doesNotMatch(clientCss, /workspace-internal\.css|workspace-prospects\.css|workspace-intelligence-analytics\.css/);
   assert.match(staffCss, /workspace-internal\.css/);
   assert.doesNotMatch(staffCss, /workspace-customer\.css|workspace-prospects\.css|workspace-intelligence-analytics\.css/);
+  for (const dashboard of Object.values(WORKSPACE_DASHBOARD_ASSETS)) {
+    const compiled = read(dashboard.cssFile);
+    assert.doesNotMatch(compiled, /@import/);
+    assert.match(compiled, /@layer bcc\.tokens/);
+  }
 });
 
 test("workspace resets the public fixed-header rule for semantic section headers", () => {
@@ -107,6 +113,46 @@ test("workspace loader resolves styles before scripts and deduplicates shared st
   assert.deepEqual(appended, ["link", "script", "script"]);
   assert.equal(links.length, 1);
   assert.equal(links[0].dataset.workspaceFeatureStyle, "true");
+});
+
+test("workspace loader starts ordered feature scripts together without relaxing execution order", async () => {
+  const source = read("js/workspace/loader.js");
+  const scripts = [];
+  const pending = [];
+  const createNode = tagName => {
+    const listeners = {};
+    return {
+      tagName,
+      dataset: {},
+      addEventListener(name, callback) { listeners[name] = callback; },
+      dispatch(name) { listeners[name]?.(); }
+    };
+  };
+  const document = {
+    baseURI: "https://example.test/dashboard.html",
+    scripts,
+    querySelectorAll() { return []; },
+    createElement: createNode,
+    head: {
+      append(node) {
+        scripts.push(node);
+        pending.push(node);
+      }
+    }
+  };
+  const window = {
+    performance: { mark() {} },
+    BCCWorkspaceEvents: { emit() {} }
+  };
+  vm.runInContext(source, vm.createContext({ window, document, URL, Promise, Map, Object, Array }), { filename: "loader.js" });
+  window.BCCWorkspaceLoader.register({ sample: ["first.js", "second.js", "third.js"] });
+
+  const loading = window.BCCWorkspaceLoader.load("sample");
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(pending.length, 3);
+  assert.ok(pending.every(script => script.async === false));
+  pending.forEach(script => script.dispatch("load"));
+  await loading;
 });
 
 test("feature registry declares styles for every visual feature and static intelligence views", () => {

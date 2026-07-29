@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "bundles": {
+    "client": {
+      "css": {
+        "file": "assets/workspace/dashboard-client.css",
+        "version": "70714d2d72b66512"
+      },
+      "javascript": {
+        "file": "assets/workspace/dashboard-client.js",
+        "version": "92fe01cbae3d8268"
+      }
+    },
+    "staff": {
+      "css": {
+        "file": "assets/workspace/dashboard-staff.css",
+        "version": "ac2d529f44ef078d"
+      },
+      "javascript": {
+        "file": "assets/workspace/dashboard-staff.js",
+        "version": "994314262ca74285"
+      }
+    }
+  }
+}

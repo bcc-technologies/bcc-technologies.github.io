@@ -199,30 +199,24 @@
 
   async function getSessionForAnalytics(supabase) {
     const { data } = await supabase.auth.getSession();
-    if (data?.session) return data.session;
-    if (!/dashboard|cms\.html|login|auth-callback/i.test(location.pathname)) return null;
-    const deadline = Date.now() + 1800;
-    while (Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const retry = await supabase.auth.getSession();
-      if (retry.data?.session) return retry.data.session;
-    }
-    return null;
+    // A late sign-in or token refresh is picked up by onAuthStateChange. Do
+    // not poll on every protected route just to make analytics eventually ready.
+    return data?.session || null;
   }
 
   async function roleForAnalyticsUser(supabase, userId) {
-    if (window.BCCAuth?.currentUser) {
-      try {
-        const user = await window.BCCAuth.currentUser();
-        if (user?.id === userId && user.role) return safeTrim(user.role, 20).toLowerCase();
-      } catch (_error) {}
+    try {
+      // Analytics must not enter the dashboard's authorization path. Its role
+      // lookup is best-effort and may safely fall back to a public identity.
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+      return safeTrim(profile?.role || "client", 20).toLowerCase();
+    } catch (_error) {
+      return "client";
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", userId)
-      .maybeSingle();
-    return safeTrim(profile?.role || "client", 20).toLowerCase();
   }
 
   function reconciliationKey(identity) {

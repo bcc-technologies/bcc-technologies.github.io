@@ -2,28 +2,31 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { WORKSPACE_DASHBOARD_ASSETS } from "../scripts/workspace-assets.manifest.mjs";
 
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("dashboard bootstraps visual registries, modules and stable facades in dependency order", () => {
-  for (const page of ["dashboard.html", "staff-dashboard.html"]) {
-    const html = read(page);
+test("dashboard bundles preserve visual registries, modules and stable facades in dependency order", () => {
+  for (const dashboard of Object.values(WORKSPACE_DASHBOARD_ASSETS)) {
+    const html = read(dashboard.page);
+    const bundle = read(dashboard.scriptFile);
     const order = [
-      "workspace/events.js",
-      "workspace/icons/registry.js",
-      "workspace/icons/catalogs/core.js",
-      "workspace/icons.js",
-      "workspace/utils.js",
-      "workspace/ui/registry.js",
-      "workspace/ui/foundation.js",
-      "workspace/ui/content.js",
-      "workspace/ui/states.js",
-      "workspace/ui/interactions.js",
-      "workspace/ui.js",
-      "workspace/loader.js"
-    ].map(fragment => html.indexOf(fragment));
+      "js/workspace/events.js",
+      "js/workspace/icons/registry.js",
+      "js/workspace/icons/catalogs/core.js",
+      "js/workspace/icons.js",
+      "js/workspace/utils.js",
+      "js/workspace/ui/registry.js",
+      "js/workspace/ui/foundation.js",
+      "js/workspace/ui/content.js",
+      "js/workspace/ui/states.js",
+      "js/workspace/ui/interactions.js",
+      "js/workspace/ui.js",
+      "js/workspace/loader.js"
+    ].map(fragment => bundle.indexOf(`/* Source: ${fragment} */`));
 
-    assert.ok(order.every(index => index >= 0), `${page} must load every visual module`);
+    assert.match(html, new RegExp(`${dashboard.scriptFile.replaceAll("/", "\\/").replaceAll(".", "\\.")}\\?v=[a-f0-9]{16}`));
+    assert.ok(order.every(index => index >= 0), `${dashboard.page} must bundle every visual module`);
     assert.deepEqual(order, [...order].sort((a, b) => a - b));
   }
 });

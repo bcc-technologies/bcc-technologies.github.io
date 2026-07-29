@@ -51,7 +51,7 @@
   ]);
 
   /** @type {readonly MAPNanoPlan[]} */
-  const PLANS = Object.freeze([
+  const PLANS_ES = Object.freeze([
     Object.freeze({
       id: "essential",
       name: "MAP-Nano Essential",
@@ -139,7 +139,7 @@
     })
   ]);
 
-  const PROJECT_ACCESS = Object.freeze({
+  const PROJECT_ACCESS_ES = Object.freeze({
     id: "project",
     name: "MAP-Nano Project",
     description: "¿Solo necesitas MAP-Nano para un proyecto específico? Solicita acceso temporal o análisis asistido.",
@@ -150,7 +150,7 @@
     cta: Object.freeze({ label: "Consultar acceso por proyecto", action: "request_quote" })
   });
 
-  const STATUS = Object.freeze({
+  const STATUS_ES = Object.freeze({
     active: Object.freeze({ label: "Activa", tone: "success" }),
     trial: Object.freeze({ label: "Prueba", tone: "neutral" }),
     pending: Object.freeze({ label: "Pendiente", tone: "warning" }),
@@ -160,9 +160,56 @@
     unknown: Object.freeze({ label: "Estado no reconocido", tone: "neutral" })
   });
 
+  const isEnglish = () => globalThis.document?.documentElement?.lang?.toLowerCase().startsWith("en");
+  const EN_PLAN_COPY = Object.freeze({
+    essential: Object.freeze({
+      description: "For individual research and small laboratories with moderate use.",
+      targetCustomer: Object.freeze(["Individual researchers", "Small laboratories", "Teams with moderate use"]),
+      features: Object.freeze(["One named-user license", "Essential quantitative analysis", "Particle size and distribution", "Porosity, shape, and geometric measurements", "Scale calibration and results export", "Standard updates and basic support"]),
+      exclusions: Object.freeze(["Advanced batch processing", "Shared pipelines", "Institutional features", "Priority support and custom integrations"]),
+      cta: Object.freeze({ label: "Request license", action: "request_access" })
+    }),
+    professional: Object.freeze({
+      description: "For active laboratories processing images on a regular basis.",
+      badge: "Recommended",
+      targetCustomer: Object.freeze(["Active laboratories", "Research teams", "Regular imaging workflows"]),
+      features: Object.freeze(["Everything in Essential", "Available MAP-Nano professional modules", "Batch processing", "Reusable pipelines and configurations", "Sample comparison and automatic reports", "Analysis history, professional exports, and an onboarding session", "Standard technical support and up to two associated installations"]),
+      cta: Object.freeze({ label: "Request Professional", action: "request_access" })
+    }),
+    facility: Object.freeze({
+      description: "For core facilities, commercial laboratories, and teams with multiple operators.",
+      targetCustomer: Object.freeze(["Core facilities", "Commercial laboratories", "Companies", "Teams with multiple operators"]),
+      features: Object.freeze(["Everything in Professional", "Up to five named users or three concurrent users", "Shared pipeline library and permission profiles", "Procedure standardization and audit logs", "Larger-scale batch processing", "Institutional templates, onboarding, and priority support", "Configuration migration and periodic usage review"]),
+      cta: Object.freeze({ label: "Request Facility", action: "request_quote" })
+    }),
+    institutional: Object.freeze({
+      description: "For universities, laboratory networks, and multi-site deployments.",
+      targetCustomer: Object.freeze(["Universities", "Laboratory networks", "Public institutions", "Large companies", "Multi-site deployments"]),
+      features: Object.freeze(["Floating licenses across departments or sites", "Local deployment and institutional authentication, as scoped", "API and LIMS integration, as scoped", "SLA, recurring training, and specialized support", "Custom modules and priority development, as contracted"]),
+      cta: Object.freeze({ label: "Contact sales", action: "contact_sales" })
+    })
+  });
+  const EN_PROJECT_ACCESS = Object.freeze({
+    description: "Need MAP-Nano only for a specific project? Request temporary access or assisted analysis.",
+    cta: Object.freeze({ label: "Discuss project access", action: "request_quote" })
+  });
+  const EN_STATUS = Object.freeze({
+    active: Object.freeze({ label: "Active", tone: "success" }),
+    trial: Object.freeze({ label: "Evaluation", tone: "neutral" }),
+    pending: Object.freeze({ label: "Pending", tone: "warning" }),
+    expired: Object.freeze({ label: "Expired", tone: "danger" }),
+    cancelled: Object.freeze({ label: "Cancelled", tone: "danger" }),
+    none: Object.freeze({ label: "No license", tone: "neutral" }),
+    unknown: Object.freeze({ label: "Unrecognized status", tone: "neutral" })
+  });
+
+  const PLANS = Object.freeze(PLANS_ES.map(plan => Object.freeze({ ...plan, ...(isEnglish() ? EN_PLAN_COPY[plan.id] : {}) })));
+  const PROJECT_ACCESS = Object.freeze({ ...PROJECT_ACCESS_ES, ...(isEnglish() ? EN_PROJECT_ACCESS : {}) });
+  const STATUS = isEnglish() ? EN_STATUS : STATUS_ES;
+
   function formatUsd(value) {
     const amount = Number(value);
-    return Number.isFinite(amount) ? `US${USD_FORMATTER.format(amount)}` : "Precio personalizado";
+    return Number.isFinite(amount) ? `US${USD_FORMATTER.format(amount)}` : isEnglish() ? "Custom pricing" : "Precio personalizado";
   }
 
   function monthlyEquivalent(plan) {
@@ -170,21 +217,21 @@
   }
 
   function priceLabel(plan) {
-    if (Number.isFinite(plan?.annualPrice)) return `${formatUsd(plan.annualPrice)}/año`;
-    if (Number.isFinite(plan?.startingPrice)) return `Desde ${formatUsd(plan.startingPrice)}/año`;
-    return "Precio personalizado";
+    if (Number.isFinite(plan?.annualPrice)) return isEnglish() ? `${formatUsd(plan.annualPrice)}/year` : `${formatUsd(plan.annualPrice)}/año`;
+    if (Number.isFinite(plan?.startingPrice)) return isEnglish() ? `From ${formatUsd(plan.startingPrice)}/year` : `Desde ${formatUsd(plan.startingPrice)}/año`;
+    return isEnglish() ? "Custom pricing" : "Precio personalizado";
   }
 
   function monthlyLabel(plan) {
     const monthly = monthlyEquivalent(plan);
-    return monthly === null ? "" : `${formatUsd(monthly)}/mes · facturado anualmente`;
+    return monthly === null ? "" : isEnglish() ? `${formatUsd(monthly)}/month · billed annually` : `${formatUsd(monthly)}/mes · facturado anualmente`;
   }
 
   function projectPriceLabel(project = PROJECT_ACCESS) {
     if (Number.isFinite(project?.priceRange?.min) && Number.isFinite(project?.priceRange?.max)) {
-      return `${formatUsd(project.priceRange.min)}–${formatUsd(project.priceRange.max)} por proyecto`;
+      return isEnglish() ? `${formatUsd(project.priceRange.min)}–${formatUsd(project.priceRange.max)} per project` : `${formatUsd(project.priceRange.min)}–${formatUsd(project.priceRange.max)} por proyecto`;
     }
-    return Number.isFinite(project?.startingPrice) ? `Desde ${formatUsd(project.startingPrice)}` : "Precio según alcance";
+    return Number.isFinite(project?.startingPrice) ? (isEnglish() ? `From ${formatUsd(project.startingPrice)}` : `Desde ${formatUsd(project.startingPrice)}`) : (isEnglish() ? "Pricing based on scope" : "Precio según alcance");
   }
 
   function planById(id) {
@@ -219,7 +266,9 @@
       intent: requestTypeForPlan(planId, options),
       plan: planId || ""
     });
-    return `/contactUs.html?${params.toString()}`;
+    const isEnglish = globalThis.document?.documentElement?.lang?.toLowerCase().startsWith("en");
+    const contactPath = isEnglish ? "/en/contactUs.html" : "/contactUs.html";
+    return `${contactPath}?${params.toString()}`;
   }
 
   function statusForLicense(license) {

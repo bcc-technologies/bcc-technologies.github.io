@@ -206,18 +206,25 @@ function loadAuthHarness(role = "admin") {
   const accessCode = fs.readFileSync(path.resolve(process.cwd(), "js/access-contracts.js"), "utf8");
   const code = fs.readFileSync(path.resolve(process.cwd(), "js/auth.js"), "utf8");
   const db = createDb(role);
+  const sessionUser = {
+    id: "user-1",
+    email: "user@example.com",
+    user_metadata: { full_name: "BCC User" },
+    created_at: nowIso(),
+    last_sign_in_at: nowIso()
+  };
   const supabaseClient = {
     auth: {
+      async getSession() {
+        return {
+          data: { session: { user: sessionUser, access_token: "test-access-token" } },
+          error: null
+        };
+      },
       async getUser() {
         return {
           data: {
-            user: {
-              id: "user-1",
-              email: "user@example.com",
-              user_metadata: { full_name: "BCC User" },
-              created_at: nowIso(),
-              last_sign_in_at: nowIso()
-            }
+            user: sessionUser
           },
           error: null
         };

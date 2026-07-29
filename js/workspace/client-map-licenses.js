@@ -7,6 +7,9 @@
   if (!mapNanoPlans) throw new Error("MAP-Nano commercial plans must load before the client licenses module.");
   const escapeHtml = utils.escapeHtml;
   const refreshIcons = utils.refreshIcons;
+  const isEnglish = () => window.BCCWorkspaceI18n?.locale?.() === "en";
+  const localize = value => window.BCCWorkspaceI18n?.markup?.(value) || value;
+  const contactPath = () => isEnglish() ? "/en/contactUs.html" : "/contactUs.html";
   let root = null;
   let currentUser = null;
   let dashboard = emptyDashboard();
@@ -133,6 +136,7 @@
         ${renderCommercialRequestLayer()}
       </section>`;
     refreshIcons();
+    window.BCCWorkspaceI18n?.localizeTree?.(root);
   }
 
   function suiteProductKeys() {
@@ -171,15 +175,15 @@
     return `<button class="client-license-product-tab" id="suite-tab-${id}" type="button" role="tab" aria-selected="${selected}" aria-controls="suite-panel-${id}" tabindex="${selected ? "0" : "-1"}" data-client-suite-product="${escapeHtml(key)}">
       ${ui.icon(product.icon, "sm")}
       <span>${escapeHtml(productName(key))}</span>
-      ${accessCount ? `<span class="client-license-tab-count" aria-label="${accessCount} acceso(s) vigente(s)">${accessCount}</span>` : ""}
+      ${accessCount ? `<span class="client-license-tab-count" aria-label="${accessCount} ${isEnglish() ? (accessCount === 1 ? "active access" : "active accesses") : `acceso${accessCount === 1 ? "" : "s"} vigente${accessCount === 1 ? "" : "s"}`}">${accessCount}</span>` : ""}
     </button>`;
   }
 
   function renderSuiteActions(productLicenses) {
     const activeAccessCount = productLicenses.filter(item => ["active", "scheduled", "expiring"].includes(item.status)).length;
     const accessState = activeAccessCount
-      ? `${activeAccessCount} acceso${activeAccessCount === 1 ? "" : "s"} vigente${activeAccessCount === 1 ? "" : "s"}`
-      : "Sin acceso vigente";
+      ? isEnglish() ? `${activeAccessCount} ${activeAccessCount === 1 ? "active access" : "active accesses"}` : `${activeAccessCount} acceso${activeAccessCount === 1 ? "" : "s"} vigente${activeAccessCount === 1 ? "" : "s"}`
+      : isEnglish() ? "No active access" : "Sin acceso vigente";
     return `<div class="client-license-suite-actions"><span class="client-license-product-state ${activeAccessCount ? "is-active" : "is-discover"}">${ui.icon(activeAccessCount ? "badge-check" : "sparkles", "xs")}${accessState}</span></div>`;
   }
 
@@ -190,7 +194,7 @@
       features: [],
       icon: "scan-line",
       productHref: "/products.html",
-      requestHref: "/contactUs.html?intent=license",
+      requestHref: `${contactPath()}?intent=license`,
       licenseTypes: []
     };
     const panelId = productDomId(key);
@@ -283,14 +287,14 @@
           ${type.features.map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}
         </ul>
       </div>
-      ${type.isEvaluation ? `<p class="client-license-trial-offer"><strong>${trialDays} días gratis</strong><span>${trialCampaign ? `Early access · luego ${trialOffer.standard_days} días` : "Prueba estándar"}</span></p>` : ""}
+      ${type.isEvaluation ? `<p class="client-license-trial-offer"><strong>${isEnglish() ? `${trialDays}-day evaluation` : `${trialDays} días gratis`}</strong><span>${trialCampaign ? (isEnglish() ? `Early access · then ${trialOffer.standard_days} days` : `Early access · luego ${trialOffer.standard_days} días`) : "Prueba estándar"}</span></p>` : ""}
       <div class="client-license-offer-meta">
         <span>${ui.icon("users", "xs")}${escapeHtml(type.seatLabel)}</span>
         ${type.isEvaluation ? "" : `<span>${ui.icon("calendar-clock", "xs")}${escapeHtml(type.durationLabel)}</span>`}
       </div>
       <footer>
         ${ui.action({
-          label: type.isEvaluation ? `Solicitar ${trialDays} días gratis` : isOwned ? "Solicitar ampliación" : type.ctaLabel,
+          label: type.isEvaluation ? (isEnglish() ? `Request ${trialDays}-day evaluation` : `Solicitar ${trialDays} días gratis`) : isOwned ? "Solicitar ampliación" : type.ctaLabel,
           icon: type.isEvaluation ? "flask-conical" : "badge-plus",
           className: type.recommended ? "btn btn-primary" : type.isEvaluation ? "btn btn-ghost client-license-evaluation-cta" : "btn btn-ghost",
           data: { clientLicenseRequest: key, clientLicenseType: type.key }
@@ -342,6 +346,15 @@
   }
 
   function commercialRequestTypeLabel(requestType) {
+    if (isEnglish()) {
+      return {
+        new_license: "New license",
+        upgrade: "Upgrade",
+        institutional_quote: "Institutional quote",
+        project_access: "Project access",
+        demo: "Demonstration"
+      }[requestType] || "Commercial request";
+    }
     return {
       new_license: "Nueva licencia",
       upgrade: "Actualización",
@@ -380,7 +393,7 @@
       : "Las solicitudes se revisan antes de emitir una licencia.";
     return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
       <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, activePlanIds, hasLicense: productLicenses.length > 0 })).join("")}</div>
-      <div class="client-map-nano-plan-footnote"><p>${optionsNote}</p><a href="/map-nano-pricing.html">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
+      <div class="client-map-nano-plan-footnote"><p>${optionsNote}</p><a href="${isEnglish() ? "/en/map-nano-pricing.html" : "/map-nano-pricing.html"}">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
       ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
       ${renderMapNanoCommercialRequestHistory()}
     </section>`;
@@ -393,10 +406,10 @@
     const action = isCurrent
       ? ui.action({ label: "Plan actual", icon: "badge-check", className: "btn btn-ghost", disabled: true })
       : pending
-        ? `<span class="client-map-nano-plan-pending">Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}</span>`
+        ? `<span class="client-map-nano-plan-pending">${isEnglish() ? `Request ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} since ${escapeHtml(formatDate(pending.created_at))}` : `Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}`}</span>`
         : context.canManage
           ? ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
-          : ui.action({ label: "Contactar al administrador", href: "/contactUs.html?product=map-nano&intent=license", icon: "headset", className: "btn btn-ghost" });
+          : ui.action({ label: "Contactar al administrador", href: `${contactPath()}?product=map-nano&intent=license`, icon: "headset", className: "btn btn-ghost" });
     const limitText = mapNanoLimitText(plan);
     return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""} ${isCurrent ? "is-current" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
       <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || "Licenciamiento anual")}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
@@ -411,6 +424,13 @@
     if (Number.isFinite(plan.limits?.namedUsers)) limits.push(`${plan.limits.namedUsers} usuario${plan.limits.namedUsers === 1 ? "" : "s"} nominativo${plan.limits.namedUsers === 1 ? "" : "s"}`);
     if (Number.isFinite(plan.limits?.concurrentUsers)) limits.push(`${plan.limits.concurrentUsers} concurrentes`);
     if (Number.isFinite(plan.limits?.installations)) limits.push(`${plan.limits.installations} instalaciones`);
+    if (isEnglish()) {
+      const englishLimits = [];
+      if (Number.isFinite(plan.limits?.namedUsers)) englishLimits.push(`${plan.limits.namedUsers} named ${plan.limits.namedUsers === 1 ? "user" : "users"}`);
+      if (Number.isFinite(plan.limits?.concurrentUsers)) englishLimits.push(`${plan.limits.concurrentUsers} concurrent users`);
+      if (Number.isFinite(plan.limits?.installations)) englishLimits.push(`${plan.limits.installations} installations`);
+      return englishLimits.length ? `Limits: ${englishLimits.join(" · ")}` : "Limits: defined in the proposal.";
+    }
     return limits.length ? `Límites: ${limits.join(" · ")}` : "Límites: se definen según la propuesta.";
   }
 
@@ -419,7 +439,7 @@
     const requestType = mapNanoPlans.requestTypeForPlan(project.id, { upgrade: hasLicense });
     const pending = pendingCommercialRequest(project.id, requestType);
     const action = pending
-      ? `<span class="client-map-nano-plan-pending">Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}</span>`
+      ? `<span class="client-map-nano-plan-pending">${isEnglish() ? `Request ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} since ${escapeHtml(formatDate(pending.created_at))}` : `Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}`}</span>`
       : canManage
         ? ui.action({ label: project.cta.label, icon: "clock-3", className: "btn btn-ghost", data: { mapNanoCommercialRequest: project.id, mapNanoRequestType: requestType } })
         : ui.action({ label: "Contactar soporte", href: mapNanoPlans.requestUrl(project.id), icon: "headset", className: "btn btn-ghost" });
@@ -491,9 +511,13 @@
     const license = dashboard.licenses.map(toLicenseViewModel).find(item => item.needsAttention);
     if (!license) return "";
     const copy = license.status === "expiring"
-      ? `Tu licencia ${license.productName} vence el ${formatDate(license.ends_at)}. Coordina la renovación para evitar interrupciones.`
-      : `Tu licencia ${license.productName} está ${license.statusMeta.label.toLowerCase()}. Revisa las opciones con tu administrador o soporte.`;
-    return `<aside class="client-license-attention" data-tone="${escapeHtml(license.statusMeta.tone)}">${ui.icon(license.statusMeta.icon, "md")}<div><strong>Requiere atención</strong><span>${escapeHtml(copy)}</span></div><a class="btn btn-ghost btn-compact" href="/contactUs.html">Contactar soporte</a></aside>`;
+      ? isEnglish()
+        ? `Your ${license.productName} license expires on ${formatDate(license.ends_at)}. Arrange renewal to avoid interruption.`
+        : `Tu licencia ${license.productName} vence el ${formatDate(license.ends_at)}. Coordina la renovación para evitar interrupciones.`
+      : isEnglish()
+        ? `Your ${license.productName} license is ${license.statusMeta.label.toLowerCase()}. Review your options with your administrator or support.`
+        : `Tu licencia ${license.productName} está ${license.statusMeta.label.toLowerCase()}. Revisa las opciones con tu administrador o soporte.`;
+    return `<aside class="client-license-attention" data-tone="${escapeHtml(license.statusMeta.tone)}">${ui.icon(license.statusMeta.icon, "md")}<div><strong>Requiere atención</strong><span>${escapeHtml(copy)}</span></div><a class="btn btn-ghost btn-compact" href="${contactPath()}">Contactar soporte</a></aside>`;
   }
 
   function manageableLicenses() {
@@ -519,7 +543,7 @@
     const assignedUsers = new Set(assignments.map(item => item.user_id));
     const candidates = dashboard.members.filter(item => item.account_id === selected.account_id && !assignedUsers.has(item.user_id));
     return `<section class="workspace-layer-panel client-license-management-panel">
-      <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Administración</span><h2 id="client-license-management-title">Plazas de ${escapeHtml(productName(selected.product_key))}</h2><p>${escapeHtml(selected.account_name)} · ${assignments.length} de ${selected.seatLimit} plazas asignadas</p></div>${closeLayerAction("Cerrar gestión de plazas")}</header>
+      <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Administración</span><h2 id="client-license-management-title">Plazas de ${escapeHtml(productName(selected.product_key))}</h2><p>${escapeHtml(selected.account_name)} · ${isEnglish() ? `${assignments.length} of ${selected.seatLimit} seats assigned` : `${assignments.length} de ${selected.seatLimit} plazas asignadas`}</p></div>${closeLayerAction("Cerrar gestión de plazas")}</header>
       <div class="workspace-layer-body">
         ${manageable.length > 1 ? `<label class="client-license-layer-select">Licencia
           <select data-client-license-select>${manageable.map(item => `<option value="${escapeHtml(item.license_id)}" ${item.license_id === selected.license_id ? "selected" : ""}>${escapeHtml(productName(item.product_key))} · ${escapeHtml(item.account_name)}</option>`).join("")}</select>
@@ -542,7 +566,7 @@
             description: "Selecciona un miembro para activar su acceso."
           })}
         </section>
-        <a class="btn btn-ghost" href="/contactUs.html?intent=member">Solicitar un nuevo miembro</a>
+        <a class="btn btn-ghost" href="${contactPath()}?intent=member">Solicitar un nuevo miembro</a>
       </div>
     </section>`;
   }
@@ -656,7 +680,7 @@
 
   function renderAssignment(item) {
     return `<div class="client-license-assignment">
-      <div><strong>${escapeHtml(item.display_name || item.email)}</strong><small>${escapeHtml(item.email)} · asignada ${formatDate(item.assigned_at)}</small></div>
+      <div><strong>${escapeHtml(item.display_name || item.email)}</strong><small>${escapeHtml(item.email)} · ${isEnglish() ? `assigned ${formatDate(item.assigned_at)}` : `asignada ${formatDate(item.assigned_at)}`}</small></div>
       <div class="client-license-assignment-actions">
         ${item.is_mine ? '<span class="client-license-tag">Tú</span>' : ""}
         ${item.can_release && !item.is_evaluation ? `<button class="btn btn-ghost btn-compact" type="button" data-client-license-release="${escapeHtml(item.assignment_id)}" data-client-license-control ${busy ? "disabled" : ""}>Liberar</button>` : ""}
@@ -735,6 +759,7 @@
     wrapper.innerHTML = renderSuite();
     current.replaceWith(wrapper.firstElementChild);
     refreshIcons(root.querySelector(".client-license-suite"));
+    window.BCCWorkspaceI18n?.localizeTree?.(root.querySelector(".client-license-suite"));
     if (focus) root.querySelector('[data-client-suite-product][aria-selected="true"]')?.focus();
   }
 
@@ -867,13 +892,13 @@
     const requestType = form.elements.request_type?.value || form.elements.intent?.value || "";
     const funnelMetadata = { productKey, licenseType, isEvaluation };
     if (isMapNanoCommercial && !commercialRequestsAvailable) {
-      feedback.textContent = "El registro comercial no está disponible ahora. Usa el enlace de contacto alternativo.";
+      feedback.textContent = localize("El registro comercial no está disponible ahora. Usa el enlace de contacto alternativo.");
       feedback.dataset.tone = "error";
       requestBusy = false;
       return;
     }
     if (isMapNanoCommercial && pendingCommercialRequest(commercialPlanId, requestType)) {
-      feedback.textContent = "Ya existe una solicitud comercial abierta para este plan. Puedes cancelarla desde tu historial antes de enviar otra.";
+      feedback.textContent = localize("Ya existe una solicitud comercial abierta para este plan. Puedes cancelarla desde tu historial antes de enviar otra.");
       feedback.dataset.tone = "error";
       requestBusy = false;
       return;
@@ -881,8 +906,8 @@
     trackLicenseFunnel("map_license_request_submit", funnelMetadata);
     if (isMapNanoCommercial) trackCommercialPlan("quote_requested", { planId: commercialPlanId, requestType });
     submit.disabled = true;
-    submit.textContent = "Enviando...";
-    feedback.textContent = "Enviando tu solicitud...";
+    submit.textContent = localize("Enviando...");
+    feedback.textContent = localize("Enviando tu solicitud...");
     feedback.dataset.tone = "neutral";
     try {
       if (isMapNanoCommercial) {
@@ -922,14 +947,14 @@
     } catch (error) {
       trackLicenseFunnel("map_license_request_error", funnelMetadata);
       if (isMapNanoCommercial) trackCommercialPlan("quote_request_error", { planId: commercialPlanId, requestType });
-      feedback.textContent = isMapNanoCommercial
+      feedback.textContent = localize(isMapNanoCommercial
         ? "No pudimos registrar la solicitud. Usa el enlace de contacto alternativo."
-        : "No pudimos enviar la solicitud. Usa el enlace de contacto alternativo.";
+        : "No pudimos enviar la solicitud. Usa el enlace de contacto alternativo.");
       feedback.dataset.tone = "error";
     } finally {
       requestBusy = false;
       submit.disabled = false;
-      submit.textContent = submit.dataset.idleLabel || (isEvaluation ? "Solicitar prueba" : "Enviar solicitud");
+      submit.textContent = localize(submit.dataset.idleLabel || (isEvaluation ? "Solicitar prueba" : "Enviar solicitud"));
     }
   }
 
@@ -937,15 +962,16 @@
     busy = Boolean(value);
     ui.setBusy(root, busy, {
       selector: "[data-client-license-control]",
-      label: "Actualizando licencias MAP"
+      label: localize("Actualizando licencias MAP")
     });
   }
 
   function setMessage(message, tone = "neutral") {
-    ui.feedback(root?.querySelector("[data-client-license-message]"), message, tone);
+    ui.feedback(root?.querySelector("[data-client-license-message]"), localize(message), tone);
   }
 
   function roleLabel(value) {
+    if (isEnglish()) return ({ owner: "Owner", admin: "Administrator", member: "Member" })[value] || "Member";
     return ({ owner: "Propietario", admin: "Administrador", member: "Miembro" })[value] || "Miembro";
   }
 
@@ -960,17 +986,17 @@
   function formatDate(value) {
     if (!value) return "—";
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("es-DO", { day: "2-digit", month: "short", year: "numeric" });
+    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString(isEnglish() ? "en-US" : "es-DO", { day: "2-digit", month: "short", year: "numeric" });
   }
 
   function formatDateTime(value) {
     if (!value) return "—";
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString("es-DO", { dateStyle: "medium", timeStyle: "short" });
+    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString(isEnglish() ? "en-US" : "es-DO", { dateStyle: "medium", timeStyle: "short" });
   }
 
   function userMessage(error) {
-    return contracts.toError(error).message;
+    return localize(contracts.toError(error).message);
   }
 
   window.BCCWorkspaceClientMapLicenses = { init };

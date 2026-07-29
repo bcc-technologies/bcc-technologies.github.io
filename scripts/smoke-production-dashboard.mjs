@@ -2,10 +2,7 @@ const baseUrl = String(process.env.BCC_SMOKE_BASE_URL || "https://bcctechnologie
 const expectedAssets = [
   "/login.html",
   "/staff-dashboard.html",
-  "/js/supabase-config.js",
-  "/js/auth.js",
-  "/js/workspace/navigation.js",
-  "/js/workspace/router.js"
+  "/assets/workspace/dashboard-staff.js"
 ];
 
 async function getText(path) {
@@ -22,15 +19,14 @@ for (const [asset, source] of contents) {
 }
 
 const dashboard = contents.get("/staff-dashboard.html");
-const navigation = contents.get("/js/workspace/navigation.js");
-const configSource = contents.get("/js/supabase-config.js");
+const workspaceBundle = contents.get("/assets/workspace/dashboard-staff.js");
 if (!dashboard.includes('id="maps-licensing"') || !dashboard.includes("data-workspace-view")) {
   throw new Error("El dashboard publicado no contiene la vista canónica de licencias.");
 }
-if (!navigation.includes('"licencias-maps": "maps-licensing"') || !navigation.includes("#maps-licensing")) {
+if (!workspaceBundle.includes('"licencias-maps": "maps-licensing"') || !workspaceBundle.includes("#maps-licensing")) {
   throw new Error("La navegación publicada no contiene la ruta MAP ni su alias legado.");
 }
-if (!configSource.includes("window.BCCSupabaseErrors") || !configSource.includes("allowLocalAccountFallback")) {
+if (!workspaceBundle.includes("window.BCCSupabaseErrors") || !workspaceBundle.includes("allowLocalAccountFallback")) {
   throw new Error("El proveedor Supabase publicado no contiene el contrato runtime esperado.");
 }
 

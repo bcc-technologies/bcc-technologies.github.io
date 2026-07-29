@@ -10,6 +10,8 @@
     "map-nano": "MAP Nano",
     "map.bio": "MAP Bio",
     "map-bio": "MAP Bio",
+    "map.ing": "MAP-Ing",
+    "map-ing": "MAP-Ing",
     "map.med": "MAP Med",
     "map-med": "MAP Med"
   };

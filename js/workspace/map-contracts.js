@@ -75,7 +75,7 @@
       licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Conteo y clasificación", "Máscaras y mediciones", "Flujos web o desktop"]),
       icon: "activity",
-      productHref: "/product_maps.html#map-bio",
+      productHref: "/product_maps.html",
       requestHref: "/contactUs.html?product=map-bio&intent=license"
     }),
     "map.med": Object.freeze({
@@ -84,7 +84,7 @@
       licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Flujos guiados de imagen", "Resultados trazables", "Configuración por proyecto"]),
       icon: "shield-question",
-      productHref: "/product_maps.html#map-med",
+      productHref: "/product_maps.html",
       requestHref: "/contactUs.html?product=map-med&intent=license"
     })
   });
@@ -122,6 +122,68 @@
     "platform.permissions.manage": "Permisos",
     "platform.analytics.read": "Analíticas"
   });
+
+  const isEnglish = () => globalThis.document?.documentElement?.lang?.toLowerCase().startsWith("en");
+  const EN_LICENSE_TYPES = Object.freeze({
+    named_user: Object.freeze({
+      label: "Named user", shortLabel: "Individual", eyebrow: "Personal use",
+      description: "A named license for working with MAP from your own account.",
+      seatLabel: "1 named user", durationLabel: "Contract term",
+      features: Object.freeze(["Personal, non-shared access", "Projects and results linked to your account", "Web or desktop activation"]),
+      ctaLabel: "Request individual access"
+    }),
+    organization: Object.freeze({
+      label: "Team or organization", shortLabel: "Organization", eyebrow: "Collaborative work",
+      description: "Manageable seats for teams that need to grow while controlling access.",
+      seatLabel: "From 5 seats", durationLabel: "Scalable capacity",
+      features: Object.freeze(["Assign and release seats", "Owner and manager administration", "Scale with the team"]),
+      ctaLabel: "Request team pricing"
+    }),
+    evaluation: Object.freeze({
+      label: "Guided evaluation", shortLabel: "Evaluation", eyebrow: "Initial validation",
+      description: "Temporary BCC-coordinated access to validate the product for a specific use case.",
+      seatLabel: "1 participant", durationLabel: "Campaign-based duration",
+      features: Object.freeze(["Defined objective and scope", "Individual temporary access", "BCC-managed follow-up"]),
+      ctaLabel: "Request evaluation"
+    })
+  });
+  const EN_PRODUCT_CATALOG = Object.freeze({
+    "map.nano": Object.freeze({
+      category: "Materials and surfaces", description: "Turn microstructure images into repeatable metrics for research and quality control.",
+      features: Object.freeze(["Roughness, porosity, and morphology", "CSV and PDF exports", "Web or desktop deployment"]),
+      productHref: "/en/product_maps_nano.html", requestHref: "/en/contactUs.html?product=map-nano&intent=license"
+    }),
+    "map.bio": Object.freeze({
+      category: "Biology and imaging", description: "Automate counting, classification, and morphology for reproducible biological-image analysis workflows.",
+      features: Object.freeze(["Counting and classification", "Masks and measurements", "Web or desktop workflows"]),
+      productHref: "/en/product_maps.html", requestHref: "/en/contactUs.html?product=map-bio&intent=license"
+    }),
+    "map.med": Object.freeze({
+      category: "Clinical imaging · R&D", description: "Organize assisted medical-image analysis for research and validation projects.",
+      features: Object.freeze(["Guided imaging workflows", "Traceable results", "Project-based configuration"]),
+      productHref: "/en/product_maps.html", requestHref: "/en/contactUs.html?product=map-med&intent=license"
+    })
+  });
+  const EN_STATUS = Object.freeze({
+    active: Object.freeze({ label: "Active" }), scheduled: Object.freeze({ label: "Scheduled" }), expiring: Object.freeze({ label: "Expires soon" }),
+    suspended: Object.freeze({ label: "Suspended" }), expired: Object.freeze({ label: "Expired" }), revoked: Object.freeze({ label: "Revoked" }),
+    draft: Object.freeze({ label: "Draft" }), unknown: Object.freeze({ label: "No status" })
+  });
+  const EN_COMMERCIAL_REQUEST_STATUS = Object.freeze({
+    pending: Object.freeze({ label: "Pending" }), in_review: Object.freeze({ label: "In review" }), resolved: Object.freeze({ label: "Resolved" }),
+    declined: Object.freeze({ label: "Not approved" }), cancelled: Object.freeze({ label: "Cancelled" }), unknown: Object.freeze({ label: "No status" })
+  });
+  const EN_PLATFORM_ACCESS_LABELS = Object.freeze({
+    "map.workspace.access": "MAP workspace access", "map.nano.use": "MAP-Nano analysis", "map.bio.use": "MAP-Bio analysis", "map.med.use": "MAP-Med analysis",
+    "map.dev.access": "MAP development", "map.release.manage": "MAP releases", "platform.licenses.read": "License viewing",
+    "platform.licenses.manage": "License management", "platform.evaluations.manage": "Evaluations", "platform.permissions.manage": "Permissions", "platform.analytics.read": "Analytics"
+  });
+  const localizeRecords = (source, translations) => Object.freeze(Object.fromEntries(Object.entries(source).map(([key, value]) => [key, Object.freeze({ ...value, ...(translations[key] || {}) })])));
+  const LOCALIZED_LICENSE_TYPES = isEnglish() ? localizeRecords(LICENSE_TYPES, EN_LICENSE_TYPES) : LICENSE_TYPES;
+  const LOCALIZED_PRODUCT_CATALOG = isEnglish() ? localizeRecords(PRODUCT_CATALOG, EN_PRODUCT_CATALOG) : PRODUCT_CATALOG;
+  const LOCALIZED_STATUS = isEnglish() ? localizeRecords(STATUS, EN_STATUS) : STATUS;
+  const LOCALIZED_COMMERCIAL_REQUEST_STATUS = isEnglish() ? localizeRecords(COMMERCIAL_REQUEST_STATUS, EN_COMMERCIAL_REQUEST_STATUS) : COMMERCIAL_REQUEST_STATUS;
+  const LOCALIZED_PLATFORM_ACCESS_LABELS = isEnglish() ? Object.freeze({ ...PLATFORM_ACCESS_LABELS, ...EN_PLATFORM_ACCESS_LABELS }) : PLATFORM_ACCESS_LABELS;
 
   const CLIENT_DASHBOARD_KEYS = Object.freeze(["accounts", "licenses", "members", "assignments", "recent_events"]);
   const ADMIN_DASHBOARD_KEYS = Object.freeze(["licenses", "accounts", "plans", "users", "cohorts", "access_users"]);
@@ -256,7 +318,7 @@
   }
 
   function commercialRequestStatus(status) {
-    return COMMERCIAL_REQUEST_STATUS[String(status || "").toLowerCase()] || COMMERCIAL_REQUEST_STATUS.unknown;
+    return LOCALIZED_COMMERCIAL_REQUEST_STATUS[String(status || "").toLowerCase()] || LOCALIZED_COMMERCIAL_REQUEST_STATUS.unknown;
   }
 
   function effectiveStatus(license, now = Date.now()) {
@@ -278,7 +340,7 @@
       ...source,
       productName: PRODUCTS[source.product_key] || source.product_key || "MAP",
       status,
-      statusMeta: STATUS[status],
+      statusMeta: LOCALIZED_STATUS[status],
       seatLimit,
       assignedSeats,
       availableSeats,
@@ -293,11 +355,11 @@
   }
 
   function productCatalog(key) {
-    return PRODUCT_CATALOG[key] || null;
+    return LOCALIZED_PRODUCT_CATALOG[key] || null;
   }
 
   function licenseType(key) {
-    return LICENSE_TYPES[key] || null;
+    return LOCALIZED_LICENSE_TYPES[key] || null;
   }
 
   function productLicenseTypes(key) {
@@ -306,7 +368,7 @@
   }
 
   function platformAccessLabel(key) {
-    return PLATFORM_ACCESS_LABELS[key] || key;
+    return LOCALIZED_PLATFORM_ACCESS_LABELS[key] || key;
   }
 
   function errorCode(error) {
@@ -328,12 +390,12 @@
 
   window.BCCWorkspaceMapContracts = Object.freeze({
     PRODUCTS,
-    PRODUCT_CATALOG,
-    LICENSE_TYPES,
+    PRODUCT_CATALOG: LOCALIZED_PRODUCT_CATALOG,
+    LICENSE_TYPES: LOCALIZED_LICENSE_TYPES,
     TRIAL_OFFER_FALLBACK,
-    STATUS,
-    COMMERCIAL_REQUEST_STATUS,
-    PLATFORM_ACCESS_LABELS,
+    STATUS: LOCALIZED_STATUS,
+    COMMERCIAL_REQUEST_STATUS: LOCALIZED_COMMERCIAL_REQUEST_STATUS,
+    PLATFORM_ACCESS_LABELS: LOCALIZED_PLATFORM_ACCESS_LABELS,
     MapContractError,
     isRecord,
     rows,

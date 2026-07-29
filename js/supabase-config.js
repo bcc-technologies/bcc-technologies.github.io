@@ -62,8 +62,9 @@
     const code = String(error?.code || error?.name || "").toLowerCase();
     const message = String(error?.message || error || "").toLowerCase();
     const status = Number(error?.status || error?.statusCode || 0);
-    if (code === "authsessionmissingerror") return "auth_session_missing";
+    if (code === "authsessionmissingerror" || code === "auth_session_missing") return "auth_session_missing";
     if (code.includes("refresh_token") || message.includes("refresh token")) return "auth_refresh_invalid";
+    if (message.includes("jwt expired") || message.includes("invalid jwt") || message.includes("token is expired")) return "auth_session_invalid";
     if (status === 401 || code.includes("invalid_credentials")) return "auth_invalid_credentials";
     if (status === 403 || code === "42501" || code === "pgrst301") return "permission_denied";
     if (status === 404 || code === "pgrst116") return "not_found";
@@ -84,6 +85,7 @@
       not_found: "No se encontró la información solicitada.",
       auth_refresh_invalid: "Tu sesión venció. Inicia sesión nuevamente.",
       auth_session_missing: "No hay una sesión activa.",
+      auth_session_invalid: "No se pudo validar la sesión actual. Inténtalo de nuevo.",
       unknown: "No fue posible completar la operación."
     };
     return { category, code: String(error?.code || error?.name || "supabase_error"), status: Number(error?.status || error?.statusCode || 0) || null, context, userMessage: messages[category], cause: error };

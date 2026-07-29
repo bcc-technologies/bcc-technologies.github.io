@@ -2,6 +2,8 @@
 (() => {
   const ui = window.BCCWorkspaceUI;
   const repository = window.BCCWorkspaceFormRepository;
+  const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
+  const localize = () => window.BCCWorkspaceI18n?.localizeTree?.(root);
 
   let root = null;
   let forms = [];
@@ -15,6 +17,7 @@
     if (!root || root.dataset.ready === "true") return;
     root.dataset.ready = "true";
     root.innerHTML = inboxTemplate();
+    localize();
     bindControls();
     refreshIcons();
     await loadInbox();
@@ -54,7 +57,7 @@
 
   async function loadInbox() {
     const signal = lifecycleSignal;
-    setMessage("Cargando formularios recibidos...", "neutral");
+    setMessage(translate("Cargando formularios recibidos..."), "neutral");
     try {
       const [nextForms, nextResponses] = await Promise.all([
         repository.listReceived(requestOptions(signal)),
@@ -78,10 +81,11 @@
     const pending = forms.filter(form => !responses.some(item => item.formId === form.id)).length;
     root.querySelector("[data-form-count]").textContent = pending
       ? `${pending} ${pending === 1 ? "pendiente" : "pendientes"}`
-      : forms.length ? "Al día" : "Sin envíos";
+      : forms.length ? translate("Al día") : translate("Sin envíos");
     if (!forms.length) {
       target.innerHTML = `<div class="forms-empty forms-empty--received">${ui.icon("inbox", "md")}<div><strong>No tienes formularios pendientes</strong><p>Cuando BCC te comparta un requerimiento, aparecerá aquí para que puedas responderlo.</p></div></div>`;
       refreshIcons();
+      localize();
       return;
     }
     target.innerHTML = forms.map((form, index) => {
@@ -100,6 +104,7 @@
         </article>
       `;
     }).join("");
+    localize();
   }
 
   function handleInboxAction(event) {
@@ -149,7 +154,7 @@
       const savedResponse = await repository.submit(activeForm.id, answers, requestOptions());
       responses = [...responses.filter(item => item.formId !== activeForm.id), savedResponse];
       root.querySelector("[data-response-dialog]").close();
-      setMessage("Respuestas enviadas.", "ok");
+      setMessage(translate("Respuestas enviadas."), "ok");
       renderInbox();
     } catch (error) {
       if (!isCancelled(error)) setMessage(formsError(error), "error");
