@@ -51,7 +51,6 @@
       stroke-linecap:round;
       stroke-linejoin:round;
       stroke-dasharray:3 10;
-      animation:pipelineFlow 10s linear infinite;
     }
 
     .cell-normal{
@@ -69,29 +68,32 @@
     }
 
     .nucleus-normal{
-      fill:var(--blue-5);
-      fill-opacity:.19;
+      fill:url(#nucleus-normal-fill);
+      fill-opacity:.56;
       stroke:var(--blue-4);
-      stroke-opacity:.20;
+      stroke-opacity:.17;
       stroke-width:1.5;
     }
 
     .nucleus-defect{
-      fill:var(--coral-2);
-      fill-opacity:.18;
+      fill:url(#nucleus-defect-fill);
+      fill-opacity:.55;
       stroke:var(--coral-2);
-      stroke-opacity:.28;
+      stroke-opacity:.20;
       stroke-width:1.5;
     }
 
     .cell-fiber{
       fill:none;
       stroke-linecap:round;
-      stroke-width:1.2;
+      stroke-width:1.15;
     }
 
-    .cell-fiber.normal{ stroke:rgba(255,255,255,.28); }
-    .cell-fiber.defect{ stroke:rgba(255,248,244,.25); }
+    .cell-fiber.normal{ stroke:rgba(255,255,255,.24); }
+    .cell-fiber.defect{ stroke:rgba(255,248,244,.23); }
+    .cell-membrane{ fill:none; stroke-width:.9; stroke-linecap:round; stroke-linejoin:round; }
+    .cell-membrane.normal{ stroke:rgba(63,111,105,.14); }
+    .cell-membrane.defect{ stroke:rgba(126,67,53,.16); }
     .cell-speck.normal{ fill:rgba(63,111,105,.13); }
     .cell-speck.defect{ fill:rgba(168,99,78,.13); }
 
@@ -112,26 +114,24 @@
 
     .contour-trace{
       fill:none;
-      stroke-width:3.1;
+      stroke-width:1.55;
       stroke-linecap:round;
       stroke-linejoin:round;
-      stroke-dasharray:12 12;
-      animation:traceFlow 6.6s linear infinite;
+      stroke-dasharray:none;
     }
 
     .contour-trace.normal{
       stroke:var(--line-blue);
-      opacity:.88;
+      opacity:.52;
     }
 
     .contour-trace.defect{
       stroke:var(--line-coral);
       animation-duration:5.1s;
-      opacity:.98;
+      opacity:.58;
     }
 
     .pulse{
-      animation:cellPulse 5.8s ease-in-out infinite;
       transform-origin:center;
       transform-box:fill-box;
     }
@@ -180,10 +180,9 @@
     .hotspot-ring{
       fill:none;
       stroke:var(--coral-2);
-      stroke-width:3.1;
+      stroke-width:2.5;
       stroke-linecap:round;
-      stroke-dasharray:6 5;
-      animation:hotspotPulse 2.8s ease-in-out infinite;
+      stroke-dasharray:4 4;
     }
 
     .hotspot-fill{
@@ -195,6 +194,12 @@
       fill:#ffffff;
       stroke:var(--coral-2);
       stroke-width:2;
+    }
+
+    .hotspot-core{
+      fill:var(--coral-2);
+      stroke:#ffffff;
+      stroke-width:1.4;
     }
 
     .panel{
@@ -259,26 +264,6 @@
       letter-spacing:.15px;
     }
 
-    @keyframes cellPulse{
-      0%,100%{ transform:scale(1); }
-      50%{ transform:scale(1.022); }
-    }
-
-    @keyframes traceFlow{
-      0%{ stroke-dashoffset:0; }
-      100%{ stroke-dashoffset:-92; }
-    }
-
-    @keyframes pipelineFlow{
-      0%{ stroke-dashoffset:0; }
-      100%{ stroke-dashoffset:-80; }
-    }
-
-    @keyframes hotspotPulse{
-      0%,100%{ opacity:.72; }
-      50%{ opacity:1; }
-    }
-
     @media (prefers-reduced-motion: reduce){
       .pulse,
       .contour-trace,
@@ -300,6 +285,18 @@
       <stop offset="0%" stop-color="#fcf4f0"/>
       <stop offset="64%" stop-color="#e3c0b2"/>
       <stop offset="100%" stop-color="#a8634e"/>
+    </radialGradient>
+
+    <radialGradient id="nucleus-normal-fill" cx="36%" cy="29%" r="78%">
+      <stop offset="0%" stop-color="#e9f2ef"/>
+      <stop offset="60%" stop-color="#9db9b1"/>
+      <stop offset="100%" stop-color="#66847d"/>
+    </radialGradient>
+
+    <radialGradient id="nucleus-defect-fill" cx="36%" cy="29%" r="78%">
+      <stop offset="0%" stop-color="#f8eae3"/>
+      <stop offset="60%" stop-color="#d4a18f"/>
+      <stop offset="100%" stop-color="#9a5947"/>
     </radialGradient>
 
     <filter id="shadow-blue" x="-20%" y="-20%" width="140%" height="140%">
@@ -372,14 +369,16 @@
     <g class="pulse">
       <use href="#cell-reference-shape" class="cell-normal"/>
       <g clip-path="url(#reference-cell-clip)">
-        <path d="M97 196 C125 178 169 178 198 200" class="cell-fiber normal"/>
-        <path d="M94 238 C125 255 169 260 202 236" class="cell-fiber normal"/>
+        <path d="M100 191C126 173 170 177 201 201" class="cell-fiber normal"/>
+        <path d="M94 238C125 256 170 260 204 234" class="cell-fiber normal"/>
+        <path d="M109 204C128 191 166 190 190 207" class="cell-membrane normal"/>
+        <path d="M107 237C129 251 168 254 194 235" class="cell-membrane normal"/>
         <circle cx="117" cy="190" r="4" class="cell-speck normal"/>
         <circle cx="183" cy="200" r="3.2" class="cell-speck normal"/>
         <circle cx="177" cy="251" r="4.5" class="cell-speck normal"/>
         <circle cx="123" cy="252" r="2.8" class="cell-speck normal"/>
       </g>
-      <ellipse cx="149" cy="217" rx="38" ry="28" class="nucleus-normal"/>
+      <path d="M114 214C120 195 139 186 159 190C178 193 190 207 187 224C184 241 165 250 145 248C127 247 109 233 114 214Z" class="nucleus-normal"/>
     </g>
 
     <text x="96" y="314" class="micro-label">Reference</text>
@@ -390,7 +389,7 @@
     <use href="#cell-analysis-shape" class="contour-soft normal"/>
     <use href="#cell-analysis-shape" class="contour-trace normal"/>
 
-    <g class="pulse" style="animation-delay:-1.2s">
+    <g class="pulse">
       <use href="#cell-analysis-shape" class="cell-normal"/>
       <ellipse cx="309" cy="307" rx="29" ry="22" class="nucleus-normal"/>
     </g>
@@ -412,6 +411,8 @@
         y2="328"
         class="measure-line"
       />
+
+      <path d="M277 281C290 268 316 264 336 277" class="measure-line soft"/>
 
       <line
         x1="334"
@@ -435,16 +436,18 @@
     <use href="#cell-defect-shape" class="contour-soft defect"/>
     <use href="#cell-defect-shape" class="contour-trace defect"/>
 
-    <g class="pulse" style="animation-delay:-.6s">
+    <g class="pulse">
       <use href="#cell-defect-shape" class="cell-defect"/>
       <g clip-path="url(#defect-cell-clip)">
-        <path d="M441 183 C467 162 514 160 548 182" class="cell-fiber defect"/>
-        <path d="M458 229 C485 247 524 250 552 230" class="cell-fiber defect"/>
+        <path d="M441 183C467 162 514 160 548 182" class="cell-fiber defect"/>
+        <path d="M458 229C485 247 524 250 552 230" class="cell-fiber defect"/>
+        <path d="M446 194C465 174 499 170 530 185" class="cell-membrane defect"/>
+        <path d="M454 221C480 237 519 235 543 215" class="cell-membrane defect"/>
         <circle cx="462" cy="172" r="3.4" class="cell-speck defect"/>
         <circle cx="534" cy="184" r="4.1" class="cell-speck defect"/>
         <circle cx="522" cy="243" r="3.1" class="cell-speck defect"/>
       </g>
-      <ellipse cx="491" cy="203" rx="41" ry="29" class="nucleus-defect"/>
+      <path d="M453 202C456 182 474 164 496 165C518 167 532 182 531 201C530 218 514 232 493 232C472 232 450 221 453 202Z" class="nucleus-defect"/>
 
       <use href="#defect-hotspot-region" class="hotspot-fill"/>
 
@@ -456,9 +459,10 @@
         class="hotspot-ring"
       />
 
-      <circle cx="429" cy="240" r="4.2" class="hotspot-landmark"/>
-      <circle cx="444" cy="242" r="4.2" class="hotspot-landmark"/>
-      <circle cx="435" cy="249" r="4.2" class="hotspot-landmark"/>
+      <circle cx="429" cy="240" r="3.5" class="hotspot-landmark"/>
+      <circle cx="444" cy="242" r="3.5" class="hotspot-landmark"/>
+      <circle cx="435" cy="249" r="3.5" class="hotspot-landmark"/>
+      <circle cx="435" cy="244" r="2.7" class="hotspot-core"/>
     </g>
 
     <rect x="444" y="97" width="98" height="24" rx="12" class="badge"/>

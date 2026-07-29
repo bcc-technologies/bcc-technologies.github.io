@@ -17,6 +17,7 @@ let currentPageUser = null;
 let currentUserPromise = null;
 let authStateListenerBound = false;
 const AUTH_DIAGNOSTIC_STORAGE_KEY = "bcc:auth-diagnostics:v1";
+const AUTH_DIAGNOSTIC_NOTICE_KEY = "bcc:auth-diagnostic-notice:v1";
 const AUTH_DIAGNOSTIC_LIMIT = 16;
 const PASSWORD_RULE_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un símbolo.";
 
@@ -190,6 +191,10 @@ function reportSupabaseError(context, error) {
 
 async function clearInvalidSupabaseSession(supabase, error) {
   if (!isTerminalSessionFailure(error)) return false;
+  recordAuthDiagnostic("session_cleanup", {
+    category: authErrorCategory(error),
+    reason: "terminal_session_failure"
+  });
   try { await supabase.auth.signOut({ scope: "local" }); } catch {}
   return true;
 }
@@ -246,13 +251,55 @@ function authRecoveryMessage(state) {
   return authCopy("generic");
 }
 
+function authStorageState() {
+  try {
+    const storage = window.localStorage;
+    if (!storage) return "auth_storage_unavailable";
+    for (let index = 0; index < storage.length; index += 1) {
+      if (/^sb-.+-auth-token$/.test(String(storage.key(index) || ""))) return "auth_record_present";
+    }
+    return "auth_record_absent";
+  } catch {
+    return "auth_storage_unavailable";
+  }
+}
+
+function authSessionState(session) {
+  if (!session?.user?.id) return "session_absent";
+  const expiresAt = Number(session.expires_at || 0) * 1000;
+  if (!Number.isFinite(expiresAt) || expiresAt <= 0) return "session_present";
+  const remainingMs = expiresAt - Date.now();
+  if (remainingMs <= 0) return "session_expired";
+  if (remainingMs <= 5 * 60 * 1000) return "session_expiring";
+  return "session_valid";
+}
+
+function authNavigationType() {
+  try {
+    return String(window.performance?.getEntriesByType?.("navigation")?.[0]?.type || "unknown").slice(0, 40);
+  } catch {
+    return "unknown";
+  }
+}
+
+function missingSessionReason() {
+  const storage = authStorageState();
+  if (storage === "auth_record_absent") return "auth_record_absent";
+  if (storage === "auth_record_present") return "stored_session_not_restored";
+  return "session_absent";
+}
+
 function recordAuthDiagnostic(event, detail = {}) {
   const entry = {
     at: new Date().toISOString(),
     event: String(event || "unknown").slice(0, 80),
     category: String(detail.category || "").slice(0, 80),
     reason: String(detail.reason || "").slice(0, 80),
-    path: String(location.pathname || "/").slice(0, 240)
+    path: String(location.pathname || "/").slice(0, 240),
+    origin: String(location.origin || "").slice(0, 160),
+    storage: String(detail.storage || authStorageState()).slice(0, 80),
+    session: String(detail.session || "").slice(0, 80),
+    navigation: String(detail.navigation || authNavigationType()).slice(0, 40)
   };
   try {
     const stored = JSON.parse(window.sessionStorage.getItem(AUTH_DIAGNOSTIC_STORAGE_KEY) || "[]");
@@ -260,7 +307,7 @@ function recordAuthDiagnostic(event, detail = {}) {
     history.push(entry);
     window.sessionStorage.setItem(AUTH_DIAGNOSTIC_STORAGE_KEY, JSON.stringify(history));
   } catch {}
-  document.dispatchEvent?.(new CustomEvent("bcc:auth-state", { detail: entry }));
+  if (typeof CustomEvent === "function") document.dispatchEvent?.(new CustomEvent("bcc:auth-state", { detail: entry }));
   return entry;
 }
 
@@ -283,6 +330,51 @@ function readAuthDiagnostics() {
   }
 }
 
+function storeAuthDiagnosticNotice(state) {
+  const latest = readAuthDiagnostics().at(-1) || {};
+  const notice = {
+    at: latest.at || new Date().toISOString(),
+    category: String(state?.category || latest.category || "").slice(0, 80),
+    reason: String(state?.reason || latest.reason || "").slice(0, 80),
+    storage: String(latest.storage || authStorageState()).slice(0, 80),
+    session: String(latest.session || "").slice(0, 80)
+  };
+  try { window.sessionStorage.setItem(AUTH_DIAGNOSTIC_NOTICE_KEY, JSON.stringify(notice)); } catch {}
+}
+
+function consumeAuthDiagnosticNotice() {
+  try {
+    const notice = JSON.parse(window.sessionStorage.getItem(AUTH_DIAGNOSTIC_NOTICE_KEY) || "null");
+    window.sessionStorage.removeItem(AUTH_DIAGNOSTIC_NOTICE_KEY);
+    return notice && typeof notice === "object" ? notice : null;
+  } catch {
+    return null;
+  }
+}
+
+function authDiagnosticNoticeMessage(notice) {
+  if (!notice?.reason || notice.reason === "local_logout") return "";
+  const english = isEnglishWorkspace();
+  if (notice.reason === "auth_record_absent") {
+    return english
+      ? "Session diagnostic: no saved session was found for this site origin."
+      : "Diagnóstico de sesión: no se encontró una sesión guardada para este origen del sitio.";
+  }
+  if (notice.reason === "stored_session_not_restored") {
+    return english
+      ? "Session diagnostic: a saved session was found, but it could not be restored."
+      : "Diagnóstico de sesión: se encontró una sesión guardada, pero no se pudo restaurar.";
+  }
+  if (notice.reason === "terminal_session_error" || notice.reason === "terminal_profile_auth_error" || notice.reason === "terminal_auth_error") {
+    return english
+      ? "Session diagnostic: the stored session is no longer valid and was cleared on this device."
+      : "Diagnóstico de sesión: la sesión guardada ya no era válida y se eliminó de este dispositivo.";
+  }
+  return english
+    ? "Session diagnostic: the previous session was no longer available."
+    : "Diagnóstico de sesión: la sesión anterior ya no estaba disponible.";
+}
+
 function bindAuthStateListener(supabase) {
   if (authStateListenerBound || !supabase?.auth?.onAuthStateChange) return;
   authStateListenerBound = true;
@@ -291,7 +383,8 @@ function bindAuthStateListener(supabase) {
     if (normalizedEvent === "SIGNED_OUT" || normalizedEvent === "USER_UPDATED") currentPageUser = null;
     currentUserPromise = null;
     recordAuthDiagnostic(`supabase:${normalizedEvent.toLowerCase()}`, {
-      reason: session ? "session_present" : "session_absent"
+      reason: session ? "session_present" : "session_absent",
+      session: authSessionState(session)
     });
   });
 }
@@ -458,9 +551,12 @@ async function resolveAuthState() {
 
       const session = sessionData?.session;
       if (!session?.user?.id) {
-        recordAuthDiagnostic("session_unavailable", { reason: "no_session" });
-        return authResolution("unauthenticated", { reason: "no_session" });
+        const reason = missingSessionReason();
+        recordAuthDiagnostic("session_unavailable", { reason, session: authSessionState(session) });
+        return authResolution("unauthenticated", { reason });
       }
+
+      recordAuthDiagnostic("session_restored", { reason: "session_available", session: authSessionState(session) });
 
       const profileRequest = supabase
         .from("profiles")
@@ -566,14 +662,21 @@ function isSupabaseAuthCallbackLocation() {
 
 function currentReturnPath() {
   const hash = isSupabaseAuthHash() ? "" : String(location.hash || "");
-  return `${location.pathname || "/"}${location.search || ""}${hash}`;
+  return safeLocalReturnPath(`${location.pathname || "/"}${location.search || ""}${hash}`);
 }
 
 function safeLocalReturnPath(value) {
-  if (!value) return "";
+  const raw = String(value || "").trim();
+  if (!raw || raw.startsWith("#")) return "";
   try {
-    const target = new URL(String(value), location.origin);
+    const target = new URL(raw, location.origin);
     if (target.origin !== location.origin || !target.pathname.startsWith("/")) return "";
+    if (![
+      "/dashboard.html",
+      "/staff-dashboard.html",
+      "/en/dashboard.html",
+      "/en/staff-dashboard.html"
+    ].includes(target.pathname)) return "";
     const hash = isSupabaseAuthHash(target.hash) ? "" : target.hash;
     return `${target.pathname}${target.search}${hash}`;
   } catch {
@@ -586,7 +689,8 @@ function loginPath() {
 }
 
 function loginPathForCurrentLocation() {
-  return `${loginPath()}?next=${encodeURIComponent(currentReturnPath())}`;
+  const next = currentReturnPath();
+  return next ? `${loginPath()}?next=${encodeURIComponent(next)}` : loginPath();
 }
 
 function renderAuthRecovery(state) {
@@ -640,6 +744,7 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
 
     const state = await resolveAuthState();
     if (state.kind === "unauthenticated") {
+      storeAuthDiagnosticNotice(state);
       window.location.replace(loginPathForCurrentLocation());
       return null;
     }
@@ -675,6 +780,7 @@ async function requireAuth({ admin = false, roles = null, permission = "" } = {}
 
 async function logout() {
   const supabase = await loadSupabaseClient();
+  recordAuthDiagnostic("sign_out_requested", { reason: "local_logout" });
   await supabase.auth.signOut({ scope: "local" });
   currentPageUser = null;
   currentUserPromise = null;
@@ -845,6 +951,7 @@ async function bccApi(path, options = {}) {
   }
 
   if (path === "/api/auth/logout") {
+    recordAuthDiagnostic("sign_out_requested", { reason: "local_logout" });
     await supabase.auth.signOut({ scope: "local" });
     currentPageUser = null;
     currentUserPromise = null;
@@ -2615,6 +2722,9 @@ window.BCCAuth = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  const loginNotice = authDiagnosticNoticeMessage(consumeAuthDiagnosticNotice());
+  if (loginNotice) authMessage(loginNotice, "notice");
+
   document.querySelectorAll("[data-account-trigger]").forEach(button => {
     const menu = button.closest("[data-account-menu]");
     const dropdown = menu?.querySelector("[data-account-dropdown]");
@@ -2673,7 +2783,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const payload = await res.json().catch(() => null);
         if (!res.ok || payload?.ok === false) throw new Error(payload?.error || "Credenciales inválidas.");
         const user = payload?.user || null;
-        const next = new URLSearchParams(location.search).get("next");
+        const next = safeLocalReturnPath(new URLSearchParams(location.search).get("next"));
         window.location.assign(next || routeForUser(user));
       } catch (error) {
         authMessage(error.message);

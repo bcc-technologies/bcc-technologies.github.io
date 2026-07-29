@@ -88,10 +88,10 @@
     ["¿Qué ocurre si necesito varios usuarios?", "Facility contempla hasta cinco usuarios nominativos o tres concurrentes. Para necesidades distintas, solicita una cotización Institutional o Facility."],
     ["¿Puedo cambiar de plan?", "Sí. El cambio se revisa según la licencia activa, el alcance y el momento contractual. Los administradores de la organización pueden solicitarlo desde el dashboard."],
     ["¿Existe precio académico?", "Pueden solicitarse condiciones académicas según institución, volumen y alcance. No hay una política académica universal publicada todavía."],
-    ["¿MAP-Nano reemplaza el microscopio?", "No. MAP-Nano apoya el análisis técnico de las imágenes; no sustituye el microscopio ni la interpretación científica."],
+    ["¿MAP-Nano reemplaza toda la revisión humana?", "No. MAP-Nano automatiza y estandariza tareas repetitivas de análisis, pero la revisión humana y la interpretación científica siguen siendo esenciales."],
     ["¿Puedo solicitar una prueba o demostración?", "Sí. Puedes solicitar una demostración o una evaluación guiada describiendo el caso de uso y el volumen aproximado de análisis."],
-    ["¿Los datos permanecen bajo control del laboratorio?", "El tratamiento de datos depende de la modalidad y del alcance contratado. Antes de confirmar un despliegue se especifican el flujo de datos y las responsabilidades aplicables."],
-    ["¿Existe despliegue local?", "Puede evaluarse para implementaciones Institutional según el alcance técnico y contractual."],
+    ["¿Los datos permanecen privados y bajo control del laboratorio?", "Sí. La privacidad y la confidencialidad de los datos son muy importantes para nosotros. El tratamiento depende de la modalidad y del alcance contratado; antes de confirmar un despliegue se especifican el flujo de datos, los accesos y las responsabilidades aplicables."],
+    ["¿Existe despliegue local?", "Sí. MAP-Nano puede desplegarse localmente. Esta modalidad continúa en beta mientras seguimos perfeccionándola para que sea lo mejor posible."],
     ["¿Qué ocurre si sólo necesito analizar un proyecto?", "MAP-Nano Project ofrece una alternativa para acceso temporal o análisis asistido; el alcance define el precio final."],
     ["¿Facility e Institutional pueden comprarse directamente?", "No. Ambos niveles comienzan con una solicitud comercial o cotización para confirmar usuarios, soporte, despliegue y alcance." ]
   ];

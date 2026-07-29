@@ -84,6 +84,11 @@
     return getAlternateHref(lang) || getSwitchHref(lang) || window.BCCI18n?.routeForPath?.(window.location.pathname, lang) || mapPathToLang(window.location.pathname, lang);
   }
 
+  function languageSwitchTarget(lang) {
+    const targetPath = resolveLangTarget(lang);
+    return targetPath ? `${targetPath}${window.location.search}${window.location.hash}` : null;
+  }
+
   function isAutoLangLanding() {
     const path = window.location.pathname.toLowerCase();
     return path === '/' || path === '/index.html' || path === '/en/' || path === '/en/index.html';
@@ -99,7 +104,7 @@
     if (!saved && !isAutoLangLanding()) return;
     const targetPath = resolveLangTarget(desired);
     if (!targetPath || targetPath === window.location.pathname) return;
-    const next = targetPath + window.location.search + window.location.hash;
+    const next = languageSwitchTarget(desired);
     window.location.replace(next);
   }
 
@@ -131,17 +136,17 @@
   function updateLanguageSwitches() {
     const current = getPathLang();
     const target = current === 'en' ? 'es' : 'en';
-    const targetPath = resolveLangTarget(target);
+    const targetHref = languageSwitchTarget(target);
     const label = target === 'en'
       ? 'Cambiar a inglés'
       : 'Switch to Spanish';
     document.querySelectorAll('[data-language-switch]').forEach((switcher) => {
-      if (!targetPath) {
+      if (!targetHref) {
         switcher.hidden = true;
         return;
       }
       switcher.hidden = false;
-      switcher.setAttribute('href', `${targetPath}${window.location.search}${window.location.hash}`);
+      switcher.setAttribute('href', targetHref);
       switcher.setAttribute('aria-label', label);
       switcher.setAttribute('title', label);
       const text = switcher.querySelector('span') || switcher;
@@ -165,12 +170,20 @@
     });
 
     document.querySelectorAll('a.lang-switch, button.lang-switch').forEach((el) => {
-      el.addEventListener('click', () => {
+      el.addEventListener('click', (event) => {
         const href = el.getAttribute('href') || '';
         const targetLang = href.includes('/en/') ? 'en' : 'es';
         setSaved(LANG_KEY, targetLang);
+        if (!el.hasAttribute('data-language-switch')) return;
+        const next = languageSwitchTarget(targetLang);
+        if (!next) return;
+        event.preventDefault();
+        window.location.assign(next);
       });
     });
+
+    window.addEventListener('bcc:workspace-route-change', updateLanguageSwitches);
+    window.addEventListener('hashchange', updateLanguageSwitches);
   }
 
   maybeRedirectLang();

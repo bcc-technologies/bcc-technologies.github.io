@@ -200,6 +200,7 @@ test("dashboard page headers stay semantic and unboxed", () => {
 
 test("client account views reserve cards for activity and records, not page structure", () => {
   const clientHtml = read("dashboard.html");
+  const staffHtml = read("staff-dashboard.html");
   const accountStyles = read("css/workspace/workspace-account.css");
   const accountScript = read("js/workspace/account.js");
   const compositions = read("css/workspace/primitives/compositions.css");
@@ -220,7 +221,8 @@ test("client account views reserve cards for activity and records, not page stru
   assert.match(account, /workspace-section-index/);
   assert.match(account, /account-email-disclosure/);
   assert.match(account, /data-email-confirmation/);
-  assert.match(account, /account-permission-disclosure/);
+  assert.doesNotMatch(account, /account-permission-disclosure|Capacidades activas|data-permissions/);
+  assert.match(staffHtml, /<h2>Permisos activos<\/h2>[\s\S]*?data-permissions/);
   assert.doesNotMatch(account, /Sesión protegida/);
   assert.doesNotMatch(account, /module-surface/);
   assert.equal((operation.match(/module-surface/g) || []).length, 0);
@@ -230,7 +232,8 @@ test("client account views reserve cards for activity and records, not page stru
   assert.match(commercial, /class="workspace-ledger commercial-ledger"/);
   assert.match(commercial, /class="commercial-context-block"/);
   assert.match(accountStyles, /\.account-settings-section\{[\s\S]+border-top: 1px solid var\(--line\)/);
-  assert.match(accountStyles, /\.account-email-disclosure,/);
+  assert.match(accountStyles, /\.account-email-disclosure\{/);
+  assert.doesNotMatch(accountStyles, /account-permission-disclosure/);
   assert.match(accountStyles, /\.profile-form \.btn:disabled/);
   assert.match(accountStyles, /\.account-email-row\.is-primary/);
   assert.match(accountStyles, /\.account-profile-section \.profile-form/);

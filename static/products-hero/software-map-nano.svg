@@ -1,147 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="80 130 520 240" fill="none" role="img" aria-labelledby="title desc">
   <title id="title">MAP-Nano: nanoparticle micrograph to particle distribution</title>
-  <desc id="desc">A subdued, microscopy-inspired nanoparticle sample connected to a particle-size distribution.</desc>
+  <desc id="desc">A restrained microscopy-inspired nanoparticle field connected to a particle-size distribution.</desc>
 
   <style>
     :root{
-      --ink:#3c4b52;
-      --muted:#71838a;
-      --blue:#668d97;
-      --accent:#b87861;
+      --ink:#34474c;
+      --muted:#71868a;
+      --teal:#62868b;
+      --accent:#a96d59;
     }
 
-    .label{ font:600 10.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:var(--muted); letter-spacing:.05px; }
-    .label-strong{ font:700 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:var(--ink); letter-spacing:.05px; }
-    .label-accent{ font:700 10.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:var(--accent); letter-spacing:.05px; }
-    .axis-label{ font:600 9.5px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:rgba(113,131,138,.78); letter-spacing:.04px; }
+    .label{font:600 10.5px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;fill:var(--muted);letter-spacing:.05px}
+    .label-strong{font:700 11px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;fill:var(--ink);letter-spacing:.05px}
+    .label-accent{font:700 10.5px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;fill:var(--accent);letter-spacing:.05px}
+    .axis-label{font:600 9.5px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;fill:rgba(113,134,138,.82);letter-spacing:.04px}
 
-    .micrograph{ fill:url(#micrograph-field); }
-    .micrograph-noise{ fill:#d9e2dc; opacity:.16; filter:url(#sample-noise); mix-blend-mode:screen; }
-    .particle{ filter:url(#particle-soft); }
-    .particle-light{ fill:#dde4df; }
-    .particle-mid{ fill:#abb8b0; }
-    .particle-dark{ fill:#71847a; }
-    .particle-quiet{ fill:#8f9f96; opacity:.72; }
-    .particle-speck{ fill:#c2cec7; opacity:.48; filter:url(#speck-soft); }
-    .scale{ stroke:rgba(237,244,239,.72); stroke-width:1.5; stroke-linecap:round; }
-    .scale-text{ font:700 8px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:rgba(237,244,239,.78); }
+    .micrograph{fill:url(#micrograph-field)}
+    .micrograph-vignette{fill:url(#micrograph-vignette)}
+    .micrograph-grain{fill:#d8e0db;opacity:.13;filter:url(#sample-grain);mix-blend-mode:screen}
+    .scan-line{stroke:rgba(219,230,224,.08);stroke-width:.75}
+    .particle{filter:url(#particle-edge)}
+    .particle-light{fill:#b7c1ba}
+    .particle-mid{fill:#92a099}
+    .particle-dark{fill:#6f817b}
+    .particle-quiet{fill:#7f9089;opacity:.76}
+    .particle-rim{fill:none;stroke:rgba(234,240,235,.20);stroke-width:1.05;stroke-linejoin:round}
+    .particle-speck{fill:#aebbb4;opacity:.44;filter:url(#speck-soft)}
+    .scale{stroke:rgba(237,244,239,.70);stroke-width:1.5;stroke-linecap:round}
+    .scale-text{font:700 8px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;fill:rgba(237,244,239,.78)}
 
-    .extraction-line{ fill:none; stroke:rgba(113,131,138,.28); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:5 12; }
-    .axis{ stroke:rgba(113,131,138,.30); stroke-width:1.25; stroke-linecap:round; }
-    .axis-grid{ stroke:rgba(113,131,138,.10); stroke-width:1; stroke-linecap:round; }
-    .hist-bar{ fill:url(#bar-gradient); }
-    .fit-fill{ fill:url(#fit-fill-gradient); }
-    .fit-shadow{ fill:none; stroke:rgba(184,120,97,.12); stroke-width:5.5; stroke-linecap:round; stroke-linejoin:round; }
-    .fit-curve{ fill:none; stroke:var(--accent); stroke-width:2.35; stroke-linecap:round; stroke-linejoin:round; }
-    .fit-label-leader{ fill:none; stroke:rgba(184,120,97,.42); stroke-width:1; stroke-linecap:round; }
+    .extraction-line{fill:none;stroke:rgba(113,134,138,.25);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:5 12}
+    .axis{stroke:rgba(113,134,138,.34);stroke-width:1.25;stroke-linecap:round}
+    .axis-grid{stroke:rgba(113,134,138,.10);stroke-width:1;stroke-linecap:round}
+    .hist-bar{fill:url(#bar-gradient)}
+    .fit-fill{fill:url(#fit-fill-gradient)}
+    .fit-shadow{fill:none;stroke:rgba(169,109,89,.13);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+    .fit-curve{fill:none;stroke:var(--accent);stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}
+    .fit-label-leader{fill:none;stroke:rgba(169,109,89,.46);stroke-width:1;stroke-linecap:round}
+    .mean-marker{stroke:rgba(52,71,76,.44);stroke-width:1.2;stroke-dasharray:2 4}
+    .mean-dot{fill:var(--accent);stroke:#fff;stroke-width:1.5}
   </style>
 
   <defs>
     <linearGradient id="micrograph-field" x1="94" y1="142" x2="304" y2="306" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3a4849"/>
-      <stop offset=".52" stop-color="#2c383a"/>
-      <stop offset="1" stop-color="#253134"/>
+      <stop offset="0" stop-color="#364447"/>
+      <stop offset=".52" stop-color="#273437"/>
+      <stop offset="1" stop-color="#202d30"/>
     </linearGradient>
+    <radialGradient id="micrograph-vignette" cx="50%" cy="44%" r="74%">
+      <stop offset=".56" stop-color="#091011" stop-opacity="0"/>
+      <stop offset="1" stop-color="#111a1b" stop-opacity=".42"/>
+    </radialGradient>
     <linearGradient id="bar-gradient" x1="0" y1="205" x2="0" y2="322" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#b5cbd0" stop-opacity=".72"/>
-      <stop offset="1" stop-color="#668d97" stop-opacity=".52"/>
+      <stop offset="0" stop-color="#b4c8ca" stop-opacity=".70"/>
+      <stop offset="1" stop-color="#62868b" stop-opacity=".54"/>
     </linearGradient>
     <linearGradient id="fit-fill-gradient" x1="400" y1="166" x2="588" y2="324" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#e1ebe9" stop-opacity=".04"/>
-      <stop offset=".54" stop-color="#afc4c7" stop-opacity=".17"/>
-      <stop offset="1" stop-color="#b87861" stop-opacity=".12"/>
+      <stop offset=".54" stop-color="#afc4c7" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#a96d59" stop-opacity=".12"/>
     </linearGradient>
 
-    <path id="particle-a" d="M-15 -4 C-12 -12 -2 -15 8 -12 C15 -10 18 -4 16 3 C14 11 5 15 -5 14 C-14 13 -19 6 -15 -4 Z"/>
-    <path id="particle-b" d="M-14 -8 C-7 -15 7 -14 14 -7 C19 -2 16 9 8 13 C0 18 -12 14 -16 6 C-18 1 -17 -5 -14 -8 Z"/>
-    <path id="particle-c" d="M-17 -1 C-13 -11 -2 -15 8 -11 C16 -8 20 -1 17 7 C13 15 2 18 -9 14 C-18 11 -21 5 -17 -1 Z"/>
-    <path id="particle-d" d="M-12 -10 C-3 -15 10 -11 16 -3 C20 5 14 13 5 16 C-5 18 -16 12 -17 3 C-18 -3 -16 -8 -12 -10 Z"/>
+    <path id="particle-a" d="M-17 -2C-16-11-9-17 1-16C10-16 17-10 18-3C20 5 13 12 6 15C-3 18-13 14-17 8C-20 4-20 1-17-2Z"/>
+    <path id="particle-b" d="M-15-7C-9-15 4-16 13-9C19-4 18 6 11 12C4 18-9 16-15 8C-19 3-19-3-15-7Z"/>
+    <path id="particle-c" d="M-19-1C-16-10-7-15 2-14C12-13 20-7 20 1C20 9 11 15 2 16C-9 18-19 12-21 6C-22 3-21 0-19-1Z"/>
+    <path id="particle-d" d="M-13-11C-4-16 8-13 15-5C20 1 16 10 8 15C-1 20-13 15-17 7C-21 0-18-8-13-11Z"/>
+    <path id="particle-e" d="M-18-5C-11-13 1-16 11-10C18-6 20 3 15 10C9 18-3 18-12 12C-20 7-22 0-18-5Z"/>
 
-    <filter id="sample-noise" x="-10%" y="-10%" width="120%" height="120%">
-      <feTurbulence type="fractalNoise" baseFrequency=".11" numOctaves="2" seed="11"/>
+    <filter id="sample-grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".12" numOctaves="3" seed="27"/>
     </filter>
-    <filter id="particle-soft" x="-35%" y="-35%" width="170%" height="170%">
-      <feDropShadow dx="0" dy="1" stdDeviation=".7" flood-color="#101719" flood-opacity=".34"/>
+    <filter id="particle-edge" x="-35%" y="-35%" width="170%" height="170%">
+      <feTurbulence type="fractalNoise" baseFrequency=".055" numOctaves="2" seed="9" result="roughness"/>
+      <feDisplacementMap in="SourceGraphic" in2="roughness" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="edge"/>
+      <feDropShadow in="edge" dx="0" dy="1" stdDeviation=".75" flood-color="#0c1415" flood-opacity=".38"/>
     </filter>
-    <filter id="speck-soft" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation=".35"/>
-    </filter>
+    <filter id="speck-soft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation=".35"/></filter>
   </defs>
 
   <g aria-label="Nanoparticle micrograph">
     <rect x="93" y="142" width="210" height="164" rx="14" class="micrograph"/>
-    <rect x="93" y="142" width="210" height="164" rx="14" class="micrograph-noise"/>
+    <rect x="93" y="142" width="210" height="164" rx="14" class="micrograph-grain"/>
+    <path d="M96 178H300M96 215H300M96 252H300M96 289H300" class="scan-line"/>
 
-    <use href="#particle-b" transform="translate(119 165) rotate(-14) scale(.68)" class="particle particle-light"/>
-    <use href="#particle-a" transform="translate(157 155) rotate(18) scale(.86)" class="particle particle-mid"/>
-    <use href="#particle-c" transform="translate(200 166) rotate(-8) scale(1.08 .78)" class="particle particle-dark"/>
-    <use href="#particle-d" transform="translate(248 159) rotate(13) scale(.78)" class="particle particle-light"/>
-    <use href="#particle-a" transform="translate(281 178) rotate(-21) scale(.56)" class="particle particle-quiet"/>
+    <g class="particle">
+      <use href="#particle-b" transform="translate(119 164) rotate(-14) scale(.64)" class="particle-light"/>
+      <use href="#particle-b" transform="translate(119 164) rotate(-14) scale(.64)" class="particle-rim"/>
+      <use href="#particle-a" transform="translate(156 155) rotate(18) scale(.81)" class="particle-mid"/>
+      <use href="#particle-c" transform="translate(199 166) rotate(-8) scale(1.02 .74)" class="particle-dark"/>
+      <use href="#particle-e" transform="translate(247 159) rotate(13) scale(.72)" class="particle-light"/>
+      <use href="#particle-a" transform="translate(281 178) rotate(-21) scale(.51)" class="particle-quiet"/>
 
-    <use href="#particle-c" transform="translate(111 202) rotate(7) scale(.50)" class="particle particle-light"/>
-    <use href="#particle-d" transform="translate(145 201) rotate(-11) scale(.92 .68)" class="particle particle-dark"/>
-    <use href="#particle-b" transform="translate(191 197) rotate(21) scale(.64)" class="particle particle-mid"/>
-    <use href="#particle-a" transform="translate(230 204) rotate(-15) scale(1 .74)" class="particle particle-light"/>
-    <use href="#particle-d" transform="translate(275 209) rotate(5) scale(.64)" class="particle particle-dark"/>
+      <use href="#particle-c" transform="translate(111 202) rotate(7) scale(.47)" class="particle-light"/>
+      <use href="#particle-d" transform="translate(145 201) rotate(-11) scale(.86 .65)" class="particle-dark"/>
+      <use href="#particle-e" transform="translate(191 197) rotate(21) scale(.59)" class="particle-mid"/>
+      <use href="#particle-a" transform="translate(230 204) rotate(-15) scale(.95 .70)" class="particle-light"/>
+      <use href="#particle-d" transform="translate(275 209) rotate(5) scale(.58)" class="particle-dark"/>
 
-    <use href="#particle-a" transform="translate(120 239) rotate(-8) scale(.78 .62)" class="particle particle-mid"/>
-    <use href="#particle-c" transform="translate(163 235) rotate(15) scale(1.07 .72)" class="particle particle-dark"/>
-    <use href="#particle-b" transform="translate(213 243) rotate(-16) scale(.55)" class="particle particle-light"/>
-    <use href="#particle-d" transform="translate(249 236) rotate(11) scale(.84 .64)" class="particle particle-mid"/>
-    <use href="#particle-a" transform="translate(286 248) rotate(-18) scale(.64)" class="particle particle-dark"/>
+      <use href="#particle-e" transform="translate(120 239) rotate(-8) scale(.73 .58)" class="particle-mid"/>
+      <use href="#particle-c" transform="translate(163 235) rotate(15) scale(1.01 .68)" class="particle-dark"/>
+      <use href="#particle-b" transform="translate(213 243) rotate(-16) scale(.51)" class="particle-light"/>
+      <use href="#particle-e" transform="translate(249 236) rotate(11) scale(.79 .60)" class="particle-mid"/>
+      <use href="#particle-a" transform="translate(286 248) rotate(-18) scale(.60)" class="particle-dark"/>
 
-    <use href="#particle-b" transform="translate(137 275) rotate(18) scale(.56)" class="particle particle-light"/>
-    <use href="#particle-c" transform="translate(178 273) rotate(-5) scale(.84 .64)" class="particle particle-dark"/>
-    <use href="#particle-a" transform="translate(218 278) rotate(16) scale(.49)" class="particle particle-mid"/>
-    <use href="#particle-d" transform="translate(259 272) rotate(-12) scale(.74 .58)" class="particle particle-light"/>
+      <use href="#particle-b" transform="translate(137 275) rotate(18) scale(.52)" class="particle-light"/>
+      <use href="#particle-c" transform="translate(178 273) rotate(-5) scale(.79 .59)" class="particle-dark"/>
+      <use href="#particle-a" transform="translate(218 278) rotate(16) scale(.45)" class="particle-mid"/>
+      <use href="#particle-d" transform="translate(259 272) rotate(-12) scale(.69 .53)" class="particle-light"/>
+    </g>
 
-    <circle cx="105" cy="181" r="3.6" class="particle-speck"/>
-    <circle cx="176" cy="179" r="3.2" class="particle-speck"/>
-    <circle cx="212" cy="181" r="3.8" class="particle-speck"/>
-    <circle cx="293" cy="197" r="3.2" class="particle-speck"/>
-    <circle cx="104" cy="226" r="3" class="particle-speck"/>
-    <circle cx="197" cy="221" r="3.6" class="particle-speck"/>
-    <circle cx="281" cy="226" r="3" class="particle-speck"/>
-    <circle cx="109" cy="267" r="3.8" class="particle-speck"/>
-    <circle cx="156" cy="261" r="3" class="particle-speck"/>
-    <circle cx="240" cy="264" r="3.4" class="particle-speck"/>
+    <circle cx="105" cy="181" r="3.6" class="particle-speck"/><circle cx="176" cy="179" r="3.2" class="particle-speck"/>
+    <circle cx="212" cy="181" r="3.8" class="particle-speck"/><circle cx="293" cy="197" r="3.2" class="particle-speck"/>
+    <circle cx="104" cy="226" r="3" class="particle-speck"/><circle cx="197" cy="221" r="3.6" class="particle-speck"/>
+    <circle cx="281" cy="226" r="3" class="particle-speck"/><circle cx="109" cy="267" r="3.8" class="particle-speck"/>
+    <circle cx="156" cy="261" r="3" class="particle-speck"/><circle cx="240" cy="264" r="3.4" class="particle-speck"/>
+    <rect x="93" y="142" width="210" height="164" rx="14" class="micrograph-vignette"/>
 
-    <path d="M217 290H257" class="scale"/>
-    <text x="237" y="284" text-anchor="middle" class="scale-text">100 nm</text>
+    <path d="M217 290H257" class="scale"/><text x="237" y="284" text-anchor="middle" class="scale-text">100 nm</text>
   </g>
 
-  <path d="M302 218 C342 222 380 238 411 259 C434 278 453 296 472 306" class="extraction-line"/>
+  <path d="M302 218C342 222 380 238 411 259C434 278 453 296 472 306" class="extraction-line"/>
 
-  <g>
+  <g aria-label="Particle distribution">
     <text x="408" y="184" class="label-strong">312 particles</text>
     <text x="588" y="184" text-anchor="end" class="label-strong">mean 38 nm</text>
-    <path d="M408 322H588" class="axis"/>
-    <path d="M408 322V212" class="axis"/>
-    <path d="M424 292H572" class="axis-grid"/>
-    <path d="M444 262H552" class="axis-grid"/>
-    <path d="M468 232H530" class="axis-grid"/>
+    <path d="M408 322H588M408 322V212" class="axis"/>
+    <path d="M424 292H572M444 262H552M468 232H530" class="axis-grid"/>
     <text x="392" y="267" text-anchor="middle" transform="rotate(-90 392 267)" class="axis-label">frequency</text>
-    <text x="498" y="344" text-anchor="middle" class="axis-label">particle diameter</text>
-    <text x="571" y="344" class="axis-label">nm</text>
+    <text x="498" y="344" text-anchor="middle" class="axis-label">particle diameter</text><text x="571" y="344" class="axis-label">nm</text>
 
-    <path d="M408 322 C426 318 439 296 453 268 C471 231 491 209 510 220 C535 235 550 286 588 322 Z" class="fit-fill"/>
-    <rect x="420" y="307" width="12" height="15" rx="4" class="hist-bar"/>
-    <rect x="434" y="292" width="12" height="30" rx="4" class="hist-bar"/>
-    <rect x="448" y="268" width="12" height="54" rx="4" class="hist-bar"/>
-    <rect x="462" y="241" width="12" height="81" rx="4" class="hist-bar"/>
-    <rect x="476" y="222" width="12" height="100" rx="4" class="hist-bar"/>
-    <rect x="490" y="216" width="12" height="106" rx="4" class="hist-bar"/>
-    <rect x="504" y="232" width="12" height="90" rx="4" class="hist-bar"/>
-    <rect x="518" y="255" width="12" height="67" rx="4" class="hist-bar"/>
-    <rect x="532" y="281" width="12" height="41" rx="4" class="hist-bar"/>
-    <rect x="546" y="301" width="12" height="21" rx="4" class="hist-bar"/>
+    <path d="M408 322C426 318 439 296 453 268C471 231 491 209 510 220C535 235 550 286 588 322Z" class="fit-fill"/>
+    <rect x="420" y="307" width="12" height="15" rx="4" class="hist-bar"/><rect x="434" y="292" width="12" height="30" rx="4" class="hist-bar"/>
+    <rect x="448" y="268" width="12" height="54" rx="4" class="hist-bar"/><rect x="462" y="241" width="12" height="81" rx="4" class="hist-bar"/>
+    <rect x="476" y="222" width="12" height="100" rx="4" class="hist-bar"/><rect x="490" y="216" width="12" height="106" rx="4" class="hist-bar"/>
+    <rect x="504" y="232" width="12" height="90" rx="4" class="hist-bar"/><rect x="518" y="255" width="12" height="67" rx="4" class="hist-bar"/>
+    <rect x="532" y="281" width="12" height="41" rx="4" class="hist-bar"/><rect x="546" y="301" width="12" height="21" rx="4" class="hist-bar"/>
     <rect x="560" y="313" width="12" height="9" rx="4" class="hist-bar"/>
 
-    <path d="M410 313 C428 309 442 289 456 259 C473 223 493 205 511 218 C535 238 548 287 586 313" class="fit-shadow"/>
-    <path d="M410 313 C428 309 442 289 456 259 C473 223 493 205 511 218 C535 238 548 287 586 313" class="fit-curve"/>
-    <path d="M527 236 C518 232 512 226 507 219" class="fit-label-leader"/>
-    <text x="531" y="239" class="label-accent">log-normal fit</text>
+    <path d="M410 313C428 309 442 289 456 259C473 223 493 205 511 218C535 238 548 287 586 313" class="fit-shadow"/>
+    <path d="M410 313C428 309 442 289 456 259C473 223 493 205 511 218C535 238 548 287 586 313" class="fit-curve"/>
+    <path d="M498 217V322" class="mean-marker"/><circle cx="498" cy="217" r="3.4" class="mean-dot"/>
+    <path d="M519 208C514 211 509 214 505 217" class="fit-label-leader"/><text x="522" y="206" class="label-accent">log-normal fit</text>
     <text x="588" y="365" text-anchor="end" class="label">confidence 0.94</text>
   </g>
 </svg>

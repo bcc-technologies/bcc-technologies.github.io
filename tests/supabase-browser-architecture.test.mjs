@@ -5,6 +5,79 @@ import vm from "node:vm";
 
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
+function createMemoryStorage(initial = {}) {
+  const values = new Map(Object.entries(initial));
+  return {
+    get length() { return values.size; },
+    key(index) { return [...values.keys()][index] || null; },
+    getItem(key) { return values.has(String(key)) ? values.get(String(key)) : null; },
+    setItem(key, value) { values.set(String(key), String(value)); },
+    removeItem(key) { values.delete(String(key)); }
+  };
+}
+
+function loadAuthReturnPaths(pathname = "/dashboard.html", hash = "") {
+  const location = { origin: "http://127.0.0.1:5500", pathname, search: "", hash };
+  const window = {
+    location,
+    BCCAccessContracts: {
+      ROLE_PERMISSIONS: {},
+      STAFF_ROLE_PERMISSIONS: {},
+      BASE_ROLE_HIERARCHY: {},
+      STAFF_ROLE_HIERARCHY: {},
+      DEFAULT_CUSTOM_ROLE_HIERARCHY: 100,
+      DEPARTMENT_PERMISSIONS: {},
+      STAFF_ROLES: [],
+      DEPARTMENTS: [],
+      PERMISSION_LABELS: {},
+      ROLE_LABELS: {}
+    }
+  };
+  const document = {
+    documentElement: { lang: pathname.startsWith("/en/") ? "en" : "es" },
+    addEventListener() {}
+  };
+  const context = vm.createContext({ window, document, location, URL, URLSearchParams, console });
+  vm.runInContext(`${read("js/auth.js")}\nwindow.BCCAuthReturnPathTest = { currentReturnPath, safeLocalReturnPath };`, context, {
+    filename: "auth.js"
+  });
+  return window.BCCAuthReturnPathTest;
+}
+
+function loadAuthDiagnostics({ authRecord = false, pathname = "/dashboard.html" } = {}) {
+  const location = { origin: "http://127.0.0.1:5500", pathname, search: "", hash: "" };
+  const localStorage = createMemoryStorage(authRecord ? { "sb-project-auth-token": "redacted" } : {});
+  const sessionStorage = createMemoryStorage();
+  const window = {
+    location,
+    localStorage,
+    sessionStorage,
+    performance: { getEntriesByType: () => [{ type: "navigate" }] },
+    BCCAccessContracts: {
+      ROLE_PERMISSIONS: {},
+      STAFF_ROLE_PERMISSIONS: {},
+      BASE_ROLE_HIERARCHY: {},
+      STAFF_ROLE_HIERARCHY: {},
+      DEFAULT_CUSTOM_ROLE_HIERARCHY: 100,
+      DEPARTMENT_PERMISSIONS: {},
+      STAFF_ROLES: [],
+      DEPARTMENTS: [],
+      PERMISSION_LABELS: {},
+      ROLE_LABELS: {}
+    }
+  };
+  const document = {
+    documentElement: { lang: pathname.startsWith("/en/") ? "en" : "es" },
+    addEventListener() {},
+    dispatchEvent() {}
+  };
+  const context = vm.createContext({ window, document, location, URL, URLSearchParams, console, Date, JSON, String, Number });
+  vm.runInContext(`${read("js/auth.js")}\nwindow.BCCAuthDiagnosticsTest = { authStorageState, missingSessionReason, recordAuthDiagnostic, readAuthDiagnostics, storeAuthDiagnosticNotice, consumeAuthDiagnosticNotice, authDiagnosticNoticeMessage };`, context, {
+    filename: "auth.js"
+  });
+  return window.BCCAuthDiagnosticsTest;
+}
+
 test("runtime sources contain no unresolved merge markers", () => {
   const files = [
     "accounts-server.mjs",
@@ -82,6 +155,51 @@ test("workspace auth distinguishes a missing session from recoverable profile an
   assert.match(auth, /signOut\(\{ scope: "local" \}\)/);
   assert.doesNotMatch(auth, /\.from\("profiles"\)\.insert\(/);
   assert.doesNotMatch(layout, /window\.BCCAuth\?\.currentUser/);
+});
+
+test("auth return paths preserve dashboard hashes without accepting fragment-only or public destinations", () => {
+  const spanish = loadAuthReturnPaths("/dashboard.html", "#cuenta");
+  const english = loadAuthReturnPaths("/en/staff-dashboard.html", "#usuarios");
+
+  assert.equal(spanish.currentReturnPath(), "/dashboard.html#cuenta");
+  assert.equal(english.currentReturnPath(), "/en/staff-dashboard.html#usuarios");
+  assert.equal(spanish.safeLocalReturnPath("#cuenta"), "");
+  assert.equal(spanish.safeLocalReturnPath("/index.html#cuenta"), "");
+  assert.equal(spanish.safeLocalReturnPath("https://example.test/dashboard.html#cuenta"), "");
+  assert.equal(spanish.safeLocalReturnPath("/dashboard.html#operacion"), "/dashboard.html#operacion");
+  assert.equal(english.safeLocalReturnPath("/en/staff-dashboard.html#maps-licensing/licenses"), "/en/staff-dashboard.html#maps-licensing/licenses");
+});
+
+test("session diagnostics distinguish missing persisted auth from an un-restorable record without storing secrets", () => {
+  const missing = loadAuthDiagnostics();
+  const stored = loadAuthDiagnostics({ authRecord: true, pathname: "/en/dashboard.html" });
+
+  assert.equal(missing.authStorageState(), "auth_record_absent");
+  assert.equal(missing.missingSessionReason(), "auth_record_absent");
+  assert.equal(stored.authStorageState(), "auth_record_present");
+  assert.equal(stored.missingSessionReason(), "stored_session_not_restored");
+
+  missing.recordAuthDiagnostic("session_unavailable", { reason: missing.missingSessionReason(), session: "session_absent" });
+  const [entry] = missing.readAuthDiagnostics();
+  assert.deepEqual(
+    { event: entry.event, reason: entry.reason, storage: entry.storage, session: entry.session, origin: entry.origin, navigation: entry.navigation },
+    {
+      event: "session_unavailable",
+      reason: "auth_record_absent",
+      storage: "auth_record_absent",
+      session: "session_absent",
+      origin: "http://127.0.0.1:5500",
+      navigation: "navigate"
+    }
+  );
+  assert.equal(Object.hasOwn(entry, "access_token"), false);
+  assert.equal(Object.hasOwn(entry, "refresh_token"), false);
+
+  missing.storeAuthDiagnosticNotice({ reason: "auth_record_absent" });
+  assert.equal(
+    missing.authDiagnosticNoticeMessage(missing.consumeAuthDiagnosticNotice()),
+    "Diagnóstico de sesión: no se encontró una sesión guardada para este origen del sitio."
+  );
 });
 
 test("MAP contracts expose one canonical product and status namespace", () => {

@@ -30,6 +30,17 @@
 
     const routeHash = (viewId, panelId = "") => `#${viewId}${panelId ? `/${panelId}` : ""}`;
 
+    const announceRouteChange = result => {
+      if (typeof CustomEvent !== "function") return;
+      window.dispatchEvent?.(new CustomEvent("bcc:workspace-route-change", {
+        detail: {
+          viewId: result.nextId,
+          panelId: result.panelId,
+          hash: routeHash(result.nextId, result.panelId)
+        }
+      }));
+    };
+
     const showView = (id, showOptions = {}) => {
       const requestedId = id || defaultView;
       const canonicalId = canonicalViewId(requestedId);
@@ -71,6 +82,7 @@
       if (supplied && `#${supplied}` !== canonical && routeOptions.normalize !== false) {
         window.history.replaceState(null, "", canonical);
       }
+      announceRouteChange(result);
       return result;
     };
 
@@ -84,6 +96,7 @@
         window.history[method](null, "", nextHash);
       }
       const result = showView(requestedId, { panelId, scroll: navigateOptions.scroll });
+      announceRouteChange(result);
       window.BCCWorkspaceShell?.closeMobileNav?.();
       return result;
     };

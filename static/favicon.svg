@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="BCC Technologies">
+  <defs>
+    <radialGradient id="node" cx="30%" cy="26%" r="78%">
+      <stop offset="0" stop-color="#fff4ef"/>
+      <stop offset="18%" stop-color="#ff9a82"/>
+      <stop offset="58%" stop-color="#e74727"/>
+      <stop offset="100%" stop-color="#8c210f"/>
+    </radialGradient>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 7H56V41H22ZM9 20H43V55H9ZM9 20 22 7m21 13L56 7m0 34L43 55m-34 0 13-14" stroke="#354052" stroke-width="2.4"/>
+    <path d="M32 31 22 7m10 24L56 7m-24 24 24 10m-24-10L22 41M32 31 9 20m23 11 11-11m-11 11 11 24m-11-24L9 55" stroke="#68758a" stroke-width="2.05"/>
+  </g>
+  <g fill="url(#node)" stroke="#8f2412" stroke-width="1.15">
+    <circle cx="22" cy="7" r="4.7"/>
+    <circle cx="56" cy="7" r="4.7"/>
+    <circle cx="56" cy="41" r="4.7"/>
+    <circle cx="22" cy="41" r="4.7"/>
+    <circle cx="9" cy="20" r="4.7"/>
+    <circle cx="43" cy="20" r="4.7"/>
+    <circle cx="43" cy="55" r="4.7"/>
+    <circle cx="9" cy="55" r="4.7"/>
+    <circle cx="32" cy="31" r="5.2"/>
+  </g>
+</svg>

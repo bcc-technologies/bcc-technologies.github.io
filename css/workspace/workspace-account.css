@@ -240,14 +240,12 @@
   text-transform: uppercase;
 }
 
-.account-email-disclosure,
-.account-permission-disclosure{
+.account-email-disclosure{
   margin-top: 14px;
   border-top: 1px solid var(--line);
 }
 
-.account-email-disclosure summary,
-.account-permission-disclosure summary{
+.account-email-disclosure summary{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -260,21 +258,18 @@
   list-style: none;
 }
 
-.account-email-disclosure summary::-webkit-details-marker,
-.account-permission-disclosure summary::-webkit-details-marker{
+.account-email-disclosure summary::-webkit-details-marker{
   display: none;
 }
 
-.account-email-disclosure summary::after,
-.account-permission-disclosure summary::after{
+.account-email-disclosure summary::after{
   content: "+";
   color: var(--ink-muted);
   font-size: 1rem;
   font-weight: 500;
 }
 
-.account-email-disclosure[open] summary::after,
-.account-permission-disclosure[open] summary::after{
+.account-email-disclosure[open] summary::after{
   content: "−";
 }
 
@@ -292,28 +287,6 @@
 
 .account-email-confirmation[hidden]{
   display: none;
-}
-
-.account-permission-disclosure > p{
-  margin: 0 0 10px;
-  color: var(--ink-muted);
-  font-size: .77rem;
-  line-height: 1.45;
-}
-
-.account-settings-rail .permission-list{
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin: 0;
-}
-
-.account-settings-rail .permission-list li{
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--line));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 5%, var(--surface-solid));
-  padding: 5px 8px;
-  font-size: .76rem;
 }
 
 .account-settings-workspace .profile-form{

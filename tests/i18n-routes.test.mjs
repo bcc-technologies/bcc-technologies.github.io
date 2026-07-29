@@ -17,6 +17,32 @@ function loadI18n(pathname = "/en/dashboard.html", lang = "en") {
   return context.window.BCCI18n;
 }
 
+function loadLanguageSwitch(pathname, hash, lang) {
+  const location = { pathname, hash, search: "" };
+  const context = {
+    window: {
+      location,
+      BCCI18n: loadI18n(pathname, lang),
+      addEventListener() {},
+      matchMedia: () => ({ matches: false })
+    },
+    location,
+    document: {
+      documentElement: { lang },
+      querySelector() { return null; },
+      querySelectorAll() { return []; },
+      addEventListener() {}
+    },
+    localStorage: { getItem: () => lang, setItem() {} },
+    navigator: { languages: [lang], language: lang },
+    URL
+  };
+  vm.createContext(context);
+  const source = read("js/prefs.js").replace(/\}\)\(\);\s*$/, "window.BCCPreferencesTest = { languageSwitchTarget };\n})();");
+  vm.runInContext(source, context, { filename: "prefs.js" });
+  return context.window.BCCPreferencesTest;
+}
+
 function loadMapNanoLocale(lang = "en") {
   const context = { window: {}, document: { documentElement: { lang } } };
   vm.createContext(context);
@@ -101,8 +127,19 @@ test("client and staff dashboards expose a route-aware language switch", () => {
 
   const prefs = read("js/prefs.js");
   assert.match(prefs, /function updateLanguageSwitches\(\)/);
-  assert.match(prefs, /resolveLangTarget\(target\)/);
-  assert.match(prefs, /window\.location\.search\}\$\{window\.location\.hash\}/);
+  assert.match(prefs, /function resolveLangTarget\(lang\)/);
+  assert.match(prefs, /function languageSwitchTarget\(lang\)/);
+  assert.match(prefs, /window\.location\.assign\(next\)/);
+  assert.match(prefs, /bcc:workspace-route-change/);
+  assert.match(read("js\/workspace\/router.js"), /bcc:workspace-route-change/);
+});
+
+test("dashboard language switches preserve the active view and nested panel", () => {
+  const client = loadLanguageSwitch("/dashboard.html", "#operacion", "es");
+  const staff = loadLanguageSwitch("/en/staff-dashboard.html", "#maps-licensing/licenses", "en");
+
+  assert.equal(client.languageSwitchTarget("en"), "/en/dashboard.html#operacion");
+  assert.equal(staff.languageSwitchTarget("es"), "/staff-dashboard.html#maps-licensing/licenses");
 });
 
 test("legacy MAP routes delegate to the canonical localized MAP-Nano pricing surface", () => {
@@ -232,7 +269,12 @@ test("MAP-Nano English copy covers comparison capabilities and every FAQ", () =>
     "Tamaño, distribución, porosidad, forma, geometría y calibración de escala.",
     "Genera informes y exportaciones profesionales.",
     "¿La licencia se factura mensualmente o anualmente?",
-    "¿Los datos permanecen bajo control del laboratorio?",
+    "¿MAP-Nano reemplaza toda la revisión humana?",
+    "No. MAP-Nano automatiza y estandariza tareas repetitivas de análisis, pero la revisión humana y la interpretación científica siguen siendo esenciales.",
+    "¿Los datos permanecen privados y bajo control del laboratorio?",
+    "Sí. La privacidad y la confidencialidad de los datos son muy importantes para nosotros. El tratamiento depende de la modalidad y del alcance contratado; antes de confirmar un despliegue se especifican el flujo de datos, los accesos y las responsabilidades aplicables.",
+    "¿Existe despliegue local?",
+    "Sí. MAP-Nano puede desplegarse localmente. Esta modalidad continúa en beta mientras seguimos perfeccionándola para que sea lo mejor posible.",
     "¿Facility e Institutional pueden comprarse directamente?"
   ];
   const translated = locale.markup(Spanish.join("\n"));
@@ -240,7 +282,12 @@ test("MAP-Nano English copy covers comparison capabilities and every FAQ", () =>
   assert.match(translated, /Size, distribution, porosity, shape, geometry, and scale calibration\./);
   assert.match(translated, /Generate professional reports and exports\./);
   assert.match(translated, /Is the license billed monthly or annually\?/);
-  assert.match(translated, /Do the data remain under the laboratory's control\?/);
+  assert.match(translated, /Does MAP-Nano replace all human review\?/);
+  assert.match(translated, /human review and scientific interpretation remain essential/);
+  assert.match(translated, /Are our data private and under the laboratory's control\?/);
+  assert.match(translated, /Data privacy and confidentiality are very important to us/);
+  assert.match(translated, /Is local deployment available\?/);
+  assert.match(translated, /remains in beta while we continue refining it/);
   assert.match(translated, /Can Facility and Institutional be purchased directly\?/);
-  assert.doesNotMatch(translated, /Tamaño, distribución|¿La licencia se factura|¿Los datos permanecen/);
+  assert.doesNotMatch(translated, /Tamaño, distribución|¿La licencia se factura|¿Los datos permanecen privados|¿MAP-Nano reemplaza toda/);
 });

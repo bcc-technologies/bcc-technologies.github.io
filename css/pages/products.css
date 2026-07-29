@@ -499,8 +499,23 @@ body.products-page{
 .hero[data-theme="software"] .hero-bg .layer.arcs{ opacity:0; }
 .hero[data-theme="software"] .hero-bg .layer.stripes{ opacity:0; }
 
-.hero[data-theme="instrumentacion"] .hero-bg .layer.rings{ opacity:.9; }
-.hero[data-theme="instrumentacion"] .hero-bg .layer.arcs{ opacity:.35; }
+.hero[data-theme="instrumentacion"] .hero-bg .layer.rings{
+  background:
+    radial-gradient(closest-side, rgba(184,119,60,.12), transparent 70%),
+    radial-gradient(closest-side, rgba(184,119,60,.09), transparent 72%),
+    radial-gradient(closest-side, rgba(184,119,60,.06), transparent 74%),
+    radial-gradient(closest-side, rgba(184,119,60,.04), transparent 76%);
+  opacity:.46;
+  animation:floaty 34s ease-in-out infinite alternate;
+}
+.hero[data-theme="instrumentacion"] .hero-bg .layer.arcs{
+  background:
+    conic-gradient(from 200deg at 70% 50%, rgba(184,119,60,.08) 0 110deg, transparent 110deg),
+    conic-gradient(from 210deg at 75% 55%, rgba(184,119,60,.055) 0 95deg, transparent 95deg),
+    conic-gradient(from 190deg at 65% 45%, rgba(184,119,60,.04) 0 120deg, transparent 120deg);
+  opacity:.24;
+  animation:slowspin 110s linear infinite;
+}
 .hero[data-theme="instrumentacion"] .hero-bg .layer.stripes{ opacity:0; }
 
 .hero[data-theme="bundles"] .hero-bg .layer.rings{ opacity:.15; }
