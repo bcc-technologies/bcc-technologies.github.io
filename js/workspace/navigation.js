@@ -14,9 +14,6 @@
       ] },
       { id: "products", label: "Productos", open: true, items: [
         { href: "#licencias", label: "MAPs", icon: "map" }
-      ] },
-      { id: "admin", label: "Acceso interno", adminReturn: true, hidden: true, items: [
-        { href: "/staff-dashboard.html", label: "Administración", icon: "shield-check", adminReturn: true, hidden: true }
       ] }
     ],
     staff: [
@@ -104,7 +101,6 @@
   const access = (element, item) => {
     if (item.permission) element.dataset.permissionRequired = item.permission;
     if (item.cmsAccess) element.dataset.cmsAccess = "";
-    if (item.adminReturn) element.dataset.adminReturn = "";
     if (item.hidden) element.hidden = true;
   };
 

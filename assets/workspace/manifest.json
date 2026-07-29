@@ -4,21 +4,21 @@
     "client": {
       "css": {
         "file": "assets/workspace/dashboard-client.css",
-        "version": "70714d2d72b66512"
+        "version": "10b6ce4f8905ac1c"
       },
       "javascript": {
         "file": "assets/workspace/dashboard-client.js",
-        "version": "92fe01cbae3d8268"
+        "version": "c01d88ad8048f3ab"
       }
     },
     "staff": {
       "css": {
         "file": "assets/workspace/dashboard-staff.css",
-        "version": "ac2d529f44ef078d"
+        "version": "2a71ef736f5bcc19"
       },
       "javascript": {
         "file": "assets/workspace/dashboard-staff.js",
-        "version": "994314262ca74285"
+        "version": "1a82163a00b69c63"
       }
     }
   }

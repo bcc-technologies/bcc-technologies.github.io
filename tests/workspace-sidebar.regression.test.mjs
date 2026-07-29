@@ -10,6 +10,8 @@ const shellJs = read("js/workspace/shell.js");
 const routerJs = read("js/workspace/router.js");
 const authJs = read("js/auth.js");
 const staffDashboardJs = read("js/staff-dashboard.js");
+const clientDashboardHtml = read("dashboard.html");
+const workspaceI18nJs = read("js/workspace/i18n.js");
 
 test("sidebar rows keep full width while content and text stay left aligned", () => {
   assert.match(sidebarCss, /\.workspace-refined \.workspace-nav \.workspace-nav-item\s*\{[\s\S]*?width:\s*100%/);
@@ -35,6 +37,12 @@ test("navigation groups expose disclosure semantics and keyboard controls", () =
   }
   assert.match(navigationJs, /bcc-workspace-nav:v\$\{STORAGE_VERSION\}/);
   assert.match(navigationJs, /scrollWidth > label\.clientWidth/);
+});
+
+test("client navigation keeps the staff return in the account menu, not the sidebar", () => {
+  assert.doesNotMatch(navigationJs, /Acceso interno|adminReturn|staff-dashboard\.html/);
+  assert.doesNotMatch(workspaceI18nJs, /"Acceso interno": "Internal access"/);
+  assert.match(clientDashboardHtml, /data-admin-return hidden>Panel administrador<\/a>/);
 });
 
 test("mobile shell traps focus, restores it and uses dynamic viewport height", () => {
