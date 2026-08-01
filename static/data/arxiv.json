@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-31T08:44:05.229Z",
+  "updatedAt": "2026-08-01T08:13:56.475Z",
   "groups": [
     {
       "id": "physics",
@@ -35,7 +35,6 @@
     }
   ],
   "months": [
-    "2025-08",
     "2025-09",
     "2025-10",
     "2025-11",
@@ -46,11 +45,11 @@
     "2026-04",
     "2026-05",
     "2026-06",
-    "2026-07"
+    "2026-07",
+    "2026-08"
   ],
   "series": {
     "physics": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -61,10 +60,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 350
+      "2026-07": 350,
+      "2026-08": 0
     },
     "math": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -75,10 +74,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 332
+      "2026-07": 332,
+      "2026-08": 0
     },
     "cs": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -89,10 +88,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 512
+      "2026-07": 512,
+      "2026-08": 0
     },
     "q-bio": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -103,10 +102,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 179
+      "2026-07": 179,
+      "2026-08": 0
     },
     "stat": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -117,10 +116,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 224
+      "2026-07": 224,
+      "2026-08": 0
     },
     "q-fin": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -131,10 +130,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 3,
-      "2026-07": 204
+      "2026-07": 204,
+      "2026-08": 0
     },
     "eess": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -145,10 +144,10 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 212
+      "2026-07": 212,
+      "2026-08": 0
     },
     "econ": {
-      "2025-08": 0,
       "2025-09": 0,
       "2025-10": 0,
       "2025-11": 0,
@@ -159,7 +158,8 @@
       "2026-04": 0,
       "2026-05": 0,
       "2026-06": 0,
-      "2026-07": 242
+      "2026-07": 242,
+      "2026-08": 0
     }
   },
   "items": [
@@ -2662,7 +2662,7 @@
     {
       "id": "http://arxiv.org/abs/2607.27540v1",
       "link": "http://arxiv.org/abs/2607.27540v1",
-      "title": "Gaussian non relativistic spontaneusly stochastic hydrodynamica",
+      "title": "Gaussian non relativistic spontaneously stochastic hydrodynamics",
       "summary": "We study the non-relativistic limit of Gaussian covariant hydrodynamics [1]. We argue that the condition of incompressibility provides additional symmetries matching relativistic hydrodynamics but incompressibility must break down at a ``microscopic`` scale. We then develop the renormalization group equations for average and fluctuations w.r.t. that scale, to understand its effect on flows at intermolecular distances where hydrodynamics gives way to statistical mechanics. The resulting dynamics naturally incorporates spontaneous stochasticity as a macroscopic back reaction of statistical mechanics fluctuations, as well as features reminiscent of anomalous dissipation and ``wild solutions`` as renormalization group counterterms. We frame these considerations into both a phenomenological discussion of the limits of applicability of fluid dynamics, and a discussion of where physics might shed some light on the mathematical issues associated with turbulence.",
       "published": "2026-07-30T00:18:15Z",
       "updated": "2026-07-30T00:18:15Z",
@@ -11748,7 +11748,7 @@
       "updated": "2026-07-30T08:29:46Z",
       "authors": [
         "Chenglong Deng",
-        "Xuding zhu"
+        "Xuding Zhu"
       ],
       "categories": [
         "math.CO"
