@@ -54,6 +54,12 @@
     { value: "365", label: "1y" },
     { value: "all", label: "Todo" }
   ];
+  // Papers/grants/patents/trials render every filtered match with no cap --
+  // fine when the dashboard fetch was capped at 200 rows, but raising that
+  // limit (to stop hiding data from topic analytics) means clearing filters
+  // can now paint hundreds of full cards/rows in one DOM update. Panels
+  // render only visibleCounts[panel] items and reveal more via "Cargar más".
+  const RESEARCH_PAGE_SIZE = { papers: 20, grants: 50, patents: 50, trials: 50 };
 
   let root = null;
   let currentUser = null;
@@ -65,6 +71,7 @@
   let selectedTopicId = "";
   let selectedSourceId = "";
   let filters = {};
+  let visibleCounts = { ...RESEARCH_PAGE_SIZE };
   let dashboard = emptyDashboard();
   let topicHitsIndex = null;
 
@@ -232,6 +239,7 @@
   function applyDashboardState(nextDashboard, options = {}) {
     dashboard = normalizeDashboard(nextDashboard);
     topicHitsIndex = null;
+    visibleCounts = { ...RESEARCH_PAGE_SIZE };
     syncDryRun = dashboard.settings.defaultDryRun;
     filters = normalizeFiltersState(filters, String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
     currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
@@ -689,9 +697,9 @@
           </div>
         </div>
         <div class="intelligence-paper-results">
-          ${items.length ? items.map(renderPaperCard).join("") : ""}
+          ${items.length ? items.slice(0, visibleCounts.papers).map(renderPaperCard).join("") : ""}
         </div>
-        ${items.length ? "" : researchEmptyStateMarkup("papers", state)}
+        ${items.length ? loadMoreMarkup("papers", items.length) : researchEmptyStateMarkup("papers", state)}
       </article>
     `;
   }
@@ -816,11 +824,11 @@
               </tr>
             </thead>
             <tbody>
-              ${config.items.length ? config.items.map(config.rows).join("") : `<tr><td colspan="8">${emptyCell(researchEmptyMessage(panelName, filterState))}</td></tr>`}
+              ${config.items.length ? config.items.slice(0, visibleCounts[panelName]).map(config.rows).join("") : `<tr><td colspan="8">${emptyCell(researchEmptyMessage(panelName, filterState))}</td></tr>`}
             </tbody>
           </table>
         </div>
-        ${config.items.length ? "" : researchEmptyStateMarkup(panelName, filterState)}
+        ${config.items.length ? loadMoreMarkup(panelName, config.items.length) : researchEmptyStateMarkup(panelName, filterState)}
       </article>
     `;
   }
@@ -1267,6 +1275,7 @@
 
     if (event.target.closest("[data-papers-reset]")) {
       filters.papers = defaultFilters(String(pickDateRange(dashboard.settings.defaultDateRangeDays))).papers;
+      visibleCounts.papers = RESEARCH_PAGE_SIZE.papers;
       renderPapers();
       return;
     }
@@ -1275,7 +1284,20 @@
     if (paperSourceChip) {
       const nextSource = paperSourceChip.dataset.paperSourceChip || "";
       filters.papers.source = filters.papers.source === nextSource ? "" : nextSource;
+      visibleCounts.papers = RESEARCH_PAGE_SIZE.papers;
       renderPapers();
+      return;
+    }
+
+    const loadMoreButton = event.target.closest("[data-research-load-more]");
+    if (loadMoreButton) {
+      const panel = String(loadMoreButton.dataset.researchLoadMore || "");
+      if (!RESEARCH_PAGE_SIZE[panel]) return;
+      visibleCounts[panel] = (visibleCounts[panel] || RESEARCH_PAGE_SIZE[panel]) + RESEARCH_PAGE_SIZE[panel];
+      if (panel === "papers") renderPapers();
+      if (panel === "grants") renderGrants();
+      if (panel === "patents") renderPatents();
+      if (panel === "trials") renderTrials();
       return;
     }
 
@@ -1311,6 +1333,7 @@
       filters[panel][field] = event.target.type === "checkbox"
         ? Boolean(event.target.checked)
         : String(event.target.value || "");
+      if (RESEARCH_PAGE_SIZE[panel]) visibleCounts[panel] = RESEARCH_PAGE_SIZE[panel];
       if (panel === "papers") renderPapers();
       if (panel === "grants") renderGrants();
       if (panel === "patents") renderPatents();
@@ -2515,6 +2538,17 @@
 
   function emptyCell(text) {
     return `<span class="table-empty">${escapeHtml(text)}</span>`;
+  }
+
+  function loadMoreMarkup(panelName, totalCount) {
+    const shown = Math.min(visibleCounts[panelName] || 0, totalCount);
+    if (shown >= totalCount) return "";
+    return `
+      <div class="intelligence-load-more">
+        <span>Mostrando ${number(shown)} de ${number(totalCount)}</span>
+        <button class="btn btn-ghost btn-compact" type="button" data-research-load-more="${escapeAttr(panelName)}">Cargar más</button>
+      </div>
+    `;
   }
 
   function topicPills(values) {

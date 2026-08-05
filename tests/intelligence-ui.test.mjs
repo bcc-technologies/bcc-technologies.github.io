@@ -217,3 +217,44 @@ test("topic hit counts match papers/signals correctly through the memoized index
   const overviewHtml = panels.get("overview").innerHTML;
   assert.match(overviewHtml, /MAP-Nano/);
 });
+
+test("papers and grants panels paginate instead of rendering every match at once", async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const papers = Array.from({ length: 25 }, (_, index) => ({
+    id: `paper-${index}`,
+    title: `Paper title ${index}`,
+    abstract: "",
+    authors: [],
+    institutions: [],
+    topics: [],
+    keywords: [],
+    citationsCount: 0,
+    publicationDate: today
+  }));
+  const grants = Array.from({ length: 55 }, (_, index) => ({
+    id: `grant-${index}`,
+    title: `Grant title ${index}`,
+    abstract: "",
+    agency: "",
+    program: "",
+    principalInvestigators: [],
+    institutions: [],
+    topics: [],
+    sourceUrl: "",
+    startDate: today
+  }));
+
+  const { panels } = await loadWorkspaceModule({ papers, grants });
+
+  const papersHtml = panels.get("papers").innerHTML;
+  const renderedPaperTitles = papersHtml.match(/Paper title \d+/g) || [];
+  assert.equal(renderedPaperTitles.length, 20, "papers panel should only render one page of cards");
+  assert.match(papersHtml, /Mostrando 20 de 25/);
+  assert.match(papersHtml, /data-research-load-more="papers"/);
+
+  const grantsHtml = panels.get("grants").innerHTML;
+  const renderedGrantTitles = grantsHtml.match(/Grant title \d+/g) || [];
+  assert.equal(renderedGrantTitles.length, 50, "grants panel should only render one page of rows");
+  assert.match(grantsHtml, /Mostrando 50 de 55/);
+  assert.match(grantsHtml, /data-research-load-more="grants"/);
+});
