@@ -176,10 +176,10 @@ async function loadWorkspaceModule() {
 test("intelligence overview renders usable empty states when there is no data", async () => {
   const { panels, message } = await loadWorkspaceModule();
 
-  assert.match(message.textContent, /Scientific & technology intelligence/i);
+  assert.match(message.textContent, /Intelligence científica y tecnológica/i);
   assert.match(panels.get("overview").innerHTML, /Total papers/);
-  assert.match(panels.get("signals").innerHTML, /No strategic signals generated yet\./);
-  assert.match(panels.get("papers").innerHTML, /No papers synced yet\./);
-  assert.match(panels.get("topics").innerHTML, /No topics configured\./);
-  assert.match(panels.get("sources").innerHTML, /No intelligence sources configured\./);
+  assert.match(panels.get("signals").innerHTML, /Todavía no hay señales estratégicas generadas\./);
+  assert.match(panels.get("papers").innerHTML, /Todavía no hay papers sincronizados\./);
+  assert.match(panels.get("topics").innerHTML, /No hay topics configurados\./);
+  assert.match(panels.get("sources").innerHTML, /No hay fuentes de intelligence configuradas\./);
 });

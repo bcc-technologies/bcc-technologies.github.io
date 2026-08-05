@@ -5,7 +5,7 @@ import { redactSensitiveText, supabaseRestFetch as restFetch } from "../lib/supa
 const SOURCE_COLUMNS = "id,name,type,base_url,enabled,requires_api_key,rate_limit_notes,last_sync_at";
 const TOPIC_COLUMNS = "id,name,keywords,enabled";
 const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source_id,citations_count,possible_duplicate,duplicate_candidates";
-const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url,raw_data";
+const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url";
 const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount";
 const PATENT_COLUMNS = "id,source_id,external_id,title,jurisdiction,status,publication_date,filing_date";
 const TRIAL_COLUMNS = "id,source_id,external_id,title,status,study_type,start_date,completion_date,sponsor";
@@ -307,8 +307,10 @@ export function createIntelligenceStoreFromEnv() {
         topics: Array.isArray(item.topics) ? item.topics : [],
         keywords: Array.isArray(item.keywords) ? item.keywords : [],
         citationsCount: Number(item.citations_count || 0),
-        openAccessUrl: item.open_access_url || "",
-        rawData: item.raw_data && typeof item.raw_data === "object" ? item.raw_data : {}
+        openAccessUrl: item.open_access_url || ""
+        // rawData intentionally omitted here: this scan only needs text fields for
+        // topic matching, and raw_data is the heaviest column on this table. savePaper()
+        // preserves the existing raw_data on repair since this item never carries it.
       })) : [];
     },
 
@@ -528,20 +530,28 @@ export function createIntelligenceStoreFromEnv() {
         duplicateCandidates
       }, sourceId);
       if (existing?.id) {
+        const patchBody = {
+          ...payload,
+          citations_count: Math.max(payload.citations_count, Number(existing.citations_count) || 0),
+          possible_duplicate: Boolean(payload.possible_duplicate || existing.possible_duplicate),
+          duplicate_candidates: Array.isArray(payload.duplicate_candidates) && payload.duplicate_candidates.length
+            ? payload.duplicate_candidates
+            : (Array.isArray(existing.duplicate_candidates) ? existing.duplicate_candidates : [])
+        };
+        // Callers like the topic-diagnostics scan never fetch raw_data (it's the
+        // heaviest column and unused for that pass), so item.rawData is absent
+        // there rather than an intentional {}. Omit the key in that case so the
+        // PATCH leaves the existing raw_data untouched instead of wiping it.
+        if (!Object.prototype.hasOwnProperty.call(item, "rawData")) {
+          delete patchBody.raw_data;
+        }
         const rows = await restFetch(baseUrl, serviceKey, "intelligence_papers", {
           method: "PATCH",
           prefer: "return=representation",
           params: {
             id: `eq.${existing.id}`
           },
-          body: {
-            ...payload,
-            citations_count: Math.max(payload.citations_count, Number(existing.citations_count) || 0),
-            possible_duplicate: Boolean(payload.possible_duplicate || existing.possible_duplicate),
-            duplicate_candidates: Array.isArray(payload.duplicate_candidates) && payload.duplicate_candidates.length
-              ? payload.duplicate_candidates
-              : (Array.isArray(existing.duplicate_candidates) ? existing.duplicate_candidates : [])
-          }
+          body: patchBody
         });
         const updated = Array.isArray(rows) ? rows[0] : rows;
         return { action: "updated", record: updated };

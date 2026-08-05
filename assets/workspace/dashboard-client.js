@@ -3798,10 +3798,10 @@ const INTELLIGENCE_RUN_ACTIONS = ["sync_papers", "fetch_papers", "fetch_grants",
 const INTELLIGENCE_RUN_STATUSES = ["pending", "running", "completed", "failed"];
 const INTELLIGENCE_SETTINGS_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
 const INTELLIGENCE_SOURCE_COLUMNS = "id, name, type, base_url, enabled, requires_api_key, rate_limit_notes, last_sync_at, created_at, updated_at";
-const INTELLIGENCE_PAPER_COLUMNS = "id, external_id, doi, arxiv_id, normalized_title, title, abstract, authors, institutions, publication_date, source_name, source_url, journal_or_venue, topics, keywords, citations_count, open_access_url, possible_duplicate, duplicate_candidates, raw_data, created_at, updated_at";
-const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, raw_data, created_at, updated_at";
-const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, raw_data, created_at, updated_at";
-const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, raw_data, created_at, updated_at";
+const INTELLIGENCE_PAPER_COLUMNS = "id, external_id, doi, arxiv_id, normalized_title, title, abstract, authors, institutions, publication_date, source_name, source_url, journal_or_venue, topics, keywords, citations_count, open_access_url, possible_duplicate, duplicate_candidates, created_at, updated_at";
+const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, created_at, updated_at";
+const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, created_at, updated_at";
+const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, created_at, updated_at";
 const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
 const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
 const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, created_at, updated_at";
@@ -4058,7 +4058,6 @@ function publicIntelligencePaper(paper) {
     openAccessUrl: paper.open_access_url || "",
     possibleDuplicate: Boolean(paper.possible_duplicate),
     duplicateCandidates: Array.isArray(paper.duplicate_candidates) ? paper.duplicate_candidates : [],
-    rawData: paper.raw_data && typeof paper.raw_data === "object" ? paper.raw_data : {},
     createdAt: paper.created_at,
     updatedAt: paper.updated_at
   };
@@ -4081,7 +4080,6 @@ function publicIntelligenceGrant(grant) {
     country: grant.country || "",
     sourceUrl: grant.source_url || "",
     topics: Array.isArray(grant.topics) ? grant.topics : [],
-    rawData: grant.raw_data && typeof grant.raw_data === "object" ? grant.raw_data : {},
     createdAt: grant.created_at,
     updatedAt: grant.updated_at
   };
@@ -4101,7 +4099,6 @@ function publicIntelligencePatent(patent) {
     status: patent.status || "unknown",
     sourceUrl: patent.source_url || "",
     topics: Array.isArray(patent.topics) ? patent.topics : [],
-    rawData: patent.raw_data && typeof patent.raw_data === "object" ? patent.raw_data : {},
     createdAt: patent.created_at,
     updatedAt: patent.updated_at
   };
@@ -4127,7 +4124,6 @@ function publicIntelligenceTrial(trial) {
     sourceUrl: trial.source_url || "",
     topics: Array.isArray(trial.topics) ? trial.topics : [],
     keywords: Array.isArray(trial.keywords) ? trial.keywords : [],
-    rawData: trial.raw_data && typeof trial.raw_data === "object" ? trial.raw_data : {},
     createdAt: trial.created_at,
     updatedAt: trial.updated_at
   };
