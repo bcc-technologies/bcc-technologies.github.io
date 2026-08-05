@@ -83,7 +83,7 @@ function createWorkspaceRoot() {
   return { root, panels, message };
 }
 
-async function loadWorkspaceModule() {
+async function loadWorkspaceModule(dashboardOverrides = {}) {
   const code = fs.readFileSync(path.resolve(process.cwd(), "js/workspace/intelligence.js"), "utf8");
   const { root, panels, message } = createWorkspaceRoot();
 
@@ -92,6 +92,34 @@ async function loadWorkspaceModule() {
       if (selector === "[data-intelligence-workspace]") return root;
       return null;
     }
+  };
+
+  const dashboard = {
+    overview: {
+      papersTracked: 0,
+      totalGrants: 0,
+      totalPatents: 0,
+      priorityTopics: 0,
+      newSignals: 0
+    },
+    sources: [],
+    papers: [],
+    grants: [],
+    patents: [],
+    institutions: [],
+    topics: [],
+    signals: [],
+    runs: [],
+    settings: {
+      id: "",
+      maxResultsPerSource: 20,
+      defaultDateRangeDays: 90,
+      suggestedFrequency: "daily",
+      defaultDryRun: false,
+      scoringThresholds: { opportunity: 60, actionability: 50, confidence: 50 },
+      monitoredLines: ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"]
+    },
+    ...dashboardOverrides
   };
 
   const context = {
@@ -111,35 +139,7 @@ async function loadWorkspaceModule() {
       },
       BCCAuth: {
         async api() {
-          return {
-            ok: true,
-            dashboard: {
-              overview: {
-                papersTracked: 0,
-                totalGrants: 0,
-                totalPatents: 0,
-                priorityTopics: 0,
-                newSignals: 0
-              },
-              sources: [],
-              papers: [],
-              grants: [],
-              patents: [],
-              institutions: [],
-              topics: [],
-              signals: [],
-              runs: [],
-              settings: {
-                id: "",
-                maxResultsPerSource: 20,
-                defaultDateRangeDays: 90,
-                suggestedFrequency: "daily",
-                defaultDryRun: false,
-                scoringThresholds: { opportunity: 60, actionability: 50, confidence: 50 },
-                monitoredLines: ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"]
-              }
-            }
-          };
+          return { ok: true, dashboard };
         }
       }
     },
@@ -182,4 +182,38 @@ test("intelligence overview renders usable empty states when there is no data", 
   assert.match(panels.get("papers").innerHTML, /Todavía no hay papers sincronizados\./);
   assert.match(panels.get("topics").innerHTML, /No hay topics configurados\./);
   assert.match(panels.get("sources").innerHTML, /No hay fuentes de intelligence configuradas\./);
+});
+
+test("topic hit counts match papers/signals correctly through the memoized index", async () => {
+  const { panels } = await loadWorkspaceModule({
+    topics: [
+      { id: "topic-nano", name: "MAP-Nano", category: "nano", description: "", keywords: ["quantum"], enabled: true }
+    ],
+    papers: [
+      { id: "paper-1", title: "Quantum paper", abstract: "", authors: [], institutions: [], topics: ["MAP-Nano"], keywords: [], citationsCount: 0 },
+      { id: "paper-2", title: "Unrelated paper", abstract: "", authors: [], institutions: [], topics: [], keywords: [], citationsCount: 0 }
+    ],
+    signals: [
+      {
+        id: "signal-1",
+        title: "Signal A",
+        summary: "",
+        signalType: "research_trend",
+        relatedLine: "MAP-Nano",
+        status: "new",
+        opportunityScore: 50,
+        actionabilityScore: 50,
+        confidenceScore: 50,
+        evidenceRefs: []
+      }
+    ]
+  });
+
+  const topicsHtml = panels.get("topics").innerHTML;
+  assert.match(topicsHtml, /<span>Papers<\/span><strong>1<\/strong>/);
+  assert.match(topicsHtml, /<span>Señales<\/span><strong>1<\/strong>/);
+  assert.match(topicsHtml, /<span>Activos<\/span><strong>2<\/strong>/);
+
+  const overviewHtml = panels.get("overview").innerHTML;
+  assert.match(overviewHtml, /MAP-Nano/);
 });

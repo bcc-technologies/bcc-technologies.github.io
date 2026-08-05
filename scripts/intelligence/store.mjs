@@ -116,6 +116,33 @@ export function createIntelligenceStoreFromEnv() {
   assertEnv("SUPABASE_URL", baseUrl);
   assertEnv("SUPABASE_SERVICE_ROLE_KEY", serviceKey);
 
+  // findPossiblePaperDuplicates() used to fetch these same 50 rows on every
+  // single savePaper() call (once per paper saved in a sync run). Duplicate
+  // detection only needs a snapshot of papers that existed before this run
+  // started -- intra-batch duplicates are already caught separately by
+  // annotatePossibleDuplicates() before any paper reaches savePaper() -- so
+  // one fetch, cached for the lifetime of this store instance (one sync run),
+  // is enough.
+  let recentPaperCandidates = null;
+  async function loadRecentPaperCandidates() {
+    if (recentPaperCandidates) return recentPaperCandidates;
+    const rows = await restFetch(baseUrl, serviceKey, "intelligence_papers", {
+      params: {
+        select: PAPER_COLUMNS,
+        order: "updated_at.desc",
+        limit: 50
+      }
+    });
+    recentPaperCandidates = (Array.isArray(rows) ? rows : []).map(row => ({
+      id: row.id,
+      externalId: row.external_id || "",
+      sourceType: "",
+      title: row.title || "",
+      normalizedTitle: row.normalized_title || ""
+    }));
+    return recentPaperCandidates;
+  }
+
   return {
     async listEnabledTopics() {
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_topics", {
@@ -492,22 +519,8 @@ export function createIntelligenceStoreFromEnv() {
       const normalizedTitle = cleanText(titleFingerprint(normalizeTitle(item?.title || "", 600)), 600);
       if (!normalizedTitle) return [];
 
-      const rows = await restFetch(baseUrl, serviceKey, "intelligence_papers", {
-        params: {
-          select: PAPER_COLUMNS,
-          order: "updated_at.desc",
-          limit: 50
-        }
-      });
-      const candidates = (Array.isArray(rows) ? rows : [])
-        .filter(row => row?.id && row.id !== excludeId)
-        .map(row => ({
-          id: row.id,
-          externalId: row.external_id || "",
-          sourceType: "",
-          title: row.title || "",
-          normalizedTitle: row.normalized_title || ""
-        }));
+      const allCandidates = await loadRecentPaperCandidates();
+      const candidates = allCandidates.filter(row => row?.id && row.id !== excludeId);
 
       return findPossibleDuplicateCandidates(item, candidates).map(candidate => {
         const match = candidates.find(row =>

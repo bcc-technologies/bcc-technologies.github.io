@@ -66,6 +66,7 @@
   let selectedSourceId = "";
   let filters = {};
   let dashboard = emptyDashboard();
+  let topicHitsIndex = null;
 
   function init(account) {
     root = document.querySelector("[data-intelligence-workspace]");
@@ -230,6 +231,7 @@
 
   function applyDashboardState(nextDashboard, options = {}) {
     dashboard = normalizeDashboard(nextDashboard);
+    topicHitsIndex = null;
     syncDryRun = dashboard.settings.defaultDryRun;
     filters = normalizeFiltersState(filters, String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
     currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
@@ -1377,6 +1379,7 @@
         body: JSON.stringify({ status })
       });
       upsertById(dashboard.signals, data.signal);
+      topicHitsIndex = null;
       selectedSignalId = data.signal.id;
       writeDashboardCache(dashboard);
       setMessage(`Señal marcada como ${signalStatusLabel(status)}.`, "ok");
@@ -1405,6 +1408,7 @@
         })
       });
       upsertById(dashboard.topics, data.topic);
+      topicHitsIndex = null;
       selectedTopicId = data.topic.id;
       writeDashboardCache(dashboard);
       setMessage(payload.id ? "Topic actualizado." : "Topic creado.", "ok");
@@ -1767,21 +1771,53 @@
     });
   }
 
+  // computeTopicHits() is the single source of truth for how a topic matches
+  // papers/grants/patents/trials/signals. topicHeatmap() and topicInsight() used
+  // to each run their own copy of this same scan (5 full-array filters per
+  // topic) on every render, and saveTopic() alone re-renders 6 panels per
+  // edit, so a single topic edit could trigger dozens of redundant array scans.
+  // getTopicHits() memoizes the result per topic until the underlying data
+  // changes (see topicHitsIndex = null in applyDashboardState/saveTopic/
+  // updateSignalStatus), so each render after the first is an O(1) lookup.
+  function computeTopicHits(topic) {
+    const line = mapTopicLine(topic);
+    const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
+    const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
+    const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
+    const trialHits = dashboard.trials.filter(item => itemMatchesTopic(item, topic, ["title", "summary", "topics", "keywords", "conditions", "interventions", "sponsor", "collaborators", "locations", "countries"])).length;
+    const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === line).length;
+    return {
+      line,
+      paperHits,
+      grantHits,
+      patentHits,
+      trialHits,
+      signalHits,
+      totalHits: paperHits + grantHits + patentHits + trialHits + signalHits
+    };
+  }
+
+  function getTopicHits(topic) {
+    if (!topicHitsIndex) {
+      topicHitsIndex = new Map(dashboard.topics.map(item => [item.id, computeTopicHits(item)]));
+    }
+    if (!topicHitsIndex.has(topic.id)) {
+      topicHitsIndex.set(topic.id, computeTopicHits(topic));
+    }
+    return topicHitsIndex.get(topic.id);
+  }
+
   function topicHeatmap() {
     const entries = dashboard.topics
       .filter(item => item.enabled)
       .map(topic => {
-        const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
-        const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
-        const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
-        const trialHits = dashboard.trials.filter(item => itemMatchesTopic(item, topic, ["title", "summary", "topics", "keywords", "conditions", "interventions", "sponsor", "collaborators", "locations", "countries"])).length;
-        const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === mapTopicLine(topic)).length;
-        const scoreValue = paperHits * 3 + grantHits * 2 + patentHits * 2 + trialHits * 3 + signalHits * 4;
+        const hits = getTopicHits(topic);
+        const scoreValue = hits.paperHits * 3 + hits.grantHits * 2 + hits.patentHits * 2 + hits.trialHits * 3 + hits.signalHits * 4;
         return {
           name: topic.name,
-          line: mapTopicLine(topic),
+          line: hits.line,
           score: scoreValue,
-          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patentes · ${trialHits} ensayos · ${signalHits} señales`
+          note: `${hits.paperHits} papers · ${hits.grantHits} grants · ${hits.patentHits} patentes · ${hits.trialHits} ensayos · ${hits.signalHits} señales`
         };
       })
       .filter(item => item.score > 0)
@@ -2330,15 +2366,9 @@
   }
 
   function topicInsight(topic) {
-    const line = mapTopicLine(topic);
-    const paperHits = dashboard.papers.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "keywords", "authors", "institutions"])).length;
-    const grantHits = dashboard.grants.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "program", "agency", "institutions"])).length;
-    const patentHits = dashboard.patents.filter(item => itemMatchesTopic(item, topic, ["title", "abstract", "topics", "inventors", "assignees", "jurisdiction"])).length;
-    const trialHits = dashboard.trials.filter(item => itemMatchesTopic(item, topic, ["title", "summary", "topics", "keywords", "conditions", "interventions", "sponsor", "collaborators", "locations", "countries"])).length;
-    const signalHits = dashboard.signals.filter(item => (item.relatedLine || "General") === line).length;
-    const totalHits = paperHits + grantHits + patentHits + trialHits + signalHits;
+    const hits = getTopicHits(topic);
     const keywordCount = Array.isArray(topic?.keywords) ? topic.keywords.length : 0;
-    const health = !topic.enabled ? "paused" : totalHits >= 12 ? "hot" : totalHits >= 4 ? "active" : "cold";
+    const health = !topic.enabled ? "paused" : hits.totalHits >= 12 ? "hot" : hits.totalHits >= 4 ? "active" : "cold";
     const healthLabel = {
       paused: "En pausa",
       hot: "En tendencia",
@@ -2349,17 +2379,17 @@
       id: topic.id,
       name: topic.name,
       enabled: Boolean(topic.enabled),
-      line,
-      paperHits,
-      grantHits,
-      patentHits,
-      trialHits,
-      signalHits,
-      totalHits,
+      line: hits.line,
+      paperHits: hits.paperHits,
+      grantHits: hits.grantHits,
+      patentHits: hits.patentHits,
+      trialHits: hits.trialHits,
+      signalHits: hits.signalHits,
+      totalHits: hits.totalHits,
       keywordCount,
       health,
       healthLabel,
-      note: `${paperHits} papers · ${trialHits} ensayos · ${signalHits} señales · ${keywordCount} keywords`
+      note: `${hits.paperHits} papers · ${hits.trialHits} ensayos · ${hits.signalHits} señales · ${keywordCount} keywords`
     };
   }
 
