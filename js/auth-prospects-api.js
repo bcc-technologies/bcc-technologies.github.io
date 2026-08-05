@@ -36,11 +36,12 @@
         if (isMissingProspectAssignmentSchema(prospectsResult.error)) {
           prospectsResult = await supabase.from("workspace_prospects").select(columns.prospectBase).order("updated_at", { ascending: false });
         }
-        const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }, assignableOwnersResult] = await Promise.all([
+        const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }, assignableOwnersResult, automationStatusResult] = await Promise.all([
           supabase.from("workspace_prospect_templates").select(columns.templates).order("updated_at", { ascending: false }),
           supabase.from("workspace_prospect_emails").select(columns.emails).order("created_at", { ascending: false }).limit(200),
           supabase.from("workspace_prospect_activities").select(columns.activities).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400),
-          supabase.rpc("list_assignable_prospect_owners")
+          supabase.rpc("list_assignable_prospect_owners"),
+          supabase.rpc("get_prospect_automation_status")
         ]);
         const { data: prospects, error: prospectsError } = prospectsResult;
         if (prospectsError) throw prospectsError;
@@ -50,13 +51,21 @@
         // La migracion de responsables (owner_user_id) puede no estar aplicada todavia;
         // en ese caso el dropdown de responsables queda vacio en lugar de romper el dashboard.
         const assignableOwners = Array.isArray(assignableOwnersResult?.data) ? assignableOwnersResult.data : [];
+        // La migracion de automatizaciones puede no estar aplicada todavia; en ese
+        // caso las tarjetas de automatizacion muestran cero en vez de romper el dashboard.
+        const automationStatus = Array.isArray(automationStatusResult?.data) ? automationStatusResult.data : [];
         return handled({
           ok: true,
           prospects: (prospects || []).map(publicWorkspaceProspect),
           templates: (templates || []).map(publicWorkspaceProspectTemplate),
           emails: (emails || []).map(publicWorkspaceProspectEmail),
           activities: (activities || []).map(publicWorkspaceProspectActivity),
-          assignableOwners: assignableOwners.map(item => ({ id: item.id, displayName: item.display_name || "" }))
+          assignableOwners: assignableOwners.map(item => ({ id: item.id, displayName: item.display_name || "" })),
+          automationStatus: automationStatus.map(item => ({
+            notificationType: item.notification_type,
+            queuedCount: Number(item.queued_count) || 0,
+            lastQueuedAt: item.last_queued_at || null
+          }))
         });
       }
 

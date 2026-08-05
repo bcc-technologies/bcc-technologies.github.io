@@ -1627,6 +1627,7 @@ const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal",
 const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
 const WORKSPACE_PROSPECT_ACTIVITY_TYPES = ["note", "call", "meeting", "email", "follow_up"];
 const WORKSPACE_PROSPECT_ASSIGNMENT_STATUSES = ["unassigned", "assigned", "accepted", "declined", "needs_reassignment"];
+const WORKSPACE_PROSPECT_TEMPLATE_CATEGORIES = ["", "first_contact", "follow_up", "proposal", "negotiation", "reactivation", "closing", "internal"];
 const INTELLIGENCE_TOPIC_CATEGORIES = ["nano", "bio", "med", "ing", "general"];
 const INTELLIGENCE_SOURCE_TYPES = ["arxiv", "openalex", "crossref", "semantic_scholar", "pubmed", "nih_reporter", "nsf", "clinicaltrials", "epo_ops", "cordis", "uspto", "custom"];
 const INTELLIGENCE_SIGNAL_TYPES = ["product_opportunity", "market_trend", "research_trend", "partnership", "content_idea", "competitive_risk", "grant_opportunity"];
@@ -2570,7 +2571,7 @@ function normalizeWorkspaceProspectTemplateInput(value, requireContent = false) 
   }
   if (Object.prototype.hasOwnProperty.call(payload, "category")) {
     const category = String(payload.category || "").trim();
-    if (category.length > 80) throw new Error("La categoria es demasiado larga.");
+    if (!WORKSPACE_PROSPECT_TEMPLATE_CATEGORIES.includes(category)) throw new Error("Categoria invalida.");
     template.category = category;
   }
   if (Object.prototype.hasOwnProperty.call(payload, "tags")) {

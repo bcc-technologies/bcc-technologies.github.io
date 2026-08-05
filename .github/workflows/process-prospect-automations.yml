@@ -1,0 +1,29 @@
+name: Process prospect pipeline automations
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Motivo del disparo manual"
+        required: false
+        type: string
+  schedule:
+    - cron: "*/30 * * * *"
+
+concurrency:
+  group: process-prospect-automations
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Queue and dispatch prospect automation notifications
+        run: node scripts/process-prospect-automations.mjs

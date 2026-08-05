@@ -16,6 +16,16 @@
     { id: "archived", label: "Archivado" }
   ];
 
+  const TEMPLATE_CATEGORIES = [
+    { id: "first_contact", label: "Primer contacto" },
+    { id: "follow_up", label: "Seguimiento" },
+    { id: "proposal", label: "Propuesta" },
+    { id: "negotiation", label: "Negociación" },
+    { id: "reactivation", label: "Reactivación" },
+    { id: "closing", label: "Cierre" },
+    { id: "internal", label: "Interno" }
+  ];
+
   const TEMPLATE_HINTS = [
     "{{first_name}}",
     "{{full_name}}",
@@ -54,6 +64,7 @@
     PHASES,
     EMAIL_STATUSES,
     EMAIL_DELIVERY_STATUSES,
+    TEMPLATE_CATEGORIES,
     TEMPLATE_HINTS,
     ACTIVITY_TYPES,
     ASSIGNMENT_STATUSES,

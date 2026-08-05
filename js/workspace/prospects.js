@@ -1,6 +1,6 @@
 (() => {
   const ui = window.BCCWorkspaceUI;
-  const { PHASES, EMAIL_STATUSES, EMAIL_DELIVERY_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
+  const { PHASES, EMAIL_STATUSES, EMAIL_DELIVERY_STATUSES, TEMPLATE_CATEGORIES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
   const ProspectsApi = window.BCCWorkspaceProspectsApi;
   const ProspectsLayout = window.BCCWorkspaceProspectsLayout;
 
@@ -8,6 +8,7 @@
   let user = null;
   let prospects = [];
   let assignableOwners = [];
+  let automationStatus = [];
   let templates = [];
   let emails = [];
   let activities = [];
@@ -128,6 +129,7 @@
       const data = await ProspectsApi.loadDashboard({ timeoutMs: PROSPECTS_TIMEOUT_MS, withTimeout });
       prospects = Array.isArray(data.prospects) ? data.prospects : [];
       assignableOwners = Array.isArray(data.assignableOwners) ? data.assignableOwners : [];
+      automationStatus = Array.isArray(data.automationStatus) ? data.automationStatus : [];
       templates = Array.isArray(data.templates) ? data.templates : [];
       emails = Array.isArray(data.emails) ? data.emails : [];
       activities = Array.isArray(data.activities) ? data.activities : [];
@@ -337,7 +339,7 @@
     if (!board) return;
     const currentItems = filteredProspects();
     const selected = selectedProspect();
-    const automatedCount = pipelineAutomations().filter(item => item.enabled).length;
+    const automatedCount = automationStatus.reduce((total, item) => total + (Number(item.queuedCount) || 0), 0);
     board.innerHTML = `
       <div class="prospects-pipeline-toolbar" aria-label="Modo de pipeline">
         <div class="prospects-pipeline-mode" role="tablist" aria-label="Vistas del pipeline">
@@ -347,7 +349,7 @@
         <div class="prospects-pipeline-stats" aria-label="Resumen operativo del pipeline">
           <span><strong>${number(currentItems.length)}</strong>En flujo</span>
           <span><strong>${number(automationCandidates(currentItems).length)}</strong>Por designar</span>
-          <span><strong>${number(automatedCount)}</strong>Reglas activas</span>
+          <span><strong>${number(automatedCount)}</strong>Avisos automáticos (24h)</span>
         </div>
       </div>
       ${pipelineMode === "rules" ? renderPipelineAutomationView(currentItems) : renderPipelineFlowView(currentItems, selected)}
@@ -397,13 +399,14 @@
             <button class="btn btn-ghost btn-compact" type="button" data-prospect-new-inline>${ui.icon("plus", "sm")}Crear prospecto</button>
           </div>
           ${rules.map(rule => `
-            <article class="prospect-automation-card ${rule.enabled ? "is-enabled" : "is-paused"}">
+            <article class="prospect-automation-card is-enabled">
               <div>
                 <span>${ui.icon(rule.icon, "sm")}${escapeHtml(rule.scope)}</span>
                 <strong>${escapeHtml(rule.title)}</strong>
                 <p>${escapeHtml(rule.description)}</p>
+                ${rule.status?.lastQueuedAt ? `<small>Último aviso: ${escapeHtml(formatDate(rule.status.lastQueuedAt))}</small>` : ""}
               </div>
-              <em>${rule.enabled ? "Activa" : "Pausada"}</em>
+              <em>${rule.alwaysOn ? "Siempre activa" : `${number(rule.status?.queuedCount || 0)} en 24h`}</em>
             </article>
           `).join("")}
         </section>
@@ -441,6 +444,7 @@
         </div>
         <div class="prospect-card-meta-row">
           <span class="prospect-assignment-pill is-${escapeAttr(item.assignmentStatus || "unassigned")}">${ui.icon("user-check", "sm")}${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</span>
+          ${deliveryStatusBadge(latestEmailWithDeliveryStatus(item.id) || {})}
           <span class="prospect-automation-hint">${ui.icon("zap", "sm")}${escapeHtml(automation)}</span>
         </div>
       </article>
@@ -461,6 +465,7 @@
         <div><dt>Valor</dt><dd>${escapeHtml(item.valueEstimate ? currency(item.valueEstimate) : "-")}</dd></div>
         <div><dt>Responsable</dt><dd>${escapeHtml(ownerLabel(item))}</dd></div>
         <div><dt>Asignación</dt><dd>${escapeHtml(assignmentStatusLabel(item.assignmentStatus))}</dd></div>
+        <div><dt>Último envío</dt><dd>${latestEmailDeliveryLabel(item.id)}</dd></div>
         <div><dt>Automatización</dt><dd>${escapeHtml(pipelineAutomationHint(item))}</dd></div>
         <div><dt>Fase siguiente</dt><dd>${escapeHtml(nextPhase?.label || "Cierre")}</dd></div>
       </dl>
@@ -474,6 +479,7 @@
         <label>Responsable
           <select data-pipeline-owner-field>${ownerSelectOptions(item)}</select>
         </label>
+        ${ownerEmptyHint()}
         <label>Estado
           <select data-pipeline-assignment-field>
             ${ASSIGNMENT_STATUSES.map(status => `<option value="${escapeAttr(status.id)}" ${status.id === (item.assignmentStatus || "unassigned") ? "selected" : ""}>${escapeHtml(status.label)}</option>`).join("")}
@@ -495,12 +501,41 @@
     return `<div class="prospect-empty">Selecciona una oportunidad para administrar su siguiente acción, comunicación o automatización.</div>`;
   }
 
+  function automationStatusFor(type) {
+    return automationStatus.find(item => item.notificationType === type) || null;
+  }
+
   function pipelineAutomations() {
     return [
-      { scope: "Entrada", title: "Nuevo contacto -> asignar responsable", description: "Marca contactos sin dueño para que el equipo los designe antes de que se enfríen.", icon: "user-plus", enabled: true },
-      { scope: "Seguimiento", title: "Fecha vencida -> actividad pendiente", description: "Detecta oportunidades vencidas y las empuja a la cola de designación del pipeline.", icon: "calendar-clock", enabled: true },
-      { scope: "Propuesta", title: "Propuesta sin respuesta -> correo", description: "Sugiere comunicación desde plantillas cuando una propuesta queda sin próximo paso claro.", icon: "send", enabled: true },
-      { scope: "Cierre", title: "Ganado o perdido -> congelar acciones", description: "Evita que los cierres sigan apareciendo como trabajo operativo activo.", icon: "lock", enabled: false }
+      {
+        scope: "Entrada",
+        title: "Contacto sin responsable -> avisar al equipo",
+        description: "Notifica por push a quienes pueden gestionar el CRM cuando un contacto lleva más de 24h sin dueño.",
+        icon: "user-plus",
+        status: automationStatusFor("prospect_unassigned")
+      },
+      {
+        scope: "Seguimiento",
+        title: "Fecha vencida -> avisar al responsable",
+        description: "Notifica por push al responsable cuando su próximo seguimiento ya venció.",
+        icon: "calendar-clock",
+        status: automationStatusFor("prospect_overdue")
+      },
+      {
+        scope: "Propuesta",
+        title: "Propuesta estancada -> avisar al responsable",
+        description: "Notifica por push cuando una propuesta o negociación lleva más de 48h sin fecha de seguimiento.",
+        icon: "send",
+        status: automationStatusFor("prospect_stalled")
+      },
+      {
+        scope: "Cierre",
+        title: "Ganado o perdido -> congelar acciones",
+        description: "Los contactos cerrados ya se excluyen automáticamente de las colas de seguimiento y designación.",
+        icon: "lock",
+        status: null,
+        alwaysOn: true
+      }
     ];
   }
 
@@ -882,6 +917,7 @@
           </select>
         </label>
       </div>
+      ${ownerEmptyHint()}
       <label>Nota de asignación
         <input name="assignmentNote" maxlength="240" value="${escapeAttr(prospect.assignmentNote || "")}" placeholder="Contexto para quien recibe o reasigna" />
       </label>
@@ -1043,7 +1079,7 @@
     const count = root.querySelector("[data-prospect-template-count]");
     if (!form || !list || !preview || !controls) return;
 
-    const categories = Array.from(new Set(templates.map(item => String(item.category || "Sin categoría").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const usedCategoryCount = new Set(templates.map(item => item.category).filter(Boolean)).size;
     const visibleTemplates = filteredTemplates();
     const selected = templateDraft || selectedTemplate() || emptyTemplate();
     const activeCount = templates.filter(item => item.isActive !== false).length;
@@ -1054,7 +1090,7 @@
         <label class="workspace-search prospects-search">${ui.icon("search", "sm")}<input type="search" data-template-search placeholder="Buscar plantillas..." value="${escapeAttr(templateSearchTerm)}" autocomplete="off" aria-label="Buscar plantillas" /></label>
         <select data-template-category-filter aria-label="Filtrar plantillas por categoría">
           <option value="">Todas las categorías</option>
-          ${categories.map(category => `<option value="${escapeAttr(category)}" ${category === templateCategoryFilter ? "selected" : ""}>${escapeHtml(category)}</option>`).join("")}
+          ${TEMPLATE_CATEGORIES.map(category => `<option value="${escapeAttr(category.id)}" ${category.id === templateCategoryFilter ? "selected" : ""}>${escapeHtml(category.label)}</option>`).join("")}
         </select>
         <select data-template-status-filter aria-label="Filtrar plantillas por estado">
           <option value="all" ${templateStatusFilter === "all" ? "selected" : ""}>Todas</option>
@@ -1066,7 +1102,7 @@
       <div class="prospects-template-stats" aria-label="Resumen de plantillas">
         <span><strong>${number(templates.length)}</strong>Total</span>
         <span><strong>${number(activeCount)}</strong>Activas</span>
-        <span><strong>${number(categories.length)}</strong>Categorías</span>
+        <span><strong>${number(usedCategoryCount)}</strong>Categorías</span>
       </div>
     `;
 
@@ -1081,7 +1117,10 @@
       </label>
       <div class="prospects-form-grid">
         <label>Categoría
-          <input name="category" maxlength="80" value="${escapeAttr(selected.category || "")}" placeholder="Primer contacto, seguimiento, propuesta..." />
+          <select name="category">
+            <option value="">Sin categoría</option>
+            ${TEMPLATE_CATEGORIES.map(category => `<option value="${escapeAttr(category.id)}" ${category.id === (selected.category || "") ? "selected" : ""}>${escapeHtml(category.label)}</option>`).join("")}
+          </select>
         </label>
         <label>Tags
           <input name="tags" maxlength="220" value="${escapeAttr((selected.tags || []).join(", "))}" />
@@ -1131,12 +1170,11 @@
 
   function filteredTemplates() {
     return templates.filter(item => {
-      const category = String(item.category || "Sin categoría").trim();
-      if (templateCategoryFilter && category !== templateCategoryFilter) return false;
+      if (templateCategoryFilter && (item.category || "") !== templateCategoryFilter) return false;
       if (templateStatusFilter === "active" && item.isActive === false) return false;
       if (templateStatusFilter === "paused" && item.isActive !== false) return false;
       if (!templateSearchTerm) return true;
-      const haystack = [item.name, item.category, item.subject, item.body, (item.tags || []).join(" ")].join(" ").toLowerCase();
+      const haystack = [item.name, templateCategoryLabel(item.category), item.subject, item.body, (item.tags || []).join(" ")].join(" ").toLowerCase();
       return haystack.includes(templateSearchTerm);
     }).slice().sort((left, right) => {
       const activeDiff = Number(right.isActive !== false) - Number(left.isActive !== false);
@@ -1169,7 +1207,7 @@
 
   function templateLibraryItem(item) {
     const status = item.isActive !== false ? "Activa" : "Pausada";
-    const category = item.category || "Sin categoría";
+    const category = templateCategoryLabel(item.category);
     return `
       <article class="prospect-template-card ${item.id === selectedTemplateId ? "is-active" : ""}" data-template-open="${escapeAttr(item.id)}">
         <button class="prospect-template-card-main" type="button" data-template-open="${escapeAttr(item.id)}">
@@ -1195,7 +1233,7 @@
       <div class="prospect-template-preview-head">
         <span class="prospect-template-state ${template.isActive !== false ? "is-enabled" : "is-paused"}">${template.isActive !== false ? "Activa" : "Pausada"}</span>
         <h3>${escapeHtml(template.name || "Plantilla sin nombre")}</h3>
-        <p>${escapeHtml(template.category || "Sin categoría")}</p>
+        <p>${escapeHtml(templateCategoryLabel(template.category))}</p>
       </div>
       <div class="prospect-template-preview-message">
         <span>Asunto</span>
@@ -1775,6 +1813,11 @@
     `;
   }
 
+  function ownerEmptyHint() {
+    if (assignableOwners.length) return "";
+    return `<p class="muted-text prospect-owner-empty-hint is-wide">No hay usuarios de staff o administración disponibles para asignar. Verifica que la migración de responsables esté aplicada y que existan perfiles con rol staff o admin.</p>`;
+  }
+
   function assignmentStatusLabel(status) {
     return ASSIGNMENT_STATUSES.find(item => item.id === status)?.label || "Sin responsable";
   }
@@ -1785,6 +1828,10 @@
 
   function emailStatusLabel(status) {
     return EMAIL_STATUSES.find(item => item.id === status)?.label || "Correo";
+  }
+
+  function templateCategoryLabel(id) {
+    return TEMPLATE_CATEGORIES.find(item => item.id === id)?.label || "Sin categoría";
   }
 
   function deliveryStatusLabel(status) {
@@ -1800,6 +1847,22 @@
   function deliveryStatusBadge(item) {
     if (!item.deliveryStatus) return "";
     return `<span class="prospect-delivery-pill ${deliveryStatusTone(item.deliveryStatus)}" title="${escapeAttr(item.deliveryDetail || "")}">${escapeHtml(deliveryStatusLabel(item.deliveryStatus))}</span>`;
+  }
+
+  function latestEmailWithDeliveryStatus(prospectId) {
+    const candidates = emails.filter(item => item.prospectId === prospectId && item.deliveryStatus);
+    if (!candidates.length) return null;
+    return candidates.slice().sort((left, right) => {
+      const leftTime = Date.parse(left.deliveryStatusAt || left.sentAt || left.createdAt || "") || 0;
+      const rightTime = Date.parse(right.deliveryStatusAt || right.sentAt || right.createdAt || "") || 0;
+      return rightTime - leftTime;
+    })[0];
+  }
+
+  function latestEmailDeliveryLabel(prospectId) {
+    const email = latestEmailWithDeliveryStatus(prospectId);
+    if (!email) return escapeHtml("Sin datos de entrega");
+    return `${escapeHtml(deliveryStatusLabel(email.deliveryStatus))} · ${escapeHtml(formatDate(email.deliveryStatusAt))}`;
   }
 
   function activityTypeOptions() {
