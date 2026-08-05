@@ -4449,14 +4449,22 @@ async function loadIntelligenceDashboardData(supabase) {
     { data: runs, error: runsError },
     { data: settingsRows, error: settingsError }
   ] = await Promise.all([
+    // Papers/grants/patents/trials/signals feed topic hit-counting in
+    // js/workspace/intelligence.js (computeTopicHits), which scans the whole
+    // fetched array per topic -- not just what's visible after client-side
+    // filters. A capped fetch silently drops rows from those counts, not just
+    // from the list view. Measured in production: intelligence_papers already
+    // had 543 rows against this 200-row cap, so 343 papers never counted
+    // toward any topic/source analytics. Limits below give real headroom
+    // without reintroducing the raw_data payload cost already removed.
     supabase.from("intelligence_sources").select(INTELLIGENCE_SOURCE_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(50),
-    supabase.from("intelligence_papers").select(INTELLIGENCE_PAPER_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
-    supabase.from("intelligence_grants").select(INTELLIGENCE_GRANT_COLUMNS).order("updated_at", { ascending: false }).limit(200),
-    supabase.from("intelligence_patents").select(INTELLIGENCE_PATENT_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
-    supabase.from("intelligence_trials").select(INTELLIGENCE_TRIAL_COLUMNS).order("start_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_papers").select(INTELLIGENCE_PAPER_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(1000),
+    supabase.from("intelligence_grants").select(INTELLIGENCE_GRANT_COLUMNS).order("updated_at", { ascending: false }).limit(500),
+    supabase.from("intelligence_patents").select(INTELLIGENCE_PATENT_COLUMNS).order("publication_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(500),
+    supabase.from("intelligence_trials").select(INTELLIGENCE_TRIAL_COLUMNS).order("start_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(500),
     supabase.from("intelligence_institutions").select(INTELLIGENCE_INSTITUTION_COLUMNS).order("related_papers_count", { ascending: false }).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_topics").select(INTELLIGENCE_TOPIC_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(100),
-    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).order("updated_at", { ascending: false }).limit(200),
+    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).order("updated_at", { ascending: false }).limit(500),
     supabase.from("intelligence_runs").select(INTELLIGENCE_RUN_COLUMNS).order("created_at", { ascending: false }).limit(50),
     supabase.from("intelligence_settings").select(INTELLIGENCE_SETTINGS_COLUMNS).order("updated_at", { ascending: false }).limit(1)
   ]);
