@@ -114,7 +114,7 @@ Deno.serve(async request => {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, staff_roles")
     .eq("id", authData.user.id)
     .maybeSingle();
 
@@ -122,7 +122,9 @@ Deno.serve(async request => {
     return json({ ok: false, error: `No fue posible validar permisos: ${profileError.message}` }, 500);
   }
 
-  if (String(profile?.role || "client") !== "admin") {
+  const staffRoles = Array.isArray(profile?.staff_roles) ? profile.staff_roles : [];
+  const canManageSignals = String(profile?.role || "client") === "admin" || staffRoles.includes("department_director");
+  if (!canManageSignals) {
     return json({ ok: false, error: "Permiso insuficiente." }, 403);
   }
 

@@ -13,14 +13,16 @@ El dashboard de `Prospectos` puede:
 supabase functions deploy send-prospect-email
 ```
 
+Ya esta desplegada en el proyecto `bcc-website` (`bglkyqiqzrcwegpjrucc`). Vuelve a correr el comando (o pide que se redespliegue) despues de cualquier cambio a `supabase/functions/send-prospect-email/index.ts`.
+
 ### 2. Configurar secretos en Supabase
 
 ```bash
 supabase secrets set \
   RESEND_API_KEY=tu_api_key \
-  RESEND_FROM_EMAIL=ventas@tu-dominio.com \
+  RESEND_FROM_EMAIL=ventas@bcctechnologies.com.do \
   RESEND_FROM_NAME="BCC Technologies" \
-  RESEND_REPLY_TO_EMAIL=contacto@tu-dominio.com
+  RESEND_REPLY_TO_EMAIL=contacto@bcctechnologies.com.do
 ```
 
 Notas:
@@ -63,7 +65,7 @@ Luego puedes:
 En el formulario del correo, cada linea acepta:
 
 ```text
-nombre-del-archivo.pdf | https://tu-dominio.com/ruta/archivo.pdf
+nombre-del-archivo.pdf | https://bcctechnologies.com.do/ruta/archivo.pdf
 ```
 
 Notas:
@@ -78,7 +80,35 @@ Notas:
 - La funcion valida que el usuario autenticado sea `admin`.
 - El procesamiento programado usa la `service role key` solo dentro de GitHub Actions.
 
-### 7. Si falla
+### 7. Seguimiento de entregas y rebotes (webhook)
+
+La funcion `resend-delivery-webhook` recibe eventos de Resend (entregado, rebotado, marcado como spam, retrasado, abierto, clic) y actualiza `delivery_status` en el correo correspondiente. En rebote o spam tambien deja una actividad en la timeline del prospecto.
+
+1. Desplegar la funcion:
+
+```bash
+supabase functions deploy resend-delivery-webhook --no-verify-jwt
+```
+
+Ya esta desplegada (JWT deshabilitado, como corresponde). `--no-verify-jwt` es obligatorio: Resend no envia un JWT de Supabase, autentica la llamada firmando el cuerpo (Svix). La funcion verifica esa firma por su cuenta.
+
+2. En el dashboard de Resend, crear un webhook apuntando a:
+
+```text
+https://bglkyqiqzrcwegpjrucc.supabase.co/functions/v1/resend-delivery-webhook
+```
+
+Selecciona los eventos: `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed`.
+
+3. Copia el "Signing Secret" que te da Resend al crear el webhook (empieza con `whsec_`) y configuralo como secreto de la funcion:
+
+```bash
+supabase secrets set RESEND_WEBHOOK_SECRET=whsec_...
+```
+
+4. Los estados posibles quedan visibles en la Bandeja y en la lista de correos de cada prospecto del CRM.
+
+### 8. Si falla
 
 - Verifica que la funcion `send-prospect-email` este desplegada.
 - Verifica los secretos en Supabase.

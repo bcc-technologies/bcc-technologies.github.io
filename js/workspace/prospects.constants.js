@@ -32,6 +32,16 @@
     { id: "follow_up", label: "Follow-up" }
   ];
 
+  const EMAIL_DELIVERY_STATUSES = [
+    { id: "delivered", label: "Entregado" },
+    { id: "delivery_delayed", label: "Retrasado" },
+    { id: "bounced", label: "Rebotado" },
+    { id: "complained", label: "Marcado como spam" },
+    { id: "opened", label: "Abierto" },
+    { id: "clicked", label: "Clic registrado" },
+    { id: "failed", label: "Fallido" }
+  ];
+
   const ASSIGNMENT_STATUSES = [
     { id: "unassigned", label: "Sin responsable" },
     { id: "assigned", label: "Asignado" },
@@ -43,6 +53,7 @@
   window.BCCWorkspaceProspectsConstants = {
     PHASES,
     EMAIL_STATUSES,
+    EMAIL_DELIVERY_STATUSES,
     TEMPLATE_HINTS,
     ACTIVITY_TYPES,
     ASSIGNMENT_STATUSES,

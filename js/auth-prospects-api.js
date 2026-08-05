@@ -36,22 +36,27 @@
         if (isMissingProspectAssignmentSchema(prospectsResult.error)) {
           prospectsResult = await supabase.from("workspace_prospects").select(columns.prospectBase).order("updated_at", { ascending: false });
         }
-        const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }] = await Promise.all([
+        const [{ data: templates, error: templatesError }, { data: emails, error: emailsError }, { data: activities, error: activitiesError }, assignableOwnersResult] = await Promise.all([
           supabase.from("workspace_prospect_templates").select(columns.templates).order("updated_at", { ascending: false }),
           supabase.from("workspace_prospect_emails").select(columns.emails).order("created_at", { ascending: false }).limit(200),
-          supabase.from("workspace_prospect_activities").select(columns.activities).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400)
+          supabase.from("workspace_prospect_activities").select(columns.activities).order("occurred_at", { ascending: false }).order("created_at", { ascending: false }).limit(400),
+          supabase.rpc("list_assignable_prospect_owners")
         ]);
         const { data: prospects, error: prospectsError } = prospectsResult;
         if (prospectsError) throw prospectsError;
         if (templatesError) throw templatesError;
         if (emailsError) throw emailsError;
         if (activitiesError) throw activitiesError;
+        // La migracion de responsables (owner_user_id) puede no estar aplicada todavia;
+        // en ese caso el dropdown de responsables queda vacio en lugar de romper el dashboard.
+        const assignableOwners = Array.isArray(assignableOwnersResult?.data) ? assignableOwnersResult.data : [];
         return handled({
           ok: true,
           prospects: (prospects || []).map(publicWorkspaceProspect),
           templates: (templates || []).map(publicWorkspaceProspectTemplate),
           emails: (emails || []).map(publicWorkspaceProspectEmail),
-          activities: (activities || []).map(publicWorkspaceProspectActivity)
+          activities: (activities || []).map(publicWorkspaceProspectActivity),
+          assignableOwners: assignableOwners.map(item => ({ id: item.id, displayName: item.display_name || "" }))
         });
       }
 

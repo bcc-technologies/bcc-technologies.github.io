@@ -3781,9 +3781,9 @@ const WORKSPACE_FORM_AUDIENCES = ["client", "staff"];
 const WORKSPACE_FORM_STATUSES = ["draft", "published"];
 const WORKSPACE_QUESTION_TYPES = ["short_text", "long_text", "scale", "choice"];
 const WORKSPACE_PROSPECT_BASE_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, created_at, updated_at";
-const WORKSPACE_PROSPECT_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, owner_label, assignment_status, assignment_note, created_at, updated_at";
+const WORKSPACE_PROSPECT_COLUMNS = "id, full_name, company, email, phone, phase, tags, source, notes, value_estimate, next_follow_up_on, last_contact_at, owner_label, owner_user_id, owner_type, assignment_status, assignment_note, created_at, updated_at";
 const WORKSPACE_PROSPECT_TEMPLATE_COLUMNS = "id, name, category, tags, subject, body, is_active, created_at, updated_at";
-const WORKSPACE_PROSPECT_EMAIL_COLUMNS = "id, prospect_id, template_id, recipient_email, subject, body, attachments, status, scheduled_for, sent_at, provider_message_id, created_at, updated_at";
+const WORKSPACE_PROSPECT_EMAIL_COLUMNS = "id, prospect_id, template_id, recipient_email, subject, body, attachments, status, scheduled_for, sent_at, provider_message_id, delivery_status, delivery_status_at, delivery_detail, created_at, updated_at";
 const WORKSPACE_PROSPECT_ACTIVITY_COLUMNS = "id, prospect_id, activity_type, title, details, due_at, occurred_at, meta, created_at, updated_at";
 const WORKSPACE_PROSPECT_PHASES = ["lead", "qualified", "contacted", "proposal", "negotiation", "won", "lost"];
 const WORKSPACE_PROSPECT_EMAIL_STATUSES = ["draft", "scheduled", "sent", "archived"];
@@ -4608,6 +4608,8 @@ function isMissingProspectAssignmentSchema(error) {
 function workspaceProspectWithoutAssignment(value) {
   const payload = { ...(value || {}) };
   delete payload.owner_label;
+  delete payload.owner_user_id;
+  delete payload.owner_type;
   delete payload.assignment_status;
   delete payload.assignment_note;
   return payload;
@@ -4672,9 +4674,15 @@ function normalizeWorkspaceProspectInput(value, requireContent = false) {
     if (lastContactAt && Number.isNaN(lastContactAt.getTime())) throw new Error("Fecha de ultimo contacto invalida.");
     prospect.last_contact_at = lastContactAt ? lastContactAt.toISOString() : null;
   }
-  if (Object.prototype.hasOwnProperty.call(payload, "ownerLabel")) {
-    const ownerLabel = String(payload.ownerLabel || "").trim();
+  if (Object.prototype.hasOwnProperty.call(payload, "ownerUserId")) {
+    const ownerUserId = String(payload.ownerUserId || "").trim();
+    if (ownerUserId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerUserId)) {
+      throw new Error("Responsable invalido.");
+    }
+    const ownerLabel = ownerUserId ? String(payload.ownerLabel || "").trim() : "";
     if (ownerLabel.length > 120) throw new Error("El responsable es demasiado largo.");
+    prospect.owner_user_id = ownerUserId || null;
+    prospect.owner_type = "user";
     prospect.owner_label = ownerLabel;
   }
   if (Object.prototype.hasOwnProperty.call(payload, "assignmentStatus")) {
@@ -4705,6 +4713,8 @@ function publicWorkspaceProspect(prospect) {
     nextFollowUpOn: prospect.next_follow_up_on || null,
     lastContactAt: prospect.last_contact_at || null,
     ownerLabel: prospect.owner_label || "",
+    ownerUserId: prospect.owner_user_id || "",
+    ownerType: prospect.owner_type || "user",
     assignmentStatus: prospect.assignment_status || "unassigned",
     assignmentNote: prospect.assignment_note || "",
     createdAt: prospect.created_at,
@@ -4816,6 +4826,9 @@ function publicWorkspaceProspectEmail(email) {
     scheduledFor: email.scheduled_for || null,
     sentAt: email.sent_at || null,
     providerMessageId: email.provider_message_id || "",
+    deliveryStatus: email.delivery_status || "",
+    deliveryStatusAt: email.delivery_status_at || null,
+    deliveryDetail: email.delivery_detail || "",
     createdAt: email.created_at,
     updatedAt: email.updated_at
   };

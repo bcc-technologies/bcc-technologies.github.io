@@ -1,12 +1,13 @@
 (() => {
   const ui = window.BCCWorkspaceUI;
-  const { PHASES, EMAIL_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
+  const { PHASES, EMAIL_STATUSES, EMAIL_DELIVERY_STATUSES, TEMPLATE_HINTS, ACTIVITY_TYPES, ASSIGNMENT_STATUSES, PROSPECTS_TIMEOUT_MS } = window.BCCWorkspaceProspectsConstants;
   const ProspectsApi = window.BCCWorkspaceProspectsApi;
   const ProspectsLayout = window.BCCWorkspaceProspectsLayout;
 
   let root = null;
   let user = null;
   let prospects = [];
+  let assignableOwners = [];
   let templates = [];
   let emails = [];
   let activities = [];
@@ -44,12 +45,15 @@
   }
 
   function bindControls() {
+    const debouncedProspectSearchRender = debounce(() => {
+      renderBoard();
+      renderDirectoryList();
+    }, 150);
     root.querySelectorAll("[data-prospect-search]").forEach(input => {
       input.addEventListener("input", event => {
         searchTerm = String(event.target.value || "").trim().toLowerCase();
         syncProspectSearchControls(event.target);
-        renderBoard();
-        renderDirectoryList();
+        debouncedProspectSearchRender();
       });
     });
     root.querySelectorAll("[data-prospect-phase-filter]").forEach(select => {
@@ -123,6 +127,7 @@
     try {
       const data = await ProspectsApi.loadDashboard({ timeoutMs: PROSPECTS_TIMEOUT_MS, withTimeout });
       prospects = Array.isArray(data.prospects) ? data.prospects : [];
+      assignableOwners = Array.isArray(data.assignableOwners) ? data.assignableOwners : [];
       templates = Array.isArray(data.templates) ? data.templates : [];
       emails = Array.isArray(data.emails) ? data.emails : [];
       activities = Array.isArray(data.activities) ? data.activities : [];
@@ -321,7 +326,7 @@
       <div class="prospect-inbox-list">
         ${inboxItems.length ? inboxItems.map(item => {
           const prospect = prospects.find(prospect => prospect.id === item.prospectId);
-          return `<button class="prospect-inbox-item" type="button" data-prospect-open="${escapeAttr(item.prospectId || "")}" data-directory-open="communication"><span class="prospect-template-state ${item.status === "sent" ? "is-enabled" : "is-paused"}">${escapeHtml(emailStatusLabel(item.status))}</span><strong>${escapeHtml(item.subject || "Sin asunto")}</strong><small>${escapeHtml(prospect?.fullName || item.recipientEmail || "Sin prospecto")} · ${escapeHtml(formatDate(item.scheduledFor || item.sentAt || item.createdAt))}</small></button>`;
+          return `<button class="prospect-inbox-item" type="button" data-prospect-open="${escapeAttr(item.prospectId || "")}" data-directory-open="communication"><span class="prospect-template-state ${item.status === "sent" ? "is-enabled" : "is-paused"}">${escapeHtml(emailStatusLabel(item.status))}</span>${deliveryStatusBadge(item)}<strong>${escapeHtml(item.subject || "Sin asunto")}</strong><small>${escapeHtml(prospect?.fullName || item.recipientEmail || "Sin prospecto")} · ${escapeHtml(formatDate(item.scheduledFor || item.sentAt || item.createdAt))}</small></button>`;
         }).join("") : `<div class="prospect-empty">No hay correos registrados.</div>`}
       </div>
     `;
@@ -467,7 +472,7 @@
       </div>
       <div class="prospect-assignment-editor">
         <label>Responsable
-          <input data-pipeline-owner-field value="${escapeAttr(item.ownerLabel || "")}" maxlength="120" placeholder="Nombre, rol o equipo" />
+          <select data-pipeline-owner-field>${ownerSelectOptions(item)}</select>
         </label>
         <label>Estado
           <select data-pipeline-assignment-field>
@@ -569,13 +574,14 @@
   }
 
 
-  async function updateProspectAssignment(prospectId, ownerLabelValue, assignmentStatusValue, assignmentNoteValue) {
+  async function updateProspectAssignment(prospectId, ownerUserIdValue, assignmentStatusValue, assignmentNoteValue) {
     const prospect = prospects.find(item => item.id === prospectId);
     if (!prospect) return;
-    const owner = String(ownerLabelValue || "").trim();
-    const status = owner ? String(assignmentStatusValue || "assigned") : "unassigned";
+    const ownerUserId = String(ownerUserIdValue || "").trim();
+    const status = ownerUserId ? String(assignmentStatusValue || "assigned") : "unassigned";
     const payload = prospectPayload(prospect, {
-      ownerLabel: owner,
+      ownerUserId,
+      ownerLabel: ownerDisplayName(ownerUserId),
       assignmentStatus: status,
       assignmentNote: assignmentNoteValue || ""
     });
@@ -603,6 +609,7 @@
       valueEstimate: prospect.valueEstimate ?? "",
       nextFollowUpOn: prospect.nextFollowUpOn || "",
       lastContactAt: prospect.lastContactAt || null,
+      ownerUserId: prospect.ownerUserId || "",
       ownerLabel: prospect.ownerLabel || "",
       assignmentStatus: prospect.assignmentStatus || "unassigned",
       assignmentNote: prospect.assignmentNote || "",
@@ -775,15 +782,6 @@
     return "no_date";
   }
 
-  function renderContextCards() {
-    root.querySelectorAll("[data-prospect-context]").forEach(target => {
-      const prospect = selectedProspect();
-      target.innerHTML = prospect ? selectedProspectSummary(prospect) : emptyProspectSummary();
-    });
-    refreshIcons();
-  }
-
-
   function sortedProspects(entries) {
     const phaseRank = { negotiation: 0, proposal: 1, contacted: 2, qualified: 3, lead: 4, won: 5, lost: 6 };
     return entries.slice().sort((left, right) => {
@@ -804,41 +802,6 @@
     if (!item.lastContactAt && !["won", "lost"].includes(item.phase)) return 3;
     if (item.nextFollowUpOn) return 4;
     return 5;
-  }
-
-  function prospectListItem(item) {
-    const tone = prospectTone(item);
-    return `
-      <button class="prospect-list-item ${item.id === selectedProspectId ? "is-active" : ""} ${tone}" type="button" data-prospect-open="${escapeAttr(item.id)}">
-        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
-        <strong>${escapeHtml(item.fullName)}</strong>
-        <small>${escapeHtml(item.company || item.email)}</small>
-        <em>${escapeHtml(nextActionLabel(item))}</em>
-      </button>
-    `;
-  }
-
-  function selectedProspectSummary(item) {
-    const prospectEmails = emails.filter(email => email.prospectId === item.id);
-    const prospectActivities = activities.filter(activity => activity.prospectId === item.id);
-    return `
-      <div class="prospect-summary-head">
-        <span class="prospect-phase-pill">${escapeHtml(phaseLabel(item.phase))}</span>
-        <strong>${escapeHtml(item.fullName)}</strong>
-        <small>${escapeHtml(item.company || item.email)}</small>
-      </div>
-      <dl class="prospect-summary-grid">
-        <div><dt>Seguimiento</dt><dd>${escapeHtml(item.nextFollowUpOn ? formatDate(item.nextFollowUpOn) : "Sin fecha")}</dd></div>
-        <div><dt>Último contacto</dt><dd>${escapeHtml(item.lastContactAt ? formatDate(item.lastContactAt) : "Sin contacto")}</dd></div>
-        <div><dt>Correos</dt><dd>${number(prospectEmails.length)}</dd></div>
-        <div><dt>Actividad</dt><dd>${number(prospectActivities.length)}</dd></div>
-      </dl>
-      <div class="prospect-summary-actions">
-        <button type="button" data-directory-open="profile">${ui.icon("contact-round", "sm")}Ficha</button>
-        <button type="button" data-directory-open="communication">${ui.icon("send", "sm")}Correo</button>
-        <button type="button" data-directory-open="activity">${ui.icon("clock-3", "sm")}Actividad</button>
-      </div>
-    `;
   }
 
   function emptyProspectSummary() {
@@ -911,7 +874,7 @@
           <input name="lastContactAt" type="datetime-local" value="${escapeAttr(datetimeLocalValue(prospect.lastContactAt))}" />
         </label>
         <label>Responsable
-          <input name="ownerLabel" maxlength="120" value="${escapeAttr(prospect.ownerLabel || "")}" placeholder="Persona, equipo o rol" />
+          <select name="ownerUserId">${ownerSelectOptions(prospect)}</select>
         </label>
         <label>Estado de asignación
           <select name="assignmentStatus">
@@ -1001,7 +964,7 @@
         ${prospectEmails.length ? prospectEmails.map(item => `
           <button class="prospect-email-item ${item.id === selectedEmailId ? "is-active" : ""}" type="button" data-email-open="${escapeAttr(item.id)}">
             <strong>${escapeHtml(item.subject)}</strong>
-            <span>${escapeHtml(emailStatusLabel(item.status))} · ${escapeHtml(formatDate(item.sentAt || item.scheduledFor || item.createdAt))}</span>
+            <span>${escapeHtml(emailStatusLabel(item.status))}${item.deliveryStatus ? ` · ${escapeHtml(deliveryStatusLabel(item.deliveryStatus))}` : ""} · ${escapeHtml(formatDate(item.sentAt || item.scheduledFor || item.createdAt))}</span>
           </button>
         `).join("") : `<div class="prospect-empty">Todavía no hay correos registrados para este prospecto.</div>`}
       </div>
@@ -1183,9 +1146,10 @@
   }
 
   function bindTemplateControls(controls, form) {
+    const debouncedTemplateSearchRender = debounce(() => renderTemplateLibrary(), 150);
     controls.querySelector("[data-template-search]")?.addEventListener("input", event => {
       templateSearchTerm = String(event.target.value || "").trim().toLowerCase();
-      renderTemplateLibrary();
+      debouncedTemplateSearchRender();
     });
     controls.querySelector("[data-template-category-filter]")?.addEventListener("change", event => {
       templateCategoryFilter = String(event.target.value || "");
@@ -1434,13 +1398,22 @@
       valueEstimate: fieldValue(form, "valueEstimate"),
       nextFollowUpOn: fieldValue(form, "nextFollowUpOn"),
       lastContactAt: fieldValue(form, "lastContactAt") ? new Date(fieldValue(form, "lastContactAt")).toISOString() : null,
-      ownerLabel: fieldValue(form, "ownerLabel"),
+      ownerUserId: fieldValue(form, "ownerUserId"),
+      ownerLabel: ownerDisplayName(fieldValue(form, "ownerUserId")),
       assignmentStatus: fieldValue(form, "assignmentStatus") || "unassigned",
       assignmentNote: fieldValue(form, "assignmentNote"),
       notes: fieldValue(form, "notes")
     };
+    const prospectId = fieldValue(form, "id");
+    if (!prospectId) {
+      const normalizedEmail = payload.email.trim().toLowerCase();
+      const duplicate = prospects.find(item => String(item.email || "").trim().toLowerCase() === normalizedEmail);
+      if (duplicate && !window.confirm(`Ya existe un contacto con este correo: ${duplicate.fullName}. ¿Crear de todas formas un registro nuevo?`)) {
+        return;
+      }
+    }
+    setFormBusy(form, true);
     try {
-      const prospectId = fieldValue(form, "id");
       const data = await ProspectsApi.saveProspect(prospectId, payload);
       upsertStateItem(prospects, data.prospect);
       selectedProspectId = data.prospect.id;
@@ -1450,6 +1423,7 @@
       renderAll();
     } catch (error) {
       setMessage(error.message || "No fue posible guardar el contacto.", "error");
+      setFormBusy(form, false);
     }
   }
 
@@ -1498,6 +1472,7 @@
       body: fieldValue(form, "body"),
       isActive: fieldChecked(form, "isActive")
     };
+    setFormBusy(form, true);
     try {
       const templateId = fieldValue(form, "id");
       const data = await ProspectsApi.saveTemplate(templateId, payload);
@@ -1509,6 +1484,7 @@
       renderEmailSection();
     } catch (error) {
       setMessage(error.message || "No fue posible guardar la plantilla.", "error");
+      setFormBusy(form, false);
     }
   }
 
@@ -1543,6 +1519,11 @@
       scheduledFor: fieldValue(form, "scheduledFor") ? new Date(fieldValue(form, "scheduledFor")).toISOString() : null,
       status: fieldValue(form, "status")
     };
+    if (intent === "send") {
+      const recipient = payload.recipientEmail || prospect.email || "el destinatario";
+      if (!window.confirm(`¿Enviar este correo ahora a ${recipient}? Esta accion no se puede deshacer.`)) return;
+    }
+    setFormBusy(form, true);
     try {
       const emailId = fieldValue(form, "id");
       if (intent === "schedule") {
@@ -1563,6 +1544,7 @@
       renderAll();
     } catch (error) {
       setMessage(error.message || "No fue posible guardar el correo.", "error");
+      setFormBusy(form, false);
     }
   }
 
@@ -1591,6 +1573,7 @@
       details: fieldValue(form, "details"),
       dueAt: fieldValue(form, "dueAt") ? new Date(fieldValue(form, "dueAt")).toISOString() : null
     };
+    setFormBusy(form, true);
     try {
       const activityId = fieldValue(form, "id");
       const data = await ProspectsApi.saveActivity(prospect.id, activityId, payload);
@@ -1602,6 +1585,7 @@
       renderActivitySection();
     } catch (error) {
       setMessage(error.message || "No fue posible guardar la actividad.", "error");
+      setFormBusy(form, false);
     }
   }
 
@@ -1666,7 +1650,6 @@
       tags: splitTags(fieldValue(form, "tags")),
       valueEstimate: fieldValue(form, "valueEstimate"),
       nextFollowUpOn: fieldValue(form, "nextFollowUpOn"),
-      ownerLabel: fieldValue(form, "ownerLabel"),
       assignmentStatus: fieldValue(form, "assignmentStatus") || "unassigned",
       assignmentNote: fieldValue(form, "assignmentNote"),
       notes: fieldValue(form, "notes")
@@ -1714,6 +1697,7 @@
       nextFollowUpOn: "",
       lastContactAt: null,
       ownerLabel: "",
+      ownerUserId: "",
       assignmentStatus: "unassigned",
       assignmentNote: ""
     };
@@ -1777,6 +1761,20 @@
     return String(item?.ownerLabel || "").trim() || "Sin responsable";
   }
 
+  function ownerDisplayName(ownerUserId) {
+    return assignableOwners.find(owner => owner.id === ownerUserId)?.displayName || "";
+  }
+
+  function ownerSelectOptions(prospect) {
+    const ownerUserId = prospect.ownerUserId || "";
+    const legacyLabel = !ownerUserId && prospect.ownerLabel ? prospect.ownerLabel : "";
+    const placeholder = legacyLabel ? `${legacyLabel} (sin vincular)` : "Sin responsable";
+    return `
+      <option value="">${escapeHtml(placeholder)}</option>
+      ${assignableOwners.map(owner => `<option value="${escapeAttr(owner.id)}" ${owner.id === ownerUserId ? "selected" : ""}>${escapeHtml(owner.displayName || "Sin nombre")}</option>`).join("")}
+    `;
+  }
+
   function assignmentStatusLabel(status) {
     return ASSIGNMENT_STATUSES.find(item => item.id === status)?.label || "Sin responsable";
   }
@@ -1787,6 +1785,21 @@
 
   function emailStatusLabel(status) {
     return EMAIL_STATUSES.find(item => item.id === status)?.label || "Correo";
+  }
+
+  function deliveryStatusLabel(status) {
+    return EMAIL_DELIVERY_STATUSES.find(item => item.id === status)?.label || "";
+  }
+
+  function deliveryStatusTone(status) {
+    if (["bounced", "complained", "failed"].includes(status)) return "is-overdue";
+    if (["delivered", "opened", "clicked"].includes(status)) return "is-enabled";
+    return "is-paused";
+  }
+
+  function deliveryStatusBadge(item) {
+    if (!item.deliveryStatus) return "";
+    return `<span class="prospect-delivery-pill ${deliveryStatusTone(item.deliveryStatus)}" title="${escapeAttr(item.deliveryDetail || "")}">${escapeHtml(deliveryStatusLabel(item.deliveryStatus))}</span>`;
   }
 
   function activityTypeOptions() {
@@ -1862,6 +1875,14 @@
     return new Intl.NumberFormat("es-DO", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(value || 0));
   }
 
+  function debounce(fn, waitMs = 150) {
+    let timer = null;
+    return (...args) => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => fn(...args), waitMs);
+    };
+  }
+
   function withTimeout(promise, timeoutMs, message) {
     return window.BCCWorkspaceUtils.withTimeout(promise, timeoutMs, message);
   }
@@ -1885,6 +1906,12 @@
       } catch {}
     }
     return error instanceof Error ? error : new Error(fallback);
+  }
+
+  function setFormBusy(form, busy) {
+    form?.querySelectorAll('button[type="submit"]').forEach(button => {
+      button.disabled = busy;
+    });
   }
 
   function fieldValue(form, name) {
