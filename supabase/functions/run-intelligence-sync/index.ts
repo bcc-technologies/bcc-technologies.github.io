@@ -121,7 +121,7 @@ Deno.serve(async request => {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, staff_roles")
+    .select("role, staff_roles, custom_roles")
     .eq("id", authData.user.id)
     .maybeSingle();
 
@@ -131,7 +131,30 @@ Deno.serve(async request => {
   }
 
   const role = String(profile?.role || "client");
-  if (role !== "admin") {
+  const staffRoles = Array.isArray(profile?.staff_roles) ? profile.staff_roles.map(String) : [];
+  const customRoleIds = Array.isArray(profile?.custom_roles) ? profile.custom_roles.map(String) : [];
+
+  // Mirrors private.can_manage_signals(): admin, the department_director staff
+  // role, or a custom role (public.workspace_role_definitions) granting
+  // "department:manage". Keep this in sync with that function.
+  let canManageSignals = role === "admin" || staffRoles.includes("department_director");
+  if (!canManageSignals && customRoleIds.length) {
+    const { data: roleDefinitions, error: roleDefinitionsError } = await supabase
+      .from("workspace_role_definitions")
+      .select("permissions")
+      .in("id", customRoleIds);
+
+    if (roleDefinitionsError) {
+      console.error("intelligence-sync role lookup failed:", sanitizeLogText(roleDefinitionsError.message, secrets));
+      return json({ ok: false, error: "No fue posible validar permisos." }, 500);
+    }
+
+    canManageSignals = (roleDefinitions || []).some(
+      definition => Array.isArray(definition.permissions) && definition.permissions.includes("department:manage")
+    );
+  }
+
+  if (!canManageSignals) {
     return json({ ok: false, error: "Permiso insuficiente." }, 403);
   }
 

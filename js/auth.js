@@ -625,8 +625,7 @@ async function currentUser() {
 
 
 function canManageSignalWorkspace(user) {
-  const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
-  return permissions.includes("admin:view") || permissions.includes("department:manage");
+  return Boolean(window.BCCAccessContracts?.canAccess(user, "department:manage"));
 }
 
 async function authorizedUser() {

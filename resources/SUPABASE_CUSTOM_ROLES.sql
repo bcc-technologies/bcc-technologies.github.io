@@ -30,6 +30,37 @@ create trigger touch_workspace_role_definitions_updated_at
 before update on public.workspace_role_definitions
 for each row execute function public.touch_workspace_role_definitions_updated_at();
 
+-- Re-declare private.can_manage_signals() (first defined in SUPABASE_AUTH_SETUP.sql,
+-- before workspace_role_definitions existed) so a custom role can also grant
+-- "department:manage", not just the admin role or the department_director staff
+-- role. Mirrors the custom-role lookup already used by private.has_license_permission().
+create or replace function private.can_manage_signals()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.profiles profile
+    where profile.id = auth.uid()
+      and (
+        profile.role = 'admin'
+        or 'department_director' = any(coalesce(profile.staff_roles, array[]::text[]))
+        or exists (
+          select 1
+          from public.workspace_role_definitions definition
+          where definition.id = any(coalesce(profile.custom_roles, array[]::text[]))
+            and 'department:manage' = any(coalesce(definition.permissions, array[]::text[]))
+        )
+      )
+  );
+$$;
+
+revoke all on function private.can_manage_signals() from public, anon;
+grant execute on function private.can_manage_signals() to authenticated, service_role;
+
 create or replace function public.current_user_can_manage_users()
 returns boolean
 language sql

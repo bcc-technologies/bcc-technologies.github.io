@@ -4,34 +4,34 @@
   const INTELLIGENCE_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
   const PANELS = ["overview", "signals", "papers", "grants", "patents", "trials", "institutions", "topics", "sources", "settings"];
   const RUN_ACTIONS = [
-    { id: "sync_papers", label: "Run Intelligence Sync" },
-    { id: "fetch_papers", label: "Fetch latest papers" },
-    { id: "fetch_grants", label: "Fetch grants" },
-    { id: "fetch_patents", label: "Fetch patents" },
-    { id: "fetch_trials", label: "Fetch trials" },
-    { id: "generate_signals", label: "Generate signals" }
+    { id: "sync_papers", label: "Sincronizar Intelligence" },
+    { id: "fetch_papers", label: "Obtener papers recientes" },
+    { id: "fetch_grants", label: "Obtener grants" },
+    { id: "fetch_patents", label: "Obtener patentes" },
+    { id: "fetch_trials", label: "Obtener ensayos" },
+    { id: "generate_signals", label: "Generar señales" }
   ];
   const SIGNAL_STATUS_ACTIONS = [
-    { id: "accepted", label: "Accept", tone: "primary" },
-    { id: "rejected", label: "Reject", tone: "ghost" },
-    { id: "archived", label: "Archive", tone: "ghost" },
-    { id: "reviewing", label: "Mark reviewing", tone: "ghost" }
+    { id: "accepted", label: "Aceptar", tone: "primary" },
+    { id: "rejected", label: "Rechazar", tone: "ghost" },
+    { id: "archived", label: "Archivar", tone: "ghost" },
+    { id: "reviewing", label: "Marcar en revisión", tone: "ghost" }
   ];
   const SIGNAL_STATUS_LABELS = {
-    new: "New",
-    reviewing: "Reviewing",
-    accepted: "Accepted",
-    rejected: "Rejected",
-    archived: "Archived"
+    new: "Nueva",
+    reviewing: "En revisión",
+    accepted: "Aceptada",
+    rejected: "Rechazada",
+    archived: "Archivada"
   };
   const SIGNAL_TYPE_LABELS = {
-    product_opportunity: "Product opportunity",
-    market_trend: "Market trend",
-    research_trend: "Research trend",
-    partnership: "Partnership",
-    content_idea: "Content idea",
-    competitive_risk: "Competitive risk",
-    grant_opportunity: "Grant opportunity"
+    product_opportunity: "Oportunidad de producto",
+    market_trend: "Tendencia de mercado",
+    research_trend: "Tendencia de investigación",
+    partnership: "Alianza",
+    content_idea: "Idea de contenido",
+    competitive_risk: "Riesgo competitivo",
+    grant_opportunity: "Oportunidad de grant"
   };
   const TOPIC_CATEGORY_LABELS = {
     nano: "Nano",
@@ -41,10 +41,10 @@
     general: "General"
   };
   const SETTINGS_FREQUENCY_LABELS = {
-    daily: "Daily",
-    weekly: "Weekly",
-    biweekly: "Biweekly",
-    monthly: "Monthly"
+    daily: "Diaria",
+    weekly: "Semanal",
+    biweekly: "Quincenal",
+    monthly: "Mensual"
   };
   const DEFAULT_LINES = ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"];
   const DATE_RANGE_OPTIONS = [
@@ -131,7 +131,7 @@
           </div>
           <div class="intelligence-controls">
             <label class="intelligence-inline-field">
-              <span>Action</span>
+              <span>Acción</span>
               <select data-intelligence-action aria-label="Seleccionar acción de sync">
                 ${RUN_ACTIONS.map(action => `<option value="${escapeHtml(action.id)}">${escapeHtml(action.label)}</option>`).join("")}
               </select>
@@ -141,7 +141,7 @@
               <span>Dry-run</span>
             </label>
             <button class="btn btn-primary" type="button" data-intelligence-run>
-              <i data-lucide="radar"></i>Run sync
+              <i data-lucide="radar"></i>Ejecutar sincronización
             </button>
             <button class="btn btn-ghost btn-compact" type="button" data-intelligence-refresh>Actualizar</button>
           </div>
@@ -361,12 +361,12 @@
       <section class="workspace-metrics intelligence-metrics" aria-label="Resumen de intelligence">
         <div><span>Total papers</span><strong>${number(stats.totalPapers)}</strong><small>Repositorio actual</small></div>
         <div><span>Total grants</span><strong>${number(stats.totalGrants)}</strong><small>Oportunidades y awards</small></div>
-        <div><span>Total patents</span><strong>${number(stats.totalPatents)}</strong><small>Patentes y solicitudes</small></div>
-        <div><span>Total trials</span><strong>${number(stats.totalTrials)}</strong><small>Estudios y validación</small></div>
-        <div><span>Active topics</span><strong>${number(stats.activeTopics)}</strong><small>Radar habilitado</small></div>
-        <div><span>New signals</span><strong>${number(stats.newSignals)}</strong><small>New + reviewing</small></div>
-        <div><span>Last sync</span><strong>${escapeHtml(stats.lastSyncLabel)}</strong><small>${escapeHtml(stats.lastSyncState)}</small></div>
-        <div><span>Top related line</span><strong>${escapeHtml(stats.topLine)}</strong><small>Mayor densidad actual</small></div>
+        <div><span>Total patentes</span><strong>${number(stats.totalPatents)}</strong><small>Patentes y solicitudes</small></div>
+        <div><span>Total ensayos</span><strong>${number(stats.totalTrials)}</strong><small>Estudios y validación</small></div>
+        <div><span>Temas activos</span><strong>${number(stats.activeTopics)}</strong><small>Radar habilitado</small></div>
+        <div><span>Señales nuevas</span><strong>${number(stats.newSignals)}</strong><small>Nuevas + en revisión</small></div>
+        <div><span>Último sync</span><strong>${escapeHtml(stats.lastSyncLabel)}</strong><small>${escapeHtml(stats.lastSyncState)}</small></div>
+        <div><span>Línea con mayor densidad</span><strong>${escapeHtml(stats.topLine)}</strong><small>Mayor densidad actual</small></div>
       </section>
       <section class="intelligence-grid intelligence-grid-overview">
         <article class="activity-surface intelligence-card intelligence-card-hero intelligence-briefing-card">
@@ -379,10 +379,10 @@
             <span class="intelligence-status-pill">${escapeHtml(runStatusLabel(latestRun?.status || "idle"))}</span>
           </div>
           <div class="intelligence-briefing-metrics">
-            <div><span>Needs review</span><strong>${number(reviewSignals.length)}</strong><small>New + reviewing</small></div>
-            <div><span>Source watch</span><strong>${number(sourceWatch.length)}</strong><small>Fuentes con atención</small></div>
-            <div><span>Recent failures</span><strong>${number(recentErrors.length)}</strong><small>Runs fallidos recientes</small></div>
-            <div><span>Hot topics</span><strong>${number(hotTopics.length)}</strong><small>Temas con mayor tracción</small></div>
+            <div><span>Requieren revisión</span><strong>${number(reviewSignals.length)}</strong><small>Nuevas + en revisión</small></div>
+            <div><span>Fuentes en observación</span><strong>${number(sourceWatch.length)}</strong><small>Fuentes con atención</small></div>
+            <div><span>Fallos recientes</span><strong>${number(recentErrors.length)}</strong><small>Runs fallidos recientes</small></div>
+            <div><span>Temas en tendencia</span><strong>${number(hotTopics.length)}</strong><small>Temas con mayor tracción</small></div>
           </div>
           <ol class="intelligence-priority-list">
             ${briefing.items.map(item => `
@@ -396,42 +396,42 @@
         </article>
         <article class="activity-surface intelligence-card intelligence-card-wide">
           <div class="activity-head">
-            <h3>Signal map</h3>
+            <h3>Mapa de señales</h3>
             <span>${number(prioritizedSignals.length)}</span>
           </div>
           ${signalsMatrixMarkup(prioritizedSignals)}
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Sync state</h3>
+            <h3>Estado del sync</h3>
             <span>${escapeHtml(latestRun ? runStatusLabel(latestRun.status) : "Sin runs")}</span>
           </div>
           <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
-            <div><span>Action</span><strong>${escapeHtml(actionLabel(latestRun?.actionType || currentAction))}</strong></div>
-            <div><span>Items found</span><strong>${number(latestRun?.itemsFetched || 0)}</strong></div>
-            <div><span>Items saved</span><strong>${number((latestRun?.itemsCreated || 0) + (latestRun?.itemsUpdated || 0))}</strong></div>
-            <div><span>Signals generated</span><strong>${number(latestRun?.signalsGenerated || 0)}</strong></div>
+            <div><span>Acción</span><strong>${escapeHtml(actionLabel(latestRun?.actionType || currentAction))}</strong></div>
+            <div><span>Encontrados</span><strong>${number(latestRun?.itemsFetched || 0)}</strong></div>
+            <div><span>Guardados</span><strong>${number((latestRun?.itemsCreated || 0) + (latestRun?.itemsUpdated || 0))}</strong></div>
+            <div><span>Señales generadas</span><strong>${number(latestRun?.signalsGenerated || 0)}</strong></div>
           </div>
           ${latestRun ? `
             <div class="intelligence-focus-list">
               <div class="intelligence-focus-item">
-                <span>${escapeHtml(latestRun.dryRun ? "Dry-run" : "Run")}</span>
+                <span>${escapeHtml(latestRun.dryRun ? "Dry-run" : "Sync")}</span>
                 <strong>${escapeHtml(formatDateTime(latestRun.finishedAt || latestRun.startedAt || latestRun.createdAt))}</strong>
                 <p>${escapeHtml(latestRun.errorMessage ? "La última ejecución terminó con error." : "La última ejecución ya quedó registrada en el radar.")}</p>
               </div>
             </div>
-          ` : emptyMarkup("Todavía no hay runs", "Usa Run sync para lanzar el radar y empezar a llenar el log.")}
+          ` : emptyMarkup("Todavía no hay runs", "Usa Ejecutar sincronización para lanzar el radar y empezar a llenar el log.")}
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Runs trend</h3>
+            <h3>Tendencia de runs</h3>
             <span>${number(runTrend.length)}</span>
           </div>
           ${runsTrendMarkup(runTrend)}
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Review queue</h3>
+            <h3>Cola de revisión</h3>
             <span>${number(reviewSignals.length)}</span>
           </div>
           ${reviewSignals.length ? `
@@ -445,18 +445,18 @@
                   <h4>${escapeHtml(signal.title)}</h4>
                   <p>${escapeHtml(signal.summary || signal.recommendedAction || "Sin resumen todavía.")}</p>
                   <div class="intelligence-queue-meters">
-                    ${metricBar("Opportunity", signal.opportunityScore)}
-                    ${metricBar("Actionability", signal.actionabilityScore)}
-                    ${metricBar("Confidence", signal.confidenceScore)}
+                    ${metricBar("Oportunidad", signal.opportunityScore)}
+                    ${metricBar("Actionabilidad", signal.actionabilityScore)}
+                    ${metricBar("Confianza", signal.confidenceScore)}
                   </div>
                 </article>
               `).join("")}
             </div>
-          ` : emptyMarkup("No signals waiting for review", "Cuando haya señales nuevas o en revisión, aparecerán aquí como cola de trabajo.")}
+          ` : emptyMarkup("No hay señales esperando revisión", "Cuando haya señales nuevas o en revisión, aparecerán aquí como cola de trabajo.")}
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Source watch</h3>
+            <h3>Fuentes en observación</h3>
             <span>${number(sourceWatch.length)}</span>
           </div>
           ${sourceWatch.length ? `
@@ -476,7 +476,7 @@
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Hot topics</h3>
+            <h3>Temas en tendencia</h3>
             <span>${number(heatTopicsPreview.length)}</span>
           </div>
           ${hotTopics.length ? `
@@ -493,11 +493,11 @@
                 </article>
               `).join("")}
             </div>
-          ` : emptyMarkup("No topics heating up yet", "Cuando papers y señales empiecen a concentrarse, aparecerán aquí para orientar prioridad.")}
+          ` : emptyMarkup("Todavía no hay temas en tendencia", "Cuando papers y señales empiecen a concentrarse, aparecerán aquí para orientar prioridad.")}
         </article>
         <article class="activity-surface intelligence-card intelligence-card-wide">
           <div class="activity-head">
-            <h3>Recent strategic signals</h3>
+            <h3>Señales estratégicas recientes</h3>
             <span>${number(recentSignals.length)}</span>
           </div>
           ${recentSignals.length ? `
@@ -511,16 +511,16 @@
                   <h4>${escapeHtml(signal.title)}</h4>
                   <p>${escapeHtml(signal.summary || signal.recommendedAction || "Sin resumen todavía.")}</p>
                   <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
-                    <div><span>Opp.</span><strong>${score(signal.opportunityScore)}</strong></div>
+                    <div><span>Op.</span><strong>${score(signal.opportunityScore)}</strong></div>
                     <div><span>Act.</span><strong>${score(signal.actionabilityScore)}</strong></div>
                     <div><span>Conf.</span><strong>${score(signal.confidenceScore)}</strong></div>
-                    <div><span>Status</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
+                    <div><span>Estado</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
                   </div>
                 </article>
               `).join("")}
             </div>
-          ` : emptyMarkup("No strategic signals generated yet.", "Run the first sync or execute Generate signals to produce strategic opportunities.", [
-            { label: "Run first sync", cta: "run-sync" }
+          ` : emptyMarkup("Todavía no hay señales estratégicas generadas.", "Ejecuta el primer sync o corre Generar señales para producir oportunidades estratégicas.", [
+            { label: "Ejecutar primer sync", cta: "run-sync" }
           ])}
         </article>
       </section>
@@ -536,13 +536,13 @@
       <section class="intelligence-signal-stage">
         <article class="activity-surface intelligence-card intelligence-signal-rail">
           <div class="activity-head">
-            <h3>Signal queue</h3>
+            <h3>Cola de señales</h3>
             <span>${number(signals.length)}</span>
           </div>
           <div class="intelligence-signal-summary">
-            <div><span>Need review</span><strong>${number(signalsNeedingReview().length)}</strong></div>
-            <div><span>Accepted</span><strong>${number(signals.filter(item => item.status === "accepted").length)}</strong></div>
-            <div><span>Avg opp.</span><strong>${averageScore(signals, "opportunityScore")}</strong></div>
+            <div><span>Requieren revisión</span><strong>${number(signalsNeedingReview().length)}</strong></div>
+            <div><span>Aceptadas</span><strong>${number(signals.filter(item => item.status === "accepted").length)}</strong></div>
+            <div><span>Op. promedio</span><strong>${averageScore(signals, "opportunityScore")}</strong></div>
           </div>
           ${signals.length ? `
             <div class="intelligence-signal-rail-note">
@@ -564,18 +564,18 @@
                     <small>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</small>
                   </div>
                   <div class="intelligence-queue-meters">
-                    ${metricBar("Opportunity", signal.opportunityScore)}
-                    ${metricBar("Actionability", signal.actionabilityScore)}
-                    ${metricBar("Confidence", signal.confidenceScore)}
+                    ${metricBar("Oportunidad", signal.opportunityScore)}
+                    ${metricBar("Actionabilidad", signal.actionabilityScore)}
+                    ${metricBar("Confianza", signal.confidenceScore)}
                   </div>
                 </article>
               `).join("")}
             </div>
-          ` : emptyMarkup("No strategic signals generated yet.", "Run the first sync or execute Generate signals to produce strategic opportunities.")}
+          ` : emptyMarkup("Todavía no hay señales estratégicas generadas.", "Ejecuta el primer sync o corre Generar señales para producir oportunidades estratégicas.")}
         </article>
         <article class="activity-surface intelligence-card intelligence-signal-detail">
           <div class="activity-head intelligence-detail-head">
-            <h3>Signal detail</h3>
+            <h3>Detalle de la señal</h3>
             <span>${escapeHtml(selected ? signalStatusLabel(selected.status) : "Sin selección")}</span>
           </div>
           ${selected ? signalDetailMarkup(selected) : emptyMarkup("Selecciona una señal", "Elige una fila para revisar evidencia, scores y acciones sugeridas.")}
@@ -605,22 +605,22 @@
         </div>
         <div class="intelligence-summary-strip intelligence-summary-strip-papers">
           <article class="intelligence-summary-chip">
-            <span>Visible now</span>
+            <span>Visibles ahora</span>
             <strong>${number(items.length)}</strong>
             <small>${paperFiltersActive(state) ? "Resultados después de filtros activos" : "Cobertura actual del radar de papers"}</small>
           </article>
           <article class="intelligence-summary-chip">
-            <span>Open access</span>
+            <span>Acceso abierto</span>
             <strong>${number(stats.openAccessCount)}</strong>
             <small>${stats.openAccessRatio}% de esta vista tiene acceso abierto utilizable</small>
           </article>
           <article class="intelligence-summary-chip">
-            <span>Duplicates watch</span>
+            <span>Posibles duplicados</span>
             <strong>${number(stats.duplicateCount)}</strong>
             <small>${stats.duplicateCount ? "Papers marcados para revisión de duplicados" : "Sin alertas de duplicados en esta vista"}</small>
           </article>
           <article class="intelligence-summary-chip">
-            <span>Signal density</span>
+            <span>Densidad de señal</span>
             <strong>${number(stats.avgCitations)}</strong>
             <small>${stats.topSource ? `Fuente dominante: ${stats.topSource}` : "Aún no hay una fuente dominante clara"}</small>
           </article>
@@ -628,38 +628,38 @@
         <div class="intelligence-paper-filter-deck">
           <div class="intelligence-filter-grid intelligence-filter-grid-papers">
             <label class="intelligence-field intelligence-field-wide">
-              <span>Keyword</span>
+              <span>Palabra clave</span>
               <input type="search" data-intelligence-filter-panel="papers" data-filter-field="keyword" value="${escapeAttr(state.keyword)}" placeholder="Título, abstract, autores, instituciones, tags..." />
             </label>
             <label class="intelligence-field">
-              <span>Topic</span>
+              <span>Tema</span>
               <select data-intelligence-filter-panel="papers" data-filter-field="topic">
                 <option value="">Todos</option>
                 ${topicOptions().map(topic => `<option value="${escapeHtml(topic.name)}"${topic.name === state.topic ? " selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}
               </select>
             </label>
             <label class="intelligence-field">
-              <span>Line</span>
+              <span>Línea</span>
               <select data-intelligence-filter-panel="papers" data-filter-field="line">
                 <option value="">Todas</option>
                 ${monitoredLines().map(line => `<option value="${escapeHtml(line)}"${line === state.line ? " selected" : ""}>${escapeHtml(line)}</option>`).join("")}
               </select>
             </label>
             <label class="intelligence-field">
-              <span>Source</span>
+              <span>Fuente</span>
               <select data-intelligence-filter-panel="papers" data-filter-field="source">
                 <option value="">Todas</option>
                 ${sourceOptions.map(source => `<option value="${escapeHtml(source)}"${source === state.source ? " selected" : ""}>${escapeHtml(source)}</option>`).join("")}
               </select>
             </label>
             <label class="intelligence-field">
-              <span>Date range</span>
+              <span>Rango de fechas</span>
               <select data-intelligence-filter-panel="papers" data-filter-field="dateRange">
                 ${DATE_RANGE_OPTIONS.map(option => `<option value="${escapeHtml(option.value)}"${option.value === state.dateRange ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
               </select>
             </label>
             <label class="intelligence-field">
-              <span>Sort</span>
+              <span>Orden</span>
               <select data-intelligence-filter-panel="papers" data-filter-field="sort">
                 ${paperSortOptions().map(option => `<option value="${escapeHtml(option.value)}"${option.value === state.sort ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
               </select>
@@ -668,19 +668,19 @@
           <div class="intelligence-paper-filter-rail">
             <label class="intelligence-toggle">
               <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="openAccessOnly"${state.openAccessOnly ? " checked" : ""} />
-              <span>Only open access</span>
+              <span>Solo acceso abierto</span>
             </label>
             <label class="intelligence-toggle">
               <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="withAbstractOnly"${state.withAbstractOnly ? " checked" : ""} />
-              <span>With abstract</span>
+              <span>Con abstract</span>
             </label>
             <label class="intelligence-toggle">
               <input type="checkbox" data-intelligence-filter-panel="papers" data-filter-field="duplicatesOnly"${state.duplicatesOnly ? " checked" : ""} />
-              <span>Duplicates watch</span>
+              <span>Posibles duplicados</span>
             </label>
           </div>
           <div class="intelligence-paper-source-row">
-            <span class="intelligence-source-row-label">Quick sources</span>
+            <span class="intelligence-source-row-label">Fuentes rápidas</span>
             <div class="intelligence-source-chip-list">
               ${paperSourceChips(state.source).join("")}
             </div>
@@ -716,7 +716,7 @@
 
   function renderPatents() {
     renderResearchTable("patents", {
-      title: "Patents",
+      title: "Patentes",
       items: filteredPatents(),
       filters: filters.patents,
       rows: item => `
@@ -736,7 +736,7 @@
 
   function renderTrials() {
     renderResearchTable("trials", {
-      title: "Trials",
+      title: "Ensayos",
       items: filteredTrials(),
       filters: filters.trials,
       rows: item => `
@@ -766,7 +766,7 @@
         </div>
         <div class="intelligence-filter-grid">
           <label class="intelligence-field">
-            <span>Topic</span>
+            <span>Tema</span>
             <select data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="topic">
               <option value="">Todos</option>
               ${topicOptions().map(topic => `<option value="${escapeHtml(topic.name)}"${topic.name === filterState.topic ? " selected" : ""}>${escapeHtml(topic.name)}</option>`).join("")}
@@ -774,7 +774,7 @@
           </label>
           ${panelName === "papers" ? `
             <label class="intelligence-field">
-              <span>Source</span>
+              <span>Fuente</span>
               <select data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="source">
                 <option value="">Todas</option>
                 ${config.sourceOptions.map(source => `<option value="${escapeHtml(source)}"${source === filterState.source ? " selected" : ""}>${escapeHtml(source)}</option>`).join("")}
@@ -782,20 +782,20 @@
             </label>
           ` : ""}
           <label class="intelligence-field">
-            <span>Line</span>
+            <span>Línea</span>
             <select data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="line">
               <option value="">Todas</option>
               ${monitoredLines().map(line => `<option value="${escapeHtml(line)}"${line === filterState.line ? " selected" : ""}>${escapeHtml(line)}</option>`).join("")}
             </select>
           </label>
           <label class="intelligence-field">
-            <span>Date range</span>
+            <span>Rango de fechas</span>
             <select data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="dateRange">
               ${DATE_RANGE_OPTIONS.map(option => `<option value="${escapeHtml(option.value)}"${option.value === filterState.dateRange ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
             </select>
           </label>
           <label class="intelligence-field intelligence-field-wide">
-            <span>Keyword</span>
+            <span>Palabra clave</span>
             <input type="search" data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="keyword" value="${escapeAttr(filterState.keyword)}" placeholder="Buscar por título, abstract, autores, instituciones..." />
           </label>
         </div>
@@ -805,12 +805,12 @@
               <tr>
                 <th>Título</th>
                 <th>Fecha</th>
-                <th>${panelName === "grants" ? "Agency" : panelName === "patents" ? "Jurisdiction" : panelName === "trials" ? "Sponsor" : "Fuente"}</th>
-                <th>${panelName === "grants" ? "Investigadores" : panelName === "patents" ? "Inventores" : panelName === "trials" ? "Interventions" : "Autores"}</th>
-                <th>${panelName === "patents" ? "Assignees" : panelName === "trials" ? "Locations" : "Instituciones"}</th>
-                <th>Topics</th>
-                <th>${panelName === "grants" ? "Monto" : panelName === "patents" ? "Status" : panelName === "trials" ? "Status / phase" : "Citas"}</th>
-                <th>Link</th>
+                <th>${panelName === "grants" ? "Agencia" : panelName === "patents" ? "Jurisdicción" : panelName === "trials" ? "Patrocinador" : "Fuente"}</th>
+                <th>${panelName === "grants" ? "Investigadores" : panelName === "patents" ? "Inventores" : panelName === "trials" ? "Intervenciones" : "Autores"}</th>
+                <th>${panelName === "patents" ? "Asignatarios" : panelName === "trials" ? "Ubicaciones" : "Instituciones"}</th>
+                <th>Temas</th>
+                <th>${panelName === "grants" ? "Monto" : panelName === "patents" ? "Estado" : panelName === "trials" ? "Estado / fase" : "Citas"}</th>
+                <th>Enlace</th>
               </tr>
             </thead>
             <tbody>
@@ -830,7 +830,7 @@
     target.innerHTML = `
       <article class="activity-surface intelligence-card intelligence-card-wide">
         <div class="activity-head">
-          <h3>Institutions</h3>
+          <h3>Instituciones</h3>
           <span>${number(institutions.length)}</span>
         </div>
         <div class="table-scroll intelligence-table-wrap">
@@ -842,7 +842,7 @@
                 <th>Tipo</th>
                 <th>Papers</th>
                 <th>Grants</th>
-                <th>Patents</th>
+                <th>Patentes</th>
                 <th>Temas</th>
               </tr>
             </thead>
@@ -875,29 +875,29 @@
       <section class="intelligence-grid intelligence-grid-overview intelligence-detail-layout">
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Topics</h3>
+            <h3>Temas</h3>
             <span>${number(dashboard.topics.length)}</span>
           </div>
           <div class="intelligence-summary-strip">
             <div class="intelligence-summary-chip">
-              <span>Active</span>
+              <span>Activos</span>
               <strong>${number(portfolio.activeCount)}</strong>
-              <small>${number(portfolio.disabledCount)} paused</small>
+              <small>${number(portfolio.disabledCount)} en pausa</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Hot</span>
+              <span>En tendencia</span>
               <strong>${number(portfolio.hotCount)}</strong>
-              <small>${number(portfolio.coldCount)} cold</small>
+              <small>${number(portfolio.coldCount)} fríos</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Coverage</span>
+              <span>Cobertura</span>
               <strong>${number(portfolio.coveredCount)}</strong>
-              <small>${number(portfolio.uncoveredCount)} without hits</small>
+              <small>${number(portfolio.uncoveredCount)} sin resultados</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Keywords avg</span>
+              <span>Keywords promedio</span>
               <strong>${number(portfolio.averageKeywords)}</strong>
-              <small>per topic</small>
+              <small>por tema</small>
             </div>
           </div>
           ${portfolio.focus.length ? `
@@ -930,12 +930,12 @@
                 </div>
                 <div class="intelligence-stack-meta">
                   <span>${escapeHtml(topicCategoryLabel(item.category))} · ${escapeHtml(insight.line)}</span>
-                  <strong>${item.enabled ? "Enabled" : "Disabled"}</strong>
+                  <strong>${item.enabled ? "Activo" : "Desactivado"}</strong>
                 </div>
                 <div class="intelligence-mini-metrics intelligence-mini-metrics-tight intelligence-topic-metrics">
                   <div><span>Papers</span><strong>${number(insight.paperHits)}</strong></div>
-                  <div><span>Signals</span><strong>${number(insight.signalHits)}</strong></div>
-                  <div><span>Assets</span><strong>${number(insight.totalHits)}</strong></div>
+                  <div><span>Señales</span><strong>${number(insight.signalHits)}</strong></div>
+                  <div><span>Activos</span><strong>${number(insight.totalHits)}</strong></div>
                 </div>
                 <div>${topicPills(item.keywords.slice(0, 8))}</div>
                 <div class="intelligence-item-actions">
@@ -947,32 +947,32 @@
               </article>
                 `;
               })()}
-            `).join("") : emptyMarkup("No topics configured.", "Add the monitored topics that should drive the radar before running the first sync.", [
-              { label: "Add topic", cta: "add-topic" }
+            `).join("") : emptyMarkup("No hay topics configurados.", "Agrega los temas monitoreados que deben impulsar el radar antes de correr el primer sync.", [
+              { label: "Agregar topic", cta: "add-topic" }
             ])}
           </div>
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
             <h3>${topic ? "Editar topic" : "Nuevo topic"}</h3>
-            <span>${escapeHtml(topic ? topic.name : "Draft")}</span>
+            <span>${escapeHtml(topic ? topic.name : "Borrador")}</span>
           </div>
           ${selectedInsight ? `
             <div class="intelligence-mini-metrics intelligence-topic-coverage">
-              <div><span>Line</span><strong>${escapeHtml(selectedInsight.line)}</strong></div>
-              <div><span>Heat</span><strong>${escapeHtml(selectedInsight.healthLabel)}</strong></div>
+              <div><span>Línea</span><strong>${escapeHtml(selectedInsight.line)}</strong></div>
+              <div><span>Tendencia</span><strong>${escapeHtml(selectedInsight.healthLabel)}</strong></div>
               <div><span>Keywords</span><strong>${number(selectedInsight.keywordCount)}</strong></div>
-              <div><span>Assets</span><strong>${number(selectedInsight.totalHits)}</strong></div>
+              <div><span>Activos</span><strong>${number(selectedInsight.totalHits)}</strong></div>
             </div>
           ` : ""}
           <form class="intelligence-form" data-intelligence-topic-form>
             <input type="hidden" name="id" value="${escapeAttr(topic?.id || "")}" />
             <label class="intelligence-field">
-              <span>Name</span>
+              <span>Nombre</span>
               <input type="text" name="name" value="${escapeAttr(topic?.name || "")}" required maxlength="160" />
             </label>
             <label class="intelligence-field">
-              <span>Category</span>
+              <span>Categoría</span>
               <select name="category">
                 ${Object.entries(TOPIC_CATEGORY_LABELS).map(([value, label]) => `
                   <option value="${escapeHtml(value)}"${value === (topic?.category || "general") ? " selected" : ""}>${escapeHtml(label)}</option>
@@ -980,7 +980,7 @@
               </select>
             </label>
             <label class="intelligence-field intelligence-field-wide">
-              <span>Description</span>
+              <span>Descripción</span>
               <textarea name="description">${escapeHtml(topic?.description || "")}</textarea>
             </label>
             <label class="intelligence-field intelligence-field-wide">
@@ -989,7 +989,7 @@
             </label>
             <label class="intelligence-toggle">
               <input type="checkbox" name="enabled"${topic?.enabled !== false ? " checked" : ""} />
-              <span>Enabled</span>
+              <span>Activo</span>
             </label>
             <div class="intelligence-form-actions">
               <button class="btn btn-primary" type="submit">${topic ? "Guardar topic" : "Crear topic"}</button>
@@ -1011,29 +1011,29 @@
       <section class="intelligence-grid intelligence-grid-overview intelligence-detail-layout">
         <article class="activity-surface intelligence-card intelligence-card-wide">
           <div class="activity-head">
-            <h3>Sources</h3>
+            <h3>Fuentes</h3>
             <span>${number(dashboard.sources.length)}</span>
           </div>
           <div class="intelligence-summary-strip">
             <div class="intelligence-summary-chip">
-              <span>Enabled</span>
+              <span>Activas</span>
               <strong>${number(health.enabledCount)}</strong>
-              <small>${number(health.pausedCount)} paused</small>
+              <small>${number(health.pausedCount)} en pausa</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Protected</span>
+              <span>Protegidas</span>
               <strong>${number(health.protectedCount)}</strong>
-              <small>quota-sensitive</small>
+              <small>sensibles a cuota</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Never synced</span>
+              <span>Nunca sincronizadas</span>
               <strong>${number(health.neverSyncedCount)}</strong>
-              <small>need first success</small>
+              <small>necesitan primer éxito</small>
             </div>
             <div class="intelligence-summary-chip">
-              <span>Stable</span>
+              <span>Estables</span>
               <strong>${number(health.stableCount)}</strong>
-              <small>${number(health.watchCount)} on watch</small>
+              <small>${number(health.watchCount)} en observación</small>
             </div>
           </div>
           ${health.watch.length ? `
@@ -1051,12 +1051,12 @@
             <table class="account-table intelligence-table intelligence-table-selectable">
               <thead>
                 <tr>
-                  <th>Source</th>
-                  <th>Enabled</th>
-                  <th>Last sync</th>
-                  <th>Requires API key</th>
-                  <th>Status</th>
-                  <th>Notes</th>
+                  <th>Fuente</th>
+                  <th>Activa</th>
+                  <th>Último sync</th>
+                  <th>Requiere API key</th>
+                  <th>Estado</th>
+                  <th>Notas</th>
                 </tr>
               </thead>
               <tbody>
@@ -1066,15 +1066,15 @@
                     return `
                   <tr class="${item.id === selectedSourceId ? "is-selected" : ""}" data-source-select="${escapeAttr(item.id)}">
                     <td><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.type)} · ${escapeHtml(item.baseUrl || "-")}</small></td>
-                    <td>${item.enabled ? "Yes" : "No"}</td>
+                    <td>${item.enabled ? "Sí" : "No"}</td>
                     <td>${escapeHtml(formatDateTime(item.lastSyncAt))}</td>
-                    <td>${item.requiresApiKey ? "Yes" : "No"}</td>
+                    <td>${item.requiresApiKey ? "Sí" : "No"}</td>
                     <td><span class="intelligence-status-pill intelligence-health-${escapeAttr(insight.health)}">${escapeHtml(insight.status)}</span></td>
                     <td>${escapeHtml(insight.note)}</td>
                   </tr>
                     `;
                   })()}
-                `).join("") : `<tr><td colspan="6">${emptyCell("No intelligence sources configured.")}</td></tr>`}
+                `).join("") : `<tr><td colspan="6">${emptyCell("No hay fuentes de intelligence configuradas.")}</td></tr>`}
               </tbody>
             </table>
           </div>
@@ -1082,15 +1082,15 @@
         </article>
         <article class="activity-surface intelligence-card">
           <div class="activity-head">
-            <h3>Source detail</h3>
+            <h3>Detalle de la fuente</h3>
             <span>${escapeHtml(source ? source.name : "Sin selección")}</span>
           </div>
           ${source ? `
             <div class="intelligence-mini-metrics intelligence-source-detail-summary">
-              <div><span>Status</span><strong>${escapeHtml(selectedHealth.status)}</strong></div>
-              <div><span>API mode</span><strong>${selectedHealth.requiresApiKey ? "Protected" : "Open"}</strong></div>
-              <div><span>Last sync</span><strong>${escapeHtml(selectedHealth.lastSyncLabel)}</strong></div>
-              <div><span>Sync age</span><strong>${escapeHtml(selectedHealth.syncAgeLabel)}</strong></div>
+              <div><span>Estado</span><strong>${escapeHtml(selectedHealth.status)}</strong></div>
+              <div><span>Modo API</span><strong>${selectedHealth.requiresApiKey ? "Protegida" : "Abierta"}</strong></div>
+              <div><span>Último sync</span><strong>${escapeHtml(selectedHealth.lastSyncLabel)}</strong></div>
+              <div><span>Antigüedad del sync</span><strong>${escapeHtml(selectedHealth.syncAgeLabel)}</strong></div>
             </div>
             <div class="intelligence-stack-list intelligence-source-watchlist">
               ${selectedHealth.watchReasons.map(reason => `
@@ -1103,19 +1103,19 @@
             <form class="intelligence-form" data-intelligence-source-form>
               <input type="hidden" name="id" value="${escapeAttr(source.id)}" />
               <label class="intelligence-field">
-                <span>Source</span>
+                <span>Fuente</span>
                 <input type="text" value="${escapeAttr(source.name)}" readonly />
               </label>
               <label class="intelligence-field">
-                <span>Status</span>
+                <span>Estado</span>
                 <input type="text" value="${escapeAttr(sourceStatus(source))}" readonly />
               </label>
               <label class="intelligence-toggle">
                 <input type="checkbox" name="enabled"${source.enabled ? " checked" : ""} />
-                <span>Enabled</span>
+                <span>Activa</span>
               </label>
               <label class="intelligence-field intelligence-field-wide">
-                <span>Notes</span>
+                <span>Notas</span>
                 <textarea name="rateLimitNotes">${escapeHtml(source.rateLimitNotes || "")}</textarea>
               </label>
               <div class="intelligence-form-actions">
@@ -1138,7 +1138,7 @@
     target.innerHTML = `
       <article class="activity-surface intelligence-card intelligence-card-wide">
         <div class="activity-head">
-          <h3>Settings</h3>
+          <h3>Configuración</h3>
           <span>${escapeHtml(SETTINGS_FREQUENCY_LABELS[settings.suggestedFrequency] || settings.suggestedFrequency)}</span>
         </div>
         <form class="intelligence-form intelligence-settings-form" data-intelligence-settings-form>
@@ -1163,15 +1163,15 @@
             <span>Modo dry-run por defecto</span>
           </label>
           <label class="intelligence-field">
-            <span>Threshold oportunidad</span>
+            <span>Umbral de oportunidad</span>
             <input type="number" name="thresholdOpportunity" min="0" max="100" value="${escapeAttr(settings.scoringThresholds?.opportunity ?? 60)}" />
           </label>
           <label class="intelligence-field">
-            <span>Threshold actionability</span>
+            <span>Umbral de actionabilidad</span>
             <input type="number" name="thresholdActionability" min="0" max="100" value="${escapeAttr(settings.scoringThresholds?.actionability ?? 50)}" />
           </label>
           <label class="intelligence-field">
-            <span>Threshold confidence</span>
+            <span>Umbral de confianza</span>
             <input type="number" name="thresholdConfidence" min="0" max="100" value="${escapeAttr(settings.scoringThresholds?.confidence ?? 50)}" />
           </label>
           <fieldset class="intelligence-checkbox-grid intelligence-field-wide">
@@ -1184,7 +1184,7 @@
             `).join("")}
           </fieldset>
           <div class="intelligence-form-actions">
-            <button class="btn btn-primary" type="submit">Guardar settings</button>
+            <button class="btn btn-primary" type="submit">Guardar configuración</button>
           </div>
         </form>
       </article>
@@ -1447,10 +1447,10 @@
       dashboard.settings = { ...defaultSettings(), ...(data.settings || {}) };
       syncDryRun = dashboard.settings.defaultDryRun;
       writeDashboardCache(dashboard);
-      setMessage("Settings guardados.", "ok");
+      setMessage("Configuración guardada.", "ok");
       renderAll();
     } catch (error) {
-      setMessage(error.message || "No fue posible guardar settings.", "error");
+      setMessage(error.message || "No fue posible guardar la configuración.", "error");
     }
   }
 
@@ -1475,32 +1475,32 @@
           <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
         </div>
         <div class="intelligence-mini-metrics intelligence-signal-hero-metrics">
-          <div><span>Opportunity</span><strong>${score(signal.opportunityScore)}</strong></div>
-          <div><span>Actionability</span><strong>${score(signal.actionabilityScore)}</strong></div>
-          <div><span>Confidence</span><strong>${score(signal.confidenceScore)}</strong></div>
-          <div><span>Evidence</span><strong>${number(signal.evidenceCount || evidence.length)}</strong></div>
+          <div><span>Oportunidad</span><strong>${score(signal.opportunityScore)}</strong></div>
+          <div><span>Actionabilidad</span><strong>${score(signal.actionabilityScore)}</strong></div>
+          <div><span>Confianza</span><strong>${score(signal.confidenceScore)}</strong></div>
+          <div><span>Evidencia</span><strong>${number(signal.evidenceCount || evidence.length)}</strong></div>
         </div>
       </div>
       <div class="intelligence-detail-grid intelligence-detail-grid-signals">
         <div class="intelligence-detail-stack">
           <div class="intelligence-detail-block">
-            <h4>Recommendation</h4>
+            <h4>Recomendación</h4>
             <p>${escapeHtml(signal.recommendedAction || "Sin recomendación todavía.")}</p>
           </div>
           <div class="intelligence-detail-block">
-            <h4>Why this matters now</h4>
+            <h4>Por qué importa ahora</h4>
             <ul class="intelligence-related-list">
               ${highlights.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
             </ul>
           </div>
           <div class="intelligence-detail-block">
-            <h4>Evidence</h4>
+            <h4>Evidencia</h4>
             ${evidence.length ? `
               <div class="intelligence-evidence-groups">
                 ${renderEvidenceGroup("Papers", grouped.paper)}
                 ${renderEvidenceGroup("Grants", grouped.grant)}
-                ${renderEvidenceGroup("Patents", grouped.patent)}
-                ${renderEvidenceGroup("Trials", grouped.trial)}
+                ${renderEvidenceGroup("Patentes", grouped.patent)}
+                ${renderEvidenceGroup("Ensayos", grouped.trial)}
               </div>
             ` : emptyMarkup("Sin evidencia", "Esta señal no debería existir sin evidencia, así que conviene revisarla.")}
           </div>
@@ -1508,10 +1508,10 @@
         <div class="intelligence-detail-stack intelligence-detail-stack-side">
           <div class="intelligence-detail-block intelligence-detail-block-sticky">
             <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
-              <div><span>Status</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
-              <div><span>Updated</span><strong>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</strong></div>
-              <div><span>Type</span><strong>${escapeHtml(signalTypeLabel(signal.signalType))}</strong></div>
-              <div><span>Line</span><strong>${escapeHtml(signal.relatedLine || "General")}</strong></div>
+              <div><span>Estado</span><strong>${escapeHtml(signalStatusLabel(signal.status))}</strong></div>
+              <div><span>Actualizado</span><strong>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</strong></div>
+              <div><span>Tipo</span><strong>${escapeHtml(signalTypeLabel(signal.signalType))}</strong></div>
+              <div><span>Línea</span><strong>${escapeHtml(signal.relatedLine || "General")}</strong></div>
             </div>
             <div class="intelligence-form-actions">
               ${SIGNAL_STATUS_ACTIONS.map(action => `
@@ -1522,12 +1522,12 @@
             </div>
           </div>
           <div class="intelligence-detail-block">
-            <h4>Related assets</h4>
+            <h4>Activos relacionados</h4>
             <ul class="intelligence-related-list">
               <li>Papers relacionados: ${number(grouped.paper.length)}</li>
               <li>Grants relacionados: ${number(grouped.grant.length)}</li>
-              <li>Patents relacionados: ${number(grouped.patent.length)}</li>
-              <li>Trials relacionados: ${number(grouped.trial.length)}</li>
+              <li>Patentes relacionadas: ${number(grouped.patent.length)}</li>
+              <li>Ensayos relacionados: ${number(grouped.trial.length)}</li>
             </ul>
           </div>
           ${renderSignalBreakdown(breakdown)}
@@ -1594,11 +1594,11 @@
     if (!opportunity && !actionability && !matching && !evidence) return "";
     return `
       <div class="intelligence-detail-block">
-        <h4>Score breakdown</h4>
-        ${matching ? breakdownMetricList("Matching", matching) : ""}
-        ${opportunity ? breakdownMetricList("Opportunity factors", opportunity) : ""}
-        ${actionability ? breakdownMetricList("Actionability factors", actionability) : ""}
-        ${evidence ? breakdownMetricList("Evidence density", evidence, { plainNumber: true }) : ""}
+        <h4>Desglose del score</h4>
+        ${matching ? breakdownMetricList("Coincidencia", matching) : ""}
+        ${opportunity ? breakdownMetricList("Factores de oportunidad", opportunity) : ""}
+        ${actionability ? breakdownMetricList("Factores de actionabilidad", actionability) : ""}
+        ${evidence ? breakdownMetricList("Densidad de evidencia", evidence, { plainNumber: true }) : ""}
       </div>
     `;
   }
@@ -1669,15 +1669,15 @@
     if (reviewSignals.length) {
       const lead = reviewSignals[0];
       items.push({
-        label: "Review now",
-        title: lead.title || "Signal pendiente",
-        note: `${signalTypeLabel(lead.signalType)} · ${lead.relatedLine || "General"} · ${score(lead.opportunityScore)} opportunity`
+        label: "Revisar ahora",
+        title: lead.title || "Señal pendiente",
+        note: `${signalTypeLabel(lead.signalType)} · ${lead.relatedLine || "General"} · ${score(lead.opportunityScore)} de oportunidad`
       });
     }
     if (recentErrors.length) {
       const errorRun = recentErrors[0];
       items.push({
-        label: "Failure watch",
+        label: "Fallos a vigilar",
         title: actionLabel(errorRun.actionType),
         note: `Último fallo ${formatDateTime(errorRun.finishedAt || errorRun.createdAt)}`
       });
@@ -1693,21 +1693,21 @@
     if (!items.length && hotTopics.length) {
       const topic = hotTopics[0];
       items.push({
-        label: "Topic heat",
+        label: "Tema en tendencia",
         title: topic.name,
         note: topic.note
       });
     }
     if (!items.length) {
       items.push({
-        label: "Ready",
+        label: "Listo",
         title: "Radar estable",
         note: "No hay señales nuevas ni fallos recientes. El siguiente paso es correr sync o revisar Topics."
       });
     }
     return {
       title: reviewSignals.length
-        ? `${number(reviewSignals.length)} signal(s) requieren criterio humano`
+        ? `${number(reviewSignals.length)} señal(es) requieren criterio humano`
         : latestRun?.status === "failed"
           ? "El radar necesita atención operativa"
           : "El radar está listo para el próximo ciclo",
@@ -1726,7 +1726,7 @@
     const items = [];
     if (failed.length) {
       items.push({
-        label: "Run failure",
+        label: "Fallo de run",
         title: actionLabel(failed[0].actionType),
         state: runStatusLabel(failed[0].status),
         note: failed[0].errorMessage || "Run fallido sin detalle adicional."
@@ -1737,9 +1737,9 @@
       .slice(0, 2)
       .forEach(item => {
         items.push({
-          label: "No sync yet",
+          label: "Sin sync todavía",
           title: item.name,
-          state: item.requiresApiKey ? "Check credentials" : "Pending first success",
+          state: item.requiresApiKey ? "Revisar credenciales" : "Pendiente de primer éxito",
           note: item.rateLimitNotes || "La fuente sigue habilitada pero todavía no registra un sync exitoso."
         });
       });
@@ -1748,9 +1748,9 @@
       .slice(0, 2)
       .forEach(item => {
         items.push({
-          label: "Quota-sensitive",
+          label: "Sensible a cuota",
           title: item.name,
-          state: "Watch limits",
+          state: "Vigilar límites",
           note: item.rateLimitNotes || "Conviene mantener límites bajos y runs específicos para esta fuente."
         });
       });
@@ -1781,7 +1781,7 @@
           name: topic.name,
           line: mapTopicLine(topic),
           score: scoreValue,
-          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patents · ${trialHits} trials · ${signalHits} signals`
+          note: `${paperHits} papers · ${grantHits} grants · ${patentHits} patentes · ${trialHits} ensayos · ${signalHits} señales`
         };
       })
       .filter(item => item.score > 0)
@@ -1811,8 +1811,8 @@
   function signalsMatrixMarkup(signals) {
     const items = Array.isArray(signals) ? signals.slice(0, 14) : [];
     if (!items.length) {
-      return emptyMarkup("No strategic signals generated yet.", "Cuando el radar produzca señales, aparecerán aquí en un mapa de oportunidad vs actionability.", [
-        { label: "Run first sync", cta: "run-sync" }
+      return emptyMarkup("Todavía no hay señales estratégicas generadas.", "Cuando el radar produzca señales, aparecerán aquí en un mapa de oportunidad vs actionability.", [
+        { label: "Ejecutar primer sync", cta: "run-sync" }
       ]);
     }
     const width = 640;
@@ -1847,22 +1847,22 @@
       };
     });
     const legend = [
-      { tone: "new", label: "New" },
-      { tone: "reviewing", label: "Reviewing" },
-      { tone: "accepted", label: "Accepted" },
-      { tone: "archived", label: "Archived / rejected" }
+      { tone: "new", label: "Nueva" },
+      { tone: "reviewing", label: "En revisión" },
+      { tone: "accepted", label: "Aceptada" },
+      { tone: "archived", label: "Archivada / rechazada" }
     ];
     return `
       <div class="intelligence-chart-card">
         <div class="intelligence-chart-head">
-          <p>Opportunity on X, actionability on Y. Bigger marks mean higher confidence.</p>
+          <p>Oportunidad en X, actionabilidad en Y. Marcas más grandes indican mayor confianza.</p>
           <div class="intelligence-chart-legend">
             ${legend.map(item => `
               <span><i class="intelligence-dot intelligence-dot-${escapeAttr(item.tone)}"></i>${escapeHtml(item.label)}${toneCounts[item.tone] ? ` · ${number(toneCounts[item.tone])}` : ""}</span>
             `).join("")}
           </div>
         </div>
-        <svg class="intelligence-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Signal map">
+        <svg class="intelligence-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mapa de señales">
           <defs>
             <linearGradient id="intelligenceMatrixBg" x1="0" x2="1" y1="0" y2="1">
               <stop offset="0%" stop-color="rgba(86,255,166,.08)"></stop>
@@ -1874,10 +1874,10 @@
           <line x1="${paddingX + plotWidth / 2}" y1="${paddingTop}" x2="${paddingX + plotWidth / 2}" y2="${paddingTop + plotHeight}" class="intelligence-chart-grid"></line>
           <line x1="${paddingX}" y1="${paddingTop}" x2="${paddingX}" y2="${paddingTop + plotHeight}" class="intelligence-chart-axis"></line>
           <line x1="${paddingX}" y1="${paddingTop + plotHeight}" x2="${paddingX + plotWidth}" y2="${paddingTop + plotHeight}" class="intelligence-chart-axis"></line>
-          <text x="${paddingX + 10}" y="${paddingTop + 18}" class="intelligence-chart-caption">High actionability</text>
-          <text x="${paddingX + plotWidth - 122}" y="${paddingTop + 18}" class="intelligence-chart-caption">Fast decisions</text>
-          <text x="${paddingX + plotWidth - 88}" y="${paddingTop + plotHeight - 12}" class="intelligence-chart-caption">Opportunity</text>
-          <text x="18" y="${paddingTop + 18}" class="intelligence-chart-caption intelligence-chart-caption-vertical">Actionability</text>
+          <text x="${paddingX + 10}" y="${paddingTop + 18}" class="intelligence-chart-caption">Alta actionabilidad</text>
+          <text x="${paddingX + plotWidth - 122}" y="${paddingTop + 18}" class="intelligence-chart-caption">Decisiones rápidas</text>
+          <text x="${paddingX + plotWidth - 88}" y="${paddingTop + plotHeight - 12}" class="intelligence-chart-caption">Oportunidad</text>
+          <text x="18" y="${paddingTop + 18}" class="intelligence-chart-caption intelligence-chart-caption-vertical">Actionabilidad</text>
           ${points.map(point => `
             <g>
               <circle
@@ -1938,15 +1938,15 @@
   function runsTrendMarkup(entries) {
     const items = Array.isArray(entries) ? entries : [];
     if (!items.length) {
-      return emptyMarkup("No runs yet", "Cuando el radar ejecute syncs, aquí verás si está trayendo datos o solo generando actividad vacía.");
+      return emptyMarkup("Todavía no hay runs", "Cuando el radar ejecute syncs, aquí verás si está trayendo datos o solo generando actividad vacía.");
     }
     const maxValue = Math.max(...items.flatMap(item => [item.fetched, item.saved, item.signals]), 1);
     return `
       <div class="intelligence-runtrend">
         <div class="intelligence-chart-legend">
-          <span><i class="intelligence-bar intelligence-bar-fetched"></i>Fetched</span>
-          <span><i class="intelligence-bar intelligence-bar-saved"></i>Saved</span>
-          <span><i class="intelligence-bar intelligence-bar-signals"></i>Signals</span>
+          <span><i class="intelligence-bar intelligence-bar-fetched"></i>Encontrados</span>
+          <span><i class="intelligence-bar intelligence-bar-saved"></i>Guardados</span>
+          <span><i class="intelligence-bar intelligence-bar-signals"></i>Señales</span>
         </div>
         <div class="intelligence-runtrend-grid">
           ${items.map(item => `
@@ -2148,10 +2148,10 @@
 
   function paperSortOptions() {
     return [
-      { value: "latest", label: "Latest first" },
-      { value: "citations", label: "Most cited" },
-      { value: "updated", label: "Recently updated" },
-      { value: "source", label: "Source A-Z" }
+      { value: "latest", label: "Más recientes primero" },
+      { value: "citations", label: "Más citados" },
+      { value: "updated", label: "Actualizados recientemente" },
+      { value: "source", label: "Fuente A-Z" }
     ];
   }
 
@@ -2196,8 +2196,8 @@
     const tags = [
       line ? `<span class="intelligence-meta-pill intelligence-meta-pill-line">${escapeHtml(line)}</span>` : "",
       item.sourceName ? `<span class="intelligence-meta-pill">${escapeHtml(item.sourceName)}</span>` : "",
-      item.possibleDuplicate ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Duplicate watch</span>` : "",
-      item.openAccessUrl ? `<span class="intelligence-meta-pill intelligence-meta-pill-ok">Open access</span>` : ""
+      item.possibleDuplicate ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Posible duplicado</span>` : "",
+      item.openAccessUrl ? `<span class="intelligence-meta-pill intelligence-meta-pill-ok">Acceso abierto</span>` : ""
     ].filter(Boolean).join("");
     const abstract = trimText(item.abstract || "Sin abstract disponible.", 360);
     return `
@@ -2221,19 +2221,19 @@
         <p class="intelligence-paper-card-abstract">${escapeHtml(abstract)}</p>
         <div class="intelligence-paper-card-grid">
           <div>
-            <span class="intelligence-paper-card-label">Authors</span>
+            <span class="intelligence-paper-card-label">Autores</span>
             <strong>${escapeHtml(joinList(item.authors, 5))}</strong>
           </div>
           <div>
-            <span class="intelligence-paper-card-label">Institutions</span>
+            <span class="intelligence-paper-card-label">Instituciones</span>
             <strong>${escapeHtml(joinList(item.institutions, 4))}</strong>
           </div>
         </div>
         <div class="intelligence-paper-card-footer">
           <div class="intelligence-paper-card-topics">${topicPills(item.topics)}</div>
           <div class="intelligence-paper-card-actions">
-            <a class="btn btn-ghost btn-compact" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source</a>
-            ${item.openAccessUrl ? `<a class="btn btn-primary btn-compact" href="${escapeAttr(openAccessUrl)}" target="_blank" rel="noopener noreferrer">Open PDF</a>` : ""}
+            <a class="btn btn-ghost btn-compact" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>
+            ${item.openAccessUrl ? `<a class="btn btn-primary btn-compact" href="${escapeAttr(openAccessUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
           </div>
         </div>
       </article>
@@ -2250,29 +2250,29 @@
 
   function panelLabel(panel) {
     return {
-      overview: "Overview",
-      signals: "Signals",
+      overview: "Resumen",
+      signals: "Señales",
       papers: "Papers",
       grants: "Grants",
-      patents: "Patents",
-      trials: "Trials",
-      institutions: "Institutions",
-      topics: "Topics",
-      sources: "Sources",
-      settings: "Settings"
+      patents: "Patentes",
+      trials: "Ensayos",
+      institutions: "Instituciones",
+      topics: "Temas",
+      sources: "Fuentes",
+      settings: "Configuración"
     }[panel] || panel;
   }
 
   function actionLabel(action) {
-    return RUN_ACTIONS.find(item => item.id === action)?.label || action || "Run";
+    return RUN_ACTIONS.find(item => item.id === action)?.label || action || "Ejecutar";
   }
 
   function signalTypeLabel(type) {
-    return SIGNAL_TYPE_LABELS[type] || type || "Signal";
+    return SIGNAL_TYPE_LABELS[type] || type || "Señal";
   }
 
   function signalStatusLabel(status) {
-    return SIGNAL_STATUS_LABELS[status] || status || "New";
+    return SIGNAL_STATUS_LABELS[status] || status || "Nueva";
   }
 
   function topicCategoryLabel(category) {
@@ -2281,12 +2281,12 @@
 
   function runStatusLabel(status) {
     return {
-      pending: "Pending",
-      running: "Running",
-      completed: "Completed",
-      failed: "Failed",
-      idle: "Idle"
-    }[status] || status || "Idle";
+      pending: "Pendiente",
+      running: "En curso",
+      completed: "Completado",
+      failed: "Fallido",
+      idle: "Inactivo"
+    }[status] || status || "Inactivo";
   }
 
   function signalStatusTone(status) {
@@ -2340,11 +2340,11 @@
     const keywordCount = Array.isArray(topic?.keywords) ? topic.keywords.length : 0;
     const health = !topic.enabled ? "paused" : totalHits >= 12 ? "hot" : totalHits >= 4 ? "active" : "cold";
     const healthLabel = {
-      paused: "Paused",
-      hot: "Hot",
-      active: "Active",
-      cold: "Cold"
-    }[health] || "Cold";
+      paused: "En pausa",
+      hot: "En tendencia",
+      active: "Activo",
+      cold: "Frío"
+    }[health] || "Frío";
     return {
       id: topic.id,
       name: topic.name,
@@ -2359,7 +2359,7 @@
       keywordCount,
       health,
       healthLabel,
-      note: `${paperHits} papers · ${trialHits} trials · ${signalHits} signals · ${keywordCount} keywords`
+      note: `${paperHits} papers · ${trialHits} ensayos · ${signalHits} señales · ${keywordCount} keywords`
     };
   }
 
@@ -2396,31 +2396,31 @@
       health = "watch";
     }
     const status = !source.enabled
-      ? "Paused"
+      ? "En pausa"
       : !hasLastSync
-        ? source.requiresApiKey ? "Awaiting first sync" : "Never synced"
+        ? source.requiresApiKey ? "Esperando primer sync" : "Nunca sincronizada"
         : daysSinceSync > 14
-          ? "Stale"
+          ? "Desactualizada"
           : source.requiresApiKey
-            ? "Protected"
-            : "Active";
+            ? "Protegida"
+            : "Activa";
     const note = !source.enabled
-      ? source.rateLimitNotes || "Disabled from the radar."
+      ? source.rateLimitNotes || "Desactivada del radar."
       : !hasLastSync
-        ? source.rateLimitNotes || "Still waiting for the first successful sync."
+        ? source.rateLimitNotes || "Todavía esperando el primer sync exitoso."
         : daysSinceSync > 14
-          ? `Last sync was ${daysSinceSync} days ago.`
-          : source.rateLimitNotes || "Healthy source configuration.";
+          ? `El último sync fue hace ${daysSinceSync} días.`
+          : source.rateLimitNotes || "Configuración de fuente saludable.";
     const watchReasons = [];
     if (!source.enabled) {
       watchReasons.push({
-        label: "Paused",
+        label: "En pausa",
         note: "Esta fuente no participará en el próximo sync hasta volver a activarla."
       });
     }
     if (!hasLastSync) {
       watchReasons.push({
-        label: "First sync pending",
+        label: "Primer sync pendiente",
         note: source.requiresApiKey
           ? "Conviene validar credenciales y lanzar un sync específico antes de confiar en esta fuente."
           : "Todavía no hay evidencia de una primera sincronización exitosa."
@@ -2428,19 +2428,19 @@
     }
     if (source.requiresApiKey) {
       watchReasons.push({
-        label: "Quota-sensitive",
+        label: "Sensible a cuota",
         note: source.rateLimitNotes || "Mantén queries compactas y límites moderados para no gastar cuota sin señal útil."
       });
     }
     if (hasLastSync && daysSinceSync > 14) {
       watchReasons.push({
-        label: "Stale source",
+        label: "Fuente desactualizada",
         note: `Pasaron ${daysSinceSync} días desde el último sync. Puede haber cobertura desactualizada.`
       });
     }
     if (!watchReasons.length) {
       watchReasons.push({
-        label: "Healthy",
+        label: "Saludable",
         note: "La fuente está utilizable para el próximo ciclo y no muestra alertas básicas."
       });
     }
@@ -2451,15 +2451,15 @@
       requiresApiKey: Boolean(source.requiresApiKey),
       health,
       healthLabel: {
-        paused: "Paused",
-        cold: "Needs first sync",
-        watch: "Watch",
-        active: "Stable"
-      }[health] || "Stable",
+        paused: "En pausa",
+        cold: "Necesita primer sync",
+        watch: "En observación",
+        active: "Estable"
+      }[health] || "Estable",
       status,
       note,
       lastSyncLabel: formatDateTime(source.lastSyncAt),
-      syncAgeLabel: !hasLastSync ? "Never" : daysSinceSync <= 0 ? "Today" : `${daysSinceSync}d`,
+      syncAgeLabel: !hasLastSync ? "Nunca" : daysSinceSync <= 0 ? "Hoy" : `${daysSinceSync}d`,
       watchReasons
     };
   }
@@ -2655,32 +2655,32 @@
   function researchEmptyMessage(panelName, filterState) {
     const hasFilters = hasResearchFilters(panelName, filterState);
     if (hasFilters) return "No hay resultados para esos filtros.";
-    if (panelName === "papers") return "No papers synced yet.";
-    if (panelName === "grants") return "No grants synced yet.";
-    if (panelName === "patents") return "No patents synced yet.";
-    if (panelName === "trials") return "No trials synced yet.";
+    if (panelName === "papers") return "Todavía no hay papers sincronizados.";
+    if (panelName === "grants") return "Todavía no hay grants sincronizados.";
+    if (panelName === "patents") return "Todavía no hay patentes sincronizadas.";
+    if (panelName === "trials") return "Todavía no hay ensayos sincronizados.";
     return "No hay resultados todavía.";
   }
 
   function researchEmptyStateMarkup(panelName, filterState) {
     const hasFilters = hasResearchFilters(panelName, filterState);
     if (hasFilters) {
-      return emptyMarkup("No matching results.", "Adjust filters or clear the keyword range to expand the current view.");
+      return emptyMarkup("No hay resultados que coincidan.", "Ajusta los filtros o limpia la palabra clave para ampliar la vista actual.");
     }
     if (panelName === "papers") {
-      return emptyMarkup("No papers synced yet.", "The radar has not stored scientific papers yet.", [
-        { label: "Run first sync", cta: "run-sync" }
+      return emptyMarkup("Todavía no hay papers sincronizados.", "El radar todavía no ha guardado papers científicos.", [
+        { label: "Ejecutar primer sync", cta: "run-sync" }
       ]);
     }
     if (panelName === "grants") {
-      return emptyMarkup("No grants synced yet.", "Grant fetching is still pending implementation, so this view is expected to stay empty for now.");
+      return emptyMarkup("Todavía no hay grants sincronizados.", "La obtención de grants todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.");
     }
     if (panelName === "patents") {
-      return emptyMarkup("No patents synced yet.", "Patent fetching is still pending implementation, so this view is expected to stay empty for now.");
+      return emptyMarkup("Todavía no hay patentes sincronizadas.", "La obtención de patentes todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.");
     }
     if (panelName === "trials") {
-      return emptyMarkup("No trials synced yet.", "The radar has not stored ClinicalTrials.gov studies yet.", [
-        { label: "Run first sync", cta: "run-sync" }
+      return emptyMarkup("Todavía no hay ensayos sincronizados.", "El radar todavía no ha guardado estudios de ClinicalTrials.gov.", [
+        { label: "Ejecutar primer sync", cta: "run-sync" }
       ]);
     }
     return "";
@@ -2694,13 +2694,13 @@
   function sourcesEmptyStateMarkup() {
     if (dashboard.sources.length) {
       if (!dashboard.sources.some(item => item.enabled)) {
-        return emptyMarkup("No intelligence sources configured.", "Sources exist but none are enabled, so the radar cannot fetch anything yet.", [
-          { label: "Enable source", cta: "enable-source" }
+        return emptyMarkup("No hay fuentes de intelligence activas.", "Existen fuentes pero ninguna está activa, así que el radar no puede traer nada todavía.", [
+          { label: "Activar fuente", cta: "enable-source" }
         ]);
       }
       return "";
     }
-    return emptyMarkup("No intelligence sources configured.", "Create or seed source records before trying the first sync.");
+    return emptyMarkup("No hay fuentes de intelligence configuradas.", "Crea o registra fuentes antes de intentar el primer sync.");
   }
 
   function handleEmptyStateAction(action) {
@@ -2761,7 +2761,7 @@
     if (!message) return;
     renderMessageBlock(
       message,
-      text || "Scientific & technology intelligence para monitorear señales estratégicas.",
+      text || "Intelligence científica y tecnológica para monitorear señales estratégicas.",
       tone
     );
   }
