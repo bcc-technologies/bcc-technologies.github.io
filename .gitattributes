@@ -1,0 +1,12 @@
+js/**/*.js text eol=lf
+css/**/*.css text eol=lf
+assets/workspace/*.js text eol=lf
+assets/workspace/*.css text eol=lf
+assets/workspace/manifest.json text eol=lf
+dashboard.html text eol=lf
+staff-dashboard.html text eol=lf
+en/dashboard.html text eol=lf
+en/staff-dashboard.html text eol=lf
+scripts/build-workspace-assets.mjs text eol=lf
+scripts/render-workspace-locale-pages.mjs text eol=lf
+scripts/workspace-assets.manifest.mjs text eol=lf
