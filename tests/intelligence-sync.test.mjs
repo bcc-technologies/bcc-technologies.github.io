@@ -562,6 +562,101 @@ test("sync diagnostics repair existing papers with missing topic names", async (
   assert.deepEqual(savedPapers[1].topics, ["MAP-Nano"]);
 });
 
+test("sync diagnostics mark already-correct papers as checked without re-saving them", async () => {
+  const savedPapers = [];
+  const markedCheckedCalls = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-4" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper(item) {
+      savedPapers.push(item);
+      return { action: "created", record: { id: `paper-${savedPapers.length}` } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [
+        {
+          id: "already-correct-1",
+          sourceId: "source-arxiv",
+          externalId: "already-correct-abs-1",
+          doi: "",
+          arxivId: "",
+          title: "SEM image analysis benchmark for particle segmentation",
+          abstract: "Already tagged correctly, should not be re-saved.",
+          authors: [],
+          institutions: [],
+          publicationDate: "2026-04-01",
+          sourceName: "arXiv",
+          sourceUrl: "https://example.com/already-correct-paper",
+          journalOrVenue: "",
+          topics: ["MAP-Nano"],
+          keywords: ["particle segmentation"],
+          citationsCount: 0,
+          openAccessUrl: ""
+        }
+      ];
+    },
+    async markPapersTopicsChecked(ids) {
+      markedCheckedCalls.push(ids);
+    },
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        institutions: [],
+        papers: []
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-4" } };
+    }
+  };
+
+  const connector = {
+    sourceType: "arxiv",
+    async search() {
+      return [];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    {
+      action: "fetch_papers",
+      dryRun: false,
+      sourceTypes: ["arxiv"],
+      keywords: ["SEM image analysis"],
+      limit: 5
+    },
+    {
+      store,
+      connectors: [connector],
+      logger: { log() {} }
+    }
+  );
+
+  assert.equal(result.diagnostics.repaired, 0);
+  assert.equal(savedPapers.length, 0);
+  assert.deepEqual(markedCheckedCalls, [["already-correct-1"]]);
+});
+
 test("fetch_trials persists normalized topic names onto studies", async () => {
   const savedTrials = [];
   const store = {

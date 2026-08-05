@@ -225,13 +225,21 @@ async function runTopicDiagnostics(store, topics, logger) {
   const existingPapers = await store.listPapersForTopicDiagnostics(300);
   let repaired = 0;
   let candidates = 0;
+  const uncheckedIds = [];
 
   for (const paper of existingPapers) {
     const enriched = enrichItemTopics(paper, topics);
-    if (sameTopicSet(paper.topics, enriched.topics)) continue;
+    if (sameTopicSet(paper.topics, enriched.topics)) {
+      if (paper.id) uncheckedIds.push(paper.id);
+      continue;
+    }
     candidates += 1;
     await store.savePaper(enriched, paper.sourceId || "");
     repaired += 1;
+  }
+
+  if (uncheckedIds.length && typeof store.markPapersTopicsChecked === "function") {
+    await store.markPapersTopicsChecked(uncheckedIds);
   }
 
   if (logger?.log) {

@@ -130,6 +130,17 @@ alter table public.intelligence_papers
 alter table public.intelligence_papers
   add column if not exists duplicate_candidates jsonb not null default '[]'::jsonb;
 
+-- Drives the topic-diagnostics scan's rotation ordering (oldest/never-checked
+-- first) instead of updated_at, which kept re-selecting the same recently
+-- touched papers and could leave others permanently unreachable once the
+-- corpus grew past the scan's row limit. See scripts/sync-intelligence.mjs
+-- runTopicDiagnostics() and scripts/intelligence/store.mjs.
+alter table public.intelligence_papers
+  add column if not exists topics_checked_at timestamptz;
+
+create index if not exists intelligence_papers_topics_checked_idx
+on public.intelligence_papers (topics_checked_at nulls first);
+
 create unique index if not exists intelligence_papers_source_external_uidx
 on public.intelligence_papers (source_id, external_id)
 where source_id is not null and btrim(external_id) <> '';

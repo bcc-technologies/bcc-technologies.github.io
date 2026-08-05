@@ -40,7 +40,14 @@ function mapPaperRecord(item, sourceId) {
     open_access_url: cleanText(item.openAccessUrl || "", 500),
     possible_duplicate: Boolean(item.possibleDuplicate),
     duplicate_candidates: Array.isArray(item.duplicateCandidates) ? item.duplicateCandidates.slice(0, 8) : [],
-    raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
+    raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {},
+    // Every caller of savePaper() passes an item whose topics already went
+    // through enrichItemTopics() -- either at initial ingestion or in the
+    // topic-diagnostics scan -- so this timestamp is accurate either way. It
+    // drives listPapersForTopicDiagnostics()'s ordering: without it, that scan
+    // always picked the same most-recently-updated rows and never reached
+    // older papers that were never touched again after being created.
+    topics_checked_at: new Date().toISOString()
   };
 }
 
@@ -310,10 +317,16 @@ export function createIntelligenceStoreFromEnv() {
     },
 
     async listPapersForTopicDiagnostics(limit = 300) {
+      // Ordering by topics_checked_at (oldest/never-checked first) instead of
+      // updated_at guarantees every paper eventually rotates through this scan.
+      // Sorting by recency alone meant a paper that was checked once got its
+      // updated_at bumped to the front of the queue, while papers nobody ever
+      // touched again kept sinking further behind and could go unreachable
+      // once the corpus grew past this limit.
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_papers", {
         params: {
           select: PAPER_DIAGNOSTIC_COLUMNS,
-          order: "updated_at.desc",
+          order: "topics_checked_at.asc.nullsfirst,updated_at.desc",
           limit: Math.min(500, Math.max(1, Number(limit) || 300))
         }
       });
@@ -339,6 +352,26 @@ export function createIntelligenceStoreFromEnv() {
         // topic matching, and raw_data is the heaviest column on this table. savePaper()
         // preserves the existing raw_data on repair since this item never carries it.
       })) : [];
+    },
+
+    // Papers scanned by the diagnostics pass whose topic set didn't need a
+    // change never go through savePaper(), so nothing stamps topics_checked_at
+    // for them. Without this, a paper with correct topics would be re-picked
+    // by listPapersForTopicDiagnostics() forever, starving papers that were
+    // never checked at all. One bulk PATCH per diagnostics run instead of one
+    // per paper.
+    async markPapersTopicsChecked(ids) {
+      const uniqueIds = [...new Set((Array.isArray(ids) ? ids : []).filter(Boolean))];
+      if (!uniqueIds.length) return;
+      await restFetch(baseUrl, serviceKey, "intelligence_papers", {
+        method: "PATCH",
+        params: {
+          id: `in.(${uniqueIds.join(",")})`
+        },
+        body: {
+          topics_checked_at: new Date().toISOString()
+        }
+      });
     },
 
     async ensureSourceRecord(connector) {
