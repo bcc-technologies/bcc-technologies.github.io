@@ -1,65 +1,19 @@
 (() => {
-  const INTELLIGENCE_TIMEOUT_MS = 12000;
+  const api = window.BCCWorkspaceIntelligenceApi;
+  const {
+    PANELS,
+    RUN_ACTIONS,
+    SIGNAL_STATUS_ACTIONS,
+    SIGNAL_STATUS_LABELS,
+    SIGNAL_TYPE_LABELS,
+    TOPIC_CATEGORY_LABELS,
+    SETTINGS_FREQUENCY_LABELS,
+    DEFAULT_LINES,
+    DATE_RANGE_OPTIONS,
+    RESEARCH_PAGE_SIZE
+  } = window.BCCWorkspaceIntelligenceConstants;
   const INTELLIGENCE_CACHE_VERSION = 1;
   const INTELLIGENCE_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
-  const PANELS = ["overview", "signals", "papers", "grants", "patents", "trials", "institutions", "topics", "sources", "settings"];
-  const RUN_ACTIONS = [
-    { id: "sync_papers", label: "Sincronizar Intelligence" },
-    { id: "fetch_papers", label: "Obtener papers recientes" },
-    { id: "fetch_grants", label: "Obtener grants" },
-    { id: "fetch_patents", label: "Obtener patentes" },
-    { id: "fetch_trials", label: "Obtener ensayos" },
-    { id: "generate_signals", label: "Generar señales" }
-  ];
-  const SIGNAL_STATUS_ACTIONS = [
-    { id: "accepted", label: "Aceptar", tone: "primary" },
-    { id: "rejected", label: "Rechazar", tone: "ghost" },
-    { id: "archived", label: "Archivar", tone: "ghost" },
-    { id: "reviewing", label: "Marcar en revisión", tone: "ghost" }
-  ];
-  const SIGNAL_STATUS_LABELS = {
-    new: "Nueva",
-    reviewing: "En revisión",
-    accepted: "Aceptada",
-    rejected: "Rechazada",
-    archived: "Archivada"
-  };
-  const SIGNAL_TYPE_LABELS = {
-    product_opportunity: "Oportunidad de producto",
-    market_trend: "Tendencia de mercado",
-    research_trend: "Tendencia de investigación",
-    partnership: "Alianza",
-    content_idea: "Idea de contenido",
-    competitive_risk: "Riesgo competitivo",
-    grant_opportunity: "Oportunidad de grant"
-  };
-  const TOPIC_CATEGORY_LABELS = {
-    nano: "Nano",
-    bio: "Bio",
-    med: "Med",
-    ing: "Ing",
-    general: "General"
-  };
-  const SETTINGS_FREQUENCY_LABELS = {
-    daily: "Diaria",
-    weekly: "Semanal",
-    biweekly: "Quincenal",
-    monthly: "Mensual"
-  };
-  const DEFAULT_LINES = ["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "MAPs", "General"];
-  const DATE_RANGE_OPTIONS = [
-    { value: "30", label: "30d" },
-    { value: "90", label: "90d" },
-    { value: "180", label: "180d" },
-    { value: "365", label: "1y" },
-    { value: "all", label: "Todo" }
-  ];
-  // Papers/grants/patents/trials render every filtered match with no cap --
-  // fine when the dashboard fetch was capped at 200 rows, but raising that
-  // limit (to stop hiding data from topic analytics) means clearing filters
-  // can now paint hundreds of full cards/rows in one DOM update. Panels
-  // render only visibleCounts[panel] items and reveal more via "Cargar más".
-  const RESEARCH_PAGE_SIZE = { papers: 20, grants: 50, patents: 50, trials: 50 };
 
   let root = null;
   let currentUser = null;
@@ -198,23 +152,20 @@
       setMessage("Cargando intelligence...", "neutral");
     }
     try {
-      const data = await withTimeout(
-        window.BCCAuth.api("/api/admin/intelligence/dashboard"),
-        INTELLIGENCE_TIMEOUT_MS,
-        "Supabase no respondio a tiempo al cargar intelligence."
-      );
+      const data = await api.loadDashboard();
       applyDashboardState(data.dashboard);
       setMessage(cached ? "Intelligence actualizado. Snapshot refrescado correctamente." : "");
       renderAll();
     } catch (error) {
+      const message = error.message || "No fue posible cargar intelligence.";
       if (cached || hadSnapshot || hasDashboardContent(dashboard)) {
-        setMessage(`${intelligenceError(error)} Mostrando snapshot guardado para mantener la vista estable.`, "error");
+        setMessage(`${message} Mostrando snapshot guardado para mantener la vista estable.`, "error");
         renderAll();
         return;
       }
       dashboard = emptyDashboard();
       filters = Object.keys(filters).length ? filters : defaultFilters("90");
-      setMessage(intelligenceError(error), "error");
+      setMessage(message, "error");
       renderAll();
     }
   }
@@ -1377,13 +1328,10 @@
     const runButton = root.querySelector("[data-intelligence-run]");
     if (runButton) runButton.disabled = true;
     try {
-      const data = await window.BCCAuth.api("/api/admin/intelligence/sync", {
-        method: "POST",
-        body: JSON.stringify({
-          action: currentAction,
-          dryRun: syncDryRun,
-          reason: "Manual intelligence sync from dashboard"
-        })
+      const data = await api.runSync({
+        action: currentAction,
+        dryRun: syncDryRun,
+        reason: "Manual intelligence sync from dashboard"
       });
       setMessage(data?.runUrl ? "Workflow disparado correctamente." : "Sync disparado correctamente.", "ok");
       await loadDashboard();
@@ -1400,10 +1348,7 @@
   async function updateSignalStatus(id, status) {
     if (!id || !status) return;
     try {
-      const data = await window.BCCAuth.api(`/api/admin/intelligence/signals/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status })
-      });
+      const data = await api.updateSignalStatus(id, status);
       upsertById(dashboard.signals, data.signal);
       topicHitsIndex = null;
       selectedSignalId = data.signal.id;
@@ -1419,20 +1364,7 @@
 
   async function saveTopic(payload) {
     try {
-      const endpoint = payload.id
-        ? `/api/admin/intelligence/topics/${encodeURIComponent(payload.id)}`
-        : "/api/admin/intelligence/topics";
-      const method = payload.id ? "PATCH" : "POST";
-      const data = await window.BCCAuth.api(endpoint, {
-        method,
-        body: JSON.stringify({
-          name: payload.name,
-          description: payload.description,
-          category: payload.category,
-          keywords: payload.keywords,
-          enabled: payload.enabled
-        })
-      });
+      const data = await api.saveTopic(payload);
       upsertById(dashboard.topics, data.topic);
       topicHitsIndex = null;
       selectedTopicId = data.topic.id;
@@ -1451,10 +1383,7 @@
 
   async function saveSource(id, payload) {
     try {
-      const data = await window.BCCAuth.api(`/api/admin/intelligence/sources/${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload)
-      });
+      const data = await api.saveSource(id, payload);
       upsertById(dashboard.sources, data.source);
       selectedSourceId = data.source.id;
       writeDashboardCache(dashboard);
@@ -1470,10 +1399,7 @@
 
   async function saveSettings(payload) {
     try {
-      const data = await window.BCCAuth.api("/api/admin/intelligence/settings", {
-        method: "PATCH",
-        body: JSON.stringify(payload)
-      });
+      const data = await api.saveSettings(payload);
       dashboard.settings = { ...defaultSettings(), ...(data.settings || {}) };
       syncDryRun = dashboard.settings.defaultDryRun;
       writeDashboardCache(dashboard);
@@ -2847,21 +2773,6 @@
     } catch {
       button.textContent = "No se pudo copiar";
     }
-  }
-
-  function intelligenceError(error) {
-    const message = String(error?.message || "");
-    if (/no respondio a tiempo|timeout/i.test(message)) {
-      return "Intelligence tardó demasiado en responder. Revisa Supabase o intenta de nuevo.";
-    }
-    if (/intelligence_|relation .* does not exist|column .* does not exist/i.test(message)) {
-      return "Falta aplicar la última actualización del esquema Intelligence en Supabase.";
-    }
-    return message || "No fue posible cargar intelligence.";
-  }
-
-  function withTimeout(promise, timeoutMs, message) {
-    return window.BCCWorkspaceUtils.withTimeout(promise, timeoutMs, message);
   }
 
   function escapeHtml(value) {

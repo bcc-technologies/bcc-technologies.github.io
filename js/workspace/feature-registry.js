@@ -127,7 +127,12 @@
         views: ["science-radar"],
         styles: ["css/workspace/features/intelligence.css"],
         permission: "department:manage",
-        scripts: ["js/workspace/intelligence.js"],
+        scripts: [
+          "js/workspace/transport.js",
+          "js/workspace/intelligence.constants.js",
+          "js/workspace/intelligence.api.js",
+          "js/workspace/intelligence.js"
+        ],
         selector: "[data-intelligence-workspace]",
         global: "BCCWorkspaceIntelligence"
       },

@@ -83,8 +83,19 @@ function createWorkspaceRoot() {
   return { root, panels, message };
 }
 
+function readWorkspaceFile(relativePath) {
+  return fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
+}
+
 async function loadWorkspaceModule(dashboardOverrides = {}) {
-  const code = fs.readFileSync(path.resolve(process.cwd(), "js/workspace/intelligence.js"), "utf8");
+  // Mirrors the load order declared in feature-registry.js for the
+  // "intelligence" feature: transport.js first (intelligence.api.js reads
+  // window.BCCWorkspaceTransport at load time), then constants, then the
+  // api repository, then the controller itself.
+  const transportCode = readWorkspaceFile("js/workspace/transport.js");
+  const constantsCode = readWorkspaceFile("js/workspace/intelligence.constants.js");
+  const apiCode = readWorkspaceFile("js/workspace/intelligence.api.js");
+  const code = readWorkspaceFile("js/workspace/intelligence.js");
   const { root, panels, message } = createWorkspaceRoot();
 
   const documentStub = {
@@ -159,11 +170,15 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
     parseInt,
     parseFloat,
     setTimeout,
-    clearTimeout
+    clearTimeout,
+    AbortController
   };
 
   context.globalThis = context;
   vm.createContext(context);
+  vm.runInContext(transportCode, context, { filename: "workspace/transport.js" });
+  vm.runInContext(constantsCode, context, { filename: "workspace/intelligence.constants.js" });
+  vm.runInContext(apiCode, context, { filename: "workspace/intelligence.api.js" });
   vm.runInContext(code, context, { filename: "workspace/intelligence.js" });
 
   context.window.BCCWorkspaceIntelligence.init({ id: "admin-1" });
