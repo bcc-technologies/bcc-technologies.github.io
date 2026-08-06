@@ -1967,6 +1967,8 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
           "js/workspace/transport.js",
           "js/workspace/intelligence.constants.js",
           "js/workspace/intelligence.api.js",
+          "js/workspace/intelligence.state.js",
+          "js/workspace/intelligence.view.js",
           "js/workspace/intelligence.js"
         ],
         selector: "[data-intelligence-workspace]",

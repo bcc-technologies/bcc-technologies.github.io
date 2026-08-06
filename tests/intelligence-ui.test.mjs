@@ -25,7 +25,16 @@ function createClassList() {
   };
 }
 
+function matchesDataSelector(dataset, selector) {
+  const match = String(selector || "").match(/^\[data-([a-z-]+)(?:="([^"]*)")?\]$/);
+  if (!match) return false;
+  const key = match[1].replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+  if (!(key in dataset)) return false;
+  return match[2] === undefined || dataset[key] === match[2];
+}
+
 function createElementStub(dataset = {}) {
+  const listeners = new Map();
   return {
     dataset: { ...dataset },
     classList: createClassList(),
@@ -33,8 +42,24 @@ function createElementStub(dataset = {}) {
     textContent: "",
     value: "",
     checked: false,
+    disabled: false,
     hidden: false,
-    addEventListener() {},
+    addEventListener(type, handler) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(handler);
+    },
+    // Test-only helper (not part of the DOM API) so handleClick/handleChange/
+    // handleSubmit -- which nothing else in this suite exercises, since
+    // addEventListener above is otherwise a no-op -- can be driven directly.
+    dispatch(type, event) {
+      (listeners.get(type) || new Set()).forEach(handler => handler(event));
+    },
+    matches(selector) {
+      return matchesDataSelector(this.dataset, selector);
+    },
+    closest(selector) {
+      return this.matches(selector) ? this : null;
+    },
     querySelector() {
       return null;
     },
@@ -81,7 +106,7 @@ function createWorkspaceRoot() {
     return [];
   };
 
-  return { root, panels, message };
+  return { root, panels, message, action, dryRun, run, chips };
 }
 
 function readWorkspaceFile(relativePath) {
@@ -92,12 +117,14 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
   // Mirrors the load order declared in feature-registry.js for the
   // "intelligence" feature: transport.js first (intelligence.api.js reads
   // window.BCCWorkspaceTransport at load time), then constants, then the
-  // api repository, then the controller itself.
+  // api repository, then the state/view layers, then the controller itself.
   const transportCode = readWorkspaceFile("js/workspace/transport.js");
   const constantsCode = readWorkspaceFile("js/workspace/intelligence.constants.js");
   const apiCode = readWorkspaceFile("js/workspace/intelligence.api.js");
+  const stateCode = readWorkspaceFile("js/workspace/intelligence.state.js");
+  const viewCode = readWorkspaceFile("js/workspace/intelligence.view.js");
   const code = readWorkspaceFile("js/workspace/intelligence.js");
-  const { root, panels, message } = createWorkspaceRoot();
+  const { root, panels, message, action, dryRun, run, chips } = createWorkspaceRoot();
 
   const documentStub = {
     querySelector(selector) {
@@ -180,13 +207,25 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
   vm.runInContext(transportCode, context, { filename: "workspace/transport.js" });
   vm.runInContext(constantsCode, context, { filename: "workspace/intelligence.constants.js" });
   vm.runInContext(apiCode, context, { filename: "workspace/intelligence.api.js" });
+  vm.runInContext(stateCode, context, { filename: "workspace/intelligence.state.js" });
+  vm.runInContext(viewCode, context, { filename: "workspace/intelligence.view.js" });
   vm.runInContext(code, context, { filename: "workspace/intelligence.js" });
 
   context.window.BCCWorkspaceIntelligence.init({ id: "admin-1" });
   await new Promise(resolve => setTimeout(resolve, 0));
   await new Promise(resolve => setTimeout(resolve, 0));
 
-  return { panels, message };
+  return {
+    panels,
+    message,
+    root,
+    action,
+    dryRun,
+    run,
+    chips,
+    State: context.window.BCCWorkspaceIntelligenceState,
+    View: context.window.BCCWorkspaceIntelligenceView
+  };
 }
 
 test("intelligence overview renders usable empty states when there is no data", async () => {
@@ -358,4 +397,86 @@ test("grants/patents/trials tables flag possible duplicates and can filter down 
 
   assert.match(panels.get("patents").innerHTML, /Posible duplicado/);
   assert.match(panels.get("trials").innerHTML, /Posible duplicado/);
+});
+
+// The tests below exercise handleClick/handleChange, the event-delegation
+// paths the split into intelligence.state.js/intelligence.view.js/
+// intelligence.js touched the most (every mutation site had to move from a
+// bare closure variable to an IntelligenceState.xxx accessor). Nothing above
+// this point actually dispatches a DOM event -- addEventListener was a no-op
+// until createElementStub grew dispatch()/matches()/closest() support -- so
+// these are the first tests to run that code at all.
+test("clicking a nav chip switches the current panel and re-renders it as visible", async () => {
+  const { root, panels, State } = await loadWorkspaceModule();
+
+  assert.equal(State.currentPanel, "overview");
+  root.dispatch("click", { target: createElementStub({ panelTarget: "topics" }) });
+
+  assert.equal(State.currentPanel, "topics");
+  assert.equal(panels.get("topics").classList.contains("is-hidden"), false);
+  assert.equal(panels.get("overview").classList.contains("is-hidden"), true);
+});
+
+test("selecting a topic updates selectedTopicId and re-renders only the topics panel", async () => {
+  const { root, panels, State } = await loadWorkspaceModule({
+    topics: [{ id: "topic-1", name: "MAP-Nano", category: "nano", description: "", keywords: [], enabled: true }]
+  });
+
+  root.dispatch("click", { target: createElementStub({ topicSelect: "topic-1" }) });
+
+  assert.equal(State.selectedTopicId, "topic-1");
+  assert.match(panels.get("topics").innerHTML, /is-active/);
+
+  root.dispatch("click", { target: createElementStub({ topicReset: "" }) });
+  assert.equal(State.selectedTopicId, "");
+});
+
+test("resetting the papers filters restores defaults and the default page size", async () => {
+  const { root, State } = await loadWorkspaceModule();
+
+  State.filters.papers.topic = "MAP-Nano";
+  State.filters.papers.keyword = "quantum";
+  State.visibleCounts.papers = 40;
+
+  root.dispatch("click", { target: createElementStub({ papersReset: "" }) });
+
+  assert.equal(State.filters.papers.topic, "");
+  assert.equal(State.filters.papers.keyword, "");
+  assert.equal(State.visibleCounts.papers, 20);
+});
+
+test("clicking load-more increases the visible count for that panel only", async () => {
+  const { root, State } = await loadWorkspaceModule();
+  const before = State.visibleCounts.grants;
+
+  root.dispatch("click", { target: createElementStub({ researchLoadMore: "grants" }) });
+
+  assert.equal(State.visibleCounts.grants, before + 50);
+  assert.equal(State.visibleCounts.patents, 50);
+});
+
+test("changing the sync action select and dry-run checkbox updates state", async () => {
+  const { root, State } = await loadWorkspaceModule();
+
+  root.dispatch("change", { target: { matches: selector => selector === "[data-intelligence-action]", value: "fetch_grants" } });
+  assert.equal(State.currentAction, "fetch_grants");
+
+  root.dispatch("change", { target: { matches: selector => selector === "[data-intelligence-dry-run]", checked: true } });
+  assert.equal(State.syncDryRun, true);
+});
+
+test("changing a research filter field updates nested state and resets that panel's page size", async () => {
+  const { root, State } = await loadWorkspaceModule();
+  State.visibleCounts.grants = 100;
+
+  const filterInput = {
+    matches: selector => selector === "[data-intelligence-filter-panel]",
+    dataset: { intelligenceFilterPanel: "grants", filterField: "keyword" },
+    type: "text",
+    value: "battery"
+  };
+  root.dispatch("change", { target: filterInput });
+
+  assert.equal(State.filters.grants.keyword, "battery");
+  assert.equal(State.visibleCounts.grants, 50);
 });
