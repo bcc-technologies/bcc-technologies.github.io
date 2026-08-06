@@ -3,7 +3,7 @@ import { findPossibleDuplicateCandidates } from "./dedupe.mjs";
 import { redactSensitiveText, supabaseRestFetch as restFetch } from "../lib/supabase-rest.mjs";
 
 const SOURCE_COLUMNS = "id,name,type,base_url,enabled,requires_api_key,rate_limit_notes,last_sync_at";
-const TOPIC_COLUMNS = "id,name,keywords,enabled";
+const TOPIC_COLUMNS = "id,name,keywords,enabled,updated_at";
 const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source_id,citations_count,possible_duplicate,duplicate_candidates";
 const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url";
 const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount";
@@ -182,6 +182,31 @@ export function createIntelligenceStoreFromEnv() {
         }
       });
       return Array.isArray(rows) ? (rows[0] || null) : null;
+    },
+
+    // Lets runTopicDiagnostics() skip its whole scan when no topic changed
+    // since the last time it ran -- the scan exists to catch papers whose
+    // topics no longer match the topics config, so there's nothing to find
+    // when that config hasn't moved.
+    async getTopicsDiagnosticsState() {
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_settings", {
+        params: {
+          select: "id,topics_diagnostics_last_run_at",
+          order: "updated_at.desc",
+          limit: 1
+        }
+      });
+      const row = Array.isArray(rows) ? rows[0] : rows;
+      return row ? { id: row.id, lastRunAt: row.topics_diagnostics_last_run_at || null } : null;
+    },
+
+    async markTopicsDiagnosticsRun(settingsId) {
+      if (!settingsId) return;
+      await restFetch(baseUrl, serviceKey, "intelligence_settings", {
+        method: "PATCH",
+        params: { id: `eq.${settingsId}` },
+        body: { topics_diagnostics_last_run_at: new Date().toISOString() }
+      });
     },
 
     async listSignalInputs() {

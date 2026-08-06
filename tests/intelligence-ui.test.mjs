@@ -258,3 +258,57 @@ test("papers and grants panels paginate instead of rendering every match at once
   assert.match(grantsHtml, /Mostrando 50 de 55/);
   assert.match(grantsHtml, /data-research-load-more="grants"/);
 });
+
+test("overview shows a copy-error button only when the latest run failed", async () => {
+  const { panels } = await loadWorkspaceModule({
+    runs: [
+      {
+        id: "run-failed-1",
+        status: "failed",
+        actionType: "sync_papers",
+        dryRun: false,
+        startedAt: "2026-08-05T00:00:00.000Z",
+        finishedAt: "2026-08-05T00:05:00.000Z",
+        itemsFetched: 0,
+        itemsCreated: 0,
+        itemsUpdated: 0,
+        signalsGenerated: 0,
+        errorMessage: "Supabase timed out"
+      }
+    ]
+  });
+
+  const overviewHtml = panels.get("overview").innerHTML;
+  assert.match(overviewHtml, /data-intelligence-copy-error="run-failed-1"/);
+  assert.match(overviewHtml, />Copiar detalle</);
+});
+
+test("overview omits the copy-error button when the latest run succeeded", async () => {
+  const { panels } = await loadWorkspaceModule({
+    runs: [
+      {
+        id: "run-ok-1",
+        status: "completed",
+        actionType: "sync_papers",
+        dryRun: false,
+        startedAt: "2026-08-05T00:00:00.000Z",
+        finishedAt: "2026-08-05T00:05:00.000Z",
+        itemsFetched: 3,
+        itemsCreated: 3,
+        itemsUpdated: 0,
+        signalsGenerated: 0,
+        errorMessage: ""
+      }
+    ]
+  });
+
+  const overviewHtml = panels.get("overview").innerHTML;
+  assert.doesNotMatch(overviewHtml, /data-intelligence-copy-error/);
+});
+
+test("grants empty state accurately describes that fetching is implemented", async () => {
+  const { panels } = await loadWorkspaceModule();
+  const grantsHtml = panels.get("grants").innerHTML;
+  assert.doesNotMatch(grantsHtml, /pendiente de implementaci/i);
+  assert.match(grantsHtml, /ya está implementada/);
+});

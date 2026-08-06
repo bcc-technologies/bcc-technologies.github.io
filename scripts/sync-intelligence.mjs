@@ -222,6 +222,25 @@ async function runTopicDiagnostics(store, topics, logger) {
     return { scanned: 0, repaired: 0, candidates: 0 };
   }
 
+  // The scan exists to catch papers whose topics no longer match the topics
+  // config -- if no topic changed since the last time we ran it, there is
+  // nothing new to find, so skip the fetch and the per-paper matching work
+  // entirely instead of re-verifying already-correct papers every sync.
+  const diagnosticsState = typeof store.getTopicsDiagnosticsState === "function"
+    ? await store.getTopicsDiagnosticsState()
+    : null;
+
+  if (diagnosticsState?.lastRunAt) {
+    const lastRunAt = Date.parse(diagnosticsState.lastRunAt) || 0;
+    const latestTopicChange = Math.max(...topics.map(topic => Date.parse(topic?.updated_at || 0) || 0));
+    if (lastRunAt && latestTopicChange && latestTopicChange <= lastRunAt) {
+      if (logger?.log) {
+        logger.log("[diagnostics:topics] skipped -- no topic changes since the last run");
+      }
+      return { scanned: 0, repaired: 0, candidates: 0, skipped: true };
+    }
+  }
+
   const existingPapers = await store.listPapersForTopicDiagnostics(300);
   let repaired = 0;
   let candidates = 0;
@@ -240,6 +259,10 @@ async function runTopicDiagnostics(store, topics, logger) {
 
   if (uncheckedIds.length && typeof store.markPapersTopicsChecked === "function") {
     await store.markPapersTopicsChecked(uncheckedIds);
+  }
+
+  if (diagnosticsState?.id && typeof store.markTopicsDiagnosticsRun === "function") {
+    await store.markTopicsDiagnosticsRun(diagnosticsState.id);
   }
 
   if (logger?.log) {

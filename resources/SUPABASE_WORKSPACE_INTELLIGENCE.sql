@@ -358,6 +358,12 @@ create table if not exists public.intelligence_settings (
   constraint intelligence_settings_monitored_lines_check check (coalesce(array_length(monitored_lines, 1), 0) <= 16)
 );
 
+-- Lets the sync's topic-diagnostics scan (scripts/sync-intelligence.mjs
+-- runTopicDiagnostics()) skip entirely when no topic changed since the last
+-- run, instead of re-scanning up to 300 papers on every sync regardless.
+alter table public.intelligence_settings
+  add column if not exists topics_diagnostics_last_run_at timestamptz;
+
 create index if not exists intelligence_sources_enabled_type_idx
 on public.intelligence_sources (enabled, type, updated_at desc);
 

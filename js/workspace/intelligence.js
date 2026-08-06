@@ -428,6 +428,9 @@
                 <span>${escapeHtml(latestRun.dryRun ? "Dry-run" : "Sync")}</span>
                 <strong>${escapeHtml(formatDateTime(latestRun.finishedAt || latestRun.startedAt || latestRun.createdAt))}</strong>
                 <p>${escapeHtml(latestRun.errorMessage ? "La última ejecución terminó con error." : "La última ejecución ya quedó registrada en el radar.")}</p>
+                ${latestRun.errorMessage ? `
+                  <button class="btn btn-ghost btn-compact" type="button" data-intelligence-copy-error="${escapeAttr(latestRun.id)}">Copiar detalle</button>
+                ` : ""}
               </div>
             </div>
           ` : emptyMarkup("Todavía no hay runs", "Usa Ejecutar sincronización para lanzar el radar y empezar a llenar el log.")}
@@ -2737,7 +2740,7 @@
       ]);
     }
     if (panelName === "grants") {
-      return emptyMarkup("Todavía no hay grants sincronizados.", "La obtención de grants todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.");
+      return emptyMarkup("Todavía no hay grants sincronizados.", "La obtención de grants ya está implementada, pero el sync automático diario solo corre para papers. Selecciona \"Obtener grants\" en la acción de sync y ejecútalo manualmente para traer resultados.");
     }
     if (panelName === "patents") {
       return emptyMarkup("Todavía no hay patentes sincronizadas.", "La obtención de patentes todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.");

@@ -657,6 +657,122 @@ test("sync diagnostics mark already-correct papers as checked without re-saving 
   assert.deepEqual(markedCheckedCalls, [["already-correct-1"]]);
 });
 
+test("sync diagnostics skip the scan entirely when no topic changed since the last run", async () => {
+  const diagnosticsScanCalls = [];
+  const markRunCalls = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true,
+          updated_at: "2026-08-01T00:00:00.000Z"
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-5" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper() {
+      throw new Error("savePaper should not run when the diagnostics scan is skipped");
+    },
+    async touchSourceSync() {},
+    async getTopicsDiagnosticsState() {
+      return { id: "settings-1", lastRunAt: "2026-08-05T00:00:00.000Z" };
+    },
+    async listPapersForTopicDiagnostics() {
+      diagnosticsScanCalls.push(true);
+      return [];
+    },
+    async markTopicsDiagnosticsRun(id) {
+      markRunCalls.push(id);
+    },
+    async listSignalInputs() {
+      return { topics: await this.listEnabledTopics(), grants: [], patents: [], institutions: [], papers: [] };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-5" } };
+    }
+  };
+
+  const connector = { sourceType: "arxiv", async search() { return []; } };
+
+  const result = await runIntelligenceSync(
+    { action: "fetch_papers", dryRun: false, sourceTypes: ["arxiv"], keywords: ["SEM image analysis"], limit: 5 },
+    { store, connectors: [connector], logger: { log() {} } }
+  );
+
+  assert.equal(diagnosticsScanCalls.length, 0, "listPapersForTopicDiagnostics should never be called");
+  assert.equal(markRunCalls.length, 0, "markTopicsDiagnosticsRun should not run when the scan itself was skipped");
+  assert.deepEqual(result.diagnostics, { scanned: 0, repaired: 0, candidates: 0, skipped: true });
+});
+
+test("sync diagnostics still run when a topic changed after the last run", async () => {
+  const diagnosticsScanCalls = [];
+  const markRunCalls = [];
+  const store = {
+    async listEnabledTopics() {
+      return [
+        {
+          id: "topic-1",
+          name: "MAP-Nano",
+          category: "nano",
+          keywords: ["SEM image analysis"],
+          enabled: true,
+          updated_at: "2026-08-06T00:00:00.000Z"
+        }
+      ];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-6" };
+    },
+    async completeRun() {},
+    async failRun() {},
+    async savePaper() {
+      return { action: "created", record: { id: "paper-6" } };
+    },
+    async touchSourceSync() {},
+    async getTopicsDiagnosticsState() {
+      return { id: "settings-1", lastRunAt: "2026-08-05T00:00:00.000Z" };
+    },
+    async listPapersForTopicDiagnostics() {
+      diagnosticsScanCalls.push(true);
+      return [];
+    },
+    async markTopicsDiagnosticsRun(id) {
+      markRunCalls.push(id);
+    },
+    async listSignalInputs() {
+      return { topics: await this.listEnabledTopics(), grants: [], patents: [], institutions: [], papers: [] };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-6" } };
+    }
+  };
+
+  const connector = { sourceType: "arxiv", async search() { return []; } };
+
+  const result = await runIntelligenceSync(
+    { action: "fetch_papers", dryRun: false, sourceTypes: ["arxiv"], keywords: ["SEM image analysis"], limit: 5 },
+    { store, connectors: [connector], logger: { log() {} } }
+  );
+
+  assert.equal(diagnosticsScanCalls.length, 1, "listPapersForTopicDiagnostics should run since a topic changed");
+  assert.deepEqual(markRunCalls, ["settings-1"]);
+  assert.equal(result.diagnostics.skipped, undefined);
+});
+
 test("fetch_trials persists normalized topic names onto studies", async () => {
   const savedTrials = [];
   const store = {
