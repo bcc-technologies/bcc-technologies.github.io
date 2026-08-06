@@ -6,9 +6,9 @@ const SOURCE_COLUMNS = "id,name,type,base_url,enabled,requires_api_key,rate_limi
 const TOPIC_COLUMNS = "id,name,keywords,enabled,updated_at";
 const PAPER_COLUMNS = "id,title,normalized_title,doi,arxiv_id,external_id,source_id,citations_count,possible_duplicate,duplicate_candidates";
 const PAPER_DIAGNOSTIC_COLUMNS = "id,source_id,external_id,doi,arxiv_id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url";
-const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount";
-const PATENT_COLUMNS = "id,source_id,external_id,title,jurisdiction,status,publication_date,filing_date";
-const TRIAL_COLUMNS = "id,source_id,external_id,title,status,study_type,start_date,completion_date,sponsor";
+const GRANT_COLUMNS = "id,source_id,external_id,title,agency,program,start_date,end_date,amount,possible_duplicate,duplicate_candidates";
+const PATENT_COLUMNS = "id,source_id,external_id,title,jurisdiction,status,publication_date,filing_date,possible_duplicate,duplicate_candidates";
+const TRIAL_COLUMNS = "id,source_id,external_id,title,status,study_type,start_date,completion_date,sponsor,possible_duplicate,duplicate_candidates";
 const SIGNAL_COLUMNS = "id,title,signal_type,related_line,confidence_score,opportunity_score,actionability_score,evidence_count,evidence_refs,score_breakdown,recommended_action,status";
 const RUN_COLUMNS = "id,status,action_type,dry_run,started_at,finished_at,items_fetched,items_created,items_updated,signals_generated,error_message";
 
@@ -70,6 +70,8 @@ function mapGrantRecord(item, sourceId) {
     country: cleanText(item.country || "", 120),
     source_url: cleanText(item.sourceUrl || "", 500),
     topics: Array.isArray(item.topics) ? item.topics : [],
+    possible_duplicate: Boolean(item.possibleDuplicate),
+    duplicate_candidates: Array.isArray(item.duplicateCandidates) ? item.duplicateCandidates.slice(0, 8) : [],
     raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
   };
 }
@@ -88,6 +90,8 @@ function mapPatentRecord(item, sourceId) {
     status: cleanText(item.status || "unknown", 24).toLowerCase() || "unknown",
     source_url: cleanText(item.sourceUrl || "", 500),
     topics: Array.isArray(item.topics) ? item.topics : [],
+    possible_duplicate: Boolean(item.possibleDuplicate),
+    duplicate_candidates: Array.isArray(item.duplicateCandidates) ? item.duplicateCandidates.slice(0, 8) : [],
     raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
   };
 }
@@ -112,6 +116,8 @@ function mapTrialRecord(item, sourceId) {
     source_url: cleanText(item.sourceUrl || "", 500),
     topics: Array.isArray(item.topics) ? item.topics : [],
     keywords: Array.isArray(item.keywords) ? item.keywords : [],
+    possible_duplicate: Boolean(item.possibleDuplicate),
+    duplicate_candidates: Array.isArray(item.duplicateCandidates) ? item.duplicateCandidates.slice(0, 8) : [],
     raw_data: item.rawData && typeof item.rawData === "object" ? item.rawData : {}
   };
 }
@@ -151,6 +157,36 @@ export function createIntelligenceStoreFromEnv() {
     }));
     return duplicateCandidatePapers;
   }
+
+  // Grants/patents/trials never had an equivalent of the above -- their
+  // findExisting*() functions used to fall back to an exact title match that
+  // silently PATCH-merged into whatever record it found first, with no
+  // human-review step. These loaders back the same fuzzy-similarity-then-flag
+  // pattern papers use instead, one small cached corpus per table.
+  function createDuplicateCandidateLoader(table) {
+    let cache = null;
+    return async function loadCandidates() {
+      if (cache) return cache;
+      const rows = await restFetch(baseUrl, serviceKey, table, {
+        params: {
+          select: "id,external_id,title",
+          order: "updated_at.desc",
+          limit: 2000
+        }
+      });
+      cache = (Array.isArray(rows) ? rows : []).map(row => ({
+        id: row.id,
+        externalId: row.external_id || "",
+        sourceType: "",
+        title: row.title || ""
+      }));
+      return cache;
+    };
+  }
+
+  const loadDuplicateCandidateGrants = createDuplicateCandidateLoader("intelligence_grants");
+  const loadDuplicateCandidatePatents = createDuplicateCandidateLoader("intelligence_patents");
+  const loadDuplicateCandidateTrials = createDuplicateCandidateLoader("intelligence_trials");
 
   return {
     async listEnabledTopics() {
@@ -639,40 +675,52 @@ export function createIntelligenceStoreFromEnv() {
       return { action: "created", record: created };
     },
 
+    // Every grant connector (nsf-awards, nih-reporter) filters out items
+    // without an externalId before they reach the store, so source_id +
+    // external_id is always a reliable identity match here. This used to also
+    // fall back to an exact title match plus a loose agency/program check,
+    // and merged into the first row found even when that secondary check
+    // failed -- two different grants that happened to share a title (a real
+    // occurrence with generic program names) could get silently PATCHed
+    // together. That fallback is gone; findPossibleGrantDuplicates() below
+    // covers the "same title" case by flagging it for human review instead.
     async findExistingGrant(item, sourceId) {
       const externalId = cleanText(item?.externalId || "", 200);
-      if (sourceId && externalId) {
-        const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
-          params: {
-            select: GRANT_COLUMNS,
-            source_id: `eq.${sourceId}`,
-            external_id: `eq.${externalId}`,
-            limit: 1
-          }
-        });
-        const found = Array.isArray(rows) ? rows[0] : rows;
-        if (found?.id) return found;
-      }
-
-      const title = cleanText(item?.title || "", 600);
-      if (!title) return null;
+      if (!sourceId || !externalId) return null;
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
         params: {
           select: GRANT_COLUMNS,
-          title: `eq.${title}`,
-          limit: 5
+          source_id: `eq.${sourceId}`,
+          external_id: `eq.${externalId}`,
+          limit: 1
         }
       });
-      const matches = Array.isArray(rows) ? rows : [];
-      return matches.find(row =>
-        cleanText(row?.agency || "", 180).toLowerCase() === cleanText(item?.agency || "", 180).toLowerCase()
-        && cleanText(row?.program || "", 220).toLowerCase() === cleanText(item?.program || "", 220).toLowerCase()
-      ) || matches[0] || null;
+      const found = Array.isArray(rows) ? rows[0] : rows;
+      return found?.id ? found : null;
+    },
+
+    async findPossibleGrantDuplicates(item, excludeId = "") {
+      const title = cleanText(item?.title || "", 600);
+      if (!title) return [];
+      const allCandidates = await loadDuplicateCandidateGrants();
+      const candidates = allCandidates.filter(row => row?.id && row.id !== excludeId);
+      return findPossibleDuplicateCandidates(item, candidates).map(candidate => {
+        const match = candidates.find(row =>
+          cleanText(row.externalId || "", 200) === cleanText(candidate.externalId || "", 200)
+          && titleFingerprint(row.title || "") === titleFingerprint(candidate.title || "")
+        );
+        return { ...candidate, grantId: match?.id || "" };
+      });
     },
 
     async saveGrant(item, sourceId) {
       const existing = await this.findExistingGrant(item, sourceId);
-      const payload = mapGrantRecord(item, sourceId);
+      const duplicateCandidates = await this.findPossibleGrantDuplicates(item, existing?.id || "");
+      const payload = mapGrantRecord({
+        ...item,
+        possibleDuplicate: !existing && duplicateCandidates.length > 0,
+        duplicateCandidates
+      }, sourceId);
       if (existing?.id) {
         const rows = await restFetch(baseUrl, serviceKey, "intelligence_grants", {
           method: "PATCH",
@@ -684,7 +732,11 @@ export function createIntelligenceStoreFromEnv() {
             ...payload,
             amount: payload.amount === null
               ? existing.amount
-              : Math.max(Number(payload.amount) || 0, Number(existing.amount) || 0)
+              : Math.max(Number(payload.amount) || 0, Number(existing.amount) || 0),
+            possible_duplicate: Boolean(payload.possible_duplicate || existing.possible_duplicate),
+            duplicate_candidates: Array.isArray(payload.duplicate_candidates) && payload.duplicate_candidates.length
+              ? payload.duplicate_candidates
+              : (Array.isArray(existing.duplicate_candidates) ? existing.duplicate_candidates : [])
           }
         });
         return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
@@ -698,39 +750,48 @@ export function createIntelligenceStoreFromEnv() {
       return { action: "created", record: Array.isArray(rows) ? rows[0] : rows };
     },
 
+    // epo-ops filters out documents without an externalId before they reach
+    // the store, and uspto is disabled entirely, so source_id + external_id
+    // is always available and reliable here. Dropped the exact-title +
+    // jurisdiction fallback for the same reason as grants: it merged into
+    // whatever row it found first whenever the jurisdiction check failed.
     async findExistingPatent(item, sourceId) {
       const externalId = cleanText(item?.externalId || "", 200);
-      if (sourceId && externalId) {
-        const rows = await restFetch(baseUrl, serviceKey, "intelligence_patents", {
-          params: {
-            select: PATENT_COLUMNS,
-            source_id: `eq.${sourceId}`,
-            external_id: `eq.${externalId}`,
-            limit: 1
-          }
-        });
-        const found = Array.isArray(rows) ? rows[0] : rows;
-        if (found?.id) return found;
-      }
-
-      const title = cleanText(item?.title || "", 600);
-      if (!title) return null;
+      if (!sourceId || !externalId) return null;
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_patents", {
         params: {
           select: PATENT_COLUMNS,
-          title: `eq.${title}`,
-          limit: 5
+          source_id: `eq.${sourceId}`,
+          external_id: `eq.${externalId}`,
+          limit: 1
         }
       });
-      const matches = Array.isArray(rows) ? rows : [];
-      return matches.find(row =>
-        cleanText(row?.jurisdiction || "", 40).toUpperCase() === cleanText(item?.jurisdiction || "", 40).toUpperCase()
-      ) || matches[0] || null;
+      const found = Array.isArray(rows) ? rows[0] : rows;
+      return found?.id ? found : null;
+    },
+
+    async findPossiblePatentDuplicates(item, excludeId = "") {
+      const title = cleanText(item?.title || "", 600);
+      if (!title) return [];
+      const allCandidates = await loadDuplicateCandidatePatents();
+      const candidates = allCandidates.filter(row => row?.id && row.id !== excludeId);
+      return findPossibleDuplicateCandidates(item, candidates).map(candidate => {
+        const match = candidates.find(row =>
+          cleanText(row.externalId || "", 200) === cleanText(candidate.externalId || "", 200)
+          && titleFingerprint(row.title || "") === titleFingerprint(candidate.title || "")
+        );
+        return { ...candidate, patentId: match?.id || "" };
+      });
     },
 
     async savePatent(item, sourceId) {
       const existing = await this.findExistingPatent(item, sourceId);
-      const payload = mapPatentRecord(item, sourceId);
+      const duplicateCandidates = await this.findPossiblePatentDuplicates(item, existing?.id || "");
+      const payload = mapPatentRecord({
+        ...item,
+        possibleDuplicate: !existing && duplicateCandidates.length > 0,
+        duplicateCandidates
+      }, sourceId);
       if (existing?.id) {
         const rows = await restFetch(baseUrl, serviceKey, "intelligence_patents", {
           method: "PATCH",
@@ -738,7 +799,13 @@ export function createIntelligenceStoreFromEnv() {
           params: {
             id: `eq.${existing.id}`
           },
-          body: payload
+          body: {
+            ...payload,
+            possible_duplicate: Boolean(payload.possible_duplicate || existing.possible_duplicate),
+            duplicate_candidates: Array.isArray(payload.duplicate_candidates) && payload.duplicate_candidates.length
+              ? payload.duplicate_candidates
+              : (Array.isArray(existing.duplicate_candidates) ? existing.duplicate_candidates : [])
+          }
         });
         return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
       }
@@ -751,39 +818,47 @@ export function createIntelligenceStoreFromEnv() {
       return { action: "created", record: Array.isArray(rows) ? rows[0] : rows };
     },
 
+    // clinicaltrials.mjs filters out studies without an NCT id (externalId)
+    // before they reach the store, so source_id + external_id is always
+    // available and reliable here. Dropped the exact-title + sponsor fallback
+    // for the same reason as grants/patents.
     async findExistingTrial(item, sourceId) {
       const externalId = cleanText(item?.externalId || "", 200);
-      if (sourceId && externalId) {
-        const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
-          params: {
-            select: TRIAL_COLUMNS,
-            source_id: `eq.${sourceId}`,
-            external_id: `eq.${externalId}`,
-            limit: 1
-          }
-        });
-        const found = Array.isArray(rows) ? rows[0] : rows;
-        if (found?.id) return found;
-      }
-
-      const title = cleanText(item?.title || "", 600);
-      if (!title) return null;
+      if (!sourceId || !externalId) return null;
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
         params: {
           select: TRIAL_COLUMNS,
-          title: `eq.${title}`,
-          limit: 5
+          source_id: `eq.${sourceId}`,
+          external_id: `eq.${externalId}`,
+          limit: 1
         }
       });
-      const matches = Array.isArray(rows) ? rows : [];
-      return matches.find(row =>
-        cleanText(row?.sponsor || "", 200).toLowerCase() === cleanText(item?.sponsor || "", 200).toLowerCase()
-      ) || matches[0] || null;
+      const found = Array.isArray(rows) ? rows[0] : rows;
+      return found?.id ? found : null;
+    },
+
+    async findPossibleTrialDuplicates(item, excludeId = "") {
+      const title = cleanText(item?.title || "", 600);
+      if (!title) return [];
+      const allCandidates = await loadDuplicateCandidateTrials();
+      const candidates = allCandidates.filter(row => row?.id && row.id !== excludeId);
+      return findPossibleDuplicateCandidates(item, candidates).map(candidate => {
+        const match = candidates.find(row =>
+          cleanText(row.externalId || "", 200) === cleanText(candidate.externalId || "", 200)
+          && titleFingerprint(row.title || "") === titleFingerprint(candidate.title || "")
+        );
+        return { ...candidate, trialId: match?.id || "" };
+      });
     },
 
     async saveTrial(item, sourceId) {
       const existing = await this.findExistingTrial(item, sourceId);
-      const payload = mapTrialRecord(item, sourceId);
+      const duplicateCandidates = await this.findPossibleTrialDuplicates(item, existing?.id || "");
+      const payload = mapTrialRecord({
+        ...item,
+        possibleDuplicate: !existing && duplicateCandidates.length > 0,
+        duplicateCandidates
+      }, sourceId);
       if (existing?.id) {
         const rows = await restFetch(baseUrl, serviceKey, "intelligence_trials", {
           method: "PATCH",
@@ -791,7 +866,13 @@ export function createIntelligenceStoreFromEnv() {
           params: {
             id: `eq.${existing.id}`
           },
-          body: payload
+          body: {
+            ...payload,
+            possible_duplicate: Boolean(payload.possible_duplicate || existing.possible_duplicate),
+            duplicate_candidates: Array.isArray(payload.duplicate_candidates) && payload.duplicate_candidates.length
+              ? payload.duplicate_candidates
+              : (Array.isArray(existing.duplicate_candidates) ? existing.duplicate_candidates : [])
+          }
         });
         return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
       }

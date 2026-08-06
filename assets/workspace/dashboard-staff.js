@@ -3715,9 +3715,9 @@ const INTELLIGENCE_RUN_STATUSES = ["pending", "running", "completed", "failed"];
 const INTELLIGENCE_SETTINGS_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
 const INTELLIGENCE_SOURCE_COLUMNS = "id, name, type, base_url, enabled, requires_api_key, rate_limit_notes, last_sync_at, created_at, updated_at";
 const INTELLIGENCE_PAPER_COLUMNS = "id, external_id, doi, arxiv_id, normalized_title, title, abstract, authors, institutions, publication_date, source_name, source_url, journal_or_venue, topics, keywords, citations_count, open_access_url, possible_duplicate, duplicate_candidates, created_at, updated_at";
-const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, created_at, updated_at";
-const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, created_at, updated_at";
-const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, created_at, updated_at";
+const INTELLIGENCE_GRANT_COLUMNS = "id, external_id, title, abstract, agency, program, amount, currency, start_date, end_date, principal_investigators, institutions, country, source_url, topics, possible_duplicate, duplicate_candidates, created_at, updated_at";
+const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors, assignees, publication_date, filing_date, jurisdiction, status, source_url, topics, possible_duplicate, duplicate_candidates, created_at, updated_at";
+const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, possible_duplicate, duplicate_candidates, created_at, updated_at";
 const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
 const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
 const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, created_at, updated_at";
@@ -3996,6 +3996,8 @@ function publicIntelligenceGrant(grant) {
     country: grant.country || "",
     sourceUrl: grant.source_url || "",
     topics: Array.isArray(grant.topics) ? grant.topics : [],
+    possibleDuplicate: Boolean(grant.possible_duplicate),
+    duplicateCandidates: Array.isArray(grant.duplicate_candidates) ? grant.duplicate_candidates : [],
     createdAt: grant.created_at,
     updatedAt: grant.updated_at
   };
@@ -4015,6 +4017,8 @@ function publicIntelligencePatent(patent) {
     status: patent.status || "unknown",
     sourceUrl: patent.source_url || "",
     topics: Array.isArray(patent.topics) ? patent.topics : [],
+    possibleDuplicate: Boolean(patent.possible_duplicate),
+    duplicateCandidates: Array.isArray(patent.duplicate_candidates) ? patent.duplicate_candidates : [],
     createdAt: patent.created_at,
     updatedAt: patent.updated_at
   };
@@ -4040,6 +4044,8 @@ function publicIntelligenceTrial(trial) {
     sourceUrl: trial.source_url || "",
     topics: Array.isArray(trial.topics) ? trial.topics : [],
     keywords: Array.isArray(trial.keywords) ? trial.keywords : [],
+    possibleDuplicate: Boolean(trial.possible_duplicate),
+    duplicateCandidates: Array.isArray(trial.duplicate_candidates) ? trial.duplicate_candidates : [],
     createdAt: trial.created_at,
     updatedAt: trial.updated_at
   };

@@ -56,12 +56,13 @@ function createWorkspaceRoot() {
     ["papers", createElementStub({ intelligencePanel: "papers" })],
     ["grants", createElementStub({ intelligencePanel: "grants" })],
     ["patents", createElementStub({ intelligencePanel: "patents" })],
+    ["trials", createElementStub({ intelligencePanel: "trials" })],
     ["institutions", createElementStub({ intelligencePanel: "institutions" })],
     ["topics", createElementStub({ intelligencePanel: "topics" })],
     ["sources", createElementStub({ intelligencePanel: "sources" })],
     ["settings", createElementStub({ intelligencePanel: "settings" })]
   ]);
-  const chips = ["overview", "signals", "papers", "grants", "patents", "institutions", "topics", "sources", "settings"]
+  const chips = ["overview", "signals", "papers", "grants", "patents", "trials", "institutions", "topics", "sources", "settings"]
     .map(name => createElementStub({ panelTarget: name }));
 
   const root = createElementStub({ intelligenceWorkspace: "" });
@@ -326,4 +327,35 @@ test("grants empty state accurately describes that fetching is implemented", asy
   const grantsHtml = panels.get("grants").innerHTML;
   assert.doesNotMatch(grantsHtml, /pendiente de implementaci/i);
   assert.match(grantsHtml, /ya está implementada/);
+});
+
+test("patents empty state accurately describes that fetching is implemented", async () => {
+  const { panels } = await loadWorkspaceModule();
+  const patentsHtml = panels.get("patents").innerHTML;
+  assert.doesNotMatch(patentsHtml, /pendiente de implementaci/i);
+  assert.match(patentsHtml, /ya está implementada/);
+});
+
+test("grants/patents/trials tables flag possible duplicates and can filter down to only them", async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const { panels } = await loadWorkspaceModule({
+    grants: [
+      { id: "grant-1", title: "Grant A", abstract: "", agency: "", program: "", principalInvestigators: [], institutions: [], topics: [], sourceUrl: "", startDate: today, possibleDuplicate: true },
+      { id: "grant-2", title: "Grant B", abstract: "", agency: "", program: "", principalInvestigators: [], institutions: [], topics: [], sourceUrl: "", startDate: today, possibleDuplicate: false }
+    ],
+    patents: [
+      { id: "patent-1", title: "Patent A", abstract: "", inventors: [], assignees: [], topics: [], sourceUrl: "", publicationDate: today, possibleDuplicate: true }
+    ],
+    trials: [
+      { id: "trial-1", title: "Trial A", summary: "", interventions: [], locations: [], topics: [], sourceUrl: "", startDate: today, possibleDuplicate: true }
+    ]
+  });
+
+  const grantsHtml = panels.get("grants").innerHTML;
+  assert.match(grantsHtml, /Posible duplicado/);
+  assert.match(grantsHtml, /1 posibles duplicados/);
+  assert.match(grantsHtml, /data-filter-field="duplicatesOnly"/);
+
+  assert.match(panels.get("patents").innerHTML, /Posible duplicado/);
+  assert.match(panels.get("trials").innerHTML, /Posible duplicado/);
 });

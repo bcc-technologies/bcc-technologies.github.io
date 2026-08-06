@@ -170,6 +170,8 @@ create table if not exists public.intelligence_grants (
   country text not null default '',
   source_url text not null default '',
   topics text[] not null default '{}'::text[],
+  possible_duplicate boolean not null default false,
+  duplicate_candidates jsonb not null default '[]'::jsonb,
   raw_data jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -185,8 +187,15 @@ create table if not exists public.intelligence_grants (
   constraint intelligence_grants_pi_check check (coalesce(array_length(principal_investigators, 1), 0) <= 128),
   constraint intelligence_grants_institutions_check check (coalesce(array_length(institutions, 1), 0) <= 128),
   constraint intelligence_grants_topics_check check (coalesce(array_length(topics, 1), 0) <= 64),
+  constraint intelligence_grants_duplicate_candidates_check check (jsonb_typeof(duplicate_candidates) = 'array'),
   constraint intelligence_grants_raw_data_check check (jsonb_typeof(raw_data) = 'object')
 );
+
+alter table public.intelligence_grants
+  add column if not exists possible_duplicate boolean not null default false;
+
+alter table public.intelligence_grants
+  add column if not exists duplicate_candidates jsonb not null default '[]'::jsonb;
 
 create unique index if not exists intelligence_grants_source_external_uidx
 on public.intelligence_grants (source_id, external_id)
@@ -206,6 +215,8 @@ create table if not exists public.intelligence_patents (
   status text not null default 'published',
   source_url text not null default '',
   topics text[] not null default '{}'::text[],
+  possible_duplicate boolean not null default false,
+  duplicate_candidates jsonb not null default '[]'::jsonb,
   raw_data jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -218,8 +229,15 @@ create table if not exists public.intelligence_patents (
   constraint intelligence_patents_inventors_check check (coalesce(array_length(inventors, 1), 0) <= 128),
   constraint intelligence_patents_assignees_check check (coalesce(array_length(assignees, 1), 0) <= 128),
   constraint intelligence_patents_topics_check check (coalesce(array_length(topics, 1), 0) <= 64),
+  constraint intelligence_patents_duplicate_candidates_check check (jsonb_typeof(duplicate_candidates) = 'array'),
   constraint intelligence_patents_raw_data_check check (jsonb_typeof(raw_data) = 'object')
 );
+
+alter table public.intelligence_patents
+  add column if not exists possible_duplicate boolean not null default false;
+
+alter table public.intelligence_patents
+  add column if not exists duplicate_candidates jsonb not null default '[]'::jsonb;
 
 create unique index if not exists intelligence_patents_source_external_uidx
 on public.intelligence_patents (source_id, external_id)
@@ -245,6 +263,8 @@ create table if not exists public.intelligence_trials (
   source_url text not null default '',
   topics text[] not null default '{}'::text[],
   keywords text[] not null default '{}'::text[],
+  possible_duplicate boolean not null default false,
+  duplicate_candidates jsonb not null default '[]'::jsonb,
   raw_data jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -263,8 +283,15 @@ create table if not exists public.intelligence_trials (
   constraint intelligence_trials_countries_check check (coalesce(array_length(countries, 1), 0) <= 64),
   constraint intelligence_trials_topics_check check (coalesce(array_length(topics, 1), 0) <= 64),
   constraint intelligence_trials_keywords_check check (coalesce(array_length(keywords, 1), 0) <= 128),
+  constraint intelligence_trials_duplicate_candidates_check check (jsonb_typeof(duplicate_candidates) = 'array'),
   constraint intelligence_trials_raw_data_check check (jsonb_typeof(raw_data) = 'object')
 );
+
+alter table public.intelligence_trials
+  add column if not exists possible_duplicate boolean not null default false;
+
+alter table public.intelligence_trials
+  add column if not exists duplicate_candidates jsonb not null default '[]'::jsonb;
 
 create unique index if not exists intelligence_trials_source_external_uidx
 on public.intelligence_trials (source_id, external_id)

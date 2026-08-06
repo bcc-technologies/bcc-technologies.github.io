@@ -77,9 +77,9 @@
   function defaultFilters(dateRange = "90") {
     return {
       papers: { topic: "", source: "", line: "", dateRange, keyword: "", sort: "latest", openAccessOnly: false, withAbstractOnly: false, duplicatesOnly: false },
-      grants: { topic: "", line: "", dateRange, keyword: "" },
-      patents: { topic: "", line: "", dateRange, keyword: "" },
-      trials: { topic: "", line: "", dateRange, keyword: "" }
+      grants: { topic: "", line: "", dateRange, keyword: "", duplicatesOnly: false },
+      patents: { topic: "", line: "", dateRange, keyword: "", duplicatesOnly: false },
+      trials: { topic: "", line: "", dateRange, keyword: "", duplicatesOnly: false }
     };
   }
 
@@ -211,9 +211,9 @@
         withAbstractOnly: Boolean(incoming?.papers?.withAbstractOnly),
         duplicatesOnly: Boolean(incoming?.papers?.duplicatesOnly)
       },
-      grants: { ...defaults.grants, ...(incoming.grants || {}) },
-      patents: { ...defaults.patents, ...(incoming.patents || {}) },
-      trials: { ...defaults.trials, ...(incoming.trials || {}) }
+      grants: { ...defaults.grants, ...(incoming.grants || {}), duplicatesOnly: Boolean(incoming?.grants?.duplicatesOnly) },
+      patents: { ...defaults.patents, ...(incoming.patents || {}), duplicatesOnly: Boolean(incoming?.patents?.duplicatesOnly) },
+      trials: { ...defaults.trials, ...(incoming.trials || {}), duplicatesOnly: Boolean(incoming?.trials?.duplicatesOnly) }
     };
   }
 
@@ -658,6 +658,10 @@
     `;
   }
 
+  function duplicateBadge(item) {
+    return item.possibleDuplicate ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Posible duplicado</span>` : "";
+  }
+
   function renderGrants() {
     renderResearchTable("grants", {
       title: "Grants",
@@ -665,7 +669,7 @@
       filters: filters.grants,
       rows: item => `
         <tr>
-          <td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.abstract || "Sin abstract")}</small></td>
+          <td><strong>${escapeHtml(item.title)}</strong>${duplicateBadge(item)}<small>${escapeHtml(item.abstract || "Sin abstract")}</small></td>
           <td>${escapeHtml(formatDate(item.startDate || item.endDate))}</td>
           <td>${escapeHtml(item.agency || sourceHost(item.sourceUrl))}</td>
           <td>${escapeHtml(joinList(item.principalInvestigators, 3))}</td>
@@ -685,7 +689,7 @@
       filters: filters.patents,
       rows: item => `
         <tr>
-          <td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.abstract || "Sin abstract")}</small></td>
+          <td><strong>${escapeHtml(item.title)}</strong>${duplicateBadge(item)}<small>${escapeHtml(item.abstract || "Sin abstract")}</small></td>
           <td>${escapeHtml(formatDate(item.publicationDate || item.filingDate))}</td>
           <td>${escapeHtml(item.jurisdiction || sourceHost(item.sourceUrl))}</td>
           <td>${escapeHtml(joinList(item.inventors, 3))}</td>
@@ -705,7 +709,7 @@
       filters: filters.trials,
       rows: item => `
         <tr>
-          <td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.summary || "Sin resumen")}</small></td>
+          <td><strong>${escapeHtml(item.title)}</strong>${duplicateBadge(item)}<small>${escapeHtml(item.summary || "Sin resumen")}</small></td>
           <td>${escapeHtml(formatDate(item.startDate || item.completionDate))}</td>
           <td>${escapeHtml(item.sponsor || sourceHost(item.sourceUrl))}</td>
           <td>${escapeHtml(joinList(item.interventions, 2))}</td>
@@ -722,11 +726,12 @@
     const target = panelRoot(panelName);
     if (!target) return;
     const filterState = config.filters;
+    const duplicateCount = config.items.filter(item => item.possibleDuplicate).length;
     target.innerHTML = `
       <article class="activity-surface intelligence-card intelligence-card-wide">
         <div class="activity-head">
           <h3>${escapeHtml(config.title)}</h3>
-          <span>${number(config.items.length)}</span>
+          <span>${number(config.items.length)}${duplicateCount ? ` · ${number(duplicateCount)} posibles duplicados` : ""}</span>
         </div>
         <div class="intelligence-filter-grid">
           <label class="intelligence-field">
@@ -763,6 +768,10 @@
             <input type="search" data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="keyword" value="${escapeAttr(filterState.keyword)}" placeholder="Buscar por título, abstract, autores, instituciones..." />
           </label>
         </div>
+        <label class="intelligence-toggle">
+          <input type="checkbox" data-intelligence-filter-panel="${escapeAttr(panelName)}" data-filter-field="duplicatesOnly"${filterState.duplicatesOnly ? " checked" : ""} />
+          <span>Solo posibles duplicados</span>
+        </label>
         <div class="table-scroll intelligence-table-wrap">
           <table class="account-table intelligence-table">
             <thead>
@@ -2669,7 +2678,7 @@
       return emptyMarkup("Todavía no hay grants sincronizados.", "La obtención de grants ya está implementada, pero el sync automático diario solo corre para papers. Selecciona \"Obtener grants\" en la acción de sync y ejecútalo manualmente para traer resultados.");
     }
     if (panelName === "patents") {
-      return emptyMarkup("Todavía no hay patentes sincronizadas.", "La obtención de patentes todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.");
+      return emptyMarkup("Todavía no hay patentes sincronizadas.", "La obtención de patentes ya está implementada, pero el sync automático diario solo corre para papers. Selecciona \"Obtener patentes\" en la acción de sync y ejecútalo manualmente para traer resultados.");
     }
     if (panelName === "trials") {
       return emptyMarkup("Todavía no hay ensayos sincronizados.", "El radar todavía no ha guardado estudios de ClinicalTrials.gov.", [
@@ -2681,7 +2690,7 @@
 
   function hasResearchFilters(panelName, filterState) {
     if (panelName === "papers") return paperFiltersActive(filterState);
-    return Boolean(filterState?.topic || filterState?.source || filterState?.line || filterState?.keyword || (filterState?.dateRange && filterState.dateRange !== "90"));
+    return Boolean(filterState?.topic || filterState?.source || filterState?.line || filterState?.keyword || filterState?.duplicatesOnly || (filterState?.dateRange && filterState.dateRange !== "90"));
   }
 
   function sourcesEmptyStateMarkup() {
