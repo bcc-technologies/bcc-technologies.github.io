@@ -3294,95 +3294,6 @@ async function bccApi(path, options = {}) {
     return { ok: true, signal: publicIntelligenceSignal(data) };
   }
 
-  if (intelligencePath === "/api/admin/intelligence/papers" && (!options.method || options.method === "GET")) {
-    await requireAdminViewUser();
-    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
-    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
-    const source = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("source"), 120, "Source");
-    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
-    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
-    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
-    let query = supabase
-      .from("intelligence_papers")
-      .select(INTELLIGENCE_PAPER_COLUMNS)
-      .order("publication_date", { ascending: false, nullsFirst: false })
-      .order("updated_at", { ascending: false })
-      .limit(limit);
-    if (topic) query = query.contains("topics", [topic]);
-    if (source) query = query.eq("source_name", source);
-    if (dateFrom) query = query.gte("publication_date", dateFrom);
-    if (dateTo) query = query.lte("publication_date", dateTo);
-    if (keyword) query = query.ilike("title", `%${keyword}%`);
-    const { data, error } = await query;
-    if (error) throw error;
-    return { ok: true, papers: (data || []).map(publicIntelligencePaper) };
-  }
-
-  if (intelligencePath === "/api/admin/intelligence/grants" && (!options.method || options.method === "GET")) {
-    await requireAdminViewUser();
-    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
-    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
-    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
-    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
-    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
-    let query = supabase
-      .from("intelligence_grants")
-      .select(INTELLIGENCE_GRANT_COLUMNS)
-      .order("updated_at", { ascending: false })
-      .limit(limit);
-    if (topic) query = query.contains("topics", [topic]);
-    if (dateFrom) query = query.gte("start_date", dateFrom);
-    if (dateTo) query = query.lte("end_date", dateTo);
-    if (keyword) query = query.ilike("title", `%${keyword}%`);
-    const { data, error } = await query;
-    if (error) throw error;
-    return { ok: true, grants: (data || []).map(publicIntelligenceGrant) };
-  }
-
-  if (intelligencePath === "/api/admin/intelligence/patents" && (!options.method || options.method === "GET")) {
-    await requireAdminViewUser();
-    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
-    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
-    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
-    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
-    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
-    let query = supabase
-      .from("intelligence_patents")
-      .select(INTELLIGENCE_PATENT_COLUMNS)
-      .order("publication_date", { ascending: false, nullsFirst: false })
-      .order("updated_at", { ascending: false })
-      .limit(limit);
-    if (topic) query = query.contains("topics", [topic]);
-    if (dateFrom) query = query.gte("publication_date", dateFrom);
-    if (dateTo) query = query.lte("publication_date", dateTo);
-    if (keyword) query = query.ilike("title", `%${keyword}%`);
-    const { data, error } = await query;
-    if (error) throw error;
-    return { ok: true, patents: (data || []).map(publicIntelligencePatent) };
-  }
-
-  if (intelligencePath === "/api/admin/intelligence/trials" && (!options.method || options.method === "GET")) {
-    await requireAdminViewUser();
-    const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
-    const topic = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("topic"), 160, "Topic");
-    const dateFrom = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateFrom"), "Fecha desde");
-    const dateTo = normalizeIntelligenceDateQuery(intelligenceRequestUrl.searchParams.get("dateTo"), "Fecha hasta");
-    const keyword = normalizeIntelligenceTextQuery(intelligenceRequestUrl.searchParams.get("keyword"), 200, "Keyword");
-    let query = supabase
-      .from("intelligence_trials")
-      .select(INTELLIGENCE_TRIAL_COLUMNS)
-      .order("start_date", { ascending: false, nullsFirst: false })
-      .order("updated_at", { ascending: false })
-      .limit(limit);
-    if (topic) query = query.contains("topics", [topic]);
-    if (dateFrom) query = query.gte("start_date", dateFrom);
-    if (dateTo) query = query.lte("completion_date", dateTo);
-    if (keyword) query = query.ilike("title", `%${keyword}%`);
-    const { data, error } = await query;
-    if (error) throw error;
-    return { ok: true, trials: (data || []).map(publicIntelligenceTrial) };
-  }
-
   if (intelligencePath === "/api/admin/intelligence/institutions" && (!options.method || options.method === "GET")) {
     await requireAdminViewUser();
     const limit = normalizeIntelligenceLimit(intelligenceRequestUrl.searchParams.get("limit"), 200, 500);
@@ -4339,13 +4250,6 @@ function normalizeIntelligenceLimit(value, fallback = 50, max = 200) {
   const limit = Number(value);
   if (!Number.isFinite(limit) || limit < 1 || limit > max) throw new Error("Limite de intelligence invalido.");
   return Math.round(limit);
-}
-
-function normalizeIntelligenceDateQuery(value, label = "Fecha") {
-  if (value === null || typeof value === "undefined" || value === "") return "";
-  const normalized = String(value).trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) throw new Error(`${label} invalida.`);
-  return normalized;
 }
 
 function normalizeIntelligenceEnumQuery(value, allowed, label) {
