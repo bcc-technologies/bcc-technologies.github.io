@@ -86,6 +86,11 @@
   }
 
   function handleClick(event) {
+    // The bulk-select checkbox lives inside a signal card that itself carries
+    // data-signal-select; without this early return, clicking the checkbox
+    // would also open that signal's detail view.
+    if (event.target.closest("[data-signal-bulk-toggle-wrap]")) return;
+
     const ctaButton = event.target.closest("[data-intelligence-cta]");
     if (ctaButton) {
       handleEmptyStateAction(String(ctaButton.dataset.intelligenceCta || ""));
@@ -134,6 +139,19 @@
     const signalAction = event.target.closest("[data-signal-status]");
     if (signalAction) {
       void updateSignalStatus(signalAction.dataset.signalId || "", signalAction.dataset.signalStatus || "");
+      return;
+    }
+
+    const bulkSignalAction = event.target.closest("[data-signal-bulk-status]");
+    if (bulkSignalAction) {
+      void bulkUpdateSignalStatus([...IntelligenceState.selectedBulkSignalIds], bulkSignalAction.dataset.signalBulkStatus || "");
+      return;
+    }
+
+    if (event.target.closest("[data-signal-bulk-clear]")) {
+      IntelligenceState.selectedBulkSignalIds.clear();
+      View.renderSignals(panelRoot("signals"));
+      refreshIcons();
       return;
     }
 
@@ -207,6 +225,16 @@
 
     if (event.target.matches("[data-intelligence-dry-run]")) {
       IntelligenceState.syncDryRun = Boolean(event.target.checked);
+      return;
+    }
+
+    if (event.target.matches("[data-signal-bulk-toggle]")) {
+      const id = String(event.target.dataset.signalBulkToggle || "");
+      if (!id) return;
+      if (event.target.checked) IntelligenceState.selectedBulkSignalIds.add(id);
+      else IntelligenceState.selectedBulkSignalIds.delete(id);
+      View.renderSignals(panelRoot("signals"));
+      refreshIcons();
       return;
     }
 
@@ -309,6 +337,40 @@
     } catch (error) {
       setMessage(error.message || "No fue posible actualizar la señal.", "error");
     }
+  }
+
+  async function bulkUpdateSignalStatus(ids, status) {
+    const uniqueIds = [...new Set((Array.isArray(ids) ? ids : []).filter(Boolean))];
+    if (!uniqueIds.length || !status) return;
+    setMessage(`Actualizando ${uniqueIds.length} señal(es) a ${IntelligenceState.signalStatusLabel(status)}...`, "neutral");
+    const results = await Promise.allSettled(uniqueIds.map(id => api.updateSignalStatus(id, status)));
+
+    let succeeded = 0;
+    results.forEach((result, index) => {
+      const id = uniqueIds[index];
+      if (result.status === "fulfilled") {
+        IntelligenceState.upsertById(IntelligenceState.dashboard.signals, result.value.signal);
+        IntelligenceState.selectedBulkSignalIds.delete(id);
+        succeeded += 1;
+      }
+      // Failed ids stay checked in selectedBulkSignalIds so the toolbar
+      // still shows them selected and the user can retry without re-picking.
+    });
+
+    if (succeeded) {
+      IntelligenceState.invalidateTopicHits();
+      IntelligenceState.writeDashboardCache(IntelligenceState.dashboard);
+    }
+    const failed = uniqueIds.length - succeeded;
+    setMessage(
+      failed
+        ? `${succeeded} señal(es) marcadas como ${IntelligenceState.signalStatusLabel(status)}. ${failed} fallaron.`
+        : `${succeeded} señal(es) marcadas como ${IntelligenceState.signalStatusLabel(status)}.`,
+      failed ? "error" : "ok"
+    );
+    View.renderOverview(panelRoot("overview"));
+    View.renderSignals(panelRoot("signals"));
+    refreshIcons();
   }
 
   async function saveTopic(payload) {

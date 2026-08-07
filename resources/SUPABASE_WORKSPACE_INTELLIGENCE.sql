@@ -311,6 +311,7 @@ create table if not exists public.intelligence_signals (
   score_breakdown jsonb not null default '{}'::jsonb,
   recommended_action text not null default '',
   status text not null default 'new',
+  auto_archived boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint intelligence_signals_title_check check (char_length(btrim(title)) between 1 and 240),
@@ -329,6 +330,12 @@ create table if not exists public.intelligence_signals (
 
 alter table public.intelligence_signals
   add column if not exists score_breakdown jsonb not null default '{}'::jsonb;
+
+-- Lets the sync distinguish signals it swept into "archived" for being stale
+-- and low-value from ones a human explicitly archived, so the review UI can
+-- show that distinction instead of looking identical.
+alter table public.intelligence_signals
+  add column if not exists auto_archived boolean not null default false;
 
 create table if not exists public.intelligence_runs (
   id uuid primary key default gen_random_uuid(),

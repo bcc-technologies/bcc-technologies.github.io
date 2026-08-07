@@ -22,6 +22,7 @@
   let visibleCounts = { ...RESEARCH_PAGE_SIZE };
   let dashboard = emptyDashboard();
   let topicHitsIndex = null;
+  let selectedBulkSignalIds = new Set();
 
   function emptyDashboard() {
     return {
@@ -88,6 +89,7 @@
     dashboard = normalizeDashboard(nextDashboard);
     topicHitsIndex = null;
     visibleCounts = { ...RESEARCH_PAGE_SIZE };
+    selectedBulkSignalIds.clear();
     syncDryRun = dashboard.settings.defaultDryRun;
     filters = normalizeFiltersState(filters, String(pickDateRange(dashboard.settings.defaultDateRangeDays)));
     currentAction = RUN_ACTIONS.some(action => action.id === currentAction) ? currentAction : "sync_papers";
@@ -945,6 +947,7 @@
     set visibleCounts(value) { visibleCounts = value; },
     get dashboard() { return dashboard; },
     set dashboard(value) { dashboard = value; },
+    get selectedBulkSignalIds() { return selectedBulkSignalIds; },
     invalidateTopicHits() { topicHitsIndex = null; },
 
     emptyDashboard,

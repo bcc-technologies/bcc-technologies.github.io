@@ -123,3 +123,115 @@ for (const kind of [
       assert.ok(patchCall.url.searchParams.get("id").includes(existingId));
     }));
 }
+
+// Routes fetch calls across intelligence_settings/intelligence_signals by
+// method + query shape, for the saveSignal()/archiveStaleLowValueSignals()
+// tests below -- those two tables don't fit stubTableFetch's per-table
+// grant/patent/trial shape.
+function stubSignalsFetch({ existingSignal = null, settings = null, staleCandidates = [] } = {}) {
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const parsed = new URL(url);
+    const method = init.method || "GET";
+    calls.push({ method, url: parsed, body: init.body ? JSON.parse(init.body) : null });
+
+    if (parsed.pathname.endsWith("/intelligence_settings")) {
+      return jsonResponse(settings ? [settings] : []);
+    }
+    if (!parsed.pathname.endsWith("/intelligence_signals")) {
+      throw new Error(`Unexpected table in test stub: ${parsed.pathname}`);
+    }
+
+    if (method === "GET" && parsed.searchParams.has("title")) {
+      return jsonResponse(existingSignal ? [existingSignal] : []);
+    }
+    if (method === "GET" && parsed.searchParams.get("status") === "in.(new,reviewing)") {
+      return jsonResponse(staleCandidates);
+    }
+    if (method === "POST") {
+      return jsonResponse([{ id: "created-signal-1", ...calls[calls.length - 1].body }]);
+    }
+    if (method === "PATCH") {
+      const idParam = parsed.searchParams.get("id") || "";
+      const id = idParam.startsWith("eq.") ? idParam.slice(3) : idParam;
+      return jsonResponse([{ id, ...calls[calls.length - 1].body }]);
+    }
+    throw new Error(`Unhandled request in test stub: ${method} ${parsed.pathname}${parsed.search}`);
+  };
+  return calls;
+}
+
+test("saveSignal never resets an existing signal's status -- a reviewer's decision must survive the next sync's refresh", () =>
+  withStoreEnv(async () => {
+    const calls = stubSignalsFetch({
+      existingSignal: { id: "sig-1", title: "Rising interest in X", signal_type: "research_trend", related_line: "MAP-Nano", status: "accepted" }
+    });
+    const store = createIntelligenceStoreFromEnv();
+    const result = await store.saveSignal({
+      title: "Rising interest in X",
+      signalType: "research_trend",
+      relatedLine: "MAP-Nano",
+      status: "new", // generateStrategicSignals() always emits this
+      opportunityScore: 70,
+      actionabilityScore: 60,
+      confidenceScore: 55
+    });
+
+    assert.equal(result.action, "updated");
+    const patchCall = calls.find(call => call.method === "PATCH");
+    assert.ok(patchCall, "expected a PATCH against the existing signal");
+    assert.equal(
+      Object.prototype.hasOwnProperty.call(patchCall.body, "status"),
+      false,
+      "refreshing an existing signal must never touch its status"
+    );
+  }));
+
+test("saveSignal sets status to new only when creating a brand-new signal", () =>
+  withStoreEnv(async () => {
+    const calls = stubSignalsFetch({ existingSignal: null });
+    const store = createIntelligenceStoreFromEnv();
+    const result = await store.saveSignal({
+      title: "Brand new signal",
+      signalType: "research_trend",
+      relatedLine: "MAP-Bio"
+    });
+
+    assert.equal(result.action, "created");
+    const postCall = calls.find(call => call.method === "POST");
+    assert.equal(postCall.body.status, "new");
+  }));
+
+test("archiveStaleLowValueSignals archives only signals that fail every configured threshold", () =>
+  withStoreEnv(async () => {
+    const calls = stubSignalsFetch({
+      settings: { scoring_thresholds: { opportunity: 60, actionability: 50, confidence: 50 } },
+      staleCandidates: [{ id: "weak-1" }, { id: "weak-2" }]
+    });
+    const store = createIntelligenceStoreFromEnv();
+    const result = await store.archiveStaleLowValueSignals(21);
+
+    assert.deepEqual(result, { archived: 2 });
+    const getCall = calls.find(call => call.method === "GET" && call.url.pathname.endsWith("/intelligence_signals"));
+    assert.equal(getCall.url.searchParams.get("opportunity_score"), "lt.60");
+    assert.equal(getCall.url.searchParams.get("actionability_score"), "lt.50");
+    assert.equal(getCall.url.searchParams.get("confidence_score"), "lt.50");
+
+    const patchCall = calls.find(call => call.method === "PATCH");
+    assert.equal(patchCall.url.searchParams.get("id"), "in.(weak-1,weak-2)");
+    assert.equal(patchCall.body.status, "archived");
+    assert.equal(patchCall.body.auto_archived, true);
+  }));
+
+test("archiveStaleLowValueSignals is a no-op when nothing qualifies", () =>
+  withStoreEnv(async () => {
+    const calls = stubSignalsFetch({
+      settings: { scoring_thresholds: { opportunity: 60, actionability: 50, confidence: 50 } },
+      staleCandidates: []
+    });
+    const store = createIntelligenceStoreFromEnv();
+    const result = await store.archiveStaleLowValueSignals(21);
+
+    assert.deepEqual(result, { archived: 0 });
+    assert.ok(!calls.some(call => call.method === "PATCH"), "no PATCH should fire when there's nothing to archive");
+  }));

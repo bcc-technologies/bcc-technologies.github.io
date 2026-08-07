@@ -246,10 +246,28 @@
     `;
   }
 
+  function bulkSignalToolbarMarkup(selectedIds) {
+    if (!selectedIds.size) return "";
+    return `
+      <div class="intelligence-bulk-toolbar">
+        <span>${number(selectedIds.size)} seleccionadas</span>
+        <div class="intelligence-bulk-toolbar-actions">
+          ${SIGNAL_STATUS_ACTIONS.map(action => `
+            <button class="btn btn-${action.tone} btn-compact" type="button" data-signal-bulk-status="${escapeAttr(action.id)}">
+              ${escapeHtml(action.label)} en bloque
+            </button>
+          `).join("")}
+          <button class="btn btn-ghost btn-compact" type="button" data-signal-bulk-clear>Cancelar selección</button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderSignals(target) {
     if (!target) return;
     const signals = IntelligenceState.sortedSignals();
     const selected = IntelligenceState.selectedSignal();
+    const bulkSelectedIds = IntelligenceState.selectedBulkSignalIds;
     target.innerHTML = `
       <section class="intelligence-signal-stage">
         <article class="activity-surface intelligence-card intelligence-signal-rail">
@@ -264,21 +282,28 @@
           </div>
           ${signals.length ? `
             <div class="intelligence-signal-rail-note">
-              <p>La cola está ordenada para revisión humana. Empieza por señales con mejor combinación de oportunidad, actionability y confidence.</p>
+              <p>La cola está ordenada para revisión humana. Empieza por señales con mejor combinación de oportunidad, actionability y confidence. Marca varias con la casilla para aceptarlas, rechazarlas o archivarlas en bloque.</p>
             </div>
           ` : ""}
+          ${bulkSignalToolbarMarkup(bulkSelectedIds)}
           ${signals.length ? `
             <div class="intelligence-signal-queue">
               ${signals.map(signal => `
                 <article class="intelligence-signal-card${signal.id === IntelligenceState.selectedSignalId ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
-                  <div class="intelligence-stack-meta">
-                    <span>${escapeHtml(IntelligenceState.signalTypeLabel(signal.signalType))}</span>
-                    <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
+                  <div class="intelligence-signal-card-head">
+                    <label class="intelligence-bulk-checkbox" data-signal-bulk-toggle-wrap>
+                      <input type="checkbox" data-signal-bulk-toggle="${escapeAttr(signal.id)}"${bulkSelectedIds.has(signal.id) ? " checked" : ""} />
+                    </label>
+                    <div class="intelligence-stack-meta">
+                      <span>${escapeHtml(IntelligenceState.signalTypeLabel(signal.signalType))}</span>
+                      <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
+                    </div>
                   </div>
                   <h4>${escapeHtml(signal.title)}</h4>
                   <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
                   <div class="intelligence-signal-card-meta">
                     <span class="intelligence-status-pill">${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}</span>
+                    ${signal.autoArchived ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Auto-archivada</span>` : ""}
                     <small>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</small>
                   </div>
                   <div class="intelligence-queue-meters">
@@ -960,7 +985,7 @@
         <div class="intelligence-detail-stack intelligence-detail-stack-side">
           <div class="intelligence-detail-block intelligence-detail-block-sticky">
             <div class="intelligence-mini-metrics intelligence-mini-metrics-tight">
-              <div><span>Estado</span><strong>${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}</strong></div>
+              <div><span>Estado</span><strong>${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}${signal.autoArchived ? " (auto)" : ""}</strong></div>
               <div><span>Actualizado</span><strong>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</strong></div>
               <div><span>Tipo</span><strong>${escapeHtml(IntelligenceState.signalTypeLabel(signal.signalType))}</strong></div>
               <div><span>Línea</span><strong>${escapeHtml(signal.relatedLine || "General")}</strong></div>

@@ -1120,3 +1120,128 @@ test("fetch_patents persists patents through the patent pipeline", async () => {
   assert.equal(savedPatents.length, 1);
   assert.deepEqual(savedPatents[0].topics, ["MAP-Med"]);
 });
+
+test("sync_papers sweeps stale low-value signals after generating new ones and reports the count", async () => {
+  let hygieneCalls = 0;
+  const store = {
+    async listEnabledTopics() {
+      return [{ id: "topic-1", name: "MAP-Nano", category: "nano", keywords: ["SEM image analysis"], enabled: true }];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-hygiene-1" };
+    },
+    async completeRun(runId, metrics) {
+      assert.equal(runId, "run-hygiene-1");
+      assert.equal(metrics.signalsGenerated, 1);
+    },
+    async failRun() {
+      throw new Error("failRun should not run in this successful test");
+    },
+    async savePaper() {
+      return { action: "created", record: { id: "paper-hygiene-1" } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [];
+    },
+    async listSignalInputs() {
+      return {
+        topics: await this.listEnabledTopics(),
+        grants: [],
+        patents: [],
+        trials: [],
+        institutions: [],
+        papers: [
+          {
+            id: "paper-hygiene-1",
+            title: "SEM image analysis workflow",
+            abstract: "Manual segmentation challenge in microscopy.",
+            topics: ["MAP-Nano"],
+            keywords: ["SEM image analysis"],
+            publicationDate: "2026-06-15",
+            sourceUrl: "https://example.com/paper-hygiene-1"
+          }
+        ]
+      };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-hygiene-1" } };
+    },
+    async archiveStaleLowValueSignals() {
+      hygieneCalls += 1;
+      return { archived: 3 };
+    }
+  };
+
+  const connector = {
+    sourceType: "arxiv",
+    async search() {
+      return [
+        {
+          sourceName: "arXiv",
+          sourceType: "arxiv",
+          externalId: "abs-hygiene-1",
+          title: "SEM image analysis workflow",
+          abstract: "Manual segmentation challenge in microscopy.",
+          keywords: ["SEM image analysis"],
+          topics: ["MAP-Nano"],
+          sourceUrl: "https://example.com/paper-hygiene-1",
+          publicationDate: "2026-06-15",
+          rawData: {}
+        }
+      ];
+    }
+  };
+
+  const result = await runIntelligenceSync(
+    { action: "sync_papers", dryRun: false, sourceTypes: ["arxiv"], keywords: ["SEM image analysis"], limit: 5 },
+    { store, connectors: [connector], logger: { log() {} } }
+  );
+
+  assert.equal(hygieneCalls, 1, "archiveStaleLowValueSignals should run once for sync_papers");
+  assert.equal(result.signalsArchived, 3);
+});
+
+test("sync_papers tolerates a store without archiveStaleLowValueSignals (older store shape)", async () => {
+  const store = {
+    async listEnabledTopics() {
+      return [{ id: "topic-1", name: "MAP-Nano", category: "nano", keywords: ["SEM image analysis"], enabled: true }];
+    },
+    async ensureSourceRecord(connector) {
+      return { id: `source-${connector.sourceType}`, type: connector.sourceType };
+    },
+    async startRun() {
+      return { id: "run-hygiene-2" };
+    },
+    async completeRun() {},
+    async failRun() {
+      throw new Error("failRun should not run in this successful test");
+    },
+    async savePaper() {
+      return { action: "created", record: { id: "paper-hygiene-2" } };
+    },
+    async touchSourceSync() {},
+    async listPapersForTopicDiagnostics() {
+      return [];
+    },
+    async listSignalInputs() {
+      return { topics: await this.listEnabledTopics(), grants: [], patents: [], trials: [], institutions: [], papers: [] };
+    },
+    async saveSignal() {
+      return { action: "created", record: { id: "signal-hygiene-2" } };
+    }
+    // No archiveStaleLowValueSignals -- must not throw.
+  };
+
+  const connector = { sourceType: "arxiv", async search() { return []; } };
+
+  const result = await runIntelligenceSync(
+    { action: "sync_papers", dryRun: false, sourceTypes: ["arxiv"], keywords: ["SEM image analysis"], limit: 5 },
+    { store, connectors: [connector], logger: { log() {} } }
+  );
+
+  assert.equal(result.signalsArchived, 0);
+});

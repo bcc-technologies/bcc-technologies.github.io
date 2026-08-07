@@ -919,13 +919,21 @@ export function createIntelligenceStoreFromEnv() {
       };
       const existing = await this.findExistingSignal(signal);
       if (existing?.id) {
+        // generateStrategicSignals() always emits status "new" -- it has no
+        // notion of what a reviewer already decided. Re-running the same
+        // matching signal every sync (title+type+line) used to PATCH status
+        // back to "new" unconditionally, silently undoing any accept/reject/
+        // archive a human (or the auto-archive sweep) had already made. Status
+        // is exclusively a human/hygiene concern from here on -- refreshes
+        // only ever touch the evidence/score fields on an existing row.
+        const { status: _ignoredStatus, ...refreshBody } = payload;
         const rows = await restFetch(baseUrl, serviceKey, "intelligence_signals", {
           method: "PATCH",
           prefer: "return=representation",
           params: {
             id: `eq.${existing.id}`
           },
-          body: payload
+          body: refreshBody
         });
         return { action: "updated", record: Array.isArray(rows) ? rows[0] : rows };
       }
@@ -936,6 +944,47 @@ export function createIntelligenceStoreFromEnv() {
         body: payload
       });
       return { action: "created", record: Array.isArray(rows) ? rows[0] : rows };
+    },
+
+    // Sweeps signals that have sat untouched (status new/reviewing) past
+    // olderThanDays and fail every configured scoring threshold -- i.e.
+    // never cleared the bar that made them worth generating in the first
+    // place. auto_archived distinguishes these from signals a human
+    // explicitly archived, so the review UI doesn't conflate the two.
+    async archiveStaleLowValueSignals(olderThanDays = 21) {
+      const settings = await this.listSettings();
+      const thresholds = settings?.scoring_thresholds && typeof settings.scoring_thresholds === "object"
+        ? settings.scoring_thresholds
+        : {};
+      const opportunityCeiling = Number(thresholds.opportunity) || 60;
+      const actionabilityCeiling = Number(thresholds.actionability) || 50;
+      const confidenceCeiling = Number(thresholds.confidence) || 50;
+      const cutoff = new Date(Date.now() - Math.max(1, Number(olderThanDays) || 21) * 24 * 60 * 60 * 1000).toISOString();
+
+      const rows = await restFetch(baseUrl, serviceKey, "intelligence_signals", {
+        params: {
+          select: "id",
+          status: "in.(new,reviewing)",
+          created_at: `lt.${cutoff}`,
+          opportunity_score: `lt.${opportunityCeiling}`,
+          actionability_score: `lt.${actionabilityCeiling}`,
+          confidence_score: `lt.${confidenceCeiling}`
+        }
+      });
+      const ids = [...new Set((Array.isArray(rows) ? rows : []).map(row => row.id).filter(Boolean))];
+      if (!ids.length) return { archived: 0 };
+
+      await restFetch(baseUrl, serviceKey, "intelligence_signals", {
+        method: "PATCH",
+        params: {
+          id: `in.(${ids.join(",")})`
+        },
+        body: {
+          status: "archived",
+          auto_archived: true
+        }
+      });
+      return { archived: ids.length };
     },
 
     async getRun(runId) {

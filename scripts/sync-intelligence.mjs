@@ -783,6 +783,7 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
     let itemsCreated = 0;
     let itemsUpdated = 0;
     let signalsGenerated = 0;
+    let signalsArchived = 0;
     let diagnostics = { scanned: 0, repaired: 0, candidates: 0 };
 
     if (store && !options.dryRun) {
@@ -807,6 +808,14 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
           await store.saveSignal(signal);
         }
         signalsGenerated = signals.length;
+
+        if (typeof store.archiveStaleLowValueSignals === "function") {
+          const hygiene = await store.archiveStaleLowValueSignals();
+          signalsArchived = hygiene.archived;
+          if (signalsArchived && logger?.log) {
+            logger.log(`[hygiene:signals] auto-archived ${signalsArchived} stale low-value signal(s)`);
+          }
+        }
       }
     } else if (action === "sync_papers") {
       const signalContext = await dryRunSignalContext(store, [], dedupedItems);
@@ -833,11 +842,12 @@ export async function runIntelligenceSync(rawOptions = {}, deps = {}) {
       itemsCreated,
       itemsUpdated,
         signalsGenerated,
+        signalsArchived,
         diagnostics,
         sourceFailures,
         runId: run?.id || ""
       };
-    logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Topic diagnostics repaired: ${diagnostics.repaired}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
+    logger.log(`${actionLabel(action)} complete. Sources: ${connectors.length}. Fetched: ${combinedItems.length}. Deduped: ${dedupedItems.length}. Created: ${itemsCreated}. Updated: ${itemsUpdated}. Signals: ${signalsGenerated}. Archived: ${signalsArchived}. Topic diagnostics repaired: ${diagnostics.repaired}. Dry run: ${options.dryRun ? "yes" : "no"}.`);
     return result;
   } catch (error) {
     if (run && store) {

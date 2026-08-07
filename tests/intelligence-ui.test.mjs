@@ -177,7 +177,14 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
         async withTimeout(promise) { return promise; }
       },
       BCCAuth: {
-        async api() {
+        async api(path, options = {}) {
+          const signalMatch = String(path || "").match(/^\/api\/admin\/intelligence\/signals\/([^/]+)$/);
+          if (signalMatch && options.method === "PATCH") {
+            const id = decodeURIComponent(signalMatch[1]);
+            const body = options.body ? JSON.parse(options.body) : {};
+            const existing = dashboard.signals.find(item => item.id === id) || {};
+            return { ok: true, signal: { ...existing, id, ...body } };
+          }
           return { ok: true, dashboard };
         }
       }
@@ -479,4 +486,63 @@ test("changing a research filter field updates nested state and resets that pane
 
   assert.equal(State.filters.grants.keyword, "battery");
   assert.equal(State.visibleCounts.grants, 50);
+});
+
+test("checking a signal's bulk checkbox shows the bulk toolbar with a matching count", async () => {
+  const { root, panels, State } = await loadWorkspaceModule({
+    signals: [
+      { id: "signal-1", title: "Signal A", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new", opportunityScore: 50, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: [] },
+      { id: "signal-2", title: "Signal B", summary: "", signalType: "research_trend", relatedLine: "MAP-Bio", status: "new", opportunityScore: 50, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: [] }
+    ]
+  });
+
+  assert.doesNotMatch(panels.get("signals").innerHTML, /intelligence-bulk-toolbar/);
+
+  root.dispatch("change", { target: { matches: selector => selector === "[data-signal-bulk-toggle]", dataset: { signalBulkToggle: "signal-1" }, checked: true } });
+  assert.deepEqual([...State.selectedBulkSignalIds], ["signal-1"]);
+  assert.match(panels.get("signals").innerHTML, /1 seleccionadas/);
+
+  root.dispatch("change", { target: { matches: selector => selector === "[data-signal-bulk-toggle]", dataset: { signalBulkToggle: "signal-2" }, checked: true } });
+  assert.match(panels.get("signals").innerHTML, /2 seleccionadas/);
+
+  root.dispatch("click", { target: createElementStub({ signalBulkClear: "" }) });
+  assert.equal(State.selectedBulkSignalIds.size, 0);
+  assert.doesNotMatch(panels.get("signals").innerHTML, /intelligence-bulk-toolbar/);
+});
+
+test("a bulk status action updates every selected signal and clears the selection on success", async () => {
+  const { root, panels, State } = await loadWorkspaceModule({
+    signals: [
+      { id: "signal-1", title: "Signal A", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new", opportunityScore: 50, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: [] },
+      { id: "signal-2", title: "Signal B", summary: "", signalType: "research_trend", relatedLine: "MAP-Bio", status: "new", opportunityScore: 50, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: [] }
+    ]
+  });
+
+  State.selectedBulkSignalIds.add("signal-1");
+  State.selectedBulkSignalIds.add("signal-2");
+
+  root.dispatch("click", { target: createElementStub({ signalBulkStatus: "archived" }) });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  assert.equal(State.selectedBulkSignalIds.size, 0);
+  assert.equal(State.dashboard.signals.find(item => item.id === "signal-1").status, "archived");
+  assert.equal(State.dashboard.signals.find(item => item.id === "signal-2").status, "archived");
+  assert.match(panels.get("overview").innerHTML, /./, "overview should have re-rendered");
+});
+
+test("an auto-archived signal is badged distinctly from a manually archived one", async () => {
+  const { panels } = await loadWorkspaceModule({
+    signals: [
+      { id: "signal-1", title: "Auto archived signal", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "archived", autoArchived: true, opportunityScore: 40, actionabilityScore: 40, confidenceScore: 40, evidenceRefs: [] },
+      { id: "signal-2", title: "Manually archived signal", summary: "", signalType: "research_trend", relatedLine: "MAP-Bio", status: "archived", autoArchived: false, opportunityScore: 40, actionabilityScore: 40, confidenceScore: 40, evidenceRefs: [] }
+    ]
+  });
+
+  const signalsHtml = panels.get("signals").innerHTML;
+  const autoIndex = signalsHtml.indexOf("Auto archived signal");
+  const manualIndex = signalsHtml.indexOf("Manually archived signal");
+  const badgeIndex = signalsHtml.indexOf("Auto-archivada");
+  assert.ok(autoIndex !== -1 && manualIndex !== -1 && badgeIndex !== -1);
+  assert.ok(badgeIndex > autoIndex && badgeIndex < manualIndex, "the badge should only appear next to the auto-archived signal");
 });

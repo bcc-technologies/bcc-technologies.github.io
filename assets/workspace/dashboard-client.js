@@ -3722,7 +3722,7 @@ const INTELLIGENCE_PATENT_COLUMNS = "id, external_id, title, abstract, inventors
 const INTELLIGENCE_TRIAL_COLUMNS = "id, external_id, title, summary, conditions, interventions, phase, status, study_type, sponsor, collaborators, start_date, completion_date, locations, countries, source_url, topics, keywords, possible_duplicate, duplicate_candidates, created_at, updated_at";
 const INTELLIGENCE_INSTITUTION_COLUMNS = "id, name, ror_id, country, city, type, website, source_url, related_papers_count, related_grants_count, related_patents_count, topics, created_at, updated_at";
 const INTELLIGENCE_TOPIC_COLUMNS = "id, name, description, category, keywords, enabled, created_at, updated_at";
-const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, created_at, updated_at";
+const INTELLIGENCE_SIGNAL_COLUMNS = "id, title, summary, signal_type, related_line, confidence_score, opportunity_score, actionability_score, evidence_count, evidence_refs, score_breakdown, recommended_action, status, auto_archived, created_at, updated_at";
 const INTELLIGENCE_RUN_COLUMNS = "id, status, action_type, dry_run, started_at, finished_at, sources_used, items_fetched, items_created, items_updated, signals_generated, error_message, created_at, updated_at";
 const INTELLIGENCE_SETTINGS_COLUMNS = "id, max_results_per_source, default_date_range_days, suggested_frequency, default_dry_run, scoring_thresholds, monitored_lines, created_at, updated_at";
 
@@ -4100,6 +4100,7 @@ function publicIntelligenceSignal(signal) {
     scoreBreakdown: signal.score_breakdown && typeof signal.score_breakdown === "object" ? signal.score_breakdown : {},
     recommendedAction: signal.recommended_action || "",
     status: signal.status || "new",
+    autoArchived: Boolean(signal.auto_archived),
     createdAt: signal.created_at,
     updatedAt: signal.updated_at
   };
