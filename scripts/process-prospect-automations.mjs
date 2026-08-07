@@ -42,14 +42,22 @@ async function dispatchPendingPush() {
 async function main() {
   assertEnv();
 
+  // This is the actual automation: scanning prospects and queueing the right
+  // notification for the right person. A failure here is a real bug.
   const queuedCount = await queueProspectAutomations();
   console.log(`Queued ${queuedCount} prospect automation notification(s).`);
 
-  const dispatchResult = await dispatchPendingPush();
-  console.log(`Push dispatch: claimed ${dispatchResult.claimed ?? 0}, sent ${dispatchResult.sent ?? 0}, failed ${dispatchResult.failed ?? 0}.`);
-
-  if (Number(dispatchResult.failed) > 0) {
-    process.exitCode = 1;
+  // Push delivery depends on VAPID secrets being configured in Supabase
+  // separately (see resources/SUPABASE_WORKSPACE_WEB_PUSH.sql). Until that's
+  // done, send-workspace-push always returns 500 -- that's expected, not a
+  // bug in this job, so it must not fail the whole run or spam GitHub Action
+  // failure emails every 30 minutes. Automation notifications still queue
+  // correctly and will simply be delivered once push is configured.
+  try {
+    const dispatchResult = await dispatchPendingPush();
+    console.log(`Push dispatch: claimed ${dispatchResult.claimed ?? 0}, sent ${dispatchResult.sent ?? 0}, failed ${dispatchResult.failed ?? 0}.`);
+  } catch (error) {
+    console.warn(`[warn] Push dispatch skipped: ${error.message}`);
   }
 }
 
