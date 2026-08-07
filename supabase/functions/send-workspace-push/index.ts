@@ -1,5 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import webpush from "https://esm.sh/web-push@3.6.7?target=deno";
+import * as webpush from "jsr:@negrel/webpush@0.5.0";
+
+// Uses @negrel/webpush (RFC 8291/8292, Web Crypto only) instead of the
+// npm "web-push" package: that package relies on Node's legacy
+// crypto.createECDH(), which Deno's Node-compat layer does not implement
+// ("Not implemented: crypto.ECDH"), so every send used to fail regardless
+// of secrets/config.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,9 +49,48 @@ function isAuthorized(request: Request, serviceRoleKey: string, dispatchSecret: 
   return Boolean(serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`);
 }
 
+function base64UrlToBytes(value: string): Uint8Array {
+  const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+// VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY are stored as raw base64url (the
+// widely-used "web-push"-compatible format: an uncompressed EC point for
+// the public key, a raw 32-byte scalar for the private key). @negrel/webpush
+// wants a JWK, so rebuild one from those same raw bytes -- no need to
+// regenerate or re-store secrets.
+function vapidJwkFromRaw(publicKeyB64url: string, privateKeyB64url: string) {
+  const publicRaw = base64UrlToBytes(publicKeyB64url);
+  if (publicRaw.length !== 65 || publicRaw[0] !== 0x04) {
+    throw new Error("VAPID_PUBLIC_KEY invalido: se espera un punto EC sin comprimir de 65 bytes.");
+  }
+  const privateRaw = base64UrlToBytes(privateKeyB64url);
+  if (privateRaw.length !== 32) {
+    throw new Error("VAPID_PRIVATE_KEY invalido: se esperaban 32 bytes.");
+  }
+  const x = bytesToBase64Url(publicRaw.slice(1, 33));
+  const y = bytesToBase64Url(publicRaw.slice(33, 65));
+  const d = bytesToBase64Url(privateRaw);
+  return {
+    publicKey: { kty: "EC", crv: "P-256", x, y, ext: true },
+    privateKey: { kty: "EC", crv: "P-256", x, y, d, ext: true }
+  };
+}
+
 function notificationVibration(row: PushRow) {
   switch (row.notification_type) {
     case "task_overdue":
+    case "prospect_overdue":
       return [220, 90, 220, 90, 160];
     case "task_assigned":
     case "task_suggested":
@@ -111,7 +156,19 @@ Deno.serve(async request => {
     auth: { persistSession: false, autoRefreshToken: false }
   });
 
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  let appServer: webpush.ApplicationServer;
+  try {
+    const vapidKeys = await webpush.importVapidKeys(
+      vapidJwkFromRaw(vapidPublicKey, vapidPrivateKey),
+      { extractable: false }
+    );
+    appServer = await webpush.ApplicationServer.new({
+      contactInformation: vapidSubject,
+      vapidKeys
+    });
+  } catch (error) {
+    return json({ ok: false, error: `VAPID invalido: ${error instanceof Error ? error.message : String(error)}` }, 500);
+  }
 
   const { data, error } = await supabase.rpc("claim_workspace_push_notifications", { batch_size: batchSize });
   if (error) return json({ ok: false, error: error.message }, 500);
@@ -122,21 +179,27 @@ Deno.serve(async request => {
   for (const row of rows) {
     const current = notificationResults.get(row.notification_id) || { sent: 0, failed: 0, errors: [] };
     try {
-      await webpush.sendNotification({
+      const subscriber = appServer.subscribe({
         endpoint: row.endpoint,
         keys: {
           p256dh: row.p256dh,
           auth: row.auth
         }
-      }, notificationPayload(row));
+      });
+      await subscriber.pushTextMessage(notificationPayload(row), {
+        urgency: webpush.Urgency.Normal,
+        ttl: 60
+      });
       current.sent += 1;
     } catch (error) {
       current.failed += 1;
-      const statusCode = Number((error as { statusCode?: number })?.statusCode || 0);
-      const message = cleanText(error instanceof Error ? error.message : String(error), 220);
-      current.errors.push(message || `Push fallo${statusCode ? ` (${statusCode})` : ""}`);
-      if ([404, 410].includes(statusCode)) {
-        await supabase.from("workspace_push_subscriptions").delete().eq("id", row.subscription_id);
+      if (error instanceof webpush.PushMessageError) {
+        current.errors.push(`Push fallo (${error.response.status})`);
+        if (error.isGone()) {
+          await supabase.from("workspace_push_subscriptions").delete().eq("id", row.subscription_id);
+        }
+      } else {
+        current.errors.push(cleanText(error instanceof Error ? error.message : String(error), 220));
       }
     }
     notificationResults.set(row.notification_id, current);
