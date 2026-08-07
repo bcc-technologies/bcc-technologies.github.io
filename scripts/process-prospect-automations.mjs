@@ -2,6 +2,7 @@ import { createSupabaseRestClient } from "./lib/supabase-rest.mjs";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const WORKSPACE_PUSH_DISPATCH_SECRET = process.env.WORKSPACE_PUSH_DISPATCH_SECRET || "";
 
 const supabaseRest = createSupabaseRestClient({
   baseUrl: SUPABASE_URL,
@@ -29,6 +30,7 @@ async function dispatchPendingPush() {
     method: "POST",
     headers: {
       Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      ...(WORKSPACE_PUSH_DISPATCH_SECRET ? { "x-dispatch-secret": WORKSPACE_PUSH_DISPATCH_SECRET } : {}),
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ batchSize: 100 })
