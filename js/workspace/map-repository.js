@@ -14,6 +14,18 @@
     }
   }
 
+  async function invokeFunction(name, body) {
+    try {
+      const supabase = await window.BCCAuth.loadSupabaseClient();
+      const { data, error } = await supabase.functions.invoke(name, { body });
+      if (error) throw error;
+      if (!data || typeof data !== "object") throw new Error("The billing service returned an invalid response.");
+      return data;
+    } catch (error) {
+      throw contracts.toError(error);
+    }
+  }
+
   async function getTrialOffer() {
     try {
       return contracts.normalizeTrialOffer(await rpc("get_current_map_trial_offer"));
@@ -54,13 +66,26 @@
     }
   }
 
+  async function getBillingSubscriptions() {
+    try {
+      const rows = await rpc("get_my_map_billing_dashboard");
+      return { available: true, subscriptions: contracts.rows(rows) };
+    } catch (error) {
+      if (error?.code === "invalid_response" || /get_my_map_billing_dashboard|schema cache|function/i.test(error?.message || "")) {
+        return { available: false, subscriptions: [] };
+      }
+      throw error;
+    }
+  }
+
   async function getClientDashboard() {
-    const [dashboard, access, entitlements, trialOffer, commercialRequestState] = await Promise.all([
+    const [dashboard, access, entitlements, trialOffer, commercialRequestState, billingState] = await Promise.all([
       rpc("get_my_license_dashboard"),
       rpc("get_my_platform_access"),
       rpc("get_my_internal_entitlements"),
       getTrialOffer(),
-      getCommercialRequests()
+      getCommercialRequests(),
+      getBillingSubscriptions()
     ]);
     return {
       dashboard: contracts.normalizeClientDashboard(dashboard),
@@ -69,7 +94,9 @@
       entitlements: contracts.normalizeEntitlements(entitlements),
       trialOffer,
       commercialRequests: commercialRequestState.requests,
-      commercialRequestsAvailable: commercialRequestState.available
+      commercialRequestsAvailable: commercialRequestState.available,
+      billingSubscriptions: billingState.subscriptions,
+      billingAvailable: billingState.available
     };
   }
 
@@ -94,6 +121,16 @@
       p_assignment_id: assignmentId
     }),
     getCommercialRequests,
+    getBillingSubscriptions,
+    createCheckoutSession: values => invokeFunction("create-map-checkout-session", {
+      accountId: values.accountId || null,
+      planKey: values.planKey,
+      billingInterval: values.billingInterval,
+      requestId: values.requestId
+    }),
+    createBillingPortalSession: accountId => invokeFunction("create-stripe-portal-session", {
+      accountId: accountId || null
+    }),
     createCommercialRequest: values => rpc("create_my_map_nano_commercial_request", {
       p_plan_key: values.planKey,
       p_request_type: values.requestType,

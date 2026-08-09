@@ -111,7 +111,7 @@ test("MAP-Nano pricing uses a paced hierarchy with focused plan emphasis", () =>
   assert.match(pricingScript, /querySelector\("\[data-map-pricing-comparison\]"\)\.open = true/);
 });
 
-test("dashboard preserves the repository boundary and remains honest about unavailable billing data", () => {
+test("dashboard preserves the repository boundary behind explicit billing configuration", () => {
   const [contracts, repository, dashboard] = [
     read("js/workspace/map-contracts.js"),
     read("js/workspace/map-repository.js"),
@@ -123,9 +123,11 @@ test("dashboard preserves the repository boundary and remains honest about unava
   assert.match(repository, /get_my_map_nano_commercial_requests/);
   assert.match(repository, /create_my_map_nano_commercial_request/);
   assert.match(repository, /cancel_my_map_nano_commercial_request/);
-  assert.match(dashboard, /Facturación<\/dt><dd>No especificada/);
+  assert.match(dashboard, /Facturación<\/dt><dd>\$\{escapeHtml\(billingLabel\(billingSubscription\)\)\}/);
   assert.match(dashboard, /Las solicitudes se revisan antes de emitir una licencia/);
-  assert.doesNotMatch(dashboard, /stripe|paddle|checkout/i);
+  assert.match(repository, /create-map-checkout-session/);
+  assert.match(dashboard, /data-map-nano-checkout/);
+  assert.doesNotMatch(dashboard, /sk_live|sk_test|price_[A-Za-z0-9]/);
 });
 
 test("commercial-request migration keeps direct browser access closed behind scoped RPCs", () => {

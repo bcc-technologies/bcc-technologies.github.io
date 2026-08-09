@@ -12,7 +12,7 @@
    * @typedef {"basic_analysis" | "advanced_analysis" | "batch_processing" | "reusable_pipelines" | "shared_pipelines" | "sample_comparison" | "automatic_reports" | "audit_logs" | "institutional_reports" | "api_access" | "priority_support"} MAPNanoEntitlement
    * @typedef {{ namedUsers?: number, concurrentUsers?: number, installations?: number }} MAPNanoLimits
    * @typedef {{ label: string, action: MAPNanoCtaAction }} MAPNanoCta
-   * @typedef {{ id: string, name: string, description: string, annualPrice: number | null, startingPrice?: number, currency: "USD", billingPeriod: MAPNanoBillingPeriod, highlighted?: boolean, badge?: string, targetCustomer: readonly string[], features: readonly string[], exclusions?: readonly string[], entitlements: readonly MAPNanoEntitlement[], limits: MAPNanoLimits, cta: MAPNanoCta }} MAPNanoPlan
+   * @typedef {{ id: string, name: string, description: string, monthlyPrice?: number, annualPrice: number | null, startingPrice?: number, currency: "USD", billingPeriod: MAPNanoBillingPeriod, highlighted?: boolean, badge?: string, targetCustomer: readonly string[], features: readonly string[], exclusions?: readonly string[], entitlements: readonly MAPNanoEntitlement[], limits: MAPNanoLimits, cta: MAPNanoCta }} MAPNanoPlan
    */
 
   const USD_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -56,6 +56,7 @@
       id: "essential",
       name: "MAP-Nano Essential",
       description: "Para investigación individual y laboratorios pequeños con uso moderado.",
+      monthlyPrice: 120,
       annualPrice: 1200,
       currency: "USD",
       billingPeriod: "year",
@@ -77,6 +78,7 @@
       id: "professional",
       name: "MAP-Nano Professional",
       description: "Para laboratorios activos que procesan imágenes de forma regular.",
+      monthlyPrice: 300,
       annualPrice: 3000,
       currency: "USD",
       billingPeriod: "year",
@@ -216,6 +218,21 @@
     return Number.isFinite(plan?.annualPrice) ? plan.annualPrice / 12 : null;
   }
 
+  function priceForInterval(plan, interval) {
+    if (interval === "month" && Number.isFinite(plan?.monthlyPrice)) return plan.monthlyPrice;
+    if (interval === "year" && Number.isFinite(plan?.annualPrice)) return plan.annualPrice;
+    return null;
+  }
+
+  function intervalPriceLabel(plan, interval) {
+    const price = priceForInterval(plan, interval);
+    if (price === null) return priceLabel(plan);
+    const suffix = interval === "month"
+      ? (isEnglish() ? "/month" : "/mes")
+      : (isEnglish() ? "/year" : "/año");
+    return `${formatUsd(price)}${suffix}`;
+  }
+
   function priceLabel(plan) {
     if (Number.isFinite(plan?.annualPrice)) return isEnglish() ? `${formatUsd(plan.annualPrice)}/year` : `${formatUsd(plan.annualPrice)}/año`;
     if (Number.isFinite(plan?.startingPrice)) return isEnglish() ? `From ${formatUsd(plan.startingPrice)}/year` : `Desde ${formatUsd(plan.startingPrice)}/año`;
@@ -290,6 +307,8 @@
     STATUS,
     formatUsd,
     monthlyEquivalent,
+    priceForInterval,
+    intervalPriceLabel,
     priceLabel,
     monthlyLabel,
     projectPriceLabel,

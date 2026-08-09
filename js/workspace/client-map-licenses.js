@@ -4,6 +4,7 @@
   const mapNanoPlans = window.BCCMapNanoPlans;
   const utils = window.BCCWorkspaceUtils;
   const ui = window.BCCWorkspaceUI;
+  const billingConfig = window.BCC_MAP_BILLING || Object.freeze({ checkoutEnabled: false, portalEnabled: false, selfServePlans: [] });
   if (!mapNanoPlans) throw new Error("MAP-Nano commercial plans must load before the client licenses module.");
   const escapeHtml = utils.escapeHtml;
   const refreshIcons = utils.refreshIcons;
@@ -18,6 +19,7 @@
   let selectedRequestProductKey = "map.nano";
   let selectedRequestLicenseType = "named_user";
   let selectedCommercialPlanId = "";
+  let selectedBillingInterval = "year";
   let requestBusy = false;
   let platformAccess = [];
   let effectiveAccess = [];
@@ -25,6 +27,8 @@
   let trialOffer = contracts.TRIAL_OFFER_FALLBACK;
   let commercialRequests = [];
   let commercialRequestsAvailable = false;
+  let billingSubscriptions = [];
+  let billingAvailable = false;
   let busy = false;
 
   function emptyDashboard() {
@@ -46,7 +50,8 @@
       section: "client_map_nano_plan",
       product_key: "map.nano",
       plan_id: metadata.planId || selectedCommercialPlanId || "",
-      request_type: metadata.requestType || ""
+      request_type: metadata.requestType || "",
+      billing_interval: metadata.billingInterval || ""
     });
   }
 
@@ -61,7 +66,7 @@
     root.addEventListener("submit", handleSubmit);
     root.setAttribute("aria-busy", "true");
     trackCommercialPlan("subscription_page_viewed");
-    void loadDashboard();
+    void loadDashboard({ successMessage: billingReturnMessage() });
   }
 
   async function loadDashboard({ successMessage = "" } = {}) {
@@ -76,6 +81,8 @@
       dashboard = payload.dashboard;
       commercialRequests = payload.commercialRequests;
       commercialRequestsAvailable = payload.commercialRequestsAvailable;
+      billingSubscriptions = payload.billingSubscriptions || [];
+      billingAvailable = Boolean(payload.billingAvailable);
       selectDefaultLicense();
       render();
       setMessage(successMessage, successMessage ? "ok" : "neutral");
@@ -218,6 +225,7 @@
   function renderCurrentAccessCard(product, item) {
     const capabilities = capabilitiesForLicense(item);
     const commercialPlan = item.product_key === "map.nano" ? mapNanoPlans.planById(mapNanoPlans.planIdForLicense(item)) : null;
+    const billingSubscription = billingSubscriptionForLicense(item);
     return `<article class="client-license-current-card">
       <div class="client-license-current-card-head">
         <div><strong>${escapeHtml(commercialPlan?.name || item.plan_name || contracts.licenseType(item.license_type)?.label || "Licencia MAP")}</strong><small>${escapeHtml(item.account_name || "Cuenta MAP")}</small></div>
@@ -227,7 +235,7 @@
         <div><dt>Inicio</dt><dd>${item.starts_at ? formatDate(item.starts_at) : "No especificado"}</dd></div>
         <div><dt>Vigencia</dt><dd>${item.ends_at ? `Hasta ${formatDate(item.ends_at)}` : "Sin vencimiento"}</dd></div>
         <div><dt>Modalidad</dt><dd>${escapeHtml(contracts.licenseType(item.license_type)?.shortLabel || (item.is_evaluation ? "Evaluación" : roleLabel(item.member_role)))}</dd></div>
-        ${item.product_key === "map.nano" ? `<div><dt>Facturación</dt><dd>No especificada</dd></div>` : ""}
+        ${item.product_key === "map.nano" ? `<div><dt>Facturación</dt><dd>${escapeHtml(billingLabel(billingSubscription))}</dd></div>` : ""}
       </dl>
       ${capabilities.length ? `<div class="client-license-capability-summary"><span>Capacidades habilitadas</span><div>${capabilities.map(capability => `<span class="client-license-tag">${escapeHtml(platformAccessLabel(capability.access_key))}</span>`).join("")}</div></div>` : item.product_key === "map.nano" ? '<p class="client-license-card-note">Las capacidades técnicas aún no están disponibles para esta asignación.</p>' : ""}
       ${item.seatLimit ? `<div class="client-license-seat-summary">
@@ -235,7 +243,7 @@
         ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: "client-license-seat-bar", tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
       </div>` : ""}
       ${item.is_evaluation ? `<p class="client-license-card-note">${ui.icon("info", "xs")} El ciclo de evaluación es administrado por el equipo BCC.</p>` : ""}
-      <footer class="client-license-card-actions">${renderCurrentAccessActions(product, item)}</footer>
+      <footer class="client-license-card-actions">${renderCurrentAccessActions(product, item)}${renderBillingAction(item, billingSubscription)}</footer>
     </article>`;
   }
 
@@ -252,6 +260,36 @@
       });
     }
     return ui.action({ label: "Abrir información", href: product.productHref, icon: "external-link", className: "btn btn-ghost" });
+  }
+
+  function renderBillingAction(item, subscription) {
+    if (!billingConfig.portalEnabled || !billingAvailable || !subscription?.can_manage_billing) return "";
+    return ui.action({
+      label: isEnglish() ? "Manage billing" : "Gestionar facturaci\u00f3n",
+      icon: "receipt-text",
+      className: "btn btn-ghost",
+      data: { mapNanoBillingPortal: item.account_id }
+    });
+  }
+
+  function billingSubscriptionForLicense(license) {
+    return billingSubscriptions.find(subscription => subscription.license_id === license.license_id) || null;
+  }
+
+  function billingLabel(subscription) {
+    if (!subscription) return isEnglish() ? "Not specified" : "No especificada";
+    const interval = subscription.billing_interval === "month" ? (isEnglish() ? "Monthly" : "Mensual") : (isEnglish() ? "Annual" : "Anual");
+    const labels = {
+      active: isEnglish() ? `${interval} - active` : `${interval} - activa`,
+      trialing: isEnglish() ? `${interval} - trial` : `${interval} - en prueba`,
+      past_due: isEnglish() ? `${interval} - payment due` : `${interval} - pago pendiente`,
+      canceled: isEnglish() ? `${interval} - cancelled` : `${interval} - cancelada`,
+      unpaid: isEnglish() ? `${interval} - unpaid` : `${interval} - impaga`,
+      paused: isEnglish() ? `${interval} - paused` : `${interval} - pausada`,
+      incomplete: isEnglish() ? `${interval} - incomplete` : `${interval} - incompleta`,
+      incomplete_expired: isEnglish() ? `${interval} - expired` : `${interval} - vencida`
+    };
+    return labels[subscription.status] || interval;
   }
 
   function renderLicenseOptions(key, productLicenses) {
@@ -336,6 +374,13 @@
     return dashboard.accounts.find(account => account.can_manage_seats)?.account_id || null;
   }
 
+  function billingReturnMessage() {
+    const status = new URLSearchParams(window.location.search).get("billing");
+    if (status === "success") return isEnglish() ? "Subscription started. Your 14-day MAP-Nano trial is now active." : "Suscripci?n iniciada. Tus 14 d?as de prueba de MAP-Nano ya est?n activos.";
+    if (status === "cancelled") return isEnglish() ? "Checkout was cancelled; no charge was made." : "El checkout fue cancelado; no se realiz\u00f3 ning\u00fan cobro.";
+    return "";
+  }
+
   function commercialRequestStatus(request) {
     return contracts.commercialRequestStatus(request?.status);
   }
@@ -392,11 +437,18 @@
       ? "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites."
       : "Las solicitudes se revisan antes de emitir una licencia.";
     return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
+      ${renderBillingIntervalSelector(canManage)}
       <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, activePlanIds, hasLicense: productLicenses.length > 0 })).join("")}</div>
       <div class="client-map-nano-plan-footnote"><p>${optionsNote}</p><a href="${isEnglish() ? "/en/map-nano-pricing.html" : "/map-nano-pricing.html"}">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
       ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
       ${renderMapNanoCommercialRequestHistory()}
     </section>`;
+  }
+
+  function renderBillingIntervalSelector(canManage) {
+    if (!canManage || !billingConfig.checkoutEnabled || !billingAvailable) return "";
+    const option = (value, esLabel, enLabel) => `<button type="button" role="radio" aria-checked="${selectedBillingInterval === value}" class="client-map-nano-billing-option ${selectedBillingInterval === value ? "is-selected" : ""}" data-map-nano-billing-interval="${value}">${isEnglish() ? enLabel : esLabel}</button>`;
+    return `<div class="client-map-nano-billing-selector"><div><strong>${isEnglish() ? "Billing period" : "Periodicidad"}</strong><span>${isEnglish() ? "14-day free trial. Card required; first charge after the trial." : "14 días de prueba. Tarjeta requerida; primer cobro al finalizar."}</span></div><div class="client-map-nano-billing-options" role="radiogroup" aria-label="${isEnglish() ? "Billing period" : "Periodicidad de facturación"}">${option("month", "Mensual", "Monthly")}${option("year", "Anual · recomendado", "Annual · recommended")}</div></div>`;
   }
 
   function renderMapNanoPlanCard(plan, context) {
@@ -408,15 +460,41 @@
       : pending
         ? `<span class="client-map-nano-plan-pending">${isEnglish() ? `Request ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} since ${escapeHtml(formatDate(pending.created_at))}` : `Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}`}</span>`
         : context.canManage
-          ? ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
+          ? canCheckoutPlan(plan)
+            ? ui.action({ label: trialAvailable() ? (isEnglish() ? "Start 14-day trial" : "Probar 14 días") : (isEnglish() ? "Subscribe securely" : "Contratar de forma segura"), icon: "circle-dollar-sign", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCheckout: plan.id } })
+            : ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
           : ui.action({ label: "Contactar al administrador", href: `${contactPath()}?product=map-nano&intent=license`, icon: "headset", className: "btn btn-ghost" });
     const limitText = mapNanoLimitText(plan);
     return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""} ${isCurrent ? "is-current" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
-      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || "Licenciamiento anual")}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
-      <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(mapNanoPlans.priceLabel(plan))}</strong>${mapNanoPlans.monthlyLabel(plan) ? `<span>${escapeHtml(mapNanoPlans.monthlyLabel(plan))}</span>` : ""}</div>
+      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || (canCheckoutPlan(plan) ? "Licencia flexible" : "Licenciamiento anual"))}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
+      <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(checkoutPriceLabel(plan))}</strong><span>${escapeHtml(checkoutPriceNote(plan))}</span></div>
       <p class="client-map-nano-plan-limits">${escapeHtml(limitText)}</p><ul class="client-license-offer-benefits">${plan.features.slice(0, 4).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
       <footer>${action}${!context.canManage && !isCurrent ? '<small class="client-license-offer-assurance">Solo propietarios o administradores pueden solicitar cambios para una organización.</small>' : ""}</footer>
     </article>`;
+  }
+
+  function trialAvailable() {
+    return !billingSubscriptions.some(subscription => Boolean(subscription.trial_end));
+  }
+
+  function checkoutPriceLabel(plan) {
+    return canCheckoutPlan(plan) ? mapNanoPlans.intervalPriceLabel(plan, selectedBillingInterval) : mapNanoPlans.priceLabel(plan);
+  }
+
+  function checkoutPriceNote(plan) {
+    if (!canCheckoutPlan(plan)) return mapNanoPlans.monthlyLabel(plan);
+    if (selectedBillingInterval === "month") return isEnglish() ? "14 days free · then billed monthly" : "14 días gratis · luego facturación mensual";
+    const monthlyPrice = Number(plan.monthlyPrice);
+    const annualPrice = Number(plan.annualPrice);
+    const savings = Number.isFinite(monthlyPrice) && Number.isFinite(annualPrice) ? (monthlyPrice * 12) - annualPrice : 0;
+    return savings > 0
+      ? (isEnglish() ? `14 days free · save ${mapNanoPlans.formatUsd(savings)} per year` : `14 días gratis · ahorra ${mapNanoPlans.formatUsd(savings)} al año`)
+      : (isEnglish() ? "14 days free · billed annually" : "14 días gratis · facturación anual");
+  }
+  function canCheckoutPlan(plan) {
+    return Boolean(billingConfig.checkoutEnabled
+      && billingAvailable
+      && billingConfig.selfServePlans?.includes(plan.id));
   }
 
   function mapNanoLimitText(plan) {
@@ -796,6 +874,53 @@
       ui.openLayer(dialog, { trigger: requestButton });
       return;
     }
+    const billingIntervalButton = event.target.closest("[data-map-nano-billing-interval]");
+    if (billingIntervalButton && !busy) {
+      selectedBillingInterval = billingIntervalButton.dataset.mapNanoBillingInterval === "month" ? "month" : "year";
+      render();
+      return;
+    }
+    const billingPortalButton = event.target.closest("[data-map-nano-billing-portal]");
+    if (billingPortalButton && !busy) {
+      setBusy(true);
+      setMessage(isEnglish() ? "Opening billing portal..." : "Abriendo el portal de facturaci\u00f3n...");
+      try {
+        const portal = await repository.createBillingPortalSession(billingPortalButton.dataset.mapNanoBillingPortal);
+        if (!portal?.url || !/^https:\/\/billing\.stripe\.com\//i.test(portal.url)) throw new Error("Invalid billing portal URL");
+        trackCommercialPlan("billing_portal_opened");
+        window.location.assign(portal.url);
+      } catch (error) {
+        setBusy(false);
+        setMessage(userMessage(error), "error");
+      }
+      return;
+    }
+    const checkoutButton = event.target.closest("[data-map-nano-checkout]");
+    if (checkoutButton && !busy) {
+      const planId = checkoutButton.dataset.mapNanoCheckout;
+      const plan = mapNanoPlans.planById(planId);
+      if (!plan || !canCheckoutPlan(plan)) {
+        setMessage("El checkout seguro todav\u00eda no est\u00e1 disponible para este plan.", "error");
+        return;
+      }
+      setBusy(true);
+      setMessage(isEnglish() ? "Opening secure checkout..." : "Abriendo checkout seguro...");
+      try {
+        const checkout = await repository.createCheckoutSession({
+          accountId: mapNanoCommercialAccountId(),
+          planKey: planId,
+          billingInterval: selectedBillingInterval,
+          requestId: window.crypto.randomUUID()
+        });
+        if (!checkout?.url || !/^https:\/\/checkout\.stripe\.com\//i.test(checkout.url)) throw new Error("Invalid checkout URL");
+        trackCommercialPlan("checkout_started", { planId, requestType: "new_license", billingInterval: selectedBillingInterval });
+        window.location.assign(checkout.url);
+      } catch (error) {
+        setBusy(false);
+        setMessage(userMessage(error), "error");
+      }
+      return;
+    }
     const commercialRequestButton = event.target.closest("[data-map-nano-commercial-request]");
     if (commercialRequestButton) {
       selectedCommercialPlanId = commercialRequestButton.dataset.mapNanoCommercialRequest;
@@ -869,6 +994,8 @@
       dashboard = payload.dashboard;
       commercialRequests = payload.commercialRequests;
       commercialRequestsAvailable = payload.commercialRequestsAvailable;
+      billingSubscriptions = payload.billingSubscriptions || [];
+      billingAvailable = Boolean(payload.billingAvailable);
       selectDefaultLicense();
       render();
       setMessage(successMessage, "ok");

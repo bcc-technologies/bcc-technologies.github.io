@@ -35,6 +35,9 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
         error: null
       };
     }
+    if (name === "get_my_map_billing_dashboard") {
+      return { data: [{ subscription_id: "billing-1" }, null], error: null };
+    }
     return { data: [{ entitlement_key: "map.staff", product_keys: ["map.nano"] }, null], error: null };
   });
 
@@ -44,7 +47,8 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
     "get_my_platform_access",
     "get_my_internal_entitlements",
     "get_current_map_trial_offer",
-    "get_my_map_nano_commercial_requests"
+    "get_my_map_nano_commercial_requests",
+    "get_my_map_billing_dashboard"
   ]);
   assert.equal(result.dashboard.licenses.length, 1);
   assert.equal(result.dashboard.members.length, 0);
@@ -53,6 +57,8 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
   assert.equal(result.trialOffer.duration_days, 14);
   assert.equal(result.commercialRequestsAvailable, true);
   assert.equal(result.commercialRequests.length, 0);
+  assert.equal(result.billingAvailable, true);
+  assert.equal(result.billingSubscriptions.length, 1);
 });
 
 test("MAP repository translates transport failures into a stable domain error", async () => {

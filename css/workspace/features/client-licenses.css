@@ -225,6 +225,15 @@
 .client-map-nano-plan-footnote a:hover{ color: var(--accent-strong); }
 .client-map-nano-plan-footnote .workspace-icon{ transition: transform 160ms ease; }
 .client-map-nano-plan-footnote a:hover .workspace-icon{ transform: translateX(2px); }
+.client-map-nano-billing-selector{ display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 15px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--accent) 5%, var(--surface-solid)); }
+.client-map-nano-billing-selector strong,.client-map-nano-billing-selector span{ display: block; }
+.client-map-nano-billing-selector strong{ color: var(--ink); font-size: .82rem; }
+.client-map-nano-billing-selector span{ margin-top: 2px; color: var(--muted); font-size: .72rem; line-height: 1.35; }
+.client-map-nano-billing-options{ display: inline-flex; flex: 0 0 auto; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-muted); }
+.client-map-nano-billing-option{ min-height: 34px; padding: 7px 11px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-soft); font: inherit; font-size: .73rem; font-weight: 750; cursor: pointer; }
+.client-map-nano-billing-option:hover{ color: var(--ink); }
+.client-map-nano-billing-option.is-selected{ background: var(--surface-solid); color: var(--accent-strong); box-shadow: 0 2px 8px rgba(15, 17, 21, .09); }
+.client-map-nano-billing-option:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
 .client-map-nano-plan-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .client-map-nano-plan-card{ min-height: 348px; }
 .client-map-nano-plan-price{ display: grid; gap: 3px; padding: 9px 10px; border: 1px solid color-mix(in srgb, var(--line) 88%, var(--ink-muted)); border-radius: 9px; background: color-mix(in srgb, var(--surface-muted) 72%, var(--surface-solid)); }
@@ -248,6 +257,7 @@
 }
 
 @media (max-width: 700px){
+  .client-map-nano-billing-selector{ align-items: stretch; flex-direction: column; }
   .client-map-nano-plan-grid,
   .client-map-nano-project-option{ display: grid; }
   .client-map-nano-plan-card{ min-height: 0; }
