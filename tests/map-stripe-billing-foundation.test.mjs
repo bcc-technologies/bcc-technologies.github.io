@@ -90,3 +90,25 @@ test("Stripe webhook verifies the raw signed body and drives license state from 
   assert.match(config, /\[functions\.create-map-checkout-session\][\s\S]*verify_jwt = true/);
 });
 
+
+test("returning from Checkout reuses the exact open trial session without weakening duplicate guards", async () => {
+  const [checkout, sql] = await Promise.all([
+    read("supabase/functions/create-map-checkout-session/index.ts"),
+    read("supabase/migrations/20260809221338_reuse_pending_map_checkout_session.sql")
+  ]);
+
+  assert.match(sql, /account_id = p_account_id[\s\S]{0,80}user_id = p_actor_id/);
+  assert.match(sql, /'reused', true/);
+  assert.match(sql, /'stripe_checkout_session_id', existing_claim\.stripe_checkout_session_id/);
+  assert.match(sql, /already pending for this account or user/);
+  assert.match(sql, /revoke all on function public\.reserve_map_billing_trial/);
+  assert.match(sql, /grant execute on function public\.reserve_map_billing_trial[\s\S]*service_role/);
+
+  assert.match(checkout, /if \(trial\.reused\)/);
+  assert.match(checkout, /checkout\.sessions\.retrieve\(trial\.stripe_checkout_session_id\)/);
+  assert.match(checkout, /previousSession\.metadata\.map_trial_claim_id === trial\.claim_id/);
+  assert.match(checkout, /previousSession\.status === "complete"/);
+  assert.match(checkout, /checkout\.sessions\.expire\(previousSession\.id\)/);
+  assert.match(checkout, /release_map_billing_trial_by_session/);
+  assert.match(checkout, /reused: true/);
+});

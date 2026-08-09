@@ -29,6 +29,8 @@ type CheckoutContext = {
 type TrialReservation = {
   eligible: boolean;
   claim_id?: string;
+  reused?: boolean;
+  stripe_checkout_session_id?: string | null;
   trial_period_days: number;
 };
 
@@ -79,16 +81,58 @@ Deno.serve(async request => {
       if (linkError) throw linkError;
     }
 
-    const { data: trialData, error: trialError } = await admin.rpc("reserve_map_billing_trial", {
-      p_actor_id: user.id,
-      p_account_id: context.account_id,
-      p_plan_key: context.plan_key,
-      p_billing_interval: context.recurring_interval,
-      p_livemode: livemode,
-      p_request_id: requestId
-    });
-    if (trialError) throw trialError;
-    const trial = trialData as TrialReservation;
+    const reserveTrial = async () => {
+      const { data: trialData, error: trialError } = await admin.rpc("reserve_map_billing_trial", {
+        p_actor_id: user.id,
+        p_account_id: context.account_id,
+        p_plan_key: context.plan_key,
+        p_billing_interval: context.recurring_interval,
+        p_livemode: livemode,
+        p_request_id: requestId
+      });
+      if (trialError) throw trialError;
+      return trialData as TrialReservation;
+    };
+
+    let trial = await reserveTrial();
+    if (trial.reused) {
+      if (!trial.claim_id || !trial.stripe_checkout_session_id) {
+        throw new Error("Your secure Checkout is still being prepared. Try again in a moment.");
+      }
+      const previousSession = await stripe.checkout.sessions.retrieve(trial.stripe_checkout_session_id);
+      const sameCheckout = previousSession.livemode === livemode
+        && previousSession.client_reference_id === context.account_id
+        && previousSession.metadata.map_account_id === context.account_id
+        && previousSession.metadata.purchaser_user_id === user.id
+        && previousSession.metadata.commercial_plan_key === context.plan_key
+        && previousSession.metadata.billing_interval === context.recurring_interval
+        && previousSession.metadata.map_trial_claim_id === trial.claim_id;
+      const stillOpen = previousSession.status === "open"
+        && Number(previousSession.expires_at) > Math.floor(Date.now() / 1000) + 5;
+
+      if (sameCheckout && stillOpen && previousSession.url) {
+        return jsonResponse(request, {
+          url: previousSession.url,
+          sessionId: previousSession.id,
+          billingInterval: context.recurring_interval,
+          currency: context.currency,
+          unitAmount: context.unit_amount,
+          trialDays: Number(trial.trial_period_days),
+          reused: true
+        });
+      }
+      if (previousSession.status === "complete") {
+        throw new Error("This Checkout was already completed. Refresh the dashboard to see your MAP-Nano access.");
+      }
+      if (previousSession.status === "open") {
+        await stripe.checkout.sessions.expire(previousSession.id);
+      }
+      const { error: releaseError } = await admin.rpc("release_map_billing_trial_by_session", {
+        p_stripe_checkout_session_id: previousSession.id
+      });
+      if (releaseError) throw releaseError;
+      trial = await reserveTrial();
+    }
     const trialClaimId = trial.eligible && trial.claim_id ? trial.claim_id : null;
     const trialDays = trialClaimId ? Number(trial.trial_period_days) : 0;
     if (trialClaimId && (!Number.isInteger(trialDays) || trialDays < 1 || trialDays > 90)) {
