@@ -345,6 +345,14 @@ window.BCC_MAP_API_URL = ["localhost", "127.0.0.1"].includes(window.location.hos
   ? "http://127.0.0.1:8000"
   : "https://map-nano.onrender.com";
 
+// Live Checkout is enabled after verifying prices, webhook delivery, and the
+// billing migration. Keep Customer Portal dark until Stripe has an active config.
+window.BCC_MAP_BILLING = Object.freeze({
+  checkoutEnabled: true,
+  portalEnabled: false,
+  selfServePlans: Object.freeze(["essential", "professional"])
+});
+
 window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxNPgJ64NuaVsM8JN01ZJKLEBHadNS_F0ZiCqs6Izk3c";
 
 /* Source: js/access-contracts.js */
