@@ -141,7 +141,7 @@ Deno.serve(async request => {
     // Always read the current object so delayed or retried events cannot restore stale state.
     const subscription = await stripeClient().subscriptions.retrieve(subscriptionId);
     const snapshot = subscriptionSnapshot(subscription, event.livemode);
-    if (!snapshot.stripe_customer_id || !snapshot.stripe_price_id || !snapshot.account_id || !snapshot.commercial_plan_key) {
+    if (!snapshot.stripe_customer_id || !snapshot.stripe_price_id || !snapshot.account_id) {
       throw new Error("Stripe subscription is missing required MAP billing metadata");
     }
     const { error: syncError } = await admin.rpc("sync_stripe_subscription_snapshot", { p_snapshot: snapshot });

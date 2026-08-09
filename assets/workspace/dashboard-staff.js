@@ -345,11 +345,10 @@ window.BCC_MAP_API_URL = ["localhost", "127.0.0.1"].includes(window.location.hos
   ? "http://127.0.0.1:8000"
   : "https://map-nano.onrender.com";
 
-// Live Checkout is enabled after verifying prices, webhook delivery, and the
-// billing migration. Keep Customer Portal dark until Stripe has an active config.
+// Live Checkout and the authenticated Customer Portal are both enabled.
 window.BCC_MAP_BILLING = Object.freeze({
   checkoutEnabled: true,
-  portalEnabled: false,
+  portalEnabled: true,
   selfServePlans: Object.freeze(["essential", "professional"])
 });
 

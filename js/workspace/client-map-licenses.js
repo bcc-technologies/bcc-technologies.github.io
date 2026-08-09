@@ -279,6 +279,10 @@
   function billingLabel(subscription) {
     if (!subscription) return isEnglish() ? "Not specified" : "No especificada";
     const interval = subscription.billing_interval === "month" ? (isEnglish() ? "Monthly" : "Mensual") : (isEnglish() ? "Annual" : "Anual");
+    if (subscription.cancel_at_period_end) {
+      const endDate = formatDate(subscription.current_period_end);
+      return isEnglish() ? `${interval} - cancels ${endDate}` : `${interval} - se cancela el ${endDate}`;
+    }
     const labels = {
       active: isEnglish() ? `${interval} - active` : `${interval} - activa`,
       trialing: isEnglish() ? `${interval} - trial` : `${interval} - en prueba`,

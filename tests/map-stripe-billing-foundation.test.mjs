@@ -28,6 +28,19 @@ test("Stripe subscription sync assigns the purchaser without a PL/pgSQL name col
   assert.match(sql, /grant execute on function public\.sync_stripe_subscription_snapshot\(jsonb\) to service_role/);
 });
 
+test("Stripe plan changes are projected from the allowlisted price catalog", async () => {
+  const [sql, webhook] = await Promise.all([
+    read("supabase/migrations/20260809233000_sync_map_subscription_plan_from_price_catalog.sql"),
+    read("supabase/functions/stripe-webhook/index.ts")
+  ]);
+
+  assert.match(sql, /price\.stripe_price_id = p_snapshot->>'stripe_price_id'/);
+  assert.match(sql, /price\.livemode = \(p_snapshot->>'livemode'\)::boolean/);
+  assert.match(sql, /plan\.product_key = 'map\.nano'/);
+  assert.doesNotMatch(sql, /plan\.commercial_key = p_snapshot->>'commercial_plan_key'/);
+  assert.doesNotMatch(webhook, /!snapshot\.commercial_plan_key/);
+});
+
 test("commercial plans are separated from license types and only two plans are self-service", async () => {
   const sql = await read("supabase/migrations/20260809013000_stripe_billing_foundation.sql");
 
@@ -41,12 +54,13 @@ test("commercial plans are separated from license types and only two plans are s
 });
 
 test("Checkout and Portal require an authenticated actor and keep Stripe secrets server-side", async () => {
-  const [shared, checkout, portal, repository, clientConfig] = await Promise.all([
+  const [shared, checkout, portal, repository, clientConfig, clientLicenses] = await Promise.all([
     read("supabase/functions/_shared/map-billing.ts"),
     read("supabase/functions/create-map-checkout-session/index.ts"),
     read("supabase/functions/create-stripe-portal-session/index.ts"),
     read("js/workspace/map-repository.js"),
-    read("js/supabase-config.js")
+    read("js/supabase-config.js"),
+    read("js/workspace/client-map-licenses.js")
   ]);
 
   assert.match(shared, /admin\.auth\.getUser\(token\)/);
@@ -61,10 +75,25 @@ test("Checkout and Portal require an authenticated actor and keep Stripe secrets
   assert.match(checkout, /reserve_map_billing_trial/);
   assert.match(checkout, /idempotencyKey/);
   assert.match(portal, /get_map_portal_context/);
+  assert.match(portal, /mode: "at_period_end"/);
+  assert.match(portal, /proration_behavior: "create_prorations"/);
+  assert.match(portal, /trial_update_behavior: "continue_trial"/);
+  assert.match(portal, /decreasing_item_amount/);
+  assert.match(portal, /shortening_interval/);
+  assert.match(portal, /default_allowed_updates: \["price"\]/);
+  assert.match(portal, /configuration: configuration\.id/);
+  for (const priceId of [
+    "price_1U2eO361z0I4dYgKCrV0KcHo",
+    "price_1U2MPQ61z0I4dYgK2XuYLB8N",
+    "price_1U2eOC61z0I4dYgKxmosZL0C",
+    "price_1U2MQ961z0I4dYgKjWKx8ZXl"
+  ]) assert.match(portal, new RegExp(priceId));
   assert.match(repository, /supabase\.functions\.invoke/);
   assert.doesNotMatch(`${repository}\n${clientConfig}`, /sk_(?:test|live)_/);
   assert.match(clientConfig, /checkoutEnabled: true/);
-  assert.match(clientConfig, /portalEnabled: false/);
+  assert.match(clientConfig, /portalEnabled: true/);
+  assert.match(clientLicenses, /subscription\.cancel_at_period_end/);
+  assert.match(clientLicenses, /se cancela el/);
 });
 
 test("Stripe webhook verifies the raw signed body and drives license state from subscriptions", async () => {
