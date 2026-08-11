@@ -70,7 +70,7 @@ async function acceptanceCoupon(
   if (eligibleCoupons.length === 1) return eligibleCoupons[0];
 
   return stripe.coupons.create({
-    id: `map_nano_live_acceptance_${requestId}`,
+    id: `map_nano_accept_${requestId.replace(/-/g, "").slice(0, 16)}`,
     name: "MAP-Nano Essential internal acceptance",
     percent_off: 100,
     duration: "forever",

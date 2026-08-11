@@ -25,6 +25,7 @@ test("live zero-dollar acceptance is isolated from public Checkout and fail-clos
   assert.match(acceptance, /coupon\.metadata\.acceptance_scope === ACCEPTANCE_SCOPE/);
   assert.match(acceptance, /eligibleProducts\.includes/);
   assert.match(acceptance, /stripe\.coupons\.create/);
+  assert.match(acceptance, /map_nano_accept_\$\{requestId\.replace\(\/\-\/g, ""\)\.slice\(0, 16\)\}/);
   assert.match(acceptance, /redeem_by: now \+ \(48 \* 60 \* 60\)/);
   assert.match(acceptance, /applies_to: \{ products: \[productId\] \}/);
   assert.match(acceptance, /map-live-acceptance-coupon-\$\{requestId\}/);
