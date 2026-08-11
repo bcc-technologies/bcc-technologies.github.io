@@ -786,6 +786,43 @@ async function logout() {
   window.location.assign(loginPath());
 }
 
+async function requireSupabaseIdentity() {
+  const supabase = await loadSupabaseClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    const normalized = reportSupabaseError("No se pudo verificar la sesión para administrar la seguridad.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudo verificar la sesión.");
+  }
+  if (!data?.user) throw new Error("Inicia sesión nuevamente para administrar la seguridad de la cuenta.");
+  return supabase;
+}
+
+async function changePassword({ currentPassword, password } = {}) {
+  const current = String(currentPassword || "");
+  const next = String(password || "");
+  if (!current) throw new Error("Introduce tu contraseña actual.");
+  if (!validatePassword(next)) throw new Error(PASSWORD_RULE_MESSAGE);
+  if (current === next) throw new Error("La nueva contraseña debe ser diferente de la actual.");
+
+  const supabase = await requireSupabaseIdentity();
+  const { error } = await supabase.auth.updateUser({ password: next, current_password: current });
+  if (error) {
+    const normalized = reportSupabaseError("No se pudo actualizar la contraseña.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudo actualizar la contraseña.");
+  }
+  return { ok: true };
+}
+
+async function signOutOtherSessions() {
+  const supabase = await requireSupabaseIdentity();
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+  if (error) {
+    const normalized = reportSupabaseError("No se pudieron cerrar las otras sesiones.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudieron cerrar las otras sesiones.");
+  }
+  return { ok: true };
+}
+
 async function updateProfile(payload) {
   const supabase = await loadSupabaseClient();
   const { data: sessionData } = await supabase.auth.getUser();
@@ -2646,7 +2683,10 @@ window.BCCAuth = {
   resolveAuthState,
   readAuthDiagnostics,
   updateProfile,
-  loadSupabaseClient
+  loadSupabaseClient,
+  validatePassword,
+  changePassword,
+  signOutOtherSessions
 };
 
 document.addEventListener("DOMContentLoaded", () => {

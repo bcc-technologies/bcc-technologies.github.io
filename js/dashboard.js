@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
   bindCustomerWorkspaceRouter();
   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
+  window.BCCWorkspaceAccount?.bindSecurityManager();
   window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   });

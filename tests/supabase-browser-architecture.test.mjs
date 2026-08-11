@@ -157,6 +157,24 @@ test("workspace auth distinguishes a missing session from recoverable profile an
   assert.doesNotMatch(layout, /window\.BCCAuth\?\.currentUser/);
 });
 
+test("account security changes the shared password and revokes only other sessions", () => {
+  const auth = read("js/auth.js");
+  const account = read("js/workspace/account.js");
+  const dashboard = read("dashboard.html");
+  const staffDashboard = read("staff-dashboard.html");
+
+  assert.match(auth, /updateUser\(\{ password: next, current_password: current \}\)/);
+  assert.match(auth, /signOut\(\{ scope: "others" \}\)/);
+  assert.match(auth, /async function requireSupabaseIdentity\(\)[\s\S]+auth\.getUser\(\)/);
+  assert.match(account, /function bindSecurityManager\(options = \{\}\)/);
+  assert.match(account, /BCCAuth\.changePassword\(\{ currentPassword, password \}\)/);
+  assert.match(account, /BCCAuth\.signOutOtherSessions\(\)/);
+  assert.match(dashboard, /data-password-change-form/);
+  assert.match(dashboard, /autocomplete="current-password"/);
+  assert.match(dashboard, /data-signout-other-sessions/);
+  assert.match(staffDashboard, /data-password-change-form/);
+  assert.match(staffDashboard, /data-signout-other-sessions/);
+});
 test("auth return paths preserve dashboard hashes without accepting fragment-only or public destinations", () => {
   const spanish = loadAuthReturnPaths("/dashboard.html", "#cuenta");
   const english = loadAuthReturnPaths("/en/staff-dashboard.html", "#usuarios");

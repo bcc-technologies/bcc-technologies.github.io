@@ -75,7 +75,7 @@
       licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Conteo y clasificación", "Máscaras y mediciones", "Flujos web o desktop"]),
       icon: "activity",
-      productHref: "/product_maps.html",
+      productHref: "/product_maps.html#map-bio",
       requestHref: "/contactUs.html?product=map-bio&intent=license"
     }),
     "map.med": Object.freeze({
@@ -84,7 +84,7 @@
       licenseTypes: Object.freeze(["named_user", "organization", "evaluation"]),
       features: Object.freeze(["Flujos guiados de imagen", "Resultados trazables", "Configuración por proyecto"]),
       icon: "shield-question",
-      productHref: "/product_maps.html",
+      productHref: "/product_maps.html#map-med",
       requestHref: "/contactUs.html?product=map-med&intent=license"
     })
   });
@@ -94,10 +94,11 @@
     scheduled: { label: "Programada", tone: "neutral", icon: "calendar-clock", priority: 1 },
     expiring: { label: "Vence pronto", tone: "warning", icon: "calendar-clock", priority: 2 },
     suspended: { label: "Suspendida", tone: "danger", icon: "activity", priority: 3 },
-    expired: { label: "Vencida", tone: "danger", icon: "x", priority: 4 },
-    revoked: { label: "Revocada", tone: "danger", icon: "x", priority: 5 },
-    draft: { label: "Borrador", tone: "neutral", icon: "file-pen-line", priority: 6 },
-    unknown: { label: "Sin estado", tone: "neutral", icon: "circle-help", priority: 7 }
+    cancelled: { label: "Cancelada", tone: "neutral", icon: "x", priority: 4 },
+    expired: { label: "Vencida", tone: "danger", icon: "x", priority: 5 },
+    revoked: { label: "Revocada", tone: "danger", icon: "x", priority: 6 },
+    draft: { label: "Borrador", tone: "neutral", icon: "file-pen-line", priority: 7 },
+    unknown: { label: "Sin estado", tone: "neutral", icon: "circle-help", priority: 8 }
   });
 
   const COMMERCIAL_REQUEST_STATUS = Object.freeze({
@@ -112,6 +113,17 @@
   const PLATFORM_ACCESS_LABELS = Object.freeze({
     "map.workspace.access": "Acceso al espacio MAP",
     "map.nano.use": "Análisis MAP-Nano",
+    "map.nano.analysis.basic": "Análisis esencial MAP-Nano",
+    "map.nano.analysis.advanced": "Módulos profesionales MAP-Nano",
+    "map.nano.batch": "Procesamiento por lotes",
+    "map.nano.pipelines.reuse": "Pipelines reutilizables",
+    "map.nano.pipelines.share": "Biblioteca compartida de pipelines",
+    "map.nano.samples.compare": "Comparación entre muestras",
+    "map.nano.reports.auto": "Reportes profesionales automáticos",
+    "map.nano.audit": "Trazabilidad de análisis",
+    "map.nano.reports.institutional": "Plantillas de reportes institucionales",
+    "map.nano.api": "API e integraciones MAP-Nano",
+    "map.nano.support.priority": "Soporte prioritario MAP-Nano",
     "map.bio.use": "Análisis MAP-Bio",
     "map.med.use": "Análisis MAP-Med",
     "map.dev.access": "Desarrollo MAP",
@@ -156,17 +168,17 @@
     "map.bio": Object.freeze({
       category: "Biology and imaging", description: "Automate counting, classification, and morphology for reproducible biological-image analysis workflows.",
       features: Object.freeze(["Counting and classification", "Masks and measurements", "Web or desktop workflows"]),
-      productHref: "/en/product_maps.html", requestHref: "/en/contactUs.html?product=map-bio&intent=license"
+      productHref: "/en/product_maps.html#map-bio", requestHref: "/en/contactUs.html?product=map-bio&intent=license"
     }),
     "map.med": Object.freeze({
       category: "Clinical imaging · R&D", description: "Organize assisted medical-image analysis for research and validation projects.",
       features: Object.freeze(["Guided imaging workflows", "Traceable results", "Project-based configuration"]),
-      productHref: "/en/product_maps.html", requestHref: "/en/contactUs.html?product=map-med&intent=license"
+      productHref: "/en/product_maps.html#map-med", requestHref: "/en/contactUs.html?product=map-med&intent=license"
     })
   });
   const EN_STATUS = Object.freeze({
     active: Object.freeze({ label: "Active" }), scheduled: Object.freeze({ label: "Scheduled" }), expiring: Object.freeze({ label: "Expires soon" }),
-    suspended: Object.freeze({ label: "Suspended" }), expired: Object.freeze({ label: "Expired" }), revoked: Object.freeze({ label: "Revoked" }),
+    suspended: Object.freeze({ label: "Suspended" }), cancelled: Object.freeze({ label: "Cancelled" }), expired: Object.freeze({ label: "Expired" }), revoked: Object.freeze({ label: "Revoked" }),
     draft: Object.freeze({ label: "Draft" }), unknown: Object.freeze({ label: "No status" })
   });
   const EN_COMMERCIAL_REQUEST_STATUS = Object.freeze({
@@ -174,7 +186,13 @@
     declined: Object.freeze({ label: "Not approved" }), cancelled: Object.freeze({ label: "Cancelled" }), unknown: Object.freeze({ label: "No status" })
   });
   const EN_PLATFORM_ACCESS_LABELS = Object.freeze({
-    "map.workspace.access": "MAP workspace access", "map.nano.use": "MAP-Nano analysis", "map.bio.use": "MAP-Bio analysis", "map.med.use": "MAP-Med analysis",
+    "map.workspace.access": "MAP workspace access", "map.nano.use": "MAP-Nano analysis",
+    "map.nano.analysis.basic": "Essential MAP-Nano analysis", "map.nano.analysis.advanced": "Professional MAP-Nano modules",
+    "map.nano.batch": "Batch processing", "map.nano.pipelines.reuse": "Reusable pipelines", "map.nano.pipelines.share": "Shared pipeline library",
+    "map.nano.samples.compare": "Cross-sample comparison", "map.nano.reports.auto": "Automatic professional reports",
+    "map.nano.audit": "Analysis audit trail", "map.nano.reports.institutional": "Institutional report templates",
+    "map.nano.api": "MAP-Nano API and integrations", "map.nano.support.priority": "Priority MAP-Nano support",
+    "map.bio.use": "MAP-Bio analysis", "map.med.use": "MAP-Med analysis",
     "map.dev.access": "MAP development", "map.release.manage": "MAP releases", "platform.licenses.read": "License viewing",
     "platform.licenses.manage": "License management", "platform.evaluations.manage": "Evaluations", "platform.permissions.manage": "Permissions", "platform.analytics.read": "Analytics"
   });
@@ -321,7 +339,9 @@
     return LOCALIZED_COMMERCIAL_REQUEST_STATUS[String(status || "").toLowerCase()] || LOCALIZED_COMMERCIAL_REQUEST_STATUS.unknown;
   }
 
-  function effectiveStatus(license, now = Date.now()) {
+  function effectiveStatus(license, now = Date.now(), billingSubscription = null) {
+    const subscriptionStatus = String(billingSubscription?.status || license?.billing_status || "").toLowerCase();
+    if (subscriptionStatus === "canceled") return "cancelled";
     const startsAt = new Date(license?.starts_at || 0).getTime();
     const endsAt = new Date(license?.ends_at || 0).getTime();
     if (license?.license_status === "active" && endsAt && endsAt <= now) return "expired";
@@ -330,9 +350,9 @@
     return STATUS[license?.license_status] ? license.license_status : "unknown";
   }
 
-  function toLicenseViewModel(license, now = Date.now()) {
+  function toLicenseViewModel(license, now = Date.now(), billingSubscription = null) {
     const source = isRecord(license) ? license : {};
-    const status = effectiveStatus(source, now);
+    const status = effectiveStatus(source, now, billingSubscription);
     const seatLimit = Math.max(1, Number(source.seat_limit || 1));
     const assignedSeats = Math.max(0, Number(source.assigned_seats || 0));
     const availableSeats = Math.max(0, seatLimit - assignedSeats);
@@ -346,8 +366,28 @@
       availableSeats,
       seatUsage: Math.min(100, Math.round((assignedSeats / seatLimit) * 100)),
       canManage: Boolean(source.can_manage_seats && !source.is_evaluation && status === "active"),
-      needsAttention: ["expiring", "suspended", "expired", "revoked"].includes(status)
+      needsAttention: ["expiring", "suspended"].includes(status)
     };
+  }
+
+  function sameLicenseScope(left, right) {
+    if (left?.product_key !== right?.product_key) return false;
+    if (left?.account_id && right?.account_id) return left.account_id === right.account_id;
+    return true;
+  }
+
+  function hasCurrentReplacement(candidate, licenses) {
+    const replacementStatuses = candidate?.status === "expiring"
+      ? ["active", "scheduled"]
+      : ["active", "scheduled", "expiring"];
+    return licenses.some(item => item?.license_id !== candidate?.license_id
+      && sameLicenseScope(candidate, item)
+      && replacementStatuses.includes(item.status));
+  }
+
+  function attentionLicense(licenses) {
+    const items = rows(licenses);
+    return items.find(item => item.needsAttention && !hasCurrentReplacement(item, items)) || null;
   }
 
   function productName(key) {
@@ -409,6 +449,7 @@
     normalizeCommercialRequestQueue,
     effectiveStatus,
     toLicenseViewModel,
+    attentionLicense,
     productName,
     productCatalog,
     licenseType,

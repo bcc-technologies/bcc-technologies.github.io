@@ -632,3 +632,19 @@ background:rgba(255,255,255,.85);border-bottom:1px solid var(--line);
 
 
 
+
+/* Public resource states: useful, legible placeholders until the resource is published. */
+.resource-placeholder{
+  display:grid;
+  place-items:center;
+  min-height:100%;
+  padding:16px;
+  border:1px dashed color-mix(in oklab, var(--line) 88%, var(--accent) 12%);
+  border-radius:inherit;
+  background:linear-gradient(135deg, var(--surface-muted), color-mix(in oklab, var(--surface-solid) 88%, var(--bg-alt) 12%));
+  color:var(--ink-muted);
+  font-size:13px;
+  font-weight:650;
+  letter-spacing:.01em;
+  text-align:center;
+}

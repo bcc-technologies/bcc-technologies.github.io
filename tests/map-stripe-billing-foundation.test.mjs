@@ -66,6 +66,9 @@ test("Checkout and Portal require an authenticated actor and keep Stripe secrets
   assert.match(shared, /admin\.auth\.getUser\(token\)/);
   assert.match(shared, /STRIPE_MODE must be test or live/);
   assert.match(shared, /STRIPE_SECRET_KEY does not match STRIPE_MODE/);
+  assert.match(shared, /isLocalDevelopmentOrigin/);
+  assert.match(shared, /Access-Control-Max-Age/);
+  assert.match(shared, /Blocked CORS preflight/);
   assert.match(checkout, /get_map_checkout_context/);
   assert.match(checkout, /mode: "subscription"/);
   assert.match(checkout, /subscription_data/);

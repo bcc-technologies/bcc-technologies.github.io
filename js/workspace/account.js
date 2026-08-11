@@ -239,6 +239,64 @@
     });
   }
 
+  function bindSecurityManager(options = {}) {
+    const form = document.querySelector(options.formSelector || "[data-password-change-form]");
+    const sessionButton = document.querySelector(options.sessionButtonSelector || "[data-signout-other-sessions]");
+    if (!form && !sessionButton) return;
+
+    const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
+    const passwordMessage = document.querySelector(options.passwordMessageSelector || "[data-password-change-message]");
+    const sessionMessage = document.querySelector(options.sessionMessageSelector || "[data-session-message]");
+    const setMessage = (element, text, tone = "ok") => {
+      if (!element) return;
+      renderMessageBlock(element, translate(text), tone);
+      element.hidden = !text;
+    };
+
+    form?.addEventListener("submit", async event => {
+      event.preventDefault();
+      setMessage(passwordMessage, "");
+      const submitButton = form.querySelector('button[type="submit"]');
+      const currentPassword = String(form.elements.currentPassword?.value || "");
+      const password = String(form.elements.password?.value || "");
+      const confirmation = String(form.elements.confirmPassword?.value || "");
+
+      if (password !== confirmation) {
+        setMessage(passwordMessage, "Las contraseñas no coinciden.", "error");
+        return;
+      }
+      if (!window.BCCAuth.validatePassword(password)) {
+        setMessage(passwordMessage, "La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula y un símbolo.", "error");
+        return;
+      }
+
+      if (submitButton) submitButton.disabled = true;
+      try {
+        await window.BCCAuth.changePassword({ currentPassword, password });
+        form.reset();
+        setMessage(passwordMessage, "Contraseña actualizada. Ya puedes usarla en BCC y MAP.");
+      } catch (error) {
+        setMessage(passwordMessage, error.message, "error");
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
+
+    sessionButton?.addEventListener("click", async () => {
+      setMessage(sessionMessage, "");
+      if (!window.confirm(translate("¿Cerrar las sesiones abiertas en otros navegadores y dispositivos?"))) return;
+      sessionButton.disabled = true;
+      try {
+        await window.BCCAuth.signOutOtherSessions();
+        setMessage(sessionMessage, "Las otras sesiones se cerraron correctamente.");
+      } catch (error) {
+        setMessage(sessionMessage, error.message, "error");
+      } finally {
+        sessionButton.disabled = false;
+      }
+    });
+  }
+
   function renderPermissions(user, options = {}) {
     const permissions = document.querySelector(options.selector || "[data-permissions]");
     if (!permissions) return;
@@ -258,6 +316,7 @@
     hydrateAccountMenu,
     bindEmailManager,
     hydrateProfileForm,
+    bindSecurityManager,
     renderPermissions
   };
 })();

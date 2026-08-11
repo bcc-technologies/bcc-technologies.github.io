@@ -80,7 +80,7 @@
 
   async function getClientDashboard() {
     const [dashboard, access, entitlements, trialOffer, commercialRequestState, billingState] = await Promise.all([
-      rpc("get_my_license_dashboard"),
+      rpc("get_my_license_overview"),
       rpc("get_my_platform_access"),
       rpc("get_my_internal_entitlements"),
       getTrialOffer(),
@@ -113,6 +113,11 @@
 
   const client = Object.freeze({
     getDashboard: getClientDashboard,
+    getSeatManagement: (licenseId, query = "") => rpc("get_my_license_seat_management", {
+      p_license_id: licenseId,
+      p_query: query || null,
+      p_limit: 50
+    }),
     assignSeat: (licenseId, userId) => rpc("assign_my_account_license", {
       p_license_id: licenseId,
       p_user_id: userId

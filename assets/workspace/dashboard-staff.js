@@ -902,7 +902,8 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
     "Administra los datos y correos que usamos para tu cuenta y sus comunicaciones.": "Manage the details and email addresses used for your account and communications.", "Cuenta activa": "Active account",
     "Datos de cuenta": "Account details", "Mantén actualizada la información para solicitudes, documentos y comunicaciones.": "Keep information current for requests, documents, and communications.", "Nombre completo": "Full name", "Compañía": "Company", "Cargo": "Title", "Guardar cambios": "Save changes",
     "Correos de la cuenta": "Account email addresses", "Elige el correo principal y gestiona direcciones adicionales.": "Choose the primary email and manage additional addresses.", "Gestionar correos": "Manage email addresses", "Añadir un correo": "Add an email address", "Correo adicional": "Additional email", "Agregar correo": "Add email", "Correo a confirmar": "Email to confirm", "Código de confirmación": "Confirmation code", "Confirmar correo": "Confirm email",
-    "Estado de acceso": "Access status", "Cuenta protegida": "Protected account", "Correo principal": "Primary email",
+    "Estado de acceso": "Access status", "Cuenta protegida": "Protected account", "Cuenta BCC": "BCC account", "Correo principal": "Primary email", "Una sola contraseña": "One password", "BCC y MAP": "BCC and MAP",
+    "Seguridad de cuenta": "Account security", "Seguridad": "Security", "Actualiza la contraseña central que utilizas para acceder a BCC y MAP.": "Update the central password you use to access BCC and MAP.", "Contraseña actual": "Current password", "Nueva contraseña": "New password", "Confirmar nueva contraseña": "Confirm new password", "Mínimo 8 caracteres, con mayúscula, minúscula y un símbolo.": "At least 8 characters, with uppercase, lowercase, and a symbol.", "Actualizar contraseña": "Update password", "Otras sesiones": "Other sessions", "Cierra el acceso en otros navegadores y dispositivos sin salir de esta sesión.": "Close access in other browsers and devices without signing out of this session.", "Cerrar otras sesiones": "Close other sessions", "¿Cerrar las sesiones abiertas en otros navegadores y dispositivos?": "Close sessions open in other browsers and devices?", "Las contraseñas no coinciden.": "Passwords do not match.", "La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula y un símbolo.": "The password must have at least 8 characters, uppercase, lowercase, and a symbol.", "Contraseña actualizada. Ya puedes usarla en BCC y MAP.": "Password updated. You can now use it in BCC and MAP.", "Las otras sesiones se cerraron correctamente.": "Other sessions were closed successfully.",
     "Consulta los formularios y requerimientos que el equipo haya enviado a tu cuenta.": "Review the forms and requirements the team has sent to your account.", "Bandeja de operación": "Operations inbox", "Revisa los formularios enviados a tu cuenta": "Review the forms sent to your account", "Aquí encontrarás únicamente los requerimientos que BCC haya dirigido a ti. Tus respuestas quedan asociadas a tu cuenta.": "Here you will find only requirements BCC sent to you. Your responses remain linked to your account.", "Acceso personal": "Personal access", "Solo formularios asignados": "Assigned forms only", "Esta bandeja no permite crear, publicar ni ver requerimientos de otras cuentas.": "This inbox does not allow you to create, publish, or view requirements from other accounts.", "Formularios recibidos": "Received forms", "Responde o consulta los formularios que el equipo haya compartido contigo.": "Respond to or review the forms the team shared with you.",
     "Comercial": "Commercial", "Facturas, documentos y consultas comerciales asociadas a tu cuenta.": "Invoices, documents, and commercial requests associated with your account.", "Contactar al equipo": "Contact the team", "Registro privado": "Private record", "Documentos compartidos": "Shared documents", "Las facturas, comprobantes, contratos y entregables publicados para tu cuenta se verán aquí.": "Invoices, receipts, agreements, and deliverables published for your account will appear here.", "Aún no hay documentos disponibles": "No documents are available yet", "Cuando el equipo comparta un archivo privado, quedará registrado en este espacio con su fecha y estado.": "When the team shares a private file, it will be recorded here with its date and status.", "Cuenta comercial": "Commercial account", "Usaremos este correo para las comunicaciones administrativas.": "We will use this email for administrative communications.", "Ayuda comercial": "Commercial support", "¿Necesitas una factura?": "Need an invoice?", "Envía los datos fiscales o consulta un pago directamente con el equipo.": "Send tax details or ask the team about a payment directly.", "Iniciar consulta": "Start a request",
     "Bandeja privada": "Private inbox", "Requerimientos de tu cuenta": "Account requirements", "Revisa, responde o actualiza los formularios que BCC haya compartido contigo.": "Review, answer, or update the forms BCC has shared with you.", "recibidos": "received", "Cerrar": "Close", "Cancelar": "Cancel", "Enviar respuestas": "Submit responses", "Cargando formularios recibidos...": "Loading received forms...", "pendiente": "pending", "pendientes": "pending", "Al día": "Up to date", "Sin envíos": "No deliveries", "No tienes formularios pendientes": "You have no pending forms", "Cuando BCC te comparta un requerimiento, aparecerá aquí para que puedas responderlo.": "When BCC shares a requirement with you, it will appear here so you can respond.", "Respondido": "Answered", "Pendiente": "Pending", "Actualizar respuesta": "Update response", "Responder formulario": "Answer form", "Selecciona una opcion": "Select an option", "Respuestas enviadas.": "Responses submitted.", "Sin compañía registrada": "No company recorded", "Configurada": "Configured",
@@ -952,10 +953,10 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
     "Sin acceso vigente": "No active access", "Estado de acceso": "Access status", "Tu acceso": "Your access", "Inicio": "Start", "Vigencia": "Term", "Modalidad": "License type", "Facturación": "Billing", "No especificado": "Not specified", "Sin vencimiento": "No expiry", "Hasta": "Until", "No especificada": "Not specified", "Evaluación": "Evaluation", "Licencia MAP": "MAP license", "Cuenta MAP": "MAP account",
     "Capacidades habilitadas": "Enabled capabilities", "Las capacidades técnicas aún no están disponibles para esta asignación.": "Technical capabilities are not available for this assignment yet.", "Uso de plazas": "Seat usage", "de plazas ocupadas": "of seats in use", "El ciclo de evaluación es administrado por el equipo BCC.": "The evaluation cycle is managed by the BCC team.", "Gestionar plazas": "Manage seats", "Renovar licencia": "Renew license", "Solicitar reactivación": "Request reactivation", "Abrir información": "Open details",
     "Licencias para": "Licenses for", "Recomendada": "Recommended", "Actual": "Current", "Incluye": "Includes", "días gratis": "days free", "Prueba estándar": "Standard evaluation", "Solicitar ampliación": "Request expansion", "Sin tarjeta": "No card required", "Sin compromiso": "No commitment", "respuesta en 1 día hábil": "response within one business day",
-    "Nueva licencia": "New license", "Actualización": "Upgrade", "Cotización institucional": "Institutional quote", "Acceso por proyecto": "Project access", "Demostración": "Demonstration", "Solicitud comercial": "Commercial request", "El historial comercial no está disponible en este momento. Puedes continuar mediante el formulario de contacto.": "Commercial request history is unavailable at the moment. You can continue through the contact form.", "Solicitudes comerciales": "Commercial requests", "Estado persistente para esta cuenta o usuario.": "Persistent status for this account or user.",
-    "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites.": "Your contracted plans are identified here. You can request an expansion or change whenever needed.", "Las solicitudes se revisan antes de emitir una licencia.": "Requests are reviewed before a license is issued.", "Planes de MAP-Nano": "MAP-Nano plans", "Comparar planes en detalle": "Compare plans in detail", "Plan actual": "Current plan", "Plan contratado": "Contracted plan", "Contactar al administrador": "Contact administrator", "Licenciamiento anual": "Annual licensing", "Recomendado": "Recommended", "Solo propietarios o administradores pueden solicitar cambios para una organización.": "Only owners or administrators can request changes for an organization.", "Límites": "Limits", "se definen según la propuesta.": "are defined in the proposal.", "Alternativa por proyecto": "Project alternative", "Contactar soporte": "Contact support",
+    "Nueva licencia": "New license", "Actualización": "Upgrade", "Cotización institucional": "Institutional quote", "Acceso por proyecto": "Project access", "Demostración": "Demonstration", "Solicitud comercial": "Commercial request", "El historial comercial no está disponible en este momento. Puedes continuar mediante el formulario de contacto.": "Commercial request history is unavailable at the moment. You can continue through the contact form.", "Solicitudes comerciales": "Commercial requests", "Estado persistente para esta cuenta o usuario.": "Persistent status for this account or user.", "Último acceso": "Last access", "Tu último plan": "Your last plan", "Este acceso ya no está vigente. Puedes reactivarlo o elegir un plan nuevo.": "This access is no longer active. You can reactivate it or choose a new plan.", "Finalizó": "Ended", "Solicitudes en curso": "Requests in progress", "Estos procesos siguen abiertos y tienen prioridad sobre un cambio nuevo.": "These processes are still open and take priority over a new change.", "Historial de solicitudes": "Request history", "Registro completo de solicitudes comerciales para esta cuenta o usuario.": "Complete record of commercial requests for this account or user.",
+    "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites.": "Your contracted plans are identified here. You can request an expansion or change whenever needed.", "Las solicitudes se revisan antes de emitir una licencia.": "Requests are reviewed before a license is issued.", "Planes de MAP-Nano": "MAP-Nano plans", "Comparar planes en detalle": "Compare plans in detail", "Plan actual": "Current plan", "Plan contratado": "Contracted plan", "Contactar al administrador": "Contact administrator", "Licenciamiento anual": "Annual licensing", "Recomendado": "Recommended", "Solo propietarios o administradores pueden solicitar cambios para una organización.": "Only owners or administrators can request changes for an organization.", "Límites": "Limits", "se definen según la propuesta.": "are defined in the proposal.", "Alternativa por proyecto": "Project alternative", "Contactar soporte": "Contact support", "Tu plan actual permanece arriba. Compara estas opciones solo cuando necesites cambiar o ampliar el acceso.": "Your current plan stays above. Compare these options only when you need to change or expand access.", "Retoma MAP-Nano con tu plan anterior o elige una alternativa.": "Resume MAP-Nano with your previous plan or choose an alternative.", "Cambiar o ampliar plan": "Change or expand plan", "Tu plan contratado no se repite entre las alternativas.": "Your contracted plan is not repeated among the alternatives.", "Planes disponibles": "Available plans", "Elige tu próximo plan": "Choose your next plan", "Elige tu plan": "Choose your plan",
     "Accesos adicionales": "Additional access", "Beneficios internos y permisos separados de las licencias comerciales.": "Internal benefits and permissions separate from commercial licenses.", "Beneficio exclusivo del staff": "Staff-only benefit", "Licencia MAP Staff": "MAP Staff license", "Acceso gratuito y personal mientras tu perfil de staff permanezca activo.": "Free personal access while your staff profile remains active.", "Activa": "Active", "Permisos internos": "Internal permissions", "Herramientas autorizadas": "Authorized tools", "Capacidades técnicas o administrativas independientes de tus licencias.": "Technical or administrative capabilities independent from your licenses.", "Autorizado": "Authorized",
-    "Requiere atención": "Needs attention", "Coordina la renovación para evitar interrupciones.": "Arrange renewal to avoid interruption.", "Revisa las opciones con tu administrador o soporte.": "Review your options with your administrator or support.", "Plazas de": "Seats for", "Administración": "Administration", "Cerrar gestión de plazas": "Close seat management", "Licencia": "License", "Asignar a un miembro": "Assign to a member", "No hay miembros disponibles": "No members available", "Asignar plaza": "Assign seat", "Plazas asignadas": "Assigned seats", "Libera accesos que ya no se utilizan.": "Release access that is no longer used.", "No hay plazas asignadas.": "No seats are assigned.", "Selecciona un miembro para activar su acceso.": "Select a member to activate their access.", "Solicitar un nuevo miembro": "Request a new member",
+    "Requiere atención": "Needs attention", "Coordina la renovación para evitar interrupciones.": "Arrange renewal to avoid interruption.", "Revisa las opciones con tu administrador o soporte.": "Review your options with your administrator or support.", "Plazas de": "Seats for", "Administración": "Administration", "Cerrar gestión de plazas": "Close seat management", "Licencia": "License", "Asignar a un miembro": "Assign to a member", "No hay miembros disponibles": "No members available", "Asignar plaza": "Assign seat", "Plazas asignadas": "Assigned seats", "Libera accesos que ya no se utilizan.": "Release access that is no longer used.", "No hay plazas asignadas.": "No seats are assigned.", "Selecciona un miembro para activar su acceso.": "Select a member to activate their access.", "Solicitar un nuevo miembro": "Request a new member", "Buscar miembro": "Search members", "Nombre o correo": "Name or email", "Buscando miembros…": "Searching members…", "Licencia sin plazas disponibles.": "No seats available on this license.", "Libera una plaza antes de asignar otro miembro.": "Release a seat before assigning another member.", "Cargando miembros…": "Loading members…", "No hay miembros que coincidan": "No matching members", "Cargando plazas asignadas…": "Loading assigned seats…", "No hay plazas asignadas que coincidan.": "No assigned seats match.", "Prueba con otro nombre o correo.": "Try another name or email.", "Libera una plaza para habilitar una nueva asignación.": "Release a seat to enable a new assignment.", "Revisa y libera accesos que ya no se utilizan.": "Review and release access that is no longer used.", "La plaza principal no puede liberarse sin asignar un reemplazo.": "The primary seat cannot be released until management is transferred to a replacement.", "Tu plaza administradora está protegida; puedes gestionar las demás plazas.": "Your administrator seat is protected; you can manage the other seats.", "La plaza principal está protegida; amplía el plan para añadir otro miembro.": "The primary seat is protected; expand the plan to add another member.", "Usa el buscador para activar el acceso de un miembro.": "Use the search field to activate member access.", "Asignar una plaza": "Assign a seat", "Busca a una persona que ya pertenezca a esta organización.": "Search for someone who already belongs to this organization.", "Miembro": "Member", "¿La persona no aparece?": "Cannot find the person?", "Solicitar alta de miembro": "Request member onboarding", "Libera una plaza para asignar otro miembro.": "Release a seat before assigning another member.", "Necesito ampliar el número de plazas": "I need more seats", "Selecciona un correo de las sugerencias antes de asignar la plaza.": "Select an email from the suggestions before assigning the seat.", "Esta licencia ya no tiene plazas disponibles.": "This license no longer has available seats.", "Asignando la plaza…": "Assigning the seat…", "La plaza fue asignada correctamente.": "The seat was assigned successfully.", "Liberando la plaza…": "Releasing the seat…", "La plaza fue liberada correctamente.": "The seat was released successfully.",
     "Solicitud comercial": "Commercial request", "Solicita": "Request", "días gratis. Confirmaremos el acceso y el caso de uso en 1 día hábil.": "free days. We will confirm access and the use case within one business day.", "Cuéntanos el alcance. Responderemos con una recomendación y los próximos pasos en 1 día hábil.": "Tell us about the scope. We will reply with a recommendation and next steps within one business day.", "Cerrar solicitud": "Close request", "Correo de contacto": "Contact email", "Caso de uso": "Use case", "¿Qué quieres validar con": "What would you like to validate with", "Plazas estimadas": "Estimated seats", "Despliegue": "Deployment", "Web y desktop": "Web and desktop", "Necesito orientación": "I need guidance", "Contexto del proyecto": "Project context", "Equipo, flujo actual, volumen de análisis o fecha objetivo": "Team, current workflow, analysis volume, or target date", "Si tienes problemas al enviar,": "If you have trouble submitting,", "continúa en el formulario de contacto": "continue in the contact form", "Cancelar": "Cancel", "Solicitar prueba": "Request evaluation", "Enviar solicitud": "Submit request",
     "Tu solicitud quedará registrada en MAP para seguimiento comercial. No se realiza ningún cobro ni cambio de licencia automáticamente.": "Your request will be recorded in MAP for commercial follow-up. No charge or license change is made automatically.", "Nombre": "Name", "Correo": "Email", "Institución u organización": "Institution or organization", "País": "Country", "Plan de interés": "Plan of interest", "Tipo de solicitud": "Request type", "Usuarios estimados": "Estimated users", "Volumen aproximado": "Approximate volume", "Selecciona una opción": "Select an option", "Menos de 100 imágenes o muestras": "Under 100 images or samples", "100 a 1,000 imágenes o muestras": "100 to 1,000 images or samples", "Más de 1,000 imágenes o muestras": "Over 1,000 images or samples", "Aún no definido": "Not defined yet", "Mensaje": "Message", "Describe el flujo actual, el tipo de imágenes y cualquier requisito de despliegue o soporte.": "Describe the current workflow, image type, and any deployment or support requirements.", "El acceso por proyecto puede incluir acceso temporal de 30 días o análisis asistido, según el alcance.": "Project access may include 30-day temporary access or assisted analysis, depending on scope.", "Si el registro no está disponible,": "If submission is unavailable,",
     "Actividad reciente": "Recent activity", "movimiento(s) de plazas": "seat movement(s)", "Registro de asignaciones y liberaciones realizadas desde el autoservicio.": "Record of seat assignments and releases made through self-service.", "Tu usuario": "Your user", "Usuario de la cuenta": "Account user", "Plaza asignada": "Seat assigned", "Plaza liberada": "Seat released", "Tú": "You", "Liberar": "Release",
@@ -2962,6 +2963,43 @@ async function logout() {
   window.location.assign(loginPath());
 }
 
+async function requireSupabaseIdentity() {
+  const supabase = await loadSupabaseClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    const normalized = reportSupabaseError("No se pudo verificar la sesión para administrar la seguridad.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudo verificar la sesión.");
+  }
+  if (!data?.user) throw new Error("Inicia sesión nuevamente para administrar la seguridad de la cuenta.");
+  return supabase;
+}
+
+async function changePassword({ currentPassword, password } = {}) {
+  const current = String(currentPassword || "");
+  const next = String(password || "");
+  if (!current) throw new Error("Introduce tu contraseña actual.");
+  if (!validatePassword(next)) throw new Error(PASSWORD_RULE_MESSAGE);
+  if (current === next) throw new Error("La nueva contraseña debe ser diferente de la actual.");
+
+  const supabase = await requireSupabaseIdentity();
+  const { error } = await supabase.auth.updateUser({ password: next, current_password: current });
+  if (error) {
+    const normalized = reportSupabaseError("No se pudo actualizar la contraseña.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudo actualizar la contraseña.");
+  }
+  return { ok: true };
+}
+
+async function signOutOtherSessions() {
+  const supabase = await requireSupabaseIdentity();
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+  if (error) {
+    const normalized = reportSupabaseError("No se pudieron cerrar las otras sesiones.", error);
+    throw new Error(normalized?.userMessage || error.message || "No se pudieron cerrar las otras sesiones.");
+  }
+  return { ok: true };
+}
+
 async function updateProfile(payload) {
   const supabase = await loadSupabaseClient();
   const { data: sessionData } = await supabase.auth.getUser();
@@ -4822,7 +4860,10 @@ window.BCCAuth = {
   resolveAuthState,
   readAuthDiagnostics,
   updateProfile,
-  loadSupabaseClient
+  loadSupabaseClient,
+  validatePassword,
+  changePassword,
+  signOutOtherSessions
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -5748,6 +5789,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function bindSecurityManager(options = {}) {
+    const form = document.querySelector(options.formSelector || "[data-password-change-form]");
+    const sessionButton = document.querySelector(options.sessionButtonSelector || "[data-signout-other-sessions]");
+    if (!form && !sessionButton) return;
+
+    const translate = value => window.BCCWorkspaceI18n?.t?.(value) || value;
+    const passwordMessage = document.querySelector(options.passwordMessageSelector || "[data-password-change-message]");
+    const sessionMessage = document.querySelector(options.sessionMessageSelector || "[data-session-message]");
+    const setMessage = (element, text, tone = "ok") => {
+      if (!element) return;
+      renderMessageBlock(element, translate(text), tone);
+      element.hidden = !text;
+    };
+
+    form?.addEventListener("submit", async event => {
+      event.preventDefault();
+      setMessage(passwordMessage, "");
+      const submitButton = form.querySelector('button[type="submit"]');
+      const currentPassword = String(form.elements.currentPassword?.value || "");
+      const password = String(form.elements.password?.value || "");
+      const confirmation = String(form.elements.confirmPassword?.value || "");
+
+      if (password !== confirmation) {
+        setMessage(passwordMessage, "Las contraseñas no coinciden.", "error");
+        return;
+      }
+      if (!window.BCCAuth.validatePassword(password)) {
+        setMessage(passwordMessage, "La contraseña debe tener al menos 8 caracteres, mayúscula, minúscula y un símbolo.", "error");
+        return;
+      }
+
+      if (submitButton) submitButton.disabled = true;
+      try {
+        await window.BCCAuth.changePassword({ currentPassword, password });
+        form.reset();
+        setMessage(passwordMessage, "Contraseña actualizada. Ya puedes usarla en BCC y MAP.");
+      } catch (error) {
+        setMessage(passwordMessage, error.message, "error");
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
+
+    sessionButton?.addEventListener("click", async () => {
+      setMessage(sessionMessage, "");
+      if (!window.confirm(translate("¿Cerrar las sesiones abiertas en otros navegadores y dispositivos?"))) return;
+      sessionButton.disabled = true;
+      try {
+        await window.BCCAuth.signOutOtherSessions();
+        setMessage(sessionMessage, "Las otras sesiones se cerraron correctamente.");
+      } catch (error) {
+        setMessage(sessionMessage, error.message, "error");
+      } finally {
+        sessionButton.disabled = false;
+      }
+    });
+  }
+
   function renderPermissions(user, options = {}) {
     const permissions = document.querySelector(options.selector || "[data-permissions]");
     if (!permissions) return;
@@ -5767,6 +5866,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hydrateAccountMenu,
     bindEmailManager,
     hydrateProfileForm,
+    bindSecurityManager,
     renderPermissions
   };
 })();
@@ -6640,6 +6740,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   runWorkspaceStep("semántica de pestañas", enhanceWorkspaceTabs);
   runWorkspaceStep("simulador de acceso", () => bindAdminViewSimulator(user));
   runWorkspaceStep("perfil", () => window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser }));
+  runWorkspaceStep("seguridad", () => window.BCCWorkspaceAccount?.bindSecurityManager());
   runWorkspaceStep("permisos", () => window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   }));

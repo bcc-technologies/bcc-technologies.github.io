@@ -30,9 +30,33 @@
   let billingSubscriptions = [];
   let billingAvailable = false;
   let busy = false;
+  let seatManagement = emptySeatManagement();
+  let seatManagementFeedback = emptySeatManagementFeedback();
+  let seatManagementRequestId = 0;
+  let seatSearchTimer = null;
 
   function emptyDashboard() {
     return { accounts: [], licenses: [], members: [], assignments: [], recent_events: [] };
+  }
+
+  function emptySeatManagement(licenseId = "", query = "") {
+    return {
+      licenseId,
+      query,
+      loading: false,
+      error: "",
+      assignedSeats: 0,
+      seatLimit: 0,
+      assignmentMatches: 0,
+      candidateMatches: 0,
+      selectedUserId: "",
+      assignments: [],
+      candidates: []
+    };
+  }
+
+  function emptySeatManagementFeedback() {
+    return { message: "", tone: "neutral" };
   }
 
   function trackLicenseFunnel(eventName, metadata = {}) {
@@ -63,6 +87,7 @@
     root.addEventListener("click", handleClick);
     root.addEventListener("keydown", handleKeydown);
     root.addEventListener("change", handleChange);
+    root.addEventListener("input", handleInput);
     root.addEventListener("submit", handleSubmit);
     root.setAttribute("aria-busy", "true");
     trackCommercialPlan("subscription_page_viewed");
@@ -141,6 +166,7 @@
         ${renderActivity()}
         ${renderSeatManagementLayer()}
         ${renderCommercialRequestLayer()}
+        ${renderPlanComparisonLayer()}
       </section>`;
     refreshIcons();
     window.BCCWorkspaceI18n?.localizeTree?.(root);
@@ -205,8 +231,11 @@
       licenseTypes: []
     };
     const panelId = productDomId(key);
+    const currentLicenses = productLicenses.filter(item => ["active", "scheduled", "expiring"].includes(item.status));
+    const previousLicenses = productLicenses.filter(item => !["active", "scheduled", "expiring"].includes(item.status));
     return `<div class="client-license-product-panel" id="suite-panel-${panelId}" role="tabpanel" aria-labelledby="suite-tab-${panelId}" tabindex="0">
-      ${renderCurrentProductAccess(key, product, productLicenses)}
+      ${renderCurrentProductAccess(key, product, currentLicenses)}
+      ${currentLicenses.length ? "" : renderLastProductAccess(key, product, previousLicenses)}
       ${renderLicenseOptions(key, productLicenses)}
     </div>`;
   }
@@ -220,6 +249,40 @@
       </div>
       <div class="client-license-current-grid">${productLicenses.map(item => renderCurrentAccessCard(product, item)).join("")}</div>
     </section>`;
+  }
+
+  function renderLastProductAccess(key, product, productLicenses) {
+    const lastLicense = [...productLicenses]
+      .filter(item => ["suspended", "cancelled", "expired", "revoked"].includes(item.status))
+      .sort((left, right) => licenseActivityTimestamp(right) - licenseActivityTimestamp(left))[0];
+    if (!lastLicense) return "";
+    const commercialPlan = key === "map.nano" ? mapNanoPlans.planById(mapNanoPlans.planIdForLicense(lastLicense)) : null;
+    const planName = commercialPlan?.name || lastLicense.plan_name || contracts.licenseType(lastLicense.license_type)?.label || "Licencia MAP";
+    const endedLabel = lastLicense.status === "cancelled"
+      ? lastLicense.statusMeta.label
+      : lastLicense.ends_at
+        ? `${isEnglish() ? "Ended" : "Finaliz\u00f3"} ${formatDate(lastLicense.ends_at)}`
+        : lastLicense.statusMeta.label;
+    return `<section class="client-license-last-access" aria-labelledby="last-access-${productDomId(key)}">
+      <div class="client-license-subsection-head">
+        <div><span class="client-license-subsection-kicker">\u00daltimo acceso</span><h3 id="last-access-${productDomId(key)}">Tu \u00faltimo plan</h3></div>
+      </div>
+      <article class="client-license-last-card">
+        <div class="client-license-last-copy">
+          <span class="client-license-last-icon">${ui.icon("history", "sm")}</span>
+          <div><strong>${escapeHtml(planName)}</strong><small>${escapeHtml(lastLicense.account_name || "Cuenta MAP")} ? ${escapeHtml(endedLabel)}</small><p>Este acceso ya no est? vigente. Puedes reactivarlo o elegir un plan nuevo.</p></div>
+        </div>
+        <div class="client-license-last-actions"><span class="client-license-tag ${escapeHtml(lastLicense.status)}">${ui.icon(lastLicense.statusMeta.icon, "xs")}${escapeHtml(lastLicense.statusMeta.label)}</span>${renderCurrentAccessActions(product, lastLicense)}</div>
+      </article>
+    </section>`;
+  }
+
+  function licenseActivityTimestamp(license) {
+    for (const value of [license?.ends_at, license?.starts_at, license?.updated_at, license?.created_at]) {
+      const timestamp = new Date(value || 0).getTime();
+      if (Number.isFinite(timestamp) && timestamp > 0) return timestamp;
+    }
+    return 0;
   }
 
   function renderCurrentAccessCard(product, item) {
@@ -239,19 +302,26 @@
       </dl>
       ${capabilities.length ? `<div class="client-license-capability-summary"><span>Capacidades habilitadas</span><div>${capabilities.map(capability => `<span class="client-license-tag">${escapeHtml(platformAccessLabel(capability.access_key))}</span>`).join("")}</div></div>` : item.product_key === "map.nano" ? '<p class="client-license-card-note">Las capacidades técnicas aún no están disponibles para esta asignación.</p>' : ""}
       ${item.seatLimit ? `<div class="client-license-seat-summary">
-        <div><span>Uso de plazas</span><strong>${item.assignedSeats} / ${item.seatLimit}</strong></div>
-        ${ui.progress({ value: item.seatUsage, label: `${item.seatUsage}% de plazas ocupadas`, className: "client-license-seat-bar", tone: item.seatUsage >= 100 ? "danger" : item.seatUsage >= 80 ? "warning" : "accent" })}
+        <div><span>Uso de plazas</span><strong>${escapeHtml(seatUsageLabel(item))}</strong></div>
+        ${ui.progress({ value: item.seatUsage, label: seatUsageLabel(item), className: "client-license-seat-bar", tone: "accent" })}
       </div>` : ""}
       ${item.is_evaluation ? `<p class="client-license-card-note">${ui.icon("info", "xs")} El ciclo de evaluación es administrado por el equipo BCC.</p>` : ""}
       <footer class="client-license-card-actions">${renderCurrentAccessActions(product, item)}${renderBillingAction(item, billingSubscription)}</footer>
     </article>`;
   }
 
+  function seatUsageLabel(item) {
+    const occupied = Number(item.assignedSeats || 0);
+    const capacity = Number(item.seatLimit || 0);
+    if (isEnglish()) return `${occupied} of ${capacity} ${capacity === 1 ? "seat" : "seats"} occupied`;
+    return `${occupied} de ${capacity} ${capacity === 1 ? "plaza ocupada" : "plazas ocupadas"}`;
+  }
+
   function renderCurrentAccessActions(product, item) {
     if (item.canManage) {
       return ui.action({ label: "Gestionar plazas", icon: "users", className: "btn btn-primary", data: { clientLicenseManage: item.license_id } });
     }
-    if (["expiring", "suspended", "expired", "revoked"].includes(item.status)) {
+    if (["expiring", "suspended", "cancelled", "expired", "revoked"].includes(item.status)) {
       return ui.action({
         label: item.status === "expiring" ? "Renovar licencia" : "Solicitar reactivación",
         icon: "refresh-cw",
@@ -300,7 +370,9 @@
     if (key === "map.nano") return renderMapNanoCommercialOptions(productLicenses);
     const types = contracts.productLicenseTypes(key);
     if (!types.length) return "";
-    const ownedTypes = new Set(productLicenses.map(item => item.license_type));
+    const ownedTypes = new Set(productLicenses
+      .filter(item => ["active", "scheduled", "expiring"].includes(item.status))
+      .map(item => item.license_type));
     return `<section class="client-license-options" aria-label="Licencias para ${escapeHtml(productName(key))}">
       <div class="client-license-offer-grid">${types.map(type => renderLicenseOfferCard(key, type, ownedTypes.has(type.key))).join("")}</div>
     </section>`;
@@ -380,7 +452,7 @@
 
   function billingReturnMessage() {
     const status = new URLSearchParams(window.location.search).get("billing");
-    if (status === "success") return isEnglish() ? "Subscription started. Your 14-day MAP-Nano trial is now active." : "Suscripci?n iniciada. Tus 14 d?as de prueba de MAP-Nano ya est?n activos.";
+    if (status === "success") return isEnglish() ? "Subscription started. Your 14-day MAP-Nano trial is now active." : "Suscripci\u00f3n iniciada. Tus 14 d\u00edas de prueba de MAP-Nano ya est\u00e1n activos.";
     if (status === "cancelled") return isEnglish() ? "Checkout was cancelled; no charge was made." : "El checkout fue cancelado; no se realiz\u00f3 ning\u00fan cobro.";
     return "";
   }
@@ -413,46 +485,138 @@
     }[requestType] || "Solicitud comercial";
   }
 
+  function renderMapNanoCommercialRequestItems(requests, limit = 5) {
+    return requests.slice(0, limit).map(request => {
+      const status = commercialRequestStatus(request);
+      return `<article class="client-map-nano-request-item">
+        <div><strong>${escapeHtml(commercialRequestPlanName(request.plan_key))}</strong><small>${escapeHtml(commercialRequestTypeLabel(request.request_type))} · ${escapeHtml(formatDate(request.created_at))}</small></div>
+        <div class="client-map-nano-request-actions"><span class="client-license-tag ${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span>${request.can_cancel ? `<button class="btn btn-ghost btn-compact" type="button" data-map-nano-commercial-cancel="${escapeHtml(request.request_id)}">Cancelar</button>` : ""}</div>
+      </article>`;
+    }).join("");
+  }
+
+  function renderMapNanoOpenCommercialRequests() {
+    if (!commercialRequestsAvailable) return "";
+    const openRequests = commercialRequests.filter(isOpenCommercialRequest);
+    if (!openRequests.length) return "";
+    return `<section class="client-map-nano-open-requests" aria-labelledby="map-nano-open-requests-title">
+      <div class="client-license-subsection-head"><div><span class="client-license-subsection-kicker">Estado actual</span><h4 id="map-nano-open-requests-title">Solicitudes en curso</h4><p>Estos procesos siguen abiertos y tienen prioridad sobre un cambio nuevo.</p></div><span class="client-license-tag expiring">${openRequests.length}</span></div>
+      <div class="client-map-nano-request-list">${renderMapNanoCommercialRequestItems(openRequests)}</div>
+    </section>`;
+  }
+
   function renderMapNanoCommercialRequestHistory() {
     if (!commercialRequestsAvailable) {
       return '<p class="client-map-nano-pending-note">El historial comercial no está disponible en este momento. Puedes continuar mediante el formulario de contacto.</p>';
     }
     if (!commercialRequests.length) return "";
-    return `<section class="client-map-nano-request-history" aria-labelledby="map-nano-request-history-title">
-      <div class="client-license-subsection-head"><div><h4 id="map-nano-request-history-title">Solicitudes comerciales</h4><p>Estado persistente para esta cuenta o usuario.</p></div></div>
-      <div class="client-map-nano-request-list">${commercialRequests.slice(0, 5).map(request => {
-        const status = commercialRequestStatus(request);
-        return `<article class="client-map-nano-request-item">
-          <div><strong>${escapeHtml(commercialRequestPlanName(request.plan_key))}</strong><small>${escapeHtml(commercialRequestTypeLabel(request.request_type))} · ${escapeHtml(formatDate(request.created_at))}</small></div>
-          <div class="client-map-nano-request-actions"><span class="client-license-tag ${escapeHtml(status.tone)}">${escapeHtml(status.label)}</span>${request.can_cancel ? `<button class="btn btn-ghost btn-compact" type="button" data-map-nano-commercial-cancel="${escapeHtml(request.request_id)}">Cancelar</button>` : ""}</div>
-        </article>`;
-      }).join("")}</div>
-    </section>`;
+    const requestCountLabel = isEnglish()
+      ? `${commercialRequests.length} ${commercialRequests.length === 1 ? "request" : "requests"} recorded`
+      : `${commercialRequests.length} solicitud${commercialRequests.length === 1 ? "" : "es"} registrada${commercialRequests.length === 1 ? "" : "s"}`;
+    return `<details class="client-map-nano-request-history">
+      <summary><span>${ui.icon("history", "sm")}<span><strong>Historial de solicitudes</strong><small>${requestCountLabel}</small></span></span><span class="client-license-disclosure-meta">${ui.icon("chevron-down", "sm")}</span></summary>
+      <div class="client-map-nano-request-history-body"><p>Registro completo de solicitudes comerciales para esta cuenta o usuario.</p><div class="client-map-nano-request-list">${renderMapNanoCommercialRequestItems(commercialRequests, Infinity)}</div></div>
+    </details>`;
   }
 
-  function renderMapNanoCommercialOptions(productLicenses) {
+  function mapNanoPlanContext(productLicenses = dashboard.licenses.map(toLicenseViewModel).filter(item => item.product_key === "map.nano")) {
     const canManage = canManageMapNanoCommercialRequest(productLicenses);
     const activePlanIds = new Set(productLicenses
       .filter(item => ["active", "scheduled", "expiring"].includes(item.status))
       .map(item => mapNanoPlans.planIdForLicense(item))
       .filter(Boolean));
-    const hasActivePlan = activePlanIds.size > 0;
-    const optionsNote = hasActivePlan
-      ? "Tus planes contratados se identifican aquí. Puedes solicitar una ampliación o cambio cuando lo necesites."
-      : "Las solicitudes se revisan antes de emitir una licencia.";
+    return {
+      canManage,
+      activePlanIds,
+      hasActivePlan: activePlanIds.size > 0,
+      hasPreviousPlan: productLicenses.length > 0
+    };
+  }
+
+  function renderMapNanoCommercialOptions(productLicenses) {
+    const context = mapNanoPlanContext(productLicenses);
     return `<section class="client-license-options client-map-nano-commercial-options" aria-label="Planes de MAP-Nano">
-      ${renderBillingIntervalSelector(canManage)}
-      <div class="client-license-offer-grid client-map-nano-plan-grid">${mapNanoPlans.PLANS.map(plan => renderMapNanoPlanCard(plan, { canManage, activePlanIds, hasLicense: productLicenses.length > 0 })).join("")}</div>
-      <div class="client-map-nano-plan-footnote"><p>${optionsNote}</p><a href="${isEnglish() ? "/en/map-nano-pricing.html" : "/map-nano-pricing.html"}">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
-      ${renderMapNanoProjectOption(canManage, productLicenses.length > 0)}
+      ${renderMapNanoOpenCommercialRequests()}
+      ${renderMapNanoPlanChoices(context)}
       ${renderMapNanoCommercialRequestHistory()}
     </section>`;
   }
 
-  function renderBillingIntervalSelector(canManage) {
+  function renderMapNanoPlanChoices(context) {
+    const availablePlans = mapNanoPlans.PLANS.filter(plan => !context.activePlanIds.has(plan.id));
+    if (context.hasActivePlan) {
+      const label = isEnglish() ? "License options" : "Opciones de licencia";
+      const title = isEnglish() ? "Change or expand plan" : "Cambiar o ampliar plan";
+      const description = isEnglish()
+        ? "Compare alternatives without losing sight of your current license. No change is applied automatically."
+        : "Compara alternativas sin perder de vista tu licencia actual. Ningún cambio se aplica automáticamente.";
+      const optionCount = `${availablePlans.length} ${isEnglish() ? "options" : "opciones"}`;
+      return `<section class="client-map-nano-plan-launch" aria-labelledby="map-nano-plan-launch-title">
+        <div class="client-map-nano-plan-launch-copy"><span class="client-map-nano-plan-launch-icon">${ui.icon("badge-plus", "sm")}</span><div><span class="client-license-subsection-kicker">${label}</span><h3 id="map-nano-plan-launch-title">${title}</h3><p>${description}</p></div></div>
+        <div class="client-map-nano-plan-launch-action"><span class="client-license-tag">${optionCount}</span><button class="btn btn-ghost" type="button" data-client-license-plan-compare>${ui.icon("arrow-right", "xs")}${isEnglish() ? "Compare plans" : "Comparar planes"}</button></div>
+      </section>`;
+    }
+    const optionsNote = context.hasPreviousPlan
+      ? "Retoma MAP-Nano con tu plan anterior o elige una alternativa."
+      : "Las solicitudes se revisan antes de emitir una licencia.";
+    return `<section class="client-map-nano-plan-choices" aria-labelledby="map-nano-plan-choices-title">
+      <div class="client-license-subsection-head"><div><span class="client-license-subsection-kicker">Planes disponibles</span><h3 id="map-nano-plan-choices-title">${context.hasPreviousPlan ? "Elige tu próximo plan" : "Elige tu plan"}</h3><p>${optionsNote}</p></div></div>
+      ${renderMapNanoPlanChoiceContent(context, optionsNote)}
+    </section>`;
+  }
+
+  function renderMapNanoPlanChoiceContent(context, optionsNote = "") {
+    const availablePlans = mapNanoPlans.PLANS.filter(plan => !context.activePlanIds.has(plan.id));
+    const note = optionsNote || (context.hasActivePlan
+      ? (isEnglish()
+        ? "Prices are for reference. We will send the scope and billing impact before applying the change."
+        : "Los precios son de referencia. Enviaremos el alcance y el impacto de facturación antes de aplicar el cambio.")
+      : (isEnglish() ? "Requests are reviewed before a license is issued." : "Las solicitudes se revisan antes de emitir una licencia."));
+    return `${renderBillingIntervalSelector(context.canManage, context.hasActivePlan)}
+      <div class="client-license-offer-grid client-map-nano-plan-grid">${availablePlans.map(plan => renderMapNanoPlanCard(plan, { canManage: context.canManage, activePlanIds: context.activePlanIds, hasLicense: context.hasActivePlan })).join("")}</div>
+      <div class="client-map-nano-plan-footnote"><p>${note}</p><a href="${isEnglish() ? "/en/map-nano-pricing.html" : "/map-nano-pricing.html"}">Comparar planes en detalle${ui.icon("arrow-right", "xs")}</a></div>
+      ${renderMapNanoProjectOption(context.canManage, context.hasActivePlan)}`;
+  }
+
+  function renderPlanComparisonLayer() {
+    const context = mapNanoPlanContext();
+    if (!context.hasActivePlan) return "";
+    return `<dialog class="workspace-layer is-drawer client-license-plan-layer" data-client-license-plan-layer aria-labelledby="client-license-plan-layer-title">
+      ${renderPlanComparisonPanel(context)}
+    </dialog>`;
+  }
+
+  function renderPlanComparisonPanel(context) {
+    const eyebrow = isEnglish() ? "License options" : "Opciones de licencia";
+    const title = isEnglish() ? "Change or expand MAP-Nano" : "Cambiar o ampliar MAP-Nano";
+    const description = isEnglish()
+      ? "Your current plan remains active while you review alternatives."
+      : "Tu plan actual permanece activo mientras revisas alternativas.";
+    return `<section class="workspace-layer-panel client-license-plan-panel">
+      <header class="workspace-layer-head"><div><span class="workspace-eyebrow">${eyebrow}</span><h2 id="client-license-plan-layer-title">${title}</h2><p>${description}</p></div>${closeLayerAction(isEnglish() ? "Close plan comparison" : "Cerrar comparación de planes")}</header>
+      <div class="workspace-layer-body">
+        ${renderMapNanoPlanChoiceContent(context)}
+      </div>
+    </section>`;
+  }
+
+  function refreshPlanComparisonLayer({ focusInterval = false } = {}) {
+    const dialog = root?.querySelector("[data-client-license-plan-layer]");
+    if (!dialog) return null;
+    dialog.innerHTML = renderPlanComparisonPanel(mapNanoPlanContext());
+    refreshIcons(dialog);
+    window.BCCWorkspaceI18n?.localizeTree?.(dialog);
+    if (focusInterval) dialog.querySelector(`[data-map-nano-billing-interval="${selectedBillingInterval}"]`)?.focus();
+    return dialog;
+  }
+
+  function renderBillingIntervalSelector(canManage, hasActivePlan = false) {
     if (!canManage || !billingConfig.checkoutEnabled || !billingAvailable) return "";
     const option = (value, esLabel, enLabel) => `<button type="button" role="radio" aria-checked="${selectedBillingInterval === value}" class="client-map-nano-billing-option ${selectedBillingInterval === value ? "is-selected" : ""}" data-map-nano-billing-interval="${value}">${isEnglish() ? enLabel : esLabel}</button>`;
-    return `<div class="client-map-nano-billing-selector"><div><strong>${isEnglish() ? "Billing period" : "Periodicidad"}</strong><span>${isEnglish() ? "14-day free trial. Card required; first charge after the trial." : "14 días de prueba. Tarjeta requerida; primer cobro al finalizar."}</span></div><div class="client-map-nano-billing-options" role="radiogroup" aria-label="${isEnglish() ? "Billing period" : "Periodicidad de facturación"}">${option("month", "Mensual", "Monthly")}${option("year", "Anual · recomendado", "Annual · recommended")}</div></div>`;
+    const description = hasActivePlan
+      ? (isEnglish() ? "Reference prices for available plans. We will confirm billing before applying a change." : "Precios de referencia para los planes disponibles. Confirmaremos la facturación antes de aplicar un cambio.")
+      : (isEnglish() ? "14-day free trial. Card required; first charge after the trial." : "14 días de prueba. Tarjeta requerida; primer cobro al finalizar.");
+    return `<div class="client-map-nano-billing-selector"><div><strong>${isEnglish() ? "View prices by period" : "Ver precios por periodo"}</strong><span>${description}</span></div><div class="client-map-nano-billing-options" role="radiogroup" aria-label="${isEnglish() ? "Billing period" : "Periodicidad de facturación"}">${option("month", "Mensual", "Monthly")}${option("year", "Anual · recomendado", "Annual · recommended")}</div></div>`;
   }
 
   function renderMapNanoPlanCard(plan, context) {
@@ -464,19 +628,23 @@
       : pending
         ? `<span class="client-map-nano-plan-pending">${isEnglish() ? `Request ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} since ${escapeHtml(formatDate(pending.created_at))}` : `Solicitud ${escapeHtml(commercialRequestStatus(pending).label.toLowerCase())} desde ${escapeHtml(formatDate(pending.created_at))}`}</span>`
         : context.canManage
-          ? canCheckoutPlan(plan)
-            ? ui.action({ label: trialAvailable() ? (isEnglish() ? "Start 14-day trial" : "Probar 14 días") : (isEnglish() ? "Subscribe securely" : "Contratar de forma segura"), icon: "circle-dollar-sign", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCheckout: plan.id } })
-            : ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
+          ? context.hasLicense
+            ? ui.action({ label: isEnglish() ? `Request change to ${plan.name}` : `Solicitar cambio a ${plan.name}`, icon: "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
+            : canCheckoutPlan(plan)
+              ? ui.action({ label: trialAvailable() ? (isEnglish() ? "Start 14-day trial" : "Probar 14 días") : (isEnglish() ? "Subscribe securely" : "Contratar de forma segura"), icon: "circle-dollar-sign", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCheckout: plan.id } })
+              : ui.action({ label: plan.cta.label, icon: plan.id === "institutional" ? "messages-square" : "arrow-up-right", className: plan.highlighted ? "btn btn-primary" : "btn btn-ghost", data: { mapNanoCommercialRequest: plan.id, mapNanoRequestType: requestType } })
           : ui.action({ label: "Contactar al administrador", href: `${contactPath()}?product=map-nano&intent=license`, icon: "headset", className: "btn btn-ghost" });
     const limitText = mapNanoLimitText(plan);
+    const kicker = plan.highlighted
+      ? (canCheckoutPlan(plan) ? (isEnglish() ? "Flexible license" : "Licencia flexible") : (isEnglish() ? "Annual licensing" : "Licenciamiento anual"))
+      : plan.badge || (canCheckoutPlan(plan) ? "Licencia flexible" : "Licenciamiento anual");
     return `<article class="client-license-offer-card client-map-nano-plan-card ${plan.highlighted ? "is-recommended" : ""} ${isCurrent ? "is-current" : ""}" aria-labelledby="map-nano-plan-${escapeHtml(plan.id)}">
-      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(plan.badge || (canCheckoutPlan(plan) ? "Licencia flexible" : "Licenciamiento anual"))}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
-      <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(checkoutPriceLabel(plan))}</strong><span>${escapeHtml(checkoutPriceNote(plan))}</span></div>
+      <div class="client-license-offer-card-head"><div class="client-license-offer-identity"><span class="client-license-offer-icon">${ui.icon(plan.id === "institutional" ? "building-2" : plan.id === "facility" ? "users" : "scan-line", "sm")}</span><div><span class="client-license-offer-kicker">${escapeHtml(kicker)}</span><h3 id="map-nano-plan-${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</h3></div></div><div class="client-license-offer-badges">${isCurrent ? '<span class="client-license-tag active">Plan contratado</span>' : ""}${plan.highlighted ? '<span class="client-license-recommended-badge">Recomendado</span>' : ""}</div></div>
+      <p>${escapeHtml(plan.description)}</p><div class="client-map-nano-plan-price"><strong>${escapeHtml(checkoutPriceLabel(plan))}</strong><span>${escapeHtml(checkoutPriceNote(plan, context.hasLicense))}</span></div>
       <p class="client-map-nano-plan-limits">${escapeHtml(limitText)}</p><ul class="client-license-offer-benefits">${plan.features.slice(0, 4).map(feature => `<li>${ui.icon("circle-check", "xs")}<span>${escapeHtml(feature)}</span></li>`).join("")}</ul>
       <footer>${action}${!context.canManage && !isCurrent ? '<small class="client-license-offer-assurance">Solo propietarios o administradores pueden solicitar cambios para una organización.</small>' : ""}</footer>
     </article>`;
   }
-
   function trialAvailable() {
     return !billingSubscriptions.some(subscription => Boolean(subscription.trial_end));
   }
@@ -485,8 +653,13 @@
     return canCheckoutPlan(plan) ? mapNanoPlans.intervalPriceLabel(plan, selectedBillingInterval) : mapNanoPlans.priceLabel(plan);
   }
 
-  function checkoutPriceNote(plan) {
+  function checkoutPriceNote(plan, hasActivePlan = false) {
     if (!canCheckoutPlan(plan)) return mapNanoPlans.monthlyLabel(plan);
+    if (hasActivePlan) {
+      return selectedBillingInterval === "month"
+        ? (isEnglish() ? "Monthly reference price" : "Precio mensual de referencia")
+        : (isEnglish() ? "Annual reference price" : "Precio anual de referencia");
+    }
     if (selectedBillingInterval === "month") return isEnglish() ? "14 days free · then billed monthly" : "14 días gratis · luego facturación mensual";
     const monthlyPrice = Number(plan.monthlyPrice);
     const annualPrice = Number(plan.annualPrice);
@@ -590,7 +763,7 @@
   }
 
   function renderAttention() {
-    const license = dashboard.licenses.map(toLicenseViewModel).find(item => item.needsAttention);
+    const license = contracts.attentionLicense(dashboard.licenses.map(toLicenseViewModel));
     if (!license) return "";
     const copy = license.status === "expiring"
       ? isEnglish()
@@ -621,47 +794,149 @@
 
   function renderSeatManagementPanel(selected) {
     const manageable = manageableLicenses();
-    const assignments = dashboard.assignments.filter(item => item.license_id === selected.license_id);
-    const assignedUsers = new Set(assignments.map(item => item.user_id));
-    const candidates = dashboard.members.filter(item => item.account_id === selected.account_id && !assignedUsers.has(item.user_id));
+    const state = seatManagement.licenseId === selected.license_id
+      ? seatManagement
+      : { ...emptySeatManagement(selected.license_id), loading: true, assignedSeats: selected.assignedSeats, seatLimit: selected.seatLimit };
+    const assignments = state.assignments;
+    const candidates = state.candidates;
+    const assignedSeats = state.seatLimit ? state.assignedSeats : selected.assignedSeats;
+    const seatLimit = state.seatLimit || selected.seatLimit;
+    const isFull = assignedSeats >= seatLimit;
+    const normalizedQuery = state.query.trim().toLowerCase();
+    const selectedCandidate = candidates.find(item => item.user_id === state.selectedUserId)
+      || candidates.find(item => String(item.email || "").toLowerCase() === normalizedQuery)
+      || null;
+    const controlsDisabled = state.loading || isFull || !selectedCandidate || busy;
+    const capacityLabel = isEnglish()
+      ? `${assignedSeats} of ${seatLimit} ${seatLimit === 1 ? "seat" : "seats"}`
+      : `${assignedSeats} de ${seatLimit} ${seatLimit === 1 ? "plaza" : "plazas"}`;
+    const candidateStatus = state.loading
+      ? "Buscando miembros…"
+      : selectedCandidate
+        ? isEnglish()
+          ? `Ready to assign ${selectedCandidate.display_name || selectedCandidate.email}.`
+          : `Listo para asignar a ${selectedCandidate.display_name || selectedCandidate.email}.`
+        : normalizedQuery
+          ? isEnglish()
+            ? `${state.candidateMatches} ${state.candidateMatches === 1 ? "member found" : "members found"}. Select an email from the suggestions.`
+            : `${state.candidateMatches} ${state.candidateMatches === 1 ? "miembro encontrado" : "miembros encontrados"}. Selecciona un correo de las sugerencias.`
+          : isEnglish()
+            ? "Enter a name or email and select a suggestion."
+            : "Escribe un nombre o correo y selecciona una sugerencia.";
+    const feedbackMessage = state.error || seatManagementFeedback.message;
+    const feedbackTone = state.error ? "error" : seatManagementFeedback.tone;
+    const hasReleasableAssignments = assignments.some(item => item.can_release && !item.is_evaluation && !item.is_mine) && assignedSeats > 1;
+    const assignmentHelp = hasReleasableAssignments
+      ? (isFull ? "Libera una plaza para habilitar una nueva asignación." : "Revisa y libera accesos que ya no se utilizan.")
+      : assignedSeats <= 1
+        ? "La plaza principal no puede liberarse sin asignar un reemplazo."
+        : "Tu plaza administradora está protegida; puedes gestionar las demás plazas.";
+    const assignmentSection = `<section class="client-license-layer-section" aria-labelledby="client-license-assigned-title">
+      <div class="client-license-card-head"><div><h3 id="client-license-assigned-title">Plazas asignadas</h3><p>${assignmentHelp}</p></div></div>
+      ${assignments.length ? `<div class="client-license-assignment-list">${assignments.map(item => renderAssignment(item, assignedSeats)).join("")}</div>` : state.loading ? '<div class="client-license-seat-loading">Cargando plazas asignadas…</div>' : ui.emptyState({
+        className: "client-license-empty is-compact",
+        icon: "users",
+        title: "No hay plazas asignadas.",
+        description: "Usa el buscador para activar el acceso de un miembro."
+      })}
+      ${state.assignmentMatches > assignments.length ? `<p class="client-license-result-limit">${isEnglish() ? `Showing ${assignments.length} of ${state.assignmentMatches} assignments.` : `Mostrando ${assignments.length} de ${state.assignmentMatches} asignaciones.`}</p>` : ""}
+    </section>`;
+    const assignmentForm = `<section class="client-license-assign-section" aria-labelledby="client-license-assign-title">
+      <div><h3 id="client-license-assign-title">Asignar una plaza</h3><p>Busca a una persona que ya pertenezca a esta organización.</p></div>
+      <form class="client-license-form" data-client-license-assign-form>
+        <input type="hidden" name="licenseId" value="${escapeHtml(selected.license_id)}">
+        <input type="hidden" name="userId" value="${escapeHtml(selectedCandidate?.user_id || "")}" data-client-license-selected-user>
+        <label>Miembro
+          <input type="search" name="memberQuery" list="client-license-candidate-options" value="${escapeHtml(state.query)}" placeholder="Nombre o correo" autocomplete="off" data-client-license-seat-search aria-describedby="client-license-seat-search-status">
+          <datalist id="client-license-candidate-options">${candidates.map(item => `<option value="${escapeHtml(item.email || item.display_name)}" label="${escapeHtml(item.display_name || item.email)}"></option>`).join("")}</datalist>
+        </label>
+        <p class="client-license-search-status" id="client-license-seat-search-status" aria-live="polite">${escapeHtml(candidateStatus)}</p>
+        ${state.candidateMatches > candidates.length ? `<p class="client-license-result-limit">${isEnglish() ? `Showing ${candidates.length} of ${state.candidateMatches} available members. Refine the search to see others.` : `Mostrando ${candidates.length} de ${state.candidateMatches} miembros disponibles. Refina la búsqueda para ver otros.`}</p>` : ""}
+        <button class="btn btn-primary" type="submit" data-client-license-control data-idle-disabled="${controlsDisabled ? "true" : "false"}" ${controlsDisabled ? "disabled" : ""}>Asignar plaza</button>
+      </form>
+      <p class="client-license-member-request">¿La persona no aparece? <a href="${contactPath()}?intent=member">Solicitar alta de miembro</a></p>
+    </section>`;
     return `<section class="workspace-layer-panel client-license-management-panel">
-      <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Administración</span><h2 id="client-license-management-title">Plazas de ${escapeHtml(productName(selected.product_key))}</h2><p>${escapeHtml(selected.account_name)} · ${isEnglish() ? `${assignments.length} of ${selected.seatLimit} seats assigned` : `${assignments.length} de ${selected.seatLimit} plazas asignadas`}</p></div>${closeLayerAction("Cerrar gestión de plazas")}</header>
+      <header class="workspace-layer-head client-license-management-head"><div><span class="workspace-eyebrow">Administración</span><h2 id="client-license-management-title">Plazas de ${escapeHtml(productName(selected.product_key))}</h2><p>${escapeHtml(selected.account_name)}</p><span class="client-license-capacity-chip" data-tone="${isFull ? "full" : "available"}">${escapeHtml(capacityLabel)}</span></div>${closeLayerAction("Cerrar gestión de plazas")}</header>
       <div class="workspace-layer-body">
         ${manageable.length > 1 ? `<label class="client-license-layer-select">Licencia
           <select data-client-license-select>${manageable.map(item => `<option value="${escapeHtml(item.license_id)}" ${item.license_id === selected.license_id ? "selected" : ""}>${escapeHtml(productName(item.product_key))} · ${escapeHtml(item.account_name)}</option>`).join("")}</select>
         </label>` : ""}
-        <form class="client-license-form" data-client-license-assign-form>
-          <input type="hidden" name="licenseId" value="${escapeHtml(selected.license_id)}">
-          <label>Asignar a un miembro
-            <select name="userId" data-client-license-control data-idle-disabled="${candidates.length ? "false" : "true"}" required ${candidates.length ? "" : "disabled"}>
-              ${candidates.length ? candidates.map(item => `<option value="${escapeHtml(item.user_id)}">${escapeHtml(item.display_name || item.email)} · ${escapeHtml(item.email)}</option>`).join("") : '<option value="">No hay miembros disponibles</option>'}
-            </select>
-          </label>
-          <button class="btn btn-primary" type="submit" data-client-license-control data-idle-disabled="${candidates.length ? "false" : "true"}" ${busy || !candidates.length ? "disabled" : ""}>Asignar plaza</button>
-        </form>
-        <section class="client-license-layer-section">
-          <div class="client-license-card-head"><div><h3>Plazas asignadas</h3><p>Libera accesos que ya no se utilizan.</p></div><span class="client-license-tag">${assignments.length} / ${selected.seatLimit}</span></div>
-          ${assignments.length ? `<div class="client-license-assignment-list">${assignments.map(renderAssignment).join("")}</div>` : ui.emptyState({
-            className: "client-license-empty is-compact",
-            icon: "users",
-            title: "No hay plazas asignadas.",
-            description: "Selecciona un miembro para activar su acceso."
-          })}
-        </section>
-        <a class="btn btn-ghost" href="${contactPath()}?intent=member">Solicitar un nuevo miembro</a>
+        ${feedbackMessage ? `<p class="client-license-seat-feedback" data-tone="${escapeHtml(feedbackTone)}" role="status" aria-live="polite">${escapeHtml(feedbackMessage)}</p>` : ""}
+        ${isFull ? `<aside class="client-license-capacity-notice">${ui.icon("info", "sm")}<span><strong>Licencia sin plazas disponibles.</strong> ${hasReleasableAssignments ? "Libera una plaza para asignar otro miembro." : "La plaza principal está protegida; amplía el plan para añadir otro miembro."}</span></aside>` : ""}
+        ${isFull ? assignmentSection : `${assignmentForm}${assignmentSection}`}
+        ${isFull ? `<a class="btn btn-ghost" href="${contactPath()}?intent=license">Necesito ampliar el número de plazas</a>` : ""}
       </div>
     </section>`;
   }
-
-  function refreshSeatManagementLayer({ focusSelect = false } = {}) {
+  function refreshSeatManagementLayer({ focusSelect = false, focusSearch = false } = {}) {
     const dialog = root?.querySelector("[data-client-license-management-layer]");
     const selected = selectedManageableLicense();
     if (!dialog || !selected) return;
     dialog.innerHTML = renderSeatManagementPanel(selected);
     refreshIcons(dialog);
+    window.BCCWorkspaceI18n?.localizeTree?.(dialog);
     if (focusSelect) dialog.querySelector("[data-client-license-select]")?.focus();
+    if (focusSearch) {
+      const search = dialog.querySelector("[data-client-license-seat-search]");
+      search?.focus();
+      search?.setSelectionRange(search.value.length, search.value.length);
+    }
   }
 
+  function setSeatManagementFeedback(message, tone = "neutral", { refresh = true } = {}) {
+    seatManagementFeedback = { message, tone };
+    if (refresh) refreshSeatManagementLayer();
+  }
+
+  async function loadSeatManagement({ query = seatManagement.query, focusSearch = false, focusSelect = false } = {}) {
+    const selected = selectedManageableLicense();
+    if (!selected) return;
+    const requestId = ++seatManagementRequestId;
+    const previous = seatManagement.licenseId === selected.license_id
+      ? seatManagement
+      : emptySeatManagement(selected.license_id, query);
+    seatManagement = {
+      ...previous,
+      licenseId: selected.license_id,
+      query,
+      loading: true,
+      error: "",
+      assignedSeats: previous.seatLimit ? previous.assignedSeats : selected.assignedSeats,
+      seatLimit: previous.seatLimit || selected.seatLimit
+    };
+    refreshSeatManagementLayer({ focusSearch, focusSelect });
+    try {
+      const payload = await repository.getSeatManagement(selected.license_id, query);
+      if (requestId !== seatManagementRequestId || selected.license_id !== selectedLicenseId) return;
+      const candidates = Array.isArray(payload?.candidates) ? payload.candidates : [];
+      const normalizedQuery = query.trim().toLowerCase();
+      const selectedUserId = candidates.some(item => item.user_id === previous.selectedUserId)
+        ? previous.selectedUserId
+        : candidates.find(item => String(item.email || "").toLowerCase() === normalizedQuery)?.user_id || "";
+      seatManagement = {
+        licenseId: selected.license_id,
+        query,
+        loading: false,
+        error: "",
+        assignedSeats: Number(payload?.assigned_seats) || 0,
+        seatLimit: Number(payload?.seat_limit) || selected.seatLimit,
+        assignmentMatches: Number(payload?.assignment_matches) || 0,
+        candidateMatches: Number(payload?.candidate_matches) || 0,
+        selectedUserId,
+        assignments: Array.isArray(payload?.assignments) ? payload.assignments : [],
+        candidates
+      };
+    } catch (error) {
+      if (requestId !== seatManagementRequestId) return;
+      seatManagement = {
+        ...seatManagement,
+        loading: false,
+        error: userMessage(error)
+      };
+    }
+    refreshSeatManagementLayer({ focusSearch, focusSelect });
+  }
   function renderCommercialRequestLayer() {
     if (selectedCommercialPlanId) return renderMapNanoCommercialRequestLayer();
     const key = contracts.PRODUCT_CATALOG[selectedRequestProductKey] ? selectedRequestProductKey : "map.nano";
@@ -760,25 +1035,43 @@
     return ui.action({ label, ariaLabel: label, icon: "x", iconOnly: true, className: "workspace-layer-close", data: { clientLicenseCloseLayer: true } });
   }
 
-  function renderAssignment(item) {
+  function renderAssignment(item, assignedSeats) {
+    const isProtected = item.is_mine || assignedSeats <= 1 || item.release_block_reason;
+    const canRelease = item.can_release && !item.is_evaluation && !isProtected;
+    const seatLabel = item.is_mine
+      ? (isEnglish() ? "You · primary seat" : "Tú · plaza principal")
+      : isProtected
+        ? (isEnglish() ? "Protected seat" : "Plaza protegida")
+        : "";
     return `<div class="client-license-assignment">
       <div><strong>${escapeHtml(item.display_name || item.email)}</strong><small>${escapeHtml(item.email)} · ${isEnglish() ? `assigned ${formatDate(item.assigned_at)}` : `asignada ${formatDate(item.assigned_at)}`}</small></div>
       <div class="client-license-assignment-actions">
-        ${item.is_mine ? '<span class="client-license-tag">Tú</span>' : ""}
-        ${item.can_release && !item.is_evaluation ? `<button class="btn btn-ghost btn-compact" type="button" data-client-license-release="${escapeHtml(item.assignment_id)}" data-client-license-control ${busy ? "disabled" : ""}>Liberar</button>` : ""}
+        ${seatLabel ? `<span class="client-license-tag">${escapeHtml(seatLabel)}</span>` : ""}
+        ${canRelease ? `<button class="btn btn-ghost btn-compact" type="button" data-client-license-release="${escapeHtml(item.assignment_id)}" data-client-license-control ${busy ? "disabled" : ""}>Liberar</button>` : ""}
       </div>
     </div>`;
   }
 
   function renderActivity() {
     if (!dashboard.recent_events.length) return "";
+    const latestActivity = [...dashboard.recent_events]
+      .map(event => event.occurred_at)
+      .filter(Boolean)
+      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0];
+    const activitySummary = latestActivity
+      ? (isEnglish()
+        ? `${dashboard.recent_events.length} movement(s) · latest ${formatDateTime(latestActivity)}`
+        : `${dashboard.recent_events.length} movimiento(s) · último ${formatDateTime(latestActivity)}`)
+      : (isEnglish()
+        ? `${dashboard.recent_events.length} seat movement(s)`
+        : `${dashboard.recent_events.length} movimiento(s) de plazas`);
     return `<details class="module-surface client-license-activity-disclosure">
-      <summary><span>${ui.icon("history", "sm")}<span><strong>Actividad reciente</strong><small>${dashboard.recent_events.length} movimiento(s) de plazas</small></span></span>${ui.icon("chevron-down", "sm")}</summary>
+      <summary><span>${ui.icon("history", "sm")}<span><strong>Actividad reciente</strong><small>${escapeHtml(activitySummary)}</small></span></span>${ui.icon("chevron-down", "sm")}</summary>
       <div class="client-license-activity-intro">Registro de asignaciones y liberaciones realizadas desde el autoservicio.</div>
       <div class="client-license-activity-list">${dashboard.recent_events.map(event => {
         const member = dashboard.members.find(item => item.user_id === event.subject_user_id);
         const isCurrentUser = event.subject_user_id === currentUser?.id;
-        const subject = member?.display_name || (isCurrentUser ? "Tu usuario" : "Usuario de la cuenta");
+        const subject = event.subject_name || member?.display_name || event.subject_email || (isCurrentUser ? "Tu usuario" : "Usuario de la cuenta");
         const action = event.event_type === "seat_assigned" ? "Plaza asignada" : "Plaza liberada";
         return `<div class="client-license-activity-item"><div><strong>${action}</strong><small>${escapeHtml(subject)} · ${escapeHtml(productName(event.details?.product_key))}</small></div><time datetime="${escapeHtml(event.occurred_at || "")}">${formatDateTime(event.occurred_at)}</time></div>`;
       }).join("")}</div>
@@ -789,7 +1082,31 @@
     const select = event.target.closest("[data-client-license-select]");
     if (!select) return;
     selectedLicenseId = select.value;
-    refreshSeatManagementLayer({ focusSelect: true });
+    seatManagement = emptySeatManagement(selectedLicenseId);
+    seatManagementFeedback = emptySeatManagementFeedback();
+    void loadSeatManagement({ focusSelect: true });
+  }
+
+  function handleInput(event) {
+    const search = event.target.closest("[data-client-license-seat-search]");
+    if (!search) return;
+    window.clearTimeout(seatSearchTimer);
+    const query = search.value;
+    const normalizedQuery = query.trim().toLowerCase();
+    const selectedCandidate = seatManagement.candidates.find(item => String(item.email || "").toLowerCase() === normalizedQuery) || null;
+    seatManagement = { ...seatManagement, query, selectedUserId: selectedCandidate?.user_id || "" };
+    seatManagementFeedback = emptySeatManagementFeedback();
+    const form = search.closest("[data-client-license-assign-form]");
+    const selectedUser = form?.querySelector("[data-client-license-selected-user]");
+    const submit = form?.querySelector('[type="submit"]');
+    if (selectedUser) selectedUser.value = selectedCandidate?.user_id || "";
+    if (submit) {
+      submit.disabled = !selectedCandidate || busy;
+      submit.dataset.idleDisabled = selectedCandidate ? "false" : "true";
+    }
+    seatSearchTimer = window.setTimeout(() => {
+      void loadSeatManagement({ query, focusSearch: true });
+    }, 250);
   }
 
   async function handleSubmit(event) {
@@ -803,15 +1120,26 @@
     if (!form) return;
     event.preventDefault();
     const values = Object.fromEntries(new FormData(form));
-    if (!values.licenseId || !values.userId || busy) return;
+    if (!values.licenseId || busy) return;
+    if (!values.userId) {
+      setSeatManagementFeedback("Selecciona un correo de las sugerencias antes de asignar la plaza.", "error");
+      refreshSeatManagementLayer({ focusSearch: true });
+      return;
+    }
+    if (seatManagement.licenseId === values.licenseId && seatManagement.assignedSeats >= seatManagement.seatLimit) {
+      setSeatManagementFeedback("Esta licencia ya no tiene plazas disponibles.", "error");
+      return;
+    }
     setBusy(true);
-    setMessage("Asignando la plaza...");
+    setSeatManagementFeedback("Asignando la plaza…", "neutral");
     try {
       await repository.assignSeat(values.licenseId, values.userId);
       await reloadDashboardData("La plaza fue asignada correctamente.");
+      await loadSeatManagement({ query: "" });
+      setSeatManagementFeedback("La plaza fue asignada correctamente.", "ok");
     } catch (error) {
       setBusy(false);
-      setMessage(userMessage(error), "error");
+      setSeatManagementFeedback(userMessage(error), "error");
     }
   }
 
@@ -851,16 +1179,37 @@
       activateSuiteProduct(suiteTab.dataset.clientSuiteProduct, { focus: true });
       return;
     }
+    const disclosureSummary = event.target.closest(".client-license-secondary-disclosure > summary, .client-license-activity-disclosure > summary");
+    if (disclosureSummary) {
+      const disclosure = disclosureSummary.parentElement;
+      if (!disclosure.open) {
+        root.querySelectorAll(".client-license-secondary-disclosure[open], .client-license-activity-disclosure[open]").forEach(item => {
+          if (item !== disclosure) item.open = false;
+        });
+      }
+      return;
+    }
     const closeButton = event.target.closest("[data-client-license-close-layer]");
     if (closeButton) {
       ui.closeLayer(closeButton.closest("dialog"));
       return;
     }
+    const planCompareButton = event.target.closest("[data-client-license-plan-compare]");
+    if (planCompareButton) {
+      const dialog = root.querySelector("[data-client-license-plan-layer]");
+      ui.openLayer(dialog, { trigger: planCompareButton });
+      return;
+    }
     const manageButton = event.target.closest("[data-client-license-manage]");
     if (manageButton) {
       selectedLicenseId = manageButton.dataset.clientLicenseManage;
+      seatManagement = emptySeatManagement(selectedLicenseId);
+      seatManagementFeedback = emptySeatManagementFeedback();
       refreshSeatManagementLayer();
-      ui.openLayer(root.querySelector("[data-client-license-management-layer]"), { trigger: manageButton });
+      const dialog = root.querySelector("[data-client-license-management-layer]");
+      const search = dialog?.querySelector("[data-client-license-seat-search]");
+      ui.openLayer(dialog, search ? { trigger: manageButton, focusTarget: search } : { trigger: manageButton });
+      void loadSeatManagement({ focusSearch: Boolean(search) });
       return;
     }
     const requestButton = event.target.closest("[data-client-license-request]");
@@ -881,7 +1230,11 @@
     const billingIntervalButton = event.target.closest("[data-map-nano-billing-interval]");
     if (billingIntervalButton && !busy) {
       selectedBillingInterval = billingIntervalButton.dataset.mapNanoBillingInterval === "month" ? "month" : "year";
-      render();
+      if (billingIntervalButton.closest("[data-client-license-plan-layer]")) {
+        refreshPlanComparisonLayer({ focusInterval: true });
+      } else {
+        render();
+      }
       return;
     }
     const billingPortalButton = event.target.closest("[data-map-nano-billing-portal]");
@@ -902,6 +1255,13 @@
     const checkoutButton = event.target.closest("[data-map-nano-checkout]");
     if (checkoutButton && !busy) {
       const planId = checkoutButton.dataset.mapNanoCheckout;
+      const planContext = mapNanoPlanContext();
+      if (planContext.hasActivePlan) {
+        setMessage(isEnglish()
+          ? "Your current license remains active. Use the plan-change request to avoid creating a second subscription."
+          : "Tu licencia actual permanece activa. Usa la solicitud de cambio para evitar crear una segunda suscripción.", "error");
+        return;
+      }
       const plan = mapNanoPlans.planById(planId);
       if (!plan || !canCheckoutPlan(plan)) {
         setMessage("El checkout seguro todav\u00eda no est\u00e1 disponible para este plan.", "error");
@@ -946,8 +1306,13 @@
             ? "contact_sales_clicked"
             : "quote_requested";
       trackCommercialPlan(eventName, { planId: selectedCommercialPlanId, requestType });
+      const planDialog = commercialRequestButton.closest("[data-client-license-plan-layer]");
+      const requestTrigger = planDialog?.open
+        ? root.querySelector("[data-client-license-plan-compare]")
+        : commercialRequestButton;
+      if (planDialog?.open) ui.closeLayer(planDialog);
       const dialog = refreshCommercialRequestLayer();
-      ui.openLayer(dialog, { trigger: commercialRequestButton });
+      ui.openLayer(dialog, { trigger: requestTrigger || commercialRequestButton });
       return;
     }
     const cancelCommercialRequestButton = event.target.closest("[data-map-nano-commercial-cancel]");
@@ -978,13 +1343,15 @@
     });
     if (!confirmed) return;
     setBusy(true);
-    setMessage("Liberando la plaza...");
+    setSeatManagementFeedback("Liberando la plaza…", "neutral");
     try {
       await repository.releaseSeat(releaseButton.dataset.clientLicenseRelease);
       await reloadDashboardData("La plaza fue liberada correctamente.");
+      await loadSeatManagement({ query: "" });
+      setSeatManagementFeedback("La plaza fue liberada correctamente.", "ok");
     } catch (error) {
       setBusy(false);
-      setMessage(userMessage(error), "error");
+      setSeatManagementFeedback(userMessage(error), "error");
     }
   }
 
@@ -1107,11 +1474,11 @@
   }
 
   function productName(key) {
-    return contracts.productName(key);
+    return contracts.productName(key).replace(/^MAP (Nano|Bio|Med)$/u, "MAP-$1");
   }
 
   function toLicenseViewModel(license) {
-    return contracts.toLicenseViewModel(license);
+    return contracts.toLicenseViewModel(license, Date.now(), billingSubscriptionForLicense(license));
   }
 
   function formatDate(value) {

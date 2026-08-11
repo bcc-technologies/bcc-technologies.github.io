@@ -468,12 +468,12 @@ window.BCC_PRODUCTS_CONTENT = {
         "actions": [
           {
             "label": "Ver producto",
-            "href": "/product_maps.html",
+            "href": "/product_maps.html#map-bio",
             "variant": "dark"
           },
           {
             "label": "Ficha rapida",
-            "href": "/product_maps.html",
+            "href": "/product_maps.html#map-bio",
             "variant": "ghost",
             "detailId": "map-bio"
           }
@@ -1103,12 +1103,12 @@ window.BCC_PRODUCTS_CONTENT = {
         "actions": [
           {
             "label": "View product",
-            "href": "/en/product_maps.html",
+            "href": "/en/product_maps.html#map-bio",
             "variant": "dark"
           },
           {
             "label": "Quick view",
-            "href": "/en/product_maps.html",
+            "href": "/en/product_maps.html#map-bio",
             "variant": "ghost",
             "detailId": "map-bio"
           }

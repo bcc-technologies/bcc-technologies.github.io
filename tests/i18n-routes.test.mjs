@@ -211,14 +211,16 @@ test("English staff workspace covers static, deferred, operational, and error co
   assert.match(translated, /ordered for human review/);
 });
 
-test("MAP platform CTAs use localized contact context rather than dead links or self-loops", () => {
+test("MAP platform destinations are localized, concrete, and commercial-context aware", () => {
   const spanish = read("product_maps.html");
   const english = read("en/product_maps.html");
   const contactContext = read("js/contact-context.js");
 
   [spanish, english].forEach(page => {
     assert.doesNotMatch(page, /contactUs-demo=1/);
-    assert.doesNotMatch(page, /product_maps(?:\.html)?#map-(?:bio|ing|med)/);
+    assert.match(page, /id="map-bio"/);
+    assert.match(page, /id="map-ing"/);
+    assert.match(page, /id="map-med"/);
   });
   assert.match(spanish, /href="\/contactUs\.html\?product=map-nano&amp;intent=evaluation&amp;license_type=evaluation">Solicitar evaluación<\/a>/);
   assert.match(english, /href="\/en\/contactUs\.html\?product=map-nano&amp;intent=evaluation&amp;license_type=evaluation">Request an evaluation<\/a>/);
@@ -250,6 +252,7 @@ test("MAP license catalogs, states, links, and dynamic workspace copy are native
   assert.equal(contracts.productCatalog("map.nano").productHref, "/en/product_maps_nano.html");
   assert.equal(contracts.productCatalog("map.bio").requestHref, "/en/contactUs.html?product=map-bio&intent=license");
   assert.equal(contracts.toLicenseViewModel({ product_key: "map.nano", license_status: "active" }).statusMeta.label, "Active");
+  assert.equal(contracts.toLicenseViewModel({ product_key: "map.nano", license_status: "expired" }, Date.now(), { status: "canceled" }).statusMeta.label, "Cancelled");
   assert.equal(contracts.platformAccessLabel("platform.licenses.manage"), "License management");
   assert.match(renderedCopy, /No active access/);
   assert.match(renderedCopy, /MAP-Nano plans/);
@@ -290,4 +293,27 @@ test("MAP-Nano English copy covers comparison capabilities and every FAQ", () =>
   assert.match(translated, /remains in beta while we continue refining it/);
   assert.match(translated, /Can Facility and Institutional be purchased directly\?/);
   assert.doesNotMatch(translated, /Tamaño, distribución|¿La licencia se factura|¿Los datos permanecen privados|¿MAP-Nano reemplaza toda/);
+});
+
+test("MAP-Nano public pages keep locale, SEO, and sitemap contracts", () => {
+  const spanish = read("product_maps_nano.html");
+  const english = read("en/product_maps_nano.html");
+  const sitemap = read("sitemap.xml");
+
+  assert.match(spanish, /<html lang="es">/);
+  assert.match(spanish, /<meta name="description"/);
+  assert.match(spanish, /Análisis reproducible para imágenes/);
+  assert.match(spanish, /"url":"https:\/\/bcctechnologies\.com\.do\/product_maps_nano\.html"/);
+  assert.doesNotMatch(spanish, /href="\.\//);
+  assert.match(english, /<meta name="description"/);
+  assert.match(english, /Local deployment remains in beta/);
+  assert.match(english, /"url":"https:\/\/bcctechnologies\.com\.do\/en\/product_maps_nano\.html"/);
+  [
+    "https://bcctechnologies.com.do/product_maps.html",
+    "https://bcctechnologies.com.do/en/product_maps.html",
+    "https://bcctechnologies.com.do/product_maps_nano.html",
+    "https://bcctechnologies.com.do/en/product_maps_nano.html",
+    "https://bcctechnologies.com.do/map-nano-pricing.html",
+    "https://bcctechnologies.com.do/en/map-nano-pricing.html"
+  ].forEach(url => assert.ok(sitemap.includes(url), `Missing sitemap URL: ${url}`));
 });

@@ -23,7 +23,7 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
   const calls = [];
   const window = runtime(async name => {
     calls.push(name);
-    if (name === "get_my_license_dashboard") {
+    if (name === "get_my_license_overview") {
       return { data: { licenses: [{ product_key: "map.nano" }], members: null }, error: null };
     }
     if (name === "get_my_platform_access") {
@@ -43,7 +43,7 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
 
   const result = await window.BCCWorkspaceMapRepository.client.getDashboard();
   assert.deepEqual(calls, [
-    "get_my_license_dashboard",
+    "get_my_license_overview",
     "get_my_platform_access",
     "get_my_internal_entitlements",
     "get_current_map_trial_offer",
@@ -164,4 +164,52 @@ test("MAP commercial catalog exposes honest, reusable purchase metadata", () => 
     assert.match(product.requestHref, /intent=license/);
     assert.doesNotMatch(JSON.stringify(product), /(?:price|precio|checkout)/i);
   }
+});
+
+test("MAP license attention distinguishes cancellation from expiry and ignores replaced access", () => {
+  const window = runtime(async () => ({ data: null, error: null }));
+  const contracts = window.BCCWorkspaceMapContracts;
+  const now = Date.parse("2026-08-11T12:00:00Z");
+  const cancelled = contracts.toLicenseViewModel({
+    license_id: "license-cancelled",
+    account_id: "account-a",
+    product_key: "map.nano",
+    license_status: "expired",
+    ends_at: "2026-08-01T12:00:00Z"
+  }, now, { status: "canceled" });
+  const expired = contracts.toLicenseViewModel({
+    license_id: "license-expired",
+    account_id: "account-a",
+    product_key: "map.nano",
+    license_status: "expired"
+  }, now);
+  const suspended = contracts.toLicenseViewModel({
+    license_id: "license-suspended",
+    account_id: "account-a",
+    product_key: "map.nano",
+    license_status: "suspended"
+  }, now);
+  const active = contracts.toLicenseViewModel({
+    license_id: "license-active",
+    account_id: "account-a",
+    product_key: "map.nano",
+    license_status: "active"
+  }, now);
+  const expiring = contracts.toLicenseViewModel({
+    license_id: "license-expiring",
+    account_id: "account-a",
+    product_key: "map.nano",
+    license_status: "active",
+    ends_at: "2026-08-21T12:00:00Z"
+  }, now);
+
+  assert.equal(cancelled.status, "cancelled");
+  assert.equal(cancelled.statusMeta.label, "Cancelada");
+  assert.equal(cancelled.needsAttention, false);
+  assert.equal(expired.needsAttention, false);
+  assert.equal(contracts.attentionLicense([suspended, active]), null);
+  assert.equal(contracts.attentionLicense([suspended, expiring]).license_id, "license-expiring");
+
+  const activeElsewhere = { ...active, license_id: "license-other-account", account_id: "account-b" };
+  assert.equal(contracts.attentionLicense([suspended, activeElsewhere]).license_id, "license-suspended");
 });

@@ -96,6 +96,31 @@ test("client MAP dashboard keeps product and licenses in one compact product-led
   assert.match(source, /client-map-nano-project-mark/);
   assert.match(source, /client-map-nano-plan-footnote/);
   assert.match(source, /Comparar planes en detalle/);
+  assert.match(source, /function renderLastProductAccess/);
+  assert.ok(source.includes('contracts.attentionLicense(dashboard.licenses.map(toLicenseViewModel))'));
+  assert.ok(source.includes('currentLicenses.length ? "" : renderLastProductAccess'));
+  assert.ok(source.includes('mapNanoPlans.PLANS.filter(plan => !context.activePlanIds.has(plan.id))'));
+  assert.match(source, /client-map-nano-plan-launch/);
+  assert.match(source, /data-client-license-plan-compare/);
+  assert.match(source, /client-license-plan-layer/);
+  assert.match(source, /function renderPlanComparisonLayer/);
+  assert.match(source, /function refreshPlanComparisonLayer/);
+  assert.doesNotMatch(source, /client-map-nano-plan-disclosure/);
+  assert.match(source, /Solicitar cambio a \$\{plan\.name\}/);
+  assert.match(source, /evitar crear una segunda suscripción/);
+  assert.match(source, /client-map-nano-open-requests/);
+  assert.match(source, /client-map-nano-request-history/);
+  assert.ok(source.includes('renderMapNanoCommercialRequestItems(commercialRequests, Infinity)'));
+  const optionsStart = source.indexOf('function renderMapNanoCommercialOptions');
+  const hierarchy = [
+    source.indexOf('renderMapNanoOpenCommercialRequests()', optionsStart),
+    source.indexOf('renderMapNanoPlanChoices(context)', optionsStart),
+    source.indexOf('renderMapNanoCommercialRequestHistory()', optionsStart)
+  ];
+  assert.ok(optionsStart >= 0 && hierarchy.every(position => position >= 0));
+  assert.ok(hierarchy[0] < hierarchy[1] && hierarchy[1] < hierarchy[2]);
+  assert.match(styles, /dialog\.client-license-plan-layer\{[^}]*760px/);
+  assert.match(styles, /\.client-license-plan-panel \.client-map-nano-plan-grid\{[^}]*repeat\(2/);
   assert.match(styles, /\.client-map-nano-project-option:hover\{/);
   assert.match(styles, /\.client-map-nano-project-mark\{/);
   assert.match(styles, /\.client-map-nano-plan-footnote\{/);

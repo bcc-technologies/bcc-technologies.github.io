@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,8 @@
     })();
   </script>
 
-<title>BCC Technologies</title>
+<title>Plataforma MAPs | Análisis de imágenes científicas - BCC Technologies</title>
+    <meta name="description" content="MAPs convierte imágenes de microscopía en métricas reproducibles para materiales, biología e ingeniería. Conoce MAP-Nano y los programas MAP por proyecto.">
     <link rel="stylesheet" href="css/00-tokens.css">
     <link rel="stylesheet" href="css/01-base.css">
     <link rel="stylesheet" href="css/02-layout.css">
@@ -23,42 +24,7 @@
     <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
     <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
     <link rel="stylesheet" href="css/pages/product_maps.css">
-
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" crossorigin="crossorigin" as="font">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    
-    <!-- JavaScript for menu toggle and Shopify integration -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Shopify integration
-        const client = ShopifyBuy.buildClient({
-            domain: '2e2e5e-7c.myshopify.com',
-            storefrontAccessToken: 'a791b0c74fab70851230df08048bc7dc'
-        });
-
-        function updateServices(products) {
-            const servicesContainer = document.querySelector('.services-container');
-            servicesContainer.innerHTML = products.slice(0, 3).map(product => `
-                <div class="service-card">
-                    <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
-                    <h3>${product.title}</h3>
-                    <p>${product.description}</p>
-                </div>
-            `).join('');
-        }
-
-        client.product.fetchAll()
-            .then(updateServices)
-            .catch(error => {
-                console.error('Error fetching Shopify products:', error);
-                // Fallback to original content if there's an error
-            });
-    });
-    </script>
-  <script src="js/layout.js" defer></script>
+    <script src="js/layout.js" defer></script>
   <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
   <link rel="alternate" hreflang="es" href="/product_maps.html">
@@ -119,7 +85,7 @@
             </p>
             <div class="hero-cta">
             <a class="btn btn-dark" href="#platform">Explorar plataforma</a>
-            <a class="btn btn-ghost" href="/product_maps_nano">Probar MAP-Nano</a>
+            <a class="btn btn-ghost" href="/product_maps_nano.html">Conocer MAP-Nano</a>
             </div>
             <p class="meta">Compatible con SEM/óptica · Segmentación robusta · Rugosidad, porosidad y morfología</p>
         </div>
@@ -138,7 +104,7 @@
         <h2>Soluciones por sector</h2>
         <p class="lead">Elija su área para ver casos de uso, flujos y resultados medibles.</p>
         <div class="grid-4 cards">
-            <a class="card" href="/products#nano">
+            <a class="card" href="/product_maps_nano.html">
             <div class="card-thumb">
                 <!-- Imagen que se estira para adaptarse a las dimensiones del card-thumb-->
                  <img src="static/particles.jpg" alt="Nanotecnología" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
@@ -147,7 +113,7 @@
             <div class="card-text">Caracterización cuantitativa de superficies y partículas.</div>
             <div class="card-link">Ver casos de uso →</div>
             </a>
-            <a class="card" href="/products#bio">
+            <a class="card" href="#map-bio">
             <div class="card-thumb">
                 <img src="static/spores.jpeg" alt="coming soon" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -155,7 +121,7 @@
             <div class="card-text">Detección de núcleos, conteo celular, viabilidad.</div>
             <div class="card-link">Ver casos de uso →</div>
             </a>
-            <a class="card" href="/products#ing">
+            <a class="card" href="#map-ing">
             <div class="card-thumb">
                 <img src="static/hormigon.jpg" alt="Ingeniería" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -163,7 +129,7 @@
             <div class="card-text">Rugosidad, porosidad, defectos y control de calidad.</div>
             <div class="card-link">Ver casos de uso →</div>
             </a>
-            <a class="card" href="/products#med">
+            <a class="card" href="#map-med">
             <div class="card-thumb">
                 <img src="static/blood_cells.webp" alt="Medicina" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -188,45 +154,49 @@
             <li>Pipelines configurables (umbral, morfología, texturas, shape fitting)</li>
             <li>Métricas: distribución (Weibull/Gauss), rugosidad, porosidad y contorno</li>
             <li>Exportación: reportes PDF/CSV, API y dashboards</li>
-            <li>Multiplataforma (desktop & web), control de versiones y auditoría</li>
+            <li>Flujos web o de escritorio según el entorno y alcance acordados</li>
             </ul>
             <div class="row-cta">
             <a class="btn btn-dark" href="/contactUs.html?product=map-nano&amp;intent=demo">Agendar demo</a>
-            <a class="btn btn-ghost" href="/blog">Ver documentación</a>
+            <a class="btn btn-ghost" href="/blog.html">Ver recursos</a>
             </div>
         </div>
         <div>
             <div class="panel">
             <div class="panel-title">Componentes de la plataforma</div>
             <div class="grid-2 cards cards-tight">
-                <a class="card" href="/product_maps_nano">
+                <a class="card" href="/product_maps_nano.html">
                 <div class="card-thumb sm">
                  <img src="static/map_nano_logo.png" alt="MAP-Nano" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge badge--accent">Piloto aplicado</span>
                 <div class="card-title">MAP-Nano</div>
                 <div class="card-text">Análisis de micro-estructuras y superficies.</div>
                 <div class="card-link">Ver producto →</div>
                 </a>
-                <a class="card" href="/contactUs.html?product=map-bio&amp;intent=demo">
+                <a class="card" id="map-bio" href="/contactUs.html?product=map-bio&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="static/map_bio_logo.png" alt="MAP-Bio" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">Piloto aplicado</span>
                 <div class="card-title">MAP-Bio</div>
                 <div class="card-text">Conteo/detección celular y morfología.</div>
                 <div class="card-link">Consultar MAP-Bio →</div>
                 </a>
-                <a class="card" href="/contactUs.html?product=map-ing&amp;intent=demo">
+                <a class="card" id="map-ing" href="/contactUs.html?product=map-ing&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="static/map_ing_logo.png" alt="MAP-Ing" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">Disponible por proyecto</span>
                 <div class="card-title">MAP-Ing</div>
                 <div class="card-text">Porosidad, defectos y control de calidad.</div>
                 <div class="card-link">Consultar MAP-Ing →</div>
                 </a>
-                <a class="card" href="/contactUs.html?product=map-med&amp;intent=demo">
+                <a class="card" id="map-med" href="/contactUs.html?product=map-med&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="static/map_med_logo.png" alt="MAP-Med" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">I+D</span>
                 <div class="card-title">MAP-Med</div>
                 <div class="card-text">Asistentes a imagen clínica (R&D).</div>
                 <div class="card-link">Consultar MAP-Med →</div>
@@ -279,31 +249,31 @@
             <h2>Recursos</h2>
             <p class="lead">Aprenda con guías, webinars y notas de lanzamiento.</p>
             </div>
-            <a class="btn btn-ghost" href="/blog">Ver todos</a>
+            <a class="btn btn-ghost" href="/blog.html">Ver todos</a>
         </div>
         <div class="grid-3 cards">
-            <a class="card" href="/blog">
+            <a class="card" href="/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">Próximamente</div>
             </div>
             <div class="card-title">Guía rápida de MAP-Nano</div>
             <div class="card-text">PDF • 8 min de lectura</div>
             <div class="card-link">Abrir →</div>
             </a>
-            <a class="card" href="/blog">
+            <a class="card" href="/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">Próximamente</div>
             </div>
             <div class="card-title">Webinar: Porosidad práctica</div>
             <div class="card-text">Video • 24 min</div>
             <div class="card-link">Abrir →</div>
             </a>
-            <a class="card" href="/blog">
+            <a class="card" href="/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/blog" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">Próximamente</div>
             </div>
-            <div class="card-title">Notas de versión 2025-Q3</div>
-            <div class="card-text">Changelog • Plataforma BCC</div>
+            <div class="card-title">Actualizaciones de MAPs</div>
+            <div class="card-text">Próximamente • Plataforma MAPs</div>
             <div class="card-link">Abrir →</div>
             </a>
         </div>
@@ -353,7 +323,7 @@
       <div class="footer-brand">
         <strong>BCC Technologies</strong>
         <span>Santo Domingo, DR</span>
-        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+        <span class="footer-copy">&copy; 2026 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
         <a class="footer-contact" href="/contactUs.html">Contacto</a>
