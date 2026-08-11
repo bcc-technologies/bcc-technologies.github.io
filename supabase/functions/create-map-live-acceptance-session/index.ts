@@ -21,10 +21,13 @@ type CheckoutContext = {
   account_id: string;
   plan_key: string;
   stripe_price_id: string;
+  recurring_interval: "month";
   stripe_customer_id?: string | null;
 };
 
-const ACCEPTANCE_SCOPE = "map.nano.live.zero";
+const ACCEPTANCE_SCOPE = "map.nano.live.zero.recurring";
+const ACCEPTANCE_BILLING_INTERVAL = "month";
+const COUPON_LIST_LIMIT = 100;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 function acceptanceUserIds(): Set<string> {
@@ -34,6 +37,59 @@ function acceptanceUserIds(): Set<string> {
       .map(value => value.trim().toLowerCase())
       .filter(Boolean)
   );
+}
+
+function couponMatches(coupon: Stripe.Coupon, productId: string, now: number): boolean {
+  const eligibleProducts = coupon.applies_to?.products || [];
+  return coupon.livemode
+    && coupon.valid
+    && coupon.percent_off === 100
+    && coupon.duration === "forever"
+    && coupon.max_redemptions === 1
+    && coupon.times_redeemed === 0
+    && typeof coupon.redeem_by === "number"
+    && coupon.redeem_by > now
+    && coupon.metadata.acceptance_scope === ACCEPTANCE_SCOPE
+    && eligibleProducts.includes(productId);
+}
+
+async function acceptanceCoupon(
+  stripe: Stripe,
+  productId: string,
+  requestId: string,
+  now: number
+): Promise<Stripe.Coupon> {
+  const coupons = await stripe.coupons.list({ limit: COUPON_LIST_LIMIT });
+  if (coupons.has_more) {
+    throw new HttpError(409, "The live acceptance coupon catalog is ambiguous");
+  }
+  const eligibleCoupons = coupons.data.filter(coupon => couponMatches(coupon, productId, now));
+  if (eligibleCoupons.length > 1) {
+    throw new HttpError(409, "Multiple live acceptance coupons are active");
+  }
+  if (eligibleCoupons.length === 1) return eligibleCoupons[0];
+
+  return stripe.coupons.create({
+    id: `map_nano_live_acceptance_${requestId}`,
+    name: "MAP-Nano Essential internal acceptance",
+    percent_off: 100,
+    duration: "forever",
+    max_redemptions: 1,
+    redeem_by: now + (48 * 60 * 60),
+    applies_to: { products: [productId] },
+    metadata: {
+      acceptance_scope: ACCEPTANCE_SCOPE,
+      purpose: "internal_live_acceptance",
+      billing_interval: ACCEPTANCE_BILLING_INTERVAL,
+      acceptance_request_id: requestId
+    }
+  }, { idempotencyKey: `map-live-acceptance-coupon-${requestId}` });
+}
+
+function integrationIdentifier(requestId: string): string {
+  const suffix = requestId.replace(/-/g, "").slice(0, 8)
+    .split("").map(value => String.fromCharCode(97 + Number.parseInt(value, 16))).join("");
+  return `map_live_acceptance_${suffix}`;
 }
 
 Deno.serve(async request => {
@@ -56,6 +112,7 @@ Deno.serve(async request => {
       p_actor_id: user.id,
       p_account_id: input.accountId || null,
       p_plan_key: "essential",
+      p_billing_interval: ACCEPTANCE_BILLING_INTERVAL,
       p_livemode: true
     });
     if (error) throw error;
@@ -63,31 +120,11 @@ Deno.serve(async request => {
     if (context.plan_key !== "essential") throw new HttpError(409, "Acceptance plan mismatch");
 
     const stripe = stripeClient();
-    const [coupon, price] = await Promise.all([
-      stripe.coupons.retrieve(
-        requiredEnv("STRIPE_LIVE_ACCEPTANCE_COUPON_ID"),
-        { expand: ["applies_to"] }
-      ),
-      stripe.prices.retrieve(context.stripe_price_id)
-    ]);
+    const price = await stripe.prices.retrieve(context.stripe_price_id);
     const productId = expandableId(price.product);
-    const eligibleProducts = coupon.applies_to?.products || [];
+    if (!price.livemode || !productId) throw new HttpError(409, "Acceptance Price is not a live Stripe product");
     const now = Math.floor(Date.now() / 1000);
-    const couponMatches = coupon.livemode
-      && price.livemode
-      && coupon.valid
-      && coupon.percent_off === 100
-      && coupon.duration === "once"
-      && coupon.max_redemptions === 1
-      && coupon.times_redeemed === 0
-      && typeof coupon.redeem_by === "number"
-      && coupon.redeem_by > now
-      && coupon.metadata.acceptance_scope === ACCEPTANCE_SCOPE
-      && Boolean(productId)
-      && eligibleProducts.includes(productId as string);
-    if (!couponMatches) {
-      throw new HttpError(409, "The live acceptance coupon is invalid, expired, consumed, or mismatched");
-    }
+    const coupon = await acceptanceCoupon(stripe, productId, requestId, now);
 
     let customerId = context.stripe_customer_id || null;
     if (!customerId) {
@@ -114,14 +151,17 @@ Deno.serve(async request => {
     const metadata = {
       map_account_id: context.account_id,
       commercial_plan_key: "essential",
+      billing_interval: context.recurring_interval,
       purchaser_user_id: user.id,
-      billing_acceptance_test: "true"
+      billing_acceptance_test: "true",
+      billing_acceptance_discount: "forever"
     };
     const baseUrl = siteUrl();
     let session: Stripe.Checkout.Session;
     try {
       session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      integration_identifier: integrationIdentifier(requestId),
       customer: customerId,
       client_reference_id: context.account_id,
       line_items: [{ price: context.stripe_price_id, quantity: 1 }],
@@ -151,7 +191,13 @@ Deno.serve(async request => {
     }
 
     if (!session.url) throw new Error("Stripe Checkout did not return a hosted URL");
-    return jsonResponse(request, { url: session.url, sessionId: session.id, amountDue: 0 });
+    return jsonResponse(request, {
+      url: session.url,
+      sessionId: session.id,
+      amountDue: 0,
+      billingInterval: context.recurring_interval,
+      discountDuration: coupon.duration
+    });
   } catch (error) {
     return errorResponse(request, error);
   }
