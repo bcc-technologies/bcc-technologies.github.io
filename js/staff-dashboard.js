@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   runWorkspaceStep("semántica de pestañas", enhanceWorkspaceTabs);
   runWorkspaceStep("simulador de acceso", () => bindAdminViewSimulator(user));
   runWorkspaceStep("perfil", () => window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser }));
+  runWorkspaceStep("seguridad", () => window.BCCWorkspaceAccount?.bindSecurityManager());
   runWorkspaceStep("permisos", () => window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   }));

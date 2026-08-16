@@ -55,7 +55,14 @@ export function siteUrl(): string {
 }
 
 function allowedOrigins(): Set<string> {
-  const origins = new Set<string>([new URL(siteUrl()).origin]);
+  const siteOrigin = new URL(siteUrl());
+  const origins = new Set<string>([siteOrigin.origin]);
+  if (siteOrigin.protocol === "https:" && siteOrigin.hostname.includes(".")) {
+    const hostname = siteOrigin.hostname.startsWith("www.")
+      ? siteOrigin.hostname.slice(4)
+      : `www.${siteOrigin.hostname}`;
+    origins.add(new URL(`${siteOrigin.protocol}//${hostname}${siteOrigin.port ? `:${siteOrigin.port}` : ""}`).origin);
+  }
   for (const value of (Deno.env.get("BCC_BILLING_ALLOWED_ORIGINS") || "").split(",")) {
     const origin = value.trim();
     if (origin) origins.add(new URL(origin).origin);
@@ -63,20 +70,35 @@ function allowedOrigins(): Set<string> {
   return origins;
 }
 
+function isLocalDevelopmentOrigin(origin: string): boolean {
+  try {
+    const parsed = new URL(origin);
+    return (parsed.protocol === "http:" || parsed.protocol === "https:")
+      && ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedOrigin(origin: string): boolean {
+  return allowedOrigins().has(origin) || isLocalDevelopmentOrigin(origin);
+}
+
 export function corsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("Origin");
-  const allowOrigin = origin && allowedOrigins().has(origin) ? origin : new URL(siteUrl()).origin;
+  const allowOrigin = origin && isAllowedOrigin(origin) ? origin : new URL(siteUrl()).origin;
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "3600",
     "Vary": "Origin"
   };
 }
 
 export function assertAllowedOrigin(request: Request): void {
   const origin = request.headers.get("Origin");
-  if (origin && !allowedOrigins().has(origin)) throw new HttpError(403, "Origin not allowed");
+  if (origin && !isAllowedOrigin(origin)) throw new HttpError(403, "Origin not allowed");
 }
 
 export function jsonResponse(request: Request, body: unknown, status = 200): Response {
@@ -84,9 +106,16 @@ export function jsonResponse(request: Request, body: unknown, status = 200): Res
 }
 
 export function optionsResponse(request: Request): Response {
+  const origin = request.headers.get("Origin");
+  if (origin && !isAllowedOrigin(origin)) {
+    console.warn("[map-billing] Blocked CORS preflight", {
+      origin,
+      requestedHeaders: request.headers.get("Access-Control-Request-Headers") || ""
+    });
+    return new Response("Origin not allowed", { status: 403, headers: corsHeaders(request) });
+  }
   return new Response("ok", { headers: corsHeaders(request) });
 }
-
 export class HttpError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);

@@ -10,6 +10,16 @@ const BLOG_ES_DIR = path.join(ROOT, "blog");
 const BLOG_EN_DIR = path.join(ROOT, "en", "blog");
 const GENERATED_MARKER = "BCC-GENERATED: supabase-cms-post";
 const SITE_ORIGIN = process.env.BCC_SITE_ORIGIN || "https://bcctechnologies.com.do";
+const MAP_PUBLIC_SITEMAP_ROUTES = Object.freeze([
+  "/products.html",
+  "/en/products.html",
+  "/product_maps.html",
+  "/en/product_maps.html",
+  "/product_maps_nano.html",
+  "/en/product_maps_nano.html",
+  "/map-nano-pricing.html",
+  "/en/map-nano-pricing.html"
+]);
 const CMS_POST_COLUMNS = [
   "id",
   "title",
@@ -325,8 +335,19 @@ function listHtmlFiles(dir, publicPrefix) {
     });
 }
 
+function listPublicMapPages() {
+  return MAP_PUBLIC_SITEMAP_ROUTES.flatMap(route => {
+    const sourcePath = path.join(ROOT, route.slice(1));
+    if (!fs.existsSync(sourcePath)) return [];
+    return [{
+      loc: absoluteUrl(route),
+      lastmod: fs.statSync(sourcePath).mtime.toISOString().slice(0, 10)
+    }];
+  });
+}
 function writeSitemap() {
   const urls = [
+    ...listPublicMapPages(),
     { loc: absoluteUrl("/blog.html"), lastmod: new Date().toISOString().slice(0, 10) },
     { loc: absoluteUrl("/en/blog.html"), lastmod: new Date().toISOString().slice(0, 10) },
     ...listHtmlFiles(BLOG_ES_DIR, "/blog"),

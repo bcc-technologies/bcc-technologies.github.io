@@ -66,6 +66,9 @@ test("Checkout and Portal require an authenticated actor and keep Stripe secrets
   assert.match(shared, /admin\.auth\.getUser\(token\)/);
   assert.match(shared, /STRIPE_MODE must be test or live/);
   assert.match(shared, /STRIPE_SECRET_KEY does not match STRIPE_MODE/);
+  assert.match(shared, /isLocalDevelopmentOrigin/);
+  assert.match(shared, /Access-Control-Max-Age/);
+  assert.match(shared, /Blocked CORS preflight/);
   assert.match(checkout, /get_map_checkout_context/);
   assert.match(checkout, /mode: "subscription"/);
   assert.match(checkout, /subscription_data/);
@@ -82,12 +85,11 @@ test("Checkout and Portal require an authenticated actor and keep Stripe secrets
   assert.match(portal, /shortening_interval/);
   assert.match(portal, /default_allowed_updates: \["price"\]/);
   assert.match(portal, /configuration: configuration\.id/);
-  for (const priceId of [
-    "price_1U2eO361z0I4dYgKCrV0KcHo",
-    "price_1U2MPQ61z0I4dYgK2XuYLB8N",
-    "price_1U2eOC61z0I4dYgKxmosZL0C",
-    "price_1U2MQ961z0I4dYgKjWKx8ZXl"
-  ]) assert.match(portal, new RegExp(priceId));
+  assert.match(portal, /from\("billing_price_catalog"\)/);
+  assert.match(portal, /license_plans!inner\(product_key, commercial_key\)/);
+  assert.match(portal, /stripe\.prices\.list\(\{ lookup_keys: lookupKeys/);
+  assert.doesNotMatch(portal, /price_[A-Za-z0-9]{12,}/);
+  assert.doesNotMatch(portal, /prod_[A-Za-z0-9]{12,}/);
   assert.match(repository, /supabase\.functions\.invoke/);
   assert.doesNotMatch(`${repository}\n${clientConfig}`, /sk_(?:test|live)_/);
   assert.match(clientConfig, /checkoutEnabled: true/);

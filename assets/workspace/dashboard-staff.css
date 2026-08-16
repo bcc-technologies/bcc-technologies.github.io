@@ -1110,6 +1110,18 @@ footer{
   display: none !important;
 }
 
+.workspace-shell .sr-only{
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .workspace{
   --workspace-sidebar-width: 208px;
   --workspace-chrome-bg: var(--surface-solid);
@@ -4104,6 +4116,70 @@ body.workspace-refined .workspace > .workspace-sidebar{
   opacity: .48;
 }
 
+.account-security-form{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, var(--surface-muted));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-solid) 94%, var(--surface-muted));
+}
+
+.account-security-form > :first-child,
+.account-security-form label:first-of-type,
+.account-security-form .account-password-requirements{
+  grid-column: 1 / -1;
+}
+
+.account-security-form .auth-message{
+  margin: 0 0 2px;
+}
+
+.account-password-requirements{
+  margin: -2px 0 0;
+  color: var(--ink-muted);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+
+.account-security-form .btn{
+  justify-self: start;
+}
+
+.account-session-control{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.account-session-control strong{
+  color: var(--ink-strong);
+  font-size: .86rem;
+}
+
+.account-session-control p{
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.account-session-control > .auth-message{
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.account-session-control .btn:disabled,
+.account-security-form .btn:disabled{
+  cursor: wait;
+  opacity: .55;
+}
+
 @media (max-width: 1120px){
   .account-settings-layout{
     grid-template-columns: 1fr;
@@ -4128,6 +4204,15 @@ body.workspace-refined .workspace > .workspace-sidebar{
 
   .account-email-disclosure summary small{
     display: none;
+  }
+
+  .account-security-form,
+  .account-session-control{
+    grid-template-columns: 1fr;
+  }
+
+  .account-session-control .btn{
+    justify-self: start;
   }
 }
 

@@ -8,13 +8,13 @@
   <link rel="icon" type="image/png" href="/static/favicon-tab-complete-16.png?v=tab-complete-20260729" sizes="16x16" />
   <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
   <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
-  <link rel="stylesheet" href="assets/workspace/dashboard-staff.css?v=25f3f7f5532b810c">
+  <link rel="stylesheet" href="assets/workspace/dashboard-staff.css?v=797fc0576068f042">
   <link rel="alternate" hreflang="es" href="/staff-dashboard.html" />
   <link rel="canonical" href="/en/staff-dashboard.html" />
   <link rel="alternate" hreflang="en" href="/en/staff-dashboard.html" />
   <meta name="bcc-lang-targets" content="es,en" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8" defer data-bcc-supabase-js="true"></script>
-  <script src="assets/workspace/dashboard-staff.js?v=f3dda3ea7aa29acf" defer></script>
+  <script src="assets/workspace/dashboard-staff.js?v=2a623fe424124640" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined staff-workspace">
   <div class="workspace">
@@ -189,6 +189,39 @@
                   </label>
                   <button class="btn btn-ghost" type="submit">Confirmar correo</button>
                 </form>
+              </article>
+              <article class="module-surface account-security-section">
+                <div class="module-head">
+                  <div>
+                    <h2>Seguridad</h2>
+                    <p>Actualiza la contraseña central que utilizas para acceder a BCC y MAP.</p>
+                  </div>
+                </div>
+                <form class="profile-form account-security-form" data-password-change-form>
+                  <p class="auth-message" data-password-change-message hidden></p>
+                  <label>
+                    Contraseña actual
+                    <input type="password" name="currentPassword" autocomplete="current-password" required />
+                  </label>
+                  <label>
+                    Nueva contraseña
+                    <input type="password" name="password" autocomplete="new-password" required />
+                  </label>
+                  <label>
+                    Confirmar nueva contraseña
+                    <input type="password" name="confirmPassword" autocomplete="new-password" required />
+                  </label>
+                  <p class="account-password-requirements">Mínimo 8 caracteres, con mayúscula, minúscula y un símbolo.</p>
+                  <button class="btn btn-primary" type="submit">Actualizar contraseña</button>
+                </form>
+                <div class="account-session-control">
+                  <div>
+                    <strong>Otras sesiones</strong>
+                    <p>Cierra el acceso en otros navegadores y dispositivos sin salir de esta sesión.</p>
+                  </div>
+                  <button class="btn btn-ghost" type="button" data-signout-other-sessions>Cerrar otras sesiones</button>
+                  <p class="auth-message" data-session-message hidden></p>
+                </div>
               </article>
             </section>
             <aside class="account-rail">

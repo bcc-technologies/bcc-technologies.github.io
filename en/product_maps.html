@@ -15,6 +15,7 @@
   </script>
 
 <title>MAPs Platform - BCC Technologies</title>
+    <meta name="description" content="MAPs turns microscopy into reproducible metrics for materials, biology, and engineering. Explore MAP-Nano and project-based MAP programs.">
     <link rel="stylesheet" href="/css/00-tokens.css">
     <link rel="stylesheet" href="/css/01-base.css">
     <link rel="stylesheet" href="/css/02-layout.css">
@@ -23,42 +24,7 @@
     <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
     <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
     <link rel="stylesheet" href="/css/pages/product_maps.css">
-
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" crossorigin="crossorigin" as="font">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Shopify Buy SDK -->
-    <script src="https://sdks.shopifycdn.com/js-buy-sdk/v2/latest/index.umd.min.js"></script>
-    
-    <!-- JavaScript for menu toggle and Shopify integration -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Shopify integration
-        const client = ShopifyBuy.buildClient({
-            domain: '2e2e5e-7c.myshopify.com',
-            storefrontAccessToken: 'a791b0c74fab70851230df08048bc7dc'
-        });
-
-        function updateServices(products) {
-            const servicesContainer = document.querySelector('.services-container');
-            servicesContainer.innerHTML = products.slice(0, 3).map(product => `
-                <div class="service-card">
-                    <h2><img src="${product.images[0].src}" alt="${product.title}"></h2>
-                    <h3>${product.title}</h3>
-                    <p>${product.description}</p>
-                </div>
-            `).join('');
-        }
-
-        client.product.fetchAll()
-            .then(updateServices)
-            .catch(error => {
-                console.error('Error fetching Shopify products:', error);
-                // Fallback to original content if there's an error
-            });
-    });
-    </script>
-  <script src="/js/layout.js" defer></script>
+    <script src="/js/layout.js" defer></script>
   <script src="/js/nav.js" defer></script>
   <script src="/js/prefs.js" defer></script>
   <link rel="alternate" hreflang="en" href="/en/product_maps.html">
@@ -138,7 +104,7 @@
         <h2>Solutions by sector</h2>
         <p class="lead">Choose your area to see use cases, workflows, and measurable outcomes.</p>
         <div class="grid-4 cards">
-            <a class="card" href="/en/products.html#nano">
+            <a class="card" href="/en/product_maps_nano.html">
             <div class="card-thumb">
                 <!-- Image stretches to fit the card-thumb dimensions -->
                  <img src="/static/particles.jpg" alt="Nanotechnology" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
@@ -147,7 +113,7 @@
             <div class="card-text">Quantitative characterization of surfaces and particles.</div>
             <div class="card-link">See use cases -></div>
             </a>
-            <a class="card" href="/en/products.html#bio">
+            <a class="card" href="#map-bio">
             <div class="card-thumb">
                 <img src="/static/spores.jpeg" alt="coming soon" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -155,7 +121,7 @@
             <div class="card-text">Nuclei detection, cell counting, viability.</div>
             <div class="card-link">See use cases -></div>
             </a>
-            <a class="card" href="/en/products.html#ing">
+            <a class="card" href="#map-ing">
             <div class="card-thumb">
                 <img src="/static/hormigon.jpg" alt="Engineering" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -163,7 +129,7 @@
             <div class="card-text">Roughness, porosity, defects, and quality control.</div>
             <div class="card-link">See use cases -></div>
             </a>
-            <a class="card" href="/en/products.html#med">
+            <a class="card" href="#map-med">
             <div class="card-thumb">
                 <img src="/static/blood_cells.webp" alt="Medicine" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />
             </div>
@@ -188,11 +154,11 @@
             <li>Configurable pipelines (threshold, morphology, textures, shape fitting)</li>
             <li>Metrics: distributions (Weibull/Gaussian), roughness, porosity, and contour</li>
             <li>Exports: PDF/CSV reports, API, and dashboards</li>
-            <li>Cross-platform (desktop & web), version control, and audit trail</li>
+            <li>Web or desktop workflows according to the agreed environment and scope</li>
             </ul>
             <div class="row-cta">
             <a class="btn btn-dark" href="/en/contactUs.html?product=map-nano&amp;intent=demo">Schedule a demo</a>
-            <a class="btn btn-ghost" href="/en/blog.html">View documentation</a>
+            <a class="btn btn-ghost" href="/en/blog.html">View resources</a>
             </div>
         </div>
         <div>
@@ -203,30 +169,34 @@
                 <div class="card-thumb sm">
                  <img src="/static/map_nano_logo.png" alt="MAP-Nano" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge badge--accent">Applied pilot</span>
                 <div class="card-title">MAP-Nano</div>
                 <div class="card-text">Microstructure and surface analysis.</div>
                 <div class="card-link">View product -></div>
                 </a>
-                <a class="card" href="/en/contactUs.html?product=map-bio&amp;intent=demo">
+                <a class="card" id="map-bio" href="/en/contactUs.html?product=map-bio&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="/static/map_bio_logo.png" alt="MAP-Bio" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">Applied pilot</span>
                 <div class="card-title">MAP-Bio</div>
                 <div class="card-text">Cell counting/detection and morphology.</div>
                 <div class="card-link">Discuss MAP-Bio -></div>
                 </a>
-                <a class="card" href="/en/contactUs.html?product=map-ing&amp;intent=demo">
+                <a class="card" id="map-ing" href="/en/contactUs.html?product=map-ing&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="/static/map_ing_logo.png" alt="MAP-Ing" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">Project-based</span>
                 <div class="card-title">MAP-Ing</div>
                 <div class="card-text">Porosity, defects, and quality control.</div>
                 <div class="card-link">Discuss MAP-Ing -></div>
                 </a>
-                <a class="card" href="/en/contactUs.html?product=map-med&amp;intent=demo">
+                <a class="card" id="map-med" href="/en/contactUs.html?product=map-med&amp;intent=demo">
                 <div class="card-thumb sm">
                     <img src="/static/map_med_logo.png" alt="MAP-Med" style="width:100%; height:100%; object-fit:contain;" />
                 </div>
+                <span class="badge">R&amp;D</span>
                 <div class="card-title">MAP-Med</div>
                 <div class="card-text">Clinical imaging assistants (R&D).</div>
                 <div class="card-link">Discuss MAP-Med -></div>
@@ -284,27 +254,27 @@
         <div class="grid-3 cards">
             <a class="card" href="/en/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">In preparation</div>
             </div>
-            <div class="card-title">MAP-Nano quick guide</div>
-            <div class="card-text">PDF - 8 min read</div>
-            <div class="card-link">Open -></div>
+            <div class="card-title">MAP-Nano guides</div>
+            <div class="card-text">Not yet published</div>
+            <div class="card-link">See blog -></div>
             </a>
             <a class="card" href="/en/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">In preparation</div>
             </div>
-            <div class="card-title">Webinar: Practical porosity</div>
-            <div class="card-text">Video - 24 min</div>
-            <div class="card-link">Open -></div>
+            <div class="card-title">MAPs webinars</div>
+            <div class="card-text">Not yet published</div>
+            <div class="card-link">See blog -></div>
             </a>
             <a class="card" href="/en/blog.html">
             <div class="card-thumb">
-                <img alt="Proximamente" href="/en/blog.html" style="width:100%; height:100%; object-fit:cover; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); font-weight:600; border:1px solid var(--line);"></img>
+                <div class="resource-placeholder">In preparation</div>
             </div>
-            <div class="card-title">Release notes 2025-Q3</div>
-            <div class="card-text">Changelog - BCC Platform</div>
-            <div class="card-link">Open -></div>
+            <div class="card-title">MAPs updates</div>
+            <div class="card-text">Not yet published</div>
+            <div class="card-link">See blog -></div>
             </a>
         </div>
         </div>
@@ -353,7 +323,7 @@
       <div class="footer-brand">
         <strong>BCC Technologies</strong>
         <span>Santo Domingo, DR</span>
-        <span class="footer-copy">&copy; 2024 BCC Tech. Est. 2020.</span>
+        <span class="footer-copy">&copy; 2026 BCC Tech. Est. 2020.</span>
       </div>
       <div class="footer-links">
         <a class="footer-contact" href="/en/contactUs.html">Contact</a>

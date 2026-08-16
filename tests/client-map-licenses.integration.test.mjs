@@ -25,7 +25,7 @@ test("client license module uses the shared MAP repository boundary", async () =
     read("js/workspace/map-repository.js")
   ]);
 
-  assert.match(repository, /rpc\("get_my_license_dashboard"\)/);
+  assert.match(repository, /rpc\("get_my_license_overview"\)/);
   assert.match(repository, /rpc\("get_my_platform_access"\)/);
   assert.match(repository, /rpc\("get_my_internal_entitlements"\)/);
   assert.match(repository, /rpc\("get_current_map_trial_offer"\)/);
@@ -82,6 +82,76 @@ test("client license module uses the shared MAP repository boundary", async () =
   assert.doesNotMatch(repository, /service[_-]?role/i);
 });
 
+test("license capabilities render human labels instead of internal access keys", async () => {
+  const [source, contracts] = await Promise.all([
+    read("js/workspace/client-map-licenses.js"),
+    read("js/workspace/map-contracts.js")
+  ]);
+
+  assert.match(source, /platformAccessLabel\(capability\.access_key\)/);
+  assert.match(contracts, /"map\.nano\.analysis\.basic": "Análisis esencial MAP-Nano"/);
+  assert.match(contracts, /"map\.nano\.pipelines\.reuse": "Pipelines reutilizables"/);
+  assert.match(contracts, /"map\.nano\.analysis\.basic": "Essential MAP-Nano analysis"/);
+});
+
+test("seat management is scoped, searchable, capacity-aware, and lifecycle-safe", async () => {
+  const [source, repository, sql] = await Promise.all([
+    read("js/workspace/client-map-licenses.js"),
+    read("js/workspace/map-repository.js"),
+    read("supabase/migrations/20260811154725_optimize_license_seat_management.sql")
+  ]);
+
+  assert.match(repository, /rpc\("get_my_license_seat_management"/);
+  assert.match(repository, /p_limit: 50/);
+  assert.match(source, /data-client-license-seat-search/);
+  assert.match(source, /list="client-license-candidate-options"/);
+  assert.match(source, /data-client-license-selected-user/);
+  assert.match(source, /client-license-seat-feedback/);
+  assert.match(source, /isFull \? assignmentSection/);
+  assert.match(source, /focusTarget: search/);
+  assert.match(source, /function setSeatManagementFeedback/);
+  assert.match(source, /function loadSeatManagement/);
+  assert.match(source, /assignedSeats >= seatLimit/);
+  assert.match(source, /seatManagement\.assignedSeats >= seatManagement\.seatLimit/);
+  assert.match(source, /window\.setTimeout\([\s\S]*250/);
+  assert.match(sql, /private\.release_noncurrent_license_assignments/);
+  assert.match(sql, /for update of assignment skip locked/i);
+  assert.match(sql, /release_license_assignments_on_lifecycle_change/);
+  assert.match(sql, /cron\.schedule\([\s\S]*map-license-assignment-lifecycle/i);
+  assert.doesNotMatch(sql, /(?:insert|update|delete)\s+(?:into\s+|from\s+)?cron\.job/i);
+  assert.match(sql, /private\.get_my_license_seat_management/);
+  assert.match(sql, /member_role in \('owner', 'admin'\)/i);
+  assert.match(sql, /least\(greatest\(coalesce\(p_limit, 50\), 1\), 100\)/i);
+  assert.match(sql, /'members', '\[\]'::jsonb/);
+  assert.match(sql, /'assignments', '\[\]'::jsonb/);
+  assert.match(sql, /subject_name/);
+  const seatFunctionSql = sql.slice(sql.indexOf("create or replace function private.get_my_license_seat_management"));
+  const assignmentPayloadSql = seatFunctionSql.slice(seatFunctionSql.indexOf("'assignments'"), seatFunctionSql.indexOf("'candidates'"));
+  assert.doesNotMatch(assignmentPayloadSql, /search_term/);
+
+  assert.match(sql, /revoke all on function public\.get_my_license_seat_management/);
+  assert.match(sql, /grant execute on function public\.get_my_license_seat_management[\s\S]*to authenticated, service_role/i);
+});
+
+test("seat management hides icon labels and protects the manager and final seat", async () => {
+  const [source, coreStyles, sql] = await Promise.all([
+    read("js/workspace/client-map-licenses.js"),
+    read("css/workspace/workspace-core.css"),
+    read("supabase/migrations/20260811154725_optimize_license_seat_management.sql")
+  ]);
+
+  assert.match(coreStyles, /\.workspace-shell \.sr-only[\s\S]*clip: rect\(0, 0, 0, 0\)/);
+  assert.match(source, /item\.is_mine \|\| assignedSeats <= 1 \|\| item\.release_block_reason/);
+  assert.match(source, /item\.can_release && !item\.is_evaluation && !isProtected/);
+  assert.match(source, /Tú · plaza principal/);
+  assert.match(source, /La plaza principal no puede liberarse sin asignar un reemplazo/);
+
+  assert.match(sql, /'can_release', assigned_seats > 1 and page\.user_id <> current_user_id/);
+  assert.match(sql, /'release_block_reason'[\s\S]*'last_assignment'[\s\S]*'manager_self_release'/);
+  assert.match(sql, /for update of assignment, license/i);
+  assert.match(sql, /active_assignment_count <= 1[\s\S]*The only active seat cannot be released/i);
+  assert.match(sql, /target_user_id = current_user_id and actor_is_manager[\s\S]*cannot release their own seat without transferring management/i);
+});
 test("client license migration preserves least privilege", async () => {
   const sql = await read("supabase/migrations/20260715044124_client_license_self_service.sql");
 

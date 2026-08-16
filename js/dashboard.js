@@ -5,7 +5,7 @@ const customerFeatureRegistry = window.BCCWorkspaceFeatureRegistry;
 customerFeatureRegistry.register("client");
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const user = await window.BCCAuth.requireAuth({ roles: ["client"] });
+  const user = await window.BCCAuth.requireAuth({ roles: ["client", "staff"] });
   if (!user) return;
 
   customerCurrentUser = user;
@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.BCCWorkspaceAccount?.hydrateAccountMenu(user, { roleLabel: window.BCCWorkspaceUtils.roleLabel });
   bindCustomerWorkspaceRouter();
   window.BCCWorkspaceAccount?.hydrateProfileForm(user, { onUserUpdate: updateAccountUser });
+  window.BCCWorkspaceAccount?.bindSecurityManager();
   window.BCCWorkspaceAccount?.renderPermissions(user, {
     permissionLabel: permission => window.BCCWorkspaceUtils.permissionLabel(permission)
   });
