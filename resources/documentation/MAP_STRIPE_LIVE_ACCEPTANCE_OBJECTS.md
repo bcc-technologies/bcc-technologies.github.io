@@ -2,6 +2,19 @@
 
 Recorded: 2026-08-09 UTC.
 
+**Superseded.** The `Rotate MAP live acceptance coupons safely` and
+`Keep MAP acceptance coupon IDs bounded` changes (2026-08-11) removed
+`STRIPE_LIVE_ACCEPTANCE_COUPON_ID` and made `create-map-live-acceptance-session`
+find-or-create its own Coupon by metadata (`acceptance_scope=map.nano.live.zero.recurring`,
+`duration=forever`) instead of reading a single pre-provisioned Coupon ID. The
+Coupon recorded below used the retired `acceptance_scope=map.nano.live.zero` /
+`duration=once` shape and its `redeem_by` has passed, so the current matcher
+in `create-map-live-acceptance-session` ignores it — it is inert, kept only
+for audit history, and should not be reused, extended, or treated as
+operational guidance. See
+[`MAP_STRIPE_LIVE_ACCEPTANCE.md`](MAP_STRIPE_LIVE_ACCEPTANCE.md) for the
+current flow.
+
 | Object | Value |
 | --- | --- |
 | Coupon ID | `map_nano_live_acceptance_202608` |

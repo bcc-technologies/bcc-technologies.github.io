@@ -26,20 +26,30 @@
     }
   }
 
+  // error.code === "invalid_response" is the reliable signal: map-contracts.js
+  // sets it from PostgREST's own PGRST error codes, not from message text. The
+  // message regex below is only a fallback for the rare case that code gets
+  // lost in transit, so it must stay tied to PostgREST's fixed "missing
+  // function" wording (RPC name + "schema cache" together) rather than the
+  // bare word "function", which a real business-rule exception could also
+  // contain and would otherwise be silently swallowed as "not deployed yet".
+  function isMissingRpc(error, rpcName) {
+    if (error?.code === "invalid_response") return true;
+    const message = error?.message || "";
+    return new RegExp(`${rpcName}[\\s\\S]*schema cache`, "i").test(message);
+  }
+
   async function getTrialOffer() {
     try {
       return contracts.normalizeTrialOffer(await rpc("get_current_map_trial_offer"));
     } catch (error) {
-      if (error?.code === "invalid_response" || /get_current_map_trial_offer|schema cache|function/i.test(error?.message || "")) {
-        return contracts.TRIAL_OFFER_FALLBACK;
-      }
+      if (isMissingRpc(error, "get_current_map_trial_offer")) return contracts.TRIAL_OFFER_FALLBACK;
       throw error;
     }
   }
 
   function isMissingCommercialRequestRpc(error) {
-    return error?.code === "invalid_response"
-      || /map_nano_commercial_request|schema cache|function/i.test(error?.message || "");
+    return isMissingRpc(error, "map_nano_commercial_request");
   }
 
   async function getCommercialRequests() {
@@ -71,9 +81,7 @@
       const rows = await rpc("get_my_map_billing_dashboard");
       return { available: true, subscriptions: contracts.rows(rows) };
     } catch (error) {
-      if (error?.code === "invalid_response" || /get_my_map_billing_dashboard|schema cache|function/i.test(error?.message || "")) {
-        return { available: false, subscriptions: [] };
-      }
+      if (isMissingRpc(error, "get_my_map_billing_dashboard")) return { available: false, subscriptions: [] };
       throw error;
     }
   }

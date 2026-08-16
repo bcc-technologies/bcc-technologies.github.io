@@ -1,4 +1,5 @@
 import Stripe from "npm:stripe@22.1.1";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.110.8";
 import {
   adminClient,
   assertAllowedOrigin,
@@ -14,25 +15,55 @@ import {
 } from "../_shared/map-billing.ts";
 
 type PortalRequest = { accountId?: string | null };
+type PortalProductGroup = { product: string; prices: string[] };
 
 const MANAGED_PORTAL_METADATA = {
   managed_by: "bcc-maps-billing",
-  product_key: "map.nano",
-  catalog_version: "2026-08"
+  product_key: "map.nano"
 };
 
-const MAP_NANO_PORTAL_PRODUCTS = [
-  {
-    product: "prod_V2RHI0sFqf2G8D",
-    prices: ["price_1U2eO361z0I4dYgKCrV0KcHo", "price_1U2MPQ61z0I4dYgK2XuYLB8N"]
-  },
-  {
-    product: "prod_V2RIFgAK1iL6NV",
-    prices: ["price_1U2eOC61z0I4dYgKxmosZL0C", "price_1U2MQ961z0I4dYgKjWKx8ZXl"]
-  }
-] as const;
+// Reads the same billing_price_catalog table that Checkout uses instead of
+// hardcoding Stripe Product/Price IDs here, so a price rotation only ever
+// needs a migration, not a matching Edge Function edit.
+async function loadPortalProducts(
+  admin: SupabaseClient,
+  stripe: Stripe,
+  livemode: boolean
+): Promise<PortalProductGroup[]> {
+  const { data, error } = await admin
+    .from("billing_price_catalog")
+    .select("lookup_key, license_plans!inner(product_key, commercial_key)")
+    .eq("livemode", livemode)
+    .eq("active", true)
+    .eq("license_plans.product_key", "map.nano")
+    .in("license_plans.commercial_key", ["essential", "professional"]);
+  if (error) throw error;
 
-function portalConfigurationParams(baseUrl: string): Stripe.BillingPortal.ConfigurationCreateParams {
+  const lookupKeys = (data ?? [])
+    .map(row => row.lookup_key)
+    .filter((key): key is string => Boolean(key));
+  if (lookupKeys.length === 0) {
+    throw new Error("No active MAP-Nano Stripe prices are configured for the billing portal");
+  }
+
+  const prices = await stripe.prices.list({ lookup_keys: lookupKeys, active: true, limit: 100 });
+  const grouped = new Map<string, Set<string>>();
+  for (const price of prices.data) {
+    const productId = typeof price.product === "string" ? price.product : price.product.id;
+    if (!grouped.has(productId)) grouped.set(productId, new Set());
+    grouped.get(productId)!.add(price.id);
+  }
+  if (grouped.size === 0) {
+    throw new Error("Stripe returned no MAP-Nano prices for the billing portal");
+  }
+
+  return [...grouped.entries()].map(([product, priceIds]) => ({ product, prices: [...priceIds] }));
+}
+
+function portalConfigurationParams(
+  baseUrl: string,
+  products: PortalProductGroup[]
+): Stripe.BillingPortal.ConfigurationCreateParams {
   return {
     name: "BCC MAP-Nano self-service",
     default_return_url: `${baseUrl}/dashboard.html?module=licenses`,
@@ -64,9 +95,9 @@ function portalConfigurationParams(baseUrl: string): Stripe.BillingPortal.Config
         schedule_at_period_end: {
           conditions: [{ type: "decreasing_item_amount" }, { type: "shortening_interval" }]
         },
-        products: MAP_NANO_PORTAL_PRODUCTS.map(product => ({
-          product: product.product,
-          prices: [...product.prices]
+        products: products.map(group => ({
+          product: group.product,
+          prices: [...group.prices]
         }))
       }
     },
@@ -74,8 +105,12 @@ function portalConfigurationParams(baseUrl: string): Stripe.BillingPortal.Config
   };
 }
 
-async function ensurePortalConfiguration(stripe: Stripe, baseUrl: string): Promise<Stripe.BillingPortal.Configuration> {
-  const params = portalConfigurationParams(baseUrl);
+async function ensurePortalConfiguration(
+  stripe: Stripe,
+  baseUrl: string,
+  products: PortalProductGroup[]
+): Promise<Stripe.BillingPortal.Configuration> {
+  const params = portalConfigurationParams(baseUrl, products);
   const configurations = await stripe.billingPortal.configurations.list({ active: true, limit: 100 });
   const existing = configurations.data.find(configuration =>
     configuration.metadata?.managed_by === MANAGED_PORTAL_METADATA.managed_by
@@ -87,7 +122,7 @@ async function ensurePortalConfiguration(stripe: Stripe, baseUrl: string): Promi
   }
 
   return stripe.billingPortal.configurations.create(params, {
-    idempotencyKey: `map-nano-portal-${MANAGED_PORTAL_METADATA.catalog_version}`
+    idempotencyKey: "map-nano-portal-configuration"
   });
 }
 
@@ -99,15 +134,17 @@ Deno.serve(async request => {
     const input = await jsonBody<PortalRequest>(request);
     const admin = adminClient();
     const user = await authenticatedUser(request, admin);
+    const livemode = isLiveMode();
     const { data, error } = await admin.rpc("get_map_portal_context", {
       p_actor_id: user.id,
       p_account_id: input.accountId || null,
-      p_livemode: isLiveMode()
+      p_livemode: livemode
     });
     if (error) throw error;
 
     const stripe = stripeClient();
-    const configuration = await ensurePortalConfiguration(stripe, siteUrl());
+    const products = await loadPortalProducts(admin, stripe, livemode);
+    const configuration = await ensurePortalConfiguration(stripe, siteUrl(), products);
     const session = await stripe.billingPortal.sessions.create({
       customer: data.stripe_customer_id,
       return_url: `${siteUrl()}/dashboard.html?module=licenses`,
