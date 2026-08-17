@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="/css/02-layout.css">
   <link rel="stylesheet" href="/css/03-components.css">
   <link rel="stylesheet" href="/css/pages/product_maps_nano.css">
+  <link rel="stylesheet" href="/css/components/map-breadcrumb.css">
   <link rel="icon" type="image/png" href="/static/favicon-tab-complete-16.png?v=tab-complete-20260729" sizes="16x16" />
   <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
   <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
@@ -62,6 +63,16 @@
   <link rel="alternate" hreflang="es" href="/product_maps_nano.html">
   <link rel="alternate" hreflang="x-default" href="/product_maps_nano.html">
   <link rel="canonical" href="/en/product_maps_nano.html">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "MAPs", "item": "https://bcctechnologies.com.do/en/product_maps.html" },
+        { "@type": "ListItem", "position": 2, "name": "MAP-Nano", "item": "https://bcctechnologies.com.do/en/product_maps_nano.html" }
+      ]
+    }
+  </script>
 </head>
 
 
@@ -113,7 +124,7 @@
   <section class="hero-product">
     <div class="container hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">MAPs Platform</p>
+        <p class="eyebrow"><a href="/en/product_maps.html">‹ MAPs</a></p>
         <h1>MAP-Nano</h1>
         <p class="sub">
           Powerful analysis for <strong>Scanning Electron Microscopy</strong> and optical images - reproducible segmentation, roughness and size distributions.
@@ -125,14 +136,9 @@
           <span class="chip">Web</span>
         </div>
         <div class="cta-row">
-          <a class="btn btn-dark"
-             href="https://map-nano.onrender.com/">
-            <!-- Download Now ||  https://github.com/bcc-technologies/MAP-Nano_releases/releases/latest/download/MAP-Nano-Setup.exe-->
-            Try it Now
-          </a>
-          <a class="btn btn-ghost" href="/en/contactUs.html?demo=1">Request a demo</a>
+          <a class="btn btn-dark" href="https://map-nano.onrender.com/">Try it online</a>
           <a class="btn btn-ghost" href="/en/map-nano-pricing.html">View plans</a>
-          <!-- <a class="btn btn-ghost" href="/en/blog.html">Quick guide (PDF)</a> -->
+          <a class="btn btn-ghost" href="/en/contactUs.html?product=map-nano&amp;intent=demo">Talk to sales</a>
         </div>
         <p class="meta">SEM/optical - Batch pipelines - Roughness - Porosity - Morphology - CSV/PDF export</p>
       </div>
@@ -176,16 +182,16 @@
       <h2>Explore our solutions</h2>
       <p class="lead">Choose your area to see typical workflows, inputs and outputs.</p>
       <div class="grid-2 cards solutions-cards">
-        <a class="card" href="/en/products.html#bio">
+        <a class="card" href="/en/product_maps.html#map-bio">
           <div class="card-thumb" style="background-image:url('static/life-science.jpg')"></div>
           <div class="card-title">Life Science & Microbiology</div>
           <div class="card-text">Segment, quantify and characterize cells and structures to accelerate discovery.</div>
           <div class="card-link">See more -></div>
         </a>
-        <a class="card" href="/en/products.html#nano">
+        <a class="card" href="/en/product_maps.html">
           <div class="card-thumb" style="background-image:url('static/map-meterial.jpg')"></div>
-          <div class="card-title">Materials Science</div>
-          <div class="card-text">Quantify size distributions, porosity and defects on SEM/optical images.</div>
+          <div class="card-title">The whole MAPs platform</div>
+          <div class="card-text">Compare MAP-Nano with the other MAPs flows by sector.</div>
           <div class="card-link">See more -></div>
         </a>
       </div>
@@ -280,9 +286,9 @@
         </div>
       </div>
       <div class="row-cta">
-        <a class="btn btn-dark" href="/en/contactUs.html">Request a demo</a>
+        <a class="btn btn-dark" href="https://map-nano.onrender.com/">Try it online</a>
+        <a class="btn btn-ghost" href="/en/contactUs.html?product=map-nano&amp;intent=demo">Talk to sales</a>
         <a class="btn btn-ghost" href="/en/blog.html">Release notes</a>
-        <a class="btn btn-ghost" href="/en/blog.html">Quick guide (PDF)</a>
       </div>
     </div>
   </section>
@@ -328,26 +334,6 @@
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
   </script>
-<script>`r`n    const section2 = document.querySelector('.section.section-alt'); // the first alternate section
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            document.body.style.backgroundColor = '#232323'; //#232323
-          } else {
-            document.body.style.backgroundColor = '#ffffff';
-          }
-        });
-      },
-      {
-        threshold: 0.5 // adjust depending on how much of the section should be visible
-      }
-    );
-  
-    observer.observe(section2);
-</script>
-  
 <!-- <script>
   const isWin = navigator.platform.toLowerCase().includes('win');
   if (!isWin) {

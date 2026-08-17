@@ -1,0 +1,27 @@
+/* Wayfinding for the MAPs page family (hub, product, pricing). Rather than a
+   separate breadcrumb bar — which fought the full-bleed, tuned-height hero
+   sections on these pages and broke their own container-query breakpoints —
+   the "up" link lives inside each hero's existing eyebrow line. Same element,
+   same responsive behavior, zero extra vertical space. */
+.eyebrow a,
+.map-pricing-eyebrow a {
+  /* Muted, not the eyebrow's own loud accent color: this is a link back to
+     the parent, not the page's own tagline, and it should read that way at
+     a glance instead of blending into the rest of the eyebrow line. */
+  color: var(--ink-muted);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink-muted) 45%, transparent);
+}
+
+.eyebrow a:hover,
+.eyebrow a:focus-visible,
+.map-pricing-eyebrow a:hover,
+.map-pricing-eyebrow a:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.eyebrow span[aria-hidden="true"] {
+  color: var(--ink-muted);
+  font-weight: 500;
+}

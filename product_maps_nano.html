@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="css/02-layout.css">
   <link rel="stylesheet" href="css/03-components.css">
   <link rel="stylesheet" href="css/pages/product_maps_nano.css">
+  <link rel="stylesheet" href="css/components/map-breadcrumb.css">
   <link rel="icon" type="image/png" href="/static/favicon-tab-complete-16.png?v=tab-complete-20260729" sizes="16x16" />
   <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
   <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
@@ -62,6 +63,16 @@
   <link rel="alternate" hreflang="en" href="/en/product_maps_nano.html">
   <link rel="alternate" hreflang="x-default" href="/product_maps_nano.html">
   <link rel="canonical" href="/product_maps_nano.html">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "MAPs", "item": "https://bcctechnologies.com.do/product_maps.html" },
+        { "@type": "ListItem", "position": 2, "name": "MAP-Nano", "item": "https://bcctechnologies.com.do/product_maps_nano.html" }
+      ]
+    }
+  </script>
 </head>
 
 
@@ -113,7 +124,7 @@
   <section class="hero-product">
     <div class="container hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Plataforma MAPs</p>
+        <p class="eyebrow"><a href="/product_maps.html">‹ MAPs</a></p>
         <h1>MAP-Nano</h1>
         <p class="sub">Análisis reproducible para imágenes de <strong>microscopía electrónica de barrido</strong> y ópticas: segmentación, rugosidad y distribuciones de tamaño.</p>
         <div class="chip-row">
@@ -123,14 +134,9 @@
           <span class="chip">Web</span>
         </div>
         <div class="cta-row">
-          <a class="btn btn-dark"
-             href="https://map-nano.onrender.com/">
-            <!-- Download Now ||  https://github.com/bcc-technologies/MAP-Nano_releases/releases/latest/download/MAP-Nano-Setup.exe-->
-            Abrir demo web
-          </a>
-          <a class="btn btn-ghost" href="/contactUs.html?product=map-nano&amp;intent=demo">Solicitar una demo</a>
+          <a class="btn btn-dark" href="https://map-nano.onrender.com/">Probar en línea</a>
           <a class="btn btn-ghost" href="/map-nano-pricing.html">Ver planes</a>
-          <!-- <a class="btn btn-ghost" href="/blog.html">Ver recursos</a> -->
+          <a class="btn btn-ghost" href="/contactUs.html?product=map-nano&amp;intent=demo">Hablar con ventas</a>
         </div>
         <p class="meta">SEM/óptica · Flujos por lote · Rugosidad · Porosidad · Morfología · Exportación CSV/PDF</p>
       </div>
@@ -177,10 +183,10 @@
           <div class="card-text">Segmenta, cuantifica y caracteriza células y estructuras con trazabilidad visual.</div>
           <div class="card-link">Conocer más →</div>
         </a>
-        <a class="card" href="/product_maps_nano.html">
+        <a class="card" href="/product_maps.html">
           <div class="card-thumb" style="background-image:url('static/map-meterial.jpg')"></div>
-          <div class="card-title">Ciencia de materiales</div>
-          <div class="card-text">Cuantifica distribuciones de tamaño, porosidad y defectos en imágenes SEM u ópticas.</div>
+          <div class="card-title">Toda la plataforma MAPs</div>
+          <div class="card-text">Compara MAP-Nano con los demás flujos MAPs por sector.</div>
           <div class="card-link">Conocer más →</div>
         </a>
       </div>
@@ -275,9 +281,9 @@
         </div>
       </div>
       <div class="row-cta">
-        <a class="btn btn-dark" href="/contactUs.html?product=map-nano&amp;intent=demo">Solicitar una demo</a>
+        <a class="btn btn-dark" href="https://map-nano.onrender.com/">Probar en línea</a>
+        <a class="btn btn-ghost" href="/contactUs.html?product=map-nano&amp;intent=demo">Hablar con ventas</a>
         <a class="btn btn-ghost" href="/blog.html">Novedades</a>
-        <a class="btn btn-ghost" href="/blog.html">Ver recursos</a>
       </div>
     </div>
   </section>
@@ -323,26 +329,6 @@
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
   </script>
-<script>`r`n    const section2 = document.querySelector('.section.section-alt'); // la primera sección alterna
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            document.body.style.backgroundColor = '#232323'; //#232323
-          } else {
-            document.body.style.backgroundColor = '#ffffff';
-          }
-        });
-      },
-      {
-        threshold: 0.5 // adjust depending on how much of the section should be visible
-      }
-    );
-  
-    observer.observe(section2);
-</script>
-  
 <!-- <script>
   const isWin = navigator.platform.toLowerCase().includes('win');
   if (!isWin) {

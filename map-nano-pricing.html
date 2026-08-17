@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="css/02-layout.css" />
   <link rel="stylesheet" href="css/03-components.css" />
   <link rel="stylesheet" href="css/pages/map-nano-pricing.css" />
+  <link rel="stylesheet" href="css/components/map-breadcrumb.css" />
   <link rel="icon" type="image/png" href="/static/favicon-tab-complete-16.png?v=tab-complete-20260729" sizes="16x16" />
   <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
   <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
@@ -34,6 +35,17 @@
   <script src="js/map-nano-pricing-locale.js" defer></script>
   <script src="js/map-nano-savings-calculator.js" defer></script>
   <script src="js/map-nano-pricing.js" defer></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "MAPs", "item": "https://bcctechnologies.com.do/product_maps.html" },
+        { "@type": "ListItem", "position": 2, "name": "MAP-Nano", "item": "https://bcctechnologies.com.do/product_maps_nano.html" },
+        { "@type": "ListItem", "position": 3, "name": "Planes", "item": "https://bcctechnologies.com.do/map-nano-pricing.html" }
+      ]
+    }
+  </script>
 </head>
 <body>
   <header>
@@ -68,8 +80,36 @@
 
   <footer>
     <div class="container footer-inner">
-      <div class="footer-brand"><strong>BCC Technologies</strong><span>Santo Domingo, DR</span><span class="footer-copy">&copy; 2026 BCC Tech. Est. 2020.</span></div>
-      <div class="footer-links"><a class="footer-contact" href="/contactUs.html">Contacto</a><a href="/product_maps_nano.html">MAP-Nano</a></div>
+      <div class="footer-brand">
+        <strong>BCC Technologies</strong>
+        <span>Santo Domingo, DR</span>
+        <span class="footer-copy">&copy; 2026 BCC Tech. Est. 2020.</span>
+      </div>
+      <div class="footer-links">
+        <a class="footer-contact" href="/contactUs.html">Contacto</a>
+        <a href="/product_maps_nano.html">MAP-Nano</a>
+        <a class="pref-btn lang-switch" href="/en/map-nano-pricing.html" aria-label="Switch to English">EN</a>
+        <button class="pref-btn icon-btn" type="button" data-action="toggle-theme" aria-label="Cambiar tema">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a.7.7 0 0 1 .7.9A7 7 0 0 0 20.1 13.8a.7.7 0 0 1 .9.7z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0-4h1.5v3H12V3zm0 15h1.5v3H12v-3zM3 11.5h3V13H3v-1.5zm15 0h3V13h-3v-1.5zM5.1 5.1l2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm11.8 11.8 2.1 2.1-1.1 1.1-2.1-2.1 1.1-1.1zm0-11.8 1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1zM5.1 18.9l1.1 1.1-2.1 2.1-1.1-1.1 2.1-2.1z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="footer-social">
+        <a href="https://www.linkedin.com/company/bcc-tech" class="social-link" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8.5h4V24h-4zM8.5 8.5h3.8v2.1h.1c.5-.9 1.8-2.1 3.8-2.1 4.1 0 4.9 2.7 4.9 6.2V24h-4v-7.4c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.5h-4z"/>
+          </svg>
+        </a>
+        <a href="https://www.instagram.com/bcc.tech/" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 1.8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm5.2-2.1a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+          </svg>
+        </a>
+      </div>
     </div>
   </footer>
 </body>

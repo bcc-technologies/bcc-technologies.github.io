@@ -24,6 +24,7 @@
     <link rel="apple-touch-icon" href="/static/favicon-apple-touch.png?v=brand-mobile-20260729" sizes="180x180" />
     <link rel="manifest" href="/static/site.webmanifest?v=brand-mobile-20260729" />
     <link rel="stylesheet" href="css/pages/product_maps.css">
+    <link rel="stylesheet" href="css/components/map-breadcrumb.css">
     <script src="js/layout.js" defer></script>
   <script src="js/nav.js" defer></script>
   <script src="js/prefs.js" defer></script>
@@ -31,6 +32,16 @@
   <link rel="alternate" hreflang="en" href="/en/product_maps.html">
   <link rel="alternate" hreflang="x-default" href="/product_maps.html">
   <link rel="canonical" href="/product_maps.html">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Tecnología", "item": "https://bcctechnologies.com.do/products.html" },
+        { "@type": "ListItem", "position": 2, "name": "MAPs", "item": "https://bcctechnologies.com.do/product_maps.html" }
+      ]
+    }
+  </script>
 </head><body>
   <!-- Top navigation (simple) -->
             <header>
@@ -78,22 +89,19 @@
     <section class="hero">
         <div class="container hero-grid">
         <div class="hero-copy reveal">
-            <p class="eyebrow">Imagen → Decisión</p>
+            <p class="eyebrow"><a href="/products.html">Tecnología</a> <span aria-hidden="true">/</span> Imagen → Decisión</p>
             <h1>Abrimos nuevas vías para el <span class="accent">descubrimiento microestructural</span></h1>
             <p class="sub">
-            Nuestra plataforma convierte microscopía en métricas reproducibles para materiales, biología e ingeniería.
+            Nuestra plataforma convierte microscopía en métricas reproducibles para materiales, biología, ingeniería y medicina.
             </p>
             <div class="hero-cta">
             <a class="btn btn-dark" href="#platform">Explorar plataforma</a>
-            <a class="btn btn-ghost" href="/product_maps_nano.html">Conocer MAP-Nano</a>
+            <a class="btn btn-ghost" href="/product_maps_nano.html">Ver MAP-Nano</a>
             </div>
-            <p class="meta">Compatible con SEM/óptica · Segmentación robusta · Rugosidad, porosidad y morfología</p>
+            <p class="meta">Materiales · Biología · Ingeniería · Medicina</p>
         </div>
         <div class="hero-media reveal">
-        <!-- Usa tu imagen real del producto -->
         <img src="static/MAP3.png" alt="Platform overview" />
-        <!-- <div class="media-caption">Ver la demo de 2 min de la plataforma</div> -->
-        <div class="media-caption">Prueba MAPs</div>
         </div>
         </div>
     </section>
@@ -104,7 +112,7 @@
         <h2>Soluciones por sector</h2>
         <p class="lead">Elija su área para ver casos de uso, flujos y resultados medibles.</p>
         <div class="grid-4 cards">
-            <a class="card" href="/product_maps_nano.html">
+            <a class="card" id="map-nano" href="/product_maps_nano.html">
             <div class="card-thumb">
                 <!-- Imagen que se estira para adaptarse a las dimensiones del card-thumb-->
                  <img src="static/particles.jpg" alt="Nanotecnología" style="width:100%; height:100%; object-fit:cover; border-radius:8px;" />

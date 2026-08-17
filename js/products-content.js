@@ -429,12 +429,12 @@ window.BCC_PRODUCTS_CONTENT = {
         "actions": [
           {
             "label": "Ver producto",
-            "href": "/product_maps_nano.html",
+            "href": "/product_maps.html#map-nano",
             "variant": "dark"
           },
           {
             "label": "Ficha rapida",
-            "href": "/product_maps_nano.html",
+            "href": "/product_maps.html#map-nano",
             "variant": "ghost",
             "detailId": "map-nano"
           }
@@ -1064,12 +1064,12 @@ window.BCC_PRODUCTS_CONTENT = {
         "actions": [
           {
             "label": "View product",
-            "href": "/en/product_maps_nano.html",
+            "href": "/en/product_maps.html#map-nano",
             "variant": "dark"
           },
           {
             "label": "Quick view",
-            "href": "/en/product_maps_nano.html",
+            "href": "/en/product_maps.html#map-nano",
             "variant": "ghost",
             "detailId": "map-nano"
           }

@@ -354,10 +354,26 @@ body, h1, h2, h3, p {
 
 
 /* ===== TOKENS / BASE ===== */
+/* This page brands "MAPs the platform" with a teal accent instead of the
+   orange used for individual products (MAP-Nano, pricing) — on purpose, so
+   the three pages don't all glow the same color. The plain `:root{}` below
+   only won in light mode: 00-tokens.css's dark-mode blocks target
+   `:root[data-theme="dark"]` and `:root:not([data-theme])`, both more
+   specific than a bare `:root`, so dark mode silently fell back to the
+   global orange. Matching those selectors here (and loading after
+   00-tokens.css) makes the teal override win in both modes. */
 :root{
   --accent: #0e7490;
   --accent-50: color-mix(in oklab, var(--accent) 10%, var(--bg) 90%);
   --nav-h:64px;
+}
+:root[data-theme="dark"]{
+  --accent: #22b8d4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --accent: #22b8d4;
+  }
 }
 @media (max-width:640px){ :root{ --nav-h:56px; } }
 *{box-sizing:border-box}
@@ -497,21 +513,27 @@ background:rgba(255,255,255,.85);border-bottom:1px solid var(--line);
 
 /* ===== ALIGN PACK (match MAP-Nano look) ===== */
 
-/* HERO: fullscreen + halo + retícula sutil */
+/* HERO: halo + retícula sutil, altura según contenido.
+   Antes forzaba min-height a ~100vh con el contenido centrado por flex; como
+   el copy nunca llena esa altura, dejaba un colchón vacío simétrico arriba y
+   abajo (visible como un margen en blanco antes de la siguiente sección). */
 .hero{
   position:relative; isolation:isolate; overflow:hidden;
   background: linear-gradient(180deg, var(--accent-50), var(--surface-solid));
-  min-height: calc(100vh - var(--nav-h));
-  min-height: calc(100svh - var(--nav-h));
-  min-height: calc(100dvh - var(--nav-h));
   display:flex; align-items:center;
-  padding-block: clamp(24px, 6vh, 64px);
+  padding-block: clamp(48px, 10vh, 96px);
 }
+/* Static soft glow: no filter:blur + animation, which compositors on some
+   GPUs render with visible tearing/misalignment (worse against a light
+   background, where the seam shows up much more than on dark). Softness now
+   comes from extra gradient stops instead of a blur filter. */
 .hero::before{
   content:""; position:absolute; inset:-30% -40%;
-  background: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, var(--surface-solid) 65%) 0%, transparent 70%) no-repeat;
-  filter: blur(40px); opacity:.35; transform:rotate(0deg); z-index:-2;
-  animation: heroHalo 36s linear infinite;
+  background: radial-gradient(closest-side,
+    color-mix(in oklab, var(--accent) 28%, var(--surface-solid) 72%) 0%,
+    color-mix(in oklab, var(--accent) 14%, var(--surface-solid) 86%) 45%,
+    transparent 75%) no-repeat;
+  opacity:.35; z-index:-2;
 }
 .hero::after{
   content:""; position:absolute; inset:0;
@@ -520,11 +542,11 @@ background:rgba(255,255,255,.85);border-bottom:1px solid var(--line);
     linear-gradient(to bottom, rgba(2,6,23,.04), rgba(2,6,23,0));
   mix-blend-mode:multiply; z-index:-1; pointer-events:none; opacity:.6;
 }
-@keyframes heroHalo{ to{ transform: rotate(360deg);} }
 
-/* HERO layout: más peso a la imagen */
+/* HERO layout: más peso al texto; la imagen ya no domina la mitad de la
+   pantalla (antes .95fr 1.35fr le daba más espacio a la imagen que al copy). */
 .hero-grid{
-  display:grid; grid-template-columns: .95fr 1.35fr; 
+  display:grid; grid-template-columns: 1.15fr .85fr;
   gap: clamp(24px, 4vw, 48px); align-items:center; padding:0;
 }
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}

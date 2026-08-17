@@ -5,6 +5,8 @@
   const root = document.querySelector("[data-map-nano-pricing]");
   if (!root) return;
   const localizeMarkup = value => window.BCCMapNanoLocale?.markup?.(value) || value;
+  const isEnglish = document.documentElement.lang.toLowerCase().startsWith("en");
+  const productHref = isEnglish ? "/en/product_maps_nano.html" : "/product_maps_nano.html";
 
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({
     "&": "&amp;",
@@ -101,9 +103,26 @@
     <div class="map-pricing-faq-list">${faqs.map(([question, answer], index) => `<details data-map-pricing-faq="${index}"><summary>${escapeHtml(question)}</summary><p>${escapeHtml(answer)}</p></details>`).join("")}</div>
   </section>`);
 
+  const heroMedia = `<figure class="map-pricing-hero-media">
+    <svg viewBox="0 0 460 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" focusable="false">
+      <ellipse class="ppc-shadow" cx="225" cy="345" rx="150" ry="16"/>
+      <rect class="ppc-card ppc-card-back" x="55" y="90" width="200" height="240" rx="18" transform="rotate(-10 155 210)"/>
+      <rect class="ppc-card ppc-card-mid" x="150" y="58" width="210" height="252" rx="18" transform="rotate(6 255 184)"/>
+      <rect class="ppc-card ppc-card-front" x="108" y="38" width="232" height="284" rx="20"/>
+      <rect class="ppc-chip" x="132" y="64" width="76" height="22" rx="11"/>
+      <rect class="ppc-line" x="132" y="112" width="184" height="10" rx="5"/>
+      <rect class="ppc-line" x="132" y="134" width="152" height="10" rx="5"/>
+      <rect class="ppc-line" x="132" y="156" width="168" height="10" rx="5"/>
+      <line class="ppc-divider" x1="132" y1="196" x2="316" y2="196"/>
+      <rect class="ppc-price-block" x="132" y="222" width="112" height="30" rx="8"/>
+      <circle class="ppc-badge" cx="318" cy="56" r="15"/>
+      <path class="ppc-badge-check" d="M311 56l5 5 10-10" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </figure>`;
+
   root.innerHTML = localizeMarkup(`
     <section class="map-pricing-hero">
-      <div class="container map-pricing-hero-inner"><p class="map-pricing-eyebrow">MAP-Nano</p><h1>Planes de MAP-Nano</h1><p>Automatización y trazabilidad para análisis de microestructuras, desde el trabajo individual hasta implementaciones institucionales.</p><div class="map-pricing-hero-actions"><a class="btn btn-primary" href="#planes">Ver planes</a><a class="btn btn-ghost" href="#savings-calculator" data-map-pricing-savings>Calcular ahorro</a><a class="btn btn-ghost" href="#comparar" data-map-pricing-compare>Comparar capacidades</a></div></div>
+      <div class="container map-pricing-hero-inner"><div class="map-pricing-hero-copy"><p class="map-pricing-eyebrow"><a href="${productHref}">MAP-Nano</a></p><h1>Planes de MAP-Nano</h1><p>Automatización y trazabilidad para análisis de microestructuras, desde el trabajo individual hasta implementaciones institucionales.</p><div class="map-pricing-hero-actions"><a class="btn btn-primary" href="#planes">Ver planes</a><a class="btn btn-ghost" href="#savings-calculator" data-map-pricing-savings>Calcular ahorro</a><a class="btn btn-ghost" href="#comparar" data-map-pricing-compare>Comparar capacidades</a></div></div>${heroMedia}</div>
     </section>
     <main class="map-pricing-main">
       <section class="map-pricing-section" id="planes" aria-labelledby="map-pricing-plans-title"><div class="map-pricing-section-head"><p class="map-pricing-eyebrow">Licenciamiento anual</p><h2 id="map-pricing-plans-title">Elige el nivel de operación que corresponde a tu laboratorio</h2><p>Las solicitudes se revisan con BCC antes de emitir una licencia. No hay checkout automático en esta página.</p></div><div class="map-pricing-plan-grid">${catalog.PLANS.map(renderPlan).join("")}</div></section>

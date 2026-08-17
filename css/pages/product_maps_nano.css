@@ -132,23 +132,27 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
   isolation: isolate;
   background: linear-gradient(180deg,var(--surface-solid),var(--surface-solid));
 
-  /* Fullscreen (works with sticky navbar) */
-  min-height: calc(100vh - var(--nav-h));
-  min-height: calc(100svh - var(--nav-h));
-  min-height: calc(100dvh - var(--nav-h));
-
+  /* Height follows content. Forcing ~100vh here with flex-centered content
+     left a large empty band above and below the copy whenever the copy was
+     shorter than the viewport (it always is) — that band read as a stray
+     blank margin before the next section. */
   display:flex; align-items:center;
-  padding-block: clamp(24px, 6vh, 64px);
+  padding-block: clamp(48px, 10vh, 96px);
 }
 
-/* Background halo (slow rotation) */
+/* Static soft glow: no filter:blur + animation, which compositors on some
+   GPUs render with visible tearing/misalignment (worse against a light
+   background, where the seam shows up much more than on dark). Softness now
+   comes from extra gradient stops instead of a blur filter. */
 .hero-product::before{
   content:"";
   position:absolute; inset:-30% -40%;
   background:
-    radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, var(--surface-solid) 65%) 0%, transparent 70%) no-repeat;
-  filter: blur(40px); opacity:.35; transform: rotate(0deg); z-index:-2;
-  animation: heroHalo 36s linear infinite;
+    radial-gradient(closest-side,
+      color-mix(in oklab, var(--accent) 28%, var(--surface-solid) 72%) 0%,
+      color-mix(in oklab, var(--accent) 14%, var(--surface-solid) 86%) 45%,
+      transparent 75%) no-repeat;
+  opacity:.35; z-index:-2;
 }
 /* Scientific subtle grid overlay */
 .hero-product::after{
@@ -158,7 +162,6 @@ a.link:hover, .cards .card:hover .card-link{ background-size: 100% 2px; }
     linear-gradient(to bottom, rgba(2,6,23,.04), rgba(2,6,23,0));
   mix-blend-mode:multiply; z-index:-1; pointer-events:none; opacity:.6;
 }
-@keyframes heroHalo{ to{ transform: rotate(360deg);} }
 
 .hero-grid{
   display:grid;
