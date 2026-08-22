@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-21T06:39:11.785Z",
+  "updatedAt": "2026-08-22T06:32:55.058Z",
   "groups": [
     {
       "id": "physics",
@@ -9684,10 +9684,9 @@
         "Chenxiao Tian"
       ],
       "categories": [
-        "math.AG",
-        "math.AC"
+        "math.GM"
       ],
-      "primaryCategory": "math.AG",
+      "primaryCategory": "math.GM",
       "sourceGroup": "math",
       "group": "math"
     },
