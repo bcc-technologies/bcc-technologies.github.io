@@ -40,25 +40,55 @@ test("edge function authenticates BCC agent tokens before querying Intelligence"
   assert.match(fn, /scopes\.includes\(READ_SCOPE\)/);
 });
 
-test("v0.2 exposes only the intended read operations", () => {
-  assert.match(fn, /ALLOWED_OPERATIONS = new Set\(\["health", "overview", "signals", "signal", "signal_evidence", "runs"\]\)/);
+test("v0.3 exposes only intended read operations including search", () => {
+  assert.match(fn, /ALLOWED_OPERATIONS = new Set\(\["health", "overview", "signals", "signal", "signal_evidence", "runs", "search"\]\)/);
   assert.doesNotMatch(fn, /sync_papers|generate_signals|fetch_patents|saveTopic|updateSignalStatus/);
 });
 
-test("v0.2 limits result sizes", () => {
-  assert.match(fn, /clampInteger\(body\.limit, 20, 1, 50\)/);
-  assert.match(fn, /clampInteger\(body\.limit, 25, 1, 25\)/);
-  assert.match(fn, /clampInteger\(body\.limit, 10, 1, 30\)/);
+test("v0.3 search is bounded and paginated", () => {
+  assert.match(fn, /clampInt\(body\.limit,15,1,25\)/);
+  assert.match(fn, /clampInt\(body\.offset,0,0,200\)/);
+  assert.match(fn, /candidateLimit = Math\.min\(60,Math\.max\(30,offset\+limit\+15\)\)/);
+  assert.match(fn, /nextOffset:hasMore \? offset\+results\.length : null/);
 });
 
-test("v0.2 uses explicit evidence field allowlists and excludes raw data", () => {
-  assert.match(fn, /const EVIDENCE_CONFIG/);
+test("v0.3 search avoids raw PostgREST OR expressions from user text", () => {
+  assert.match(fn, /fetchCandidates/);
+  assert.match(fn, /\.ilike\(field,/);
+  assert.doesNotMatch(fn, /\.or\(/);
+});
+
+test("v0.3 search ranks locally and returns evidence-friendly metadata", () => {
+  assert.match(fn, /function rankCandidate/);
+  assert.match(fn, /relevanceScore/);
+  assert.match(fn, /matchedFields/);
+  assert.match(fn, /title_phrase/);
+  assert.match(fn, /topics_token/);
+});
+
+test("search query text is audited only through SHA-256", () => {
+  assert.match(fn, /queryMaterial:query/);
+  assert.match(fn, /outcome\.queryMaterial\?await sha256\(outcome\.queryMaterial\)/);
+  assert.doesNotMatch(fn, /filters:\{[^}]*query:/s);
+});
+
+test("search supports signals papers and grants with fixed field allowlists", () => {
+  assert.match(fn, /SEARCH_SPECS = Object\.freeze/);
+  assert.match(fn, /signal: \{ table: "intelligence_signals"/);
+  assert.match(fn, /paper: \{ table: "intelligence_papers"/);
+  assert.match(fn, /grant: \{ table: "intelligence_grants"/);
   assert.doesNotMatch(fn, /select\("\*"\)/);
   assert.doesNotMatch(fn, /raw_data|duplicate_candidates/);
 });
 
+test("existing v0.2 result limits remain enforced", () => {
+  assert.match(fn, /clampInt\(body\.limit,20,1,50\)/);
+  assert.match(fn, /clampInt\(body\.limit,25,1,25\)/);
+  assert.match(fn, /clampInt\(body\.limit,10,1,30\)/);
+});
+
 test("signals are ordered by current radar update time", () => {
-  assert.match(fn, /order\("updated_at", \{ ascending: false \}\)/);
+  assert.match(fn, /order\("updated_at",\{ascending:false\}\)/);
 });
 
 test("evidence is resolved from typed references", () => {
@@ -69,7 +99,7 @@ test("evidence is resolved from typed references", () => {
 
 test("run sources are normalized to names and types", () => {
   assert.match(fn, /from\("intelligence_sources"\)\.select\("id,name,type"\)/);
-  assert.match(fn, /sources: .*sourceMap/s);
+  assert.match(fn, /sourceMap\.get\(id\)/);
 });
 
 test("edge function has an explicit custom-auth gateway configuration", () => {
