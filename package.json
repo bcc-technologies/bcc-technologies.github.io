@@ -5,6 +5,7 @@
     "accounts:dev": "node accounts-server.mjs",
     "cms:dev": "npm --prefix admin-local run dev",
     "intelligence:sync": "node scripts/sync-intelligence.mjs",
+    "intelligence:agent:smoke": "node scripts/intelligence/agent-smoke.mjs",
     "render:products": "node scripts/render-products-pages.mjs",
     "render:workspace-locales": "node scripts/render-workspace-locale-pages.mjs",
     "build:workspace-assets": "node scripts/build-workspace-assets.mjs && node scripts/render-workspace-locale-pages.mjs",
