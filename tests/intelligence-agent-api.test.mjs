@@ -40,9 +40,36 @@ test("edge function authenticates BCC agent tokens before querying Intelligence"
   assert.match(fn, /scopes\.includes\(READ_SCOPE\)/);
 });
 
-test("v0.1 exposes only health and overview operations", () => {
-  assert.match(fn, /operation !== "overview" && operation !== "health"/);
-  assert.doesNotMatch(fn, /sync_papers|generate_signals|fetch_patents/);
+test("v0.2 exposes only the intended read operations", () => {
+  assert.match(fn, /ALLOWED_OPERATIONS = new Set\(\["health", "overview", "signals", "signal", "signal_evidence", "runs"\]\)/);
+  assert.doesNotMatch(fn, /sync_papers|generate_signals|fetch_patents|saveTopic|updateSignalStatus/);
+});
+
+test("v0.2 limits result sizes", () => {
+  assert.match(fn, /clampInteger\(body\.limit, 20, 1, 50\)/);
+  assert.match(fn, /clampInteger\(body\.limit, 25, 1, 25\)/);
+  assert.match(fn, /clampInteger\(body\.limit, 10, 1, 30\)/);
+});
+
+test("v0.2 uses explicit evidence field allowlists and excludes raw data", () => {
+  assert.match(fn, /const EVIDENCE_CONFIG/);
+  assert.doesNotMatch(fn, /select\("\*"\)/);
+  assert.doesNotMatch(fn, /raw_data|duplicate_candidates/);
+});
+
+test("signals are ordered by current radar update time", () => {
+  assert.match(fn, /order\("updated_at", \{ ascending: false \}\)/);
+});
+
+test("evidence is resolved from typed references", () => {
+  assert.match(fn, /publicEvidenceRef/);
+  assert.match(fn, /resolveEvidence/);
+  assert.match(fn, /EVIDENCE_CONFIG\[type\]/);
+});
+
+test("run sources are normalized to names and types", () => {
+  assert.match(fn, /from\("intelligence_sources"\)\.select\("id,name,type"\)/);
+  assert.match(fn, /sources: .*sourceMap/s);
 });
 
 test("edge function has an explicit custom-auth gateway configuration", () => {
