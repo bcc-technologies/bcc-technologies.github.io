@@ -1,0 +1,3 @@
+-- Production agent credential registration was performed out-of-band.
+-- This migration marker intentionally contains no credential material.
+-- New environments must provision agent credentials through the secure operational path.
