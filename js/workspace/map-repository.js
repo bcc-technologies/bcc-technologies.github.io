@@ -14,11 +14,28 @@
     }
   }
 
+  async function functionInvocationError(error) {
+    const response = error?.context;
+    if (!response || typeof response.clone !== "function") return error;
+    try {
+      const payload = await response.clone().json();
+      const message = String(payload?.error || payload?.message || "").trim();
+      if (!message) return error;
+      return Object.assign(new Error(message), {
+        cause: error,
+        code: error?.code,
+        status: response.status || error?.status
+      });
+    } catch {
+      return error;
+    }
+  }
+
   async function invokeFunction(name, body) {
     try {
       const supabase = await window.BCCAuth.loadSupabaseClient();
       const { data, error } = await supabase.functions.invoke(name, { body });
-      if (error) throw error;
+      if (error) throw await functionInvocationError(error);
       if (!data || typeof data !== "object") throw new Error("The MAP service returned an invalid response.");
       return data;
     } catch (error) {

@@ -229,6 +229,16 @@ function invitationRedirectUrl(): string {
 
 function publicError(error: unknown): { status: number; message: string } {
   if (error instanceof HttpError) return { status: error.status, message: error.message };
+  const message = String((error as { message?: unknown } | null)?.message || "").trim();
+  if (/not allowed to manage|permission denied/i.test(message)) {
+    return { status: 403, message: "License-management permission required" };
+  }
+  if (/already has active MAP access for this product/i.test(message)) {
+    return { status: 409, message };
+  }
+  if (/tester user does not exist|evaluation cohort is not active|requires a partner tester cohort|cohort does not belong|selected institution is not active|MAP product is required|active evaluation plan|valid start and end time|grant reason|review date/i.test(message)) {
+    return { status: 400, message };
+  }
   console.error("[map-evaluation-invite]", error);
   return { status: 500, message: "The MAP invitation service is unavailable" };
 }

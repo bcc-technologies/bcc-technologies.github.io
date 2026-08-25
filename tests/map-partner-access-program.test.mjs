@@ -25,6 +25,7 @@ test("evaluation invitations keep service-role authority inside an authenticated
   const source = read("supabase/functions/invite-map-evaluation-participant/index.ts");
   const migration = read("supabase/migrations/20260825112036_partner_access_programs_and_invitations.sql");
   const institutionalMigration = read("supabase/migrations/20260825131205_institutional_tester_access.sql");
+  const cohortConflictFix = read("supabase/migrations/20260825162030_fix_tester_cohort_conflict_ambiguity.sql");
   const config = read("supabase/config.toml");
   const repository = read("js/workspace/map-repository.js");
 
@@ -38,6 +39,10 @@ test("evaluation invitations keep service-role authority inside an authenticated
   assert.match(source, /assertAllowedOrigin\(request\)/);
   assert.doesNotMatch(repository, /SUPABASE_SERVICE_ROLE_KEY|service[_-]?role/i);
   assert.match(repository, /invokeFunction\("invite-map-evaluation-participant"/);
+  assert.match(repository, /response\.clone\(\)\.json\(\)/);
+  assert.match(repository, /payload\?\.error \|\| payload\?\.message/);
+  assert.match(cohortConflictFix, /on conflict on constraint evaluation_cohort_members_cohort_id_user_id_key do update/);
+  assert.doesNotMatch(cohortConflictFix, /on conflict \(cohort_id, user_id\) do update/);
   assert.match(config, /\[functions\.invite-map-evaluation-participant\][\s\S]*verify_jwt = true/);
 
   assert.match(institutionalMigration, /create or replace function public\.get_tester_invite_context/);
