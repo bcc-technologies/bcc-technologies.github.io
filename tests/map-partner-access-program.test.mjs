@@ -26,6 +26,7 @@ test("evaluation invitations keep service-role authority inside an authenticated
   const migration = read("supabase/migrations/20260825112036_partner_access_programs_and_invitations.sql");
   const institutionalMigration = read("supabase/migrations/20260825131205_institutional_tester_access.sql");
   const cohortConflictFix = read("supabase/migrations/20260825162030_fix_tester_cohort_conflict_ambiguity.sql");
+  const cohortAccountFix = read("supabase/migrations/20260825164504_fix_tester_cohort_license_account.sql");
   const config = read("supabase/config.toml");
   const repository = read("js/workspace/map-repository.js");
 
@@ -43,6 +44,10 @@ test("evaluation invitations keep service-role authority inside an authenticated
   assert.match(repository, /payload\?\.error \|\| payload\?\.message/);
   assert.match(cohortConflictFix, /on conflict on constraint evaluation_cohort_members_cohort_id_user_id_key do update/);
   assert.doesNotMatch(cohortConflictFix, /on conflict \(cohort_id, user_id\) do update/);
+  assert.match(cohortAccountFix, /join public\.evaluation_cohort_members member/);
+  assert.match(cohortAccountFix, /member\.user_id = account\.individual_owner_id/);
+  assert.match(cohortAccountFix, /new\.institution_id is distinct from cohort_row\.account_id/);
+  assert.doesNotMatch(cohortAccountFix, /account_id[\s\S]*case when p_cohort_id/);
   assert.match(config, /\[functions\.invite-map-evaluation-participant\][\s\S]*verify_jwt = true/);
 
   assert.match(institutionalMigration, /create or replace function public\.get_tester_invite_context/);
