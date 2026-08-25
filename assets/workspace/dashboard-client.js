@@ -985,7 +985,25 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
     "El programa de acceso y su cohorte fueron creados.": "The access program and its cohort were created.",
     "La invitación fue enviada y el acceso quedó pendiente de activación.": "The invitation was sent and access is pending activation.",
     "La cuenta existente recibió acceso activo.": "The existing account received active access.",
-    "La cuenta invitada quedó vinculada a la cohorte.": "The invited account was linked to the cohort."
+    "La cuenta invitada quedó vinculada a la cohorte.": "The invited account was linked to the cohort.",
+    "Nueva institución": "New institution",
+    "Crear institución": "Create institution",
+    "Buscar cohorte o institución": "Search cohort or institution",
+    "Institución": "Institution",
+    "Registra la institución que agrupará usuarios y cohortes opcionales.": "Register the institution that will group users and optional cohorts.",
+    "Nombre de la institución": "Institution name",
+    "Dominio institucional": "Institutional domain",
+    "Sin institución / independiente": "No institution / independent",
+    "Cuenta del usuario": "User account",
+    "Invitar una cuenta nueva": "Invite a new account",
+    "Cohorte": "Cohort",
+    "Sin cohorte": "No cohort",
+    "La cohorte define ": "The cohort defines ",
+    " y su justificación.": " and its rationale.",
+    "Motivo, alcance acordado y valor esperado para BCC y el tester.": "Reason, agreed scope, and expected value for BCC and the tester.",
+    "La licencia se emitirá sobre la cuenta individual del usuario. La institución y la cohorte sólo organizan su afiliación.": "The license will be issued to the user's individual account. The institution and cohort only organize the affiliation.",
+    "La institución quedó disponible para usuarios y cohortes.": "The institution is now available for users and cohorts.",
+    "La cuenta invitada recibió acceso tester.": "The invited account received tester access."
   });
   const clientMapLicensesEn = Object.freeze({
     "Sin acceso vigente": "No active access", "Estado de acceso": "Access status", "Tu acceso": "Your access", "Inicio": "Start", "Vigencia": "Term", "Modalidad": "License type", "Facturación": "Billing", "No especificado": "Not specified", "Sin vencimiento": "No expiry", "Hasta": "Until", "No especificada": "Not specified", "Evaluación": "Evaluation", "Licencia MAP": "MAP license", "Cuenta MAP": "MAP account",

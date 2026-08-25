@@ -204,7 +204,7 @@
   const LOCALIZED_PLATFORM_ACCESS_LABELS = isEnglish() ? Object.freeze({ ...PLATFORM_ACCESS_LABELS, ...EN_PLATFORM_ACCESS_LABELS }) : PLATFORM_ACCESS_LABELS;
 
   const CLIENT_DASHBOARD_KEYS = Object.freeze(["accounts", "licenses", "members", "assignments", "recent_events"]);
-  const ADMIN_DASHBOARD_KEYS = Object.freeze(["licenses", "accounts", "plans", "users", "cohorts", "access_users"]);
+  const ADMIN_DASHBOARD_KEYS = Object.freeze(["licenses", "accounts", "institutions", "plans", "users", "cohorts", "access_users"]);
   const ERROR_TRANSLATIONS = Object.freeze([
     [/Authentication required|JWT|session/i, "Tu sesión expiró. Inicia sesión nuevamente."],
     [/Only an account owner or administrator/i, "Sólo el propietario o un administrador de la cuenta puede asignar plazas."],
@@ -219,6 +219,10 @@
     [/resolution note is required/i, "Agrega una nota de resolución antes de cerrar la solicitud."],
     [/commercial request is not open for review/i, "La solicitud ya no está disponible para revisión."],
     [/License is not active/i, "La licencia no está activa."],
+    [/selected institution is not active/i, "La institución seleccionada no está activa."],
+    [/cohort does not belong to the selected institution/i, "La cohorte no pertenece a la institución seleccionada."],
+    [/grant reason/i, "Agrega una justificación de al menos 10 caracteres."],
+    [/already has active MAP access for this product/i, "El usuario ya tiene acceso MAP activo para este producto."],
     [/cannot release this assignment/i, "No tienes permiso para liberar esta plaza."],
     [/permission denied|insufficient permission|not authorized|not allowed/i, "No tienes permisos para completar esta operación."],
     [/Failed to fetch|NetworkError|fetch resource|network request failed/i, "No pudimos conectar con MAP. Revisa tu conexión e inténtalo nuevamente."]

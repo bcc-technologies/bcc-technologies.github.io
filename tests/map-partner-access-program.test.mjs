@@ -24,14 +24,15 @@ test("partner access programs are explicit, accountable, and reviewable", () => 
 test("evaluation invitations keep service-role authority inside an authenticated Edge Function", () => {
   const source = read("supabase/functions/invite-map-evaluation-participant/index.ts");
   const migration = read("supabase/migrations/20260825112036_partner_access_programs_and_invitations.sql");
+  const institutionalMigration = read("supabase/migrations/20260825131205_institutional_tester_access.sql");
   const config = read("supabase/config.toml");
   const repository = read("js/workspace/map-repository.js");
 
   assert.match(source, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(source, /admin\.auth\.getUser\(token\)/);
   assert.match(source, /admin\.auth\.admin\.inviteUserByEmail/);
-  assert.match(source, /get_evaluation_invite_context/);
-  assert.match(source, /provision_evaluation_access/);
+  assert.match(source, /get_tester_invite_context/);
+  assert.match(source, /provision_tester_access/);
   assert.match(source, /p_actor_id: actor\.id/);
   assert.match(source, /invitationSent \|\| !context\.has_signed_in \? "invited" : "active"/);
   assert.match(source, /assertAllowedOrigin\(request\)/);
@@ -39,10 +40,10 @@ test("evaluation invitations keep service-role authority inside an authenticated
   assert.match(repository, /invokeFunction\("invite-map-evaluation-participant"/);
   assert.match(config, /\[functions\.invite-map-evaluation-participant\][\s\S]*verify_jwt = true/);
 
-  assert.match(migration, /create or replace function public\.get_evaluation_invite_context/);
-  assert.match(migration, /security invoker/);
-  assert.match(migration, /revoke all on function public\.get_evaluation_invite_context[\s\S]*from public, anon, authenticated/i);
-  assert.match(migration, /grant execute on function public\.get_evaluation_invite_context[\s\S]*to service_role/i);
+  assert.match(institutionalMigration, /create or replace function public\.get_tester_invite_context/);
+  assert.match(institutionalMigration, /security invoker/);
+  assert.match(institutionalMigration, /revoke all on function public\.get_tester_invite_context[\s\S]*from public, anon, authenticated/i);
+  assert.match(institutionalMigration, /grant execute on function public\.get_tester_invite_context[\s\S]*to service_role/i);
 });
 
 test("staff UI captures and exposes partner grant governance", () => {
@@ -62,6 +63,10 @@ test("staff UI captures and exposes partner grant governance", () => {
   assert.match(source, /name="reviewAt"/);
   assert.match(source, /name="maxRenewals"/);
   assert.match(source, /name="fullName"/);
+  assert.match(source, /name="institutionId"/);
+  assert.match(source, /Cohorte <small>\(opcional\)<\/small>/);
+  assert.match(source, /repository\.provisionTesterAccess/);
+  assert.doesNotMatch(source, /Primero crea una cohorte tester/);
   assert.match(source, /maps-license-program-summary/);
   assert.match(source, /invitation\.invitationSent/);
   assert.match(styles, /\.maps-license-program-summary/);
@@ -78,4 +83,31 @@ test("browser dashboard receives rich program metadata without widening table ac
   assert.match(sql, /'approver_name'/);
   assert.match(sql, /'cohorts',[\s\S]*private\.get_access_program_cohorts\(actor_id\)/);
   assert.doesNotMatch(sql, /grant (?:select|insert|update|delete)[\s\S]*evaluation_cohorts[\s\S]*authenticated/i);
+});
+
+test("institutional tester access belongs to the individual account and keeps cohorts optional", () => {
+  const sql = read("supabase/migrations/20260825131205_institutional_tester_access.sql");
+  const source = read("supabase/functions/invite-map-evaluation-participant/index.ts");
+  const contracts = read("js/workspace/map-contracts.js");
+  const repository = read("js/workspace/map-repository.js");
+
+  assert.match(sql, /create table public\.institution_domains/);
+  assert.match(sql, /alter table public\.institution_domains enable row level security/);
+  assert.match(sql, /revoke all on table public\.institution_domains from public, anon, authenticated/);
+  assert.match(sql, /create or replace function public\.create_my_institution/);
+  assert.match(sql, /private\.ensure_individual_license_account_for_user/);
+  assert.match(sql, /individual_account_id, evaluation_plan\.id, 'active', 'evaluation'/);
+  assert.match(sql, /issued_by, evaluation_cohort_id, institution_id/);
+  assert.match(sql, /p_cohort_id, effective_institution_id, p_user_id, existing_license_id/);
+  assert.match(sql, /existing_is_tester/);
+  assert.match(sql, /'tester_access', true/);
+  assert.match(sql, /alter column cohort_id drop not null/);
+  assert.match(sql, /'institutions', private\.list_platform_institutions\(actor_id\)/);
+  assert.match(source, /institutionId\?: string \| null/);
+  assert.match(source, /cohortId\?: string \| null/);
+  assert.match(source, /if \(!cohortId\)/);
+  assert.doesNotMatch(source, /A valid cohortId is required/);
+  assert.match(contracts, /"institutions"/);
+  assert.match(repository, /create_my_institution/);
+  assert.match(repository, /provisionTesterAccess/);
 });

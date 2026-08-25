@@ -191,9 +191,12 @@
       p_license_id: licenseId,
       p_user_id: userId
     }),
-    createEvaluationAccount: displayName => rpc("create_my_evaluation_account", { p_display_name: displayName }),
+    createInstitution: values => rpc("create_my_institution", {
+      p_display_name: values.displayName,
+      p_domain: values.domain || null
+    }),
     createEvaluationCohort: values => rpc("create_my_access_program_cohort", {
-      p_account_id: values.accountId,
+      p_account_id: values.institutionId,
       p_product_key: values.productKey,
       p_name: values.name,
       p_purpose: values.purpose,
@@ -203,6 +206,17 @@
       p_grant_reason: values.grantReason || "",
       p_review_at: values.reviewAt || null,
       p_max_renewals: Number(values.maxRenewals || 0)
+    }),
+    provisionTesterAccess: values => invokeFunction("invite-map-evaluation-participant", {
+      institutionId: values.institutionId || null,
+      cohortId: values.cohortId || null,
+      email: values.email,
+      fullName: values.fullName || "",
+      productKey: values.productKey || null,
+      startsAt: values.startsAt || null,
+      endsAt: values.endsAt || null,
+      grantReason: values.grantReason || "",
+      reviewAt: values.reviewAt || null
     }),
     inviteEvaluationParticipant: (cohortId, email, fullName = "") => invokeFunction("invite-map-evaluation-participant", {
       cohortId,

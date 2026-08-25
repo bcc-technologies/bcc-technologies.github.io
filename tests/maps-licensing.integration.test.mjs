@@ -39,11 +39,13 @@ test("license issuance exposes the governed partner tester flow", () => {
   assert.match(moduleSource, /data-map-issue-access-kind/);
   assert.match(moduleSource, /<option value="partner_test"/);
   assert.match(moduleSource, /item\.program_type === "partner_test"/);
-  assert.match(moduleSource, /repository\.inviteEvaluationParticipant\(data\.cohortId, data\.email, data\.fullName\)/);
-  assert.match(moduleSource, /data: \{ createPartnerTestCohort: true \}/);
-  assert.match(moduleSource, /program\.value = "partner_test"/);
+  assert.match(moduleSource, /repository\.provisionTesterAccess/);
+  assert.match(moduleSource, /name="institutionId"/);
+  assert.match(moduleSource, /Cohorte <small>\(opcional\)<\/small>/);
+  assert.match(moduleSource, /Sin cohorte/);
   assert.match(moduleSource, /const commercialPlans = plans\.filter\(plan => !plan\.is_evaluation\)/);
-  assert.match(moduleSource, /submit\.disabled = missingTesterCohort/);
+  assert.match(moduleSource, /submit\.disabled = false/);
+  assert.doesNotMatch(moduleSource, /missingTesterCohort/);
 });
 
 test("browser platform administration wrappers bind identity to auth.uid", () => {
