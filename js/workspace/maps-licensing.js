@@ -41,6 +41,8 @@
   let selectedCommercialRequestId = "";
   let issueAccessKind = "commercial";
   let testerInstitutionId = "none";
+  let testerInstitutionAutoSelected = false;
+  let testerInstitutionManuallySelected = false;
   let testerUserId = "new";
   let testerCohortId = "";
   let testerDraft = {};
@@ -677,6 +679,20 @@
     return institutions.filter(item => item.status === "active");
   }
 
+  function emailDomain(email) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const separatorIndex = normalizedEmail.lastIndexOf("@");
+    if (separatorIndex <= 0 || separatorIndex === normalizedEmail.length - 1) return "";
+    return normalizedEmail.slice(separatorIndex + 1);
+  }
+
+  function institutionForDomain(domain) {
+    const normalizedDomain = String(domain || "").trim().toLowerCase().replace(/^@/, "");
+    if (!normalizedDomain) return null;
+    return activeInstitutions().find(item => Array.isArray(item.verified_domains)
+      && item.verified_domains.some(value => String(value || "").trim().toLowerCase().replace(/^@/, "") === normalizedDomain)) || null;
+  }
+
   function partnerTesterCohorts(institutionId = testerInstitutionId) {
     if (!institutionId || institutionId === "none") return [];
     return cohorts.filter(item => item.program_type === "partner_test"
@@ -705,12 +721,21 @@
     const availableInstitutions = activeInstitutions();
     if (testerInstitutionId !== "none" && !availableInstitutions.some(item => item.institution_id === testerInstitutionId)) {
       testerInstitutionId = "none";
+      testerInstitutionAutoSelected = false;
+      testerInstitutionManuallySelected = false;
     }
     if (testerUserId !== "new" && !users.some(item => item.user_id === testerUserId)) testerUserId = "new";
+    const selectedUser = selectedTesterUser();
+    const suggestedEmail = selectedUser?.email || testerDraft.email || "";
+    const suggestedDomain = emailDomain(suggestedEmail);
+    const suggestedInstitution = institutionForDomain(suggestedDomain);
+    if (testerInstitutionId === "none" && suggestedInstitution && !testerInstitutionManuallySelected) {
+      testerInstitutionId = suggestedInstitution.institution_id;
+      testerInstitutionAutoSelected = true;
+    }
     const testerCohorts = partnerTesterCohorts();
     if (!testerCohorts.some(item => item.cohort_id === testerCohortId)) testerCohortId = "";
     const selectedCohort = selectedTesterCohort();
-    const selectedUser = selectedTesterUser();
     const evaluationPlans = plans.filter(plan => plan.is_evaluation);
     const defaultProductKey = testerDraft.productKey || evaluationPlans[0]?.product_key || "";
     const defaultStartsAt = testerDraft.startsAt || localDateValue(new Date());
@@ -722,7 +747,19 @@
       return `<option value="${escapeHtml(item.institution_id)}" ${testerInstitutionId === item.institution_id ? "selected" : ""}>${escapeHtml(item.display_name)}${escapeHtml(domains)}</option>`;
     }).join("");
     const userOptions = users.map(item => `<option value="${escapeHtml(item.user_id)}" ${testerUserId === item.user_id ? "selected" : ""}>${escapeHtml(item.display_name || item.email)} · ${escapeHtml(item.email)}</option>`).join("");
+    const institutionDiscoveryNote = suggestedInstitution && testerInstitutionId === suggestedInstitution.institution_id
+      ? `<p class="maps-license-form-note">Institución sugerida por el dominio <strong>@${escapeHtml(suggestedDomain)}</strong>: <strong>${escapeHtml(suggestedInstitution.display_name)}</strong>.</p>`
+      : suggestedDomain && !suggestedInstitution
+        ? `<p class="maps-license-form-note">No encontramos una institución registrada para <strong>@${escapeHtml(suggestedDomain)}</strong>. Puedes crearla ahora.</p>`
+        : "";
     return `
+      <label>Cuenta del usuario<select name="userId" data-map-tester-user required>
+        <option value="new" ${testerUserId === "new" ? "selected" : ""}>Invitar una cuenta nueva</option>
+        ${userOptions}
+      </select></label>
+      ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.display_name || selectedUser.email)}</strong><br>${escapeHtml(selectedUser.email)}</p>` : `
+        <label>Nombre completo<input name="fullName" maxlength="160" value="${escapeHtml(testerDraft.fullName || "")}" required autocomplete="name"></label>
+        <label>Correo<input name="email" type="email" maxlength="254" value="${escapeHtml(testerDraft.email || "")}" required autocomplete="email" placeholder="usuario@institucion.edu" data-map-tester-email></label>`}
       <div class="maps-license-field-with-action">
         <label>Institución<select name="institutionId" data-map-tester-institution required>
           <option value="none" ${testerInstitutionId === "none" ? "selected" : ""}>Sin institución / independiente</option>
@@ -730,13 +767,7 @@
         </select></label>
         ${has("platform.evaluations.manage") ? `<button class="btn btn-ghost" type="button" data-map-create-institution-from-issue>Crear institución</button>` : ""}
       </div>
-      <label>Cuenta del usuario<select name="userId" data-map-tester-user required>
-        <option value="new" ${testerUserId === "new" ? "selected" : ""}>Invitar una cuenta nueva</option>
-        ${userOptions}
-      </select></label>
-      ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.display_name || selectedUser.email)}</strong><br>${escapeHtml(selectedUser.email)}</p>` : `
-        <label>Nombre completo<input name="fullName" maxlength="160" value="${escapeHtml(testerDraft.fullName || "")}" required autocomplete="name"></label>
-        <label>Correo<input name="email" type="email" maxlength="254" value="${escapeHtml(testerDraft.email || "")}" required autocomplete="email" placeholder="usuario@institucion.edu"></label>`}
+      ${institutionDiscoveryNote}
       <div class="maps-license-field-with-action">
         <label>Cohorte <small>(opcional)</small><select name="cohortId" data-map-tester-cohort>
           <option value="">Sin cohorte</option>
@@ -1148,7 +1179,7 @@
     const form = dialog?.querySelector("[data-create-institution]");
     form?.reset();
     const email = selectedTesterUser()?.email || issueForm?.querySelector('[name="email"]')?.value || testerDraft.email || "";
-    const domain = String(email).split("@")[1]?.trim().toLowerCase() || "";
+    const domain = emailDomain(email);
     if (domain) {
       setFormValue(form, "domain", domain);
       setFormValue(form, "displayName", domain.split(".")[0]?.replace(/[^a-z0-9-]/gi, " ").toUpperCase());
@@ -1189,12 +1220,30 @@
     if (event.target.matches("[data-map-tester-institution]")) {
       captureTesterDraft(event.target.form);
       testerInstitutionId = event.target.value || "none";
+      testerInstitutionAutoSelected = false;
+      testerInstitutionManuallySelected = true;
       testerCohortId = "";
       refreshPartnerTesterFields(event.target.form);
     }
     if (event.target.matches("[data-map-tester-user]")) {
       captureTesterDraft(event.target.form);
+      if (testerInstitutionAutoSelected) {
+        testerInstitutionId = "none";
+        testerCohortId = "";
+        testerInstitutionAutoSelected = false;
+      }
+      testerInstitutionManuallySelected = false;
       testerUserId = event.target.value || "new";
+      refreshPartnerTesterFields(event.target.form);
+    }
+    if (event.target.matches("[data-map-tester-email]")) {
+      captureTesterDraft(event.target.form);
+      if (testerInstitutionAutoSelected) {
+        testerInstitutionId = "none";
+        testerCohortId = "";
+        testerInstitutionAutoSelected = false;
+      }
+      testerInstitutionManuallySelected = false;
       refreshPartnerTesterFields(event.target.form);
     }
     if (event.target.matches("[data-map-tester-cohort]")) {
@@ -1270,6 +1319,9 @@
           });
           successMessage = invitationSuccessMessage(invitation);
           testerDraft = {};
+          testerInstitutionId = "none";
+          testerInstitutionAutoSelected = false;
+          testerInstitutionManuallySelected = false;
           testerUserId = "new";
           testerCohortId = "";
         } else {
@@ -1281,7 +1333,11 @@
       }
       if (form.matches("[data-create-institution]")) {
         const createdInstitutionId = await repository.createInstitution({ displayName: data.displayName, domain: data.domain });
-        if (testerSubflow === "institution") testerInstitutionId = String(createdInstitutionId || "none");
+        if (testerSubflow === "institution") {
+          testerInstitutionId = String(createdInstitutionId || "none");
+          testerInstitutionAutoSelected = testerInstitutionId !== "none";
+          testerInstitutionManuallySelected = false;
+        }
         successMessage = "La institución quedó disponible para usuarios y cohortes.";
       }
       if (form.matches("[data-create-cohort]")) {
