@@ -66,6 +66,8 @@ test("staff UI captures and exposes partner grant governance", () => {
   assert.match(source, /name="institutionId"/);
   assert.match(source, /Cohorte <small>\(opcional\)<\/small>/);
   assert.match(source, /repository\.provisionTesterAccess/);
+  assert.match(source, /data-map-create-institution-from-issue/);
+  assert.match(source, /data-map-create-cohort-from-issue/);
   assert.doesNotMatch(source, /Primero crea una cohorte tester/);
   assert.match(source, /maps-license-program-summary/);
   assert.match(source, /invitation\.invitationSent/);

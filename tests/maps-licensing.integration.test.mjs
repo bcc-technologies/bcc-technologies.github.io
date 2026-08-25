@@ -43,6 +43,14 @@ test("license issuance exposes the governed partner tester flow", () => {
   assert.match(moduleSource, /name="institutionId"/);
   assert.match(moduleSource, /Cohorte <small>\(opcional\)<\/small>/);
   assert.match(moduleSource, /Sin cohorte/);
+  assert.match(moduleSource, /data-map-create-institution-from-issue/);
+  assert.match(moduleSource, /data-map-create-cohort-from-issue/);
+  assert.match(moduleSource, /captureTesterDraft/);
+  assert.match(moduleSource, /ui\.closeLayer\(issueDialog, "continue"\)/);
+  assert.match(moduleSource, /dialog\.addEventListener\("close"/);
+  assert.match(moduleSource, /setFormValue\(form, "programType", "partner_test"\)/);
+  assert.match(moduleSource, /testerInstitutionId = String\(createdInstitutionId/);
+  assert.match(moduleSource, /testerCohortId = String\(createdCohortId/);
   assert.match(moduleSource, /const commercialPlans = plans\.filter\(plan => !plan\.is_evaluation\)/);
   assert.match(moduleSource, /submit\.disabled = false/);
   assert.doesNotMatch(moduleSource, /missingTesterCohort/);

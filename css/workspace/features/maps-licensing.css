@@ -113,6 +113,8 @@
 .maps-license-form select:focus,
 .maps-license-form textarea:focus{ outline: 2px solid var(--accent); outline-offset: 1px; }
 .maps-license-form-row{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.maps-license-field-with-action{ display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.maps-license-field-with-action > .btn{ min-height: 42px; }
 .maps-license-form-note{ margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
 .maps-license-form .workspace-layer-body{ gap: 14px; }
 
@@ -206,6 +208,7 @@
 @media (max-width: 500px){
   .maps-license-metrics,
   .maps-license-form-row,
+  .maps-license-field-with-action,
   .maps-license-detail-list{ grid-template-columns: 1fr; }
   .maps-license-program-summary dl{ grid-template-columns: 1fr; }
   .maps-license-actions .btn{ flex: 1 1 auto; justify-content: center; }

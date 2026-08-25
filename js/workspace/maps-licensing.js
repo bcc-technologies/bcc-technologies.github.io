@@ -43,6 +43,8 @@
   let testerInstitutionId = "none";
   let testerUserId = "new";
   let testerCohortId = "";
+  let testerDraft = {};
+  let testerSubflow = "";
   let busy = false;
   let tabsController = null;
 
@@ -690,6 +692,15 @@
     return users.find(item => item.user_id === testerUserId) || null;
   }
 
+  function captureTesterDraft(form) {
+    if (!form?.matches("[data-issue-license-form]")) return;
+    const data = Object.fromEntries(new FormData(form));
+    if (issueAccessKind !== "partner_test") return;
+    ["fullName", "email", "productKey", "startsAt", "endsAt", "reviewAt", "grantReason"].forEach(key => {
+      if (data[key] !== undefined) testerDraft[key] = String(data[key]);
+    });
+  }
+
   function partnerTesterFields() {
     const availableInstitutions = activeInstitutions();
     if (testerInstitutionId !== "none" && !availableInstitutions.some(item => item.institution_id === testerInstitutionId)) {
@@ -701,6 +712,9 @@
     const selectedCohort = selectedTesterCohort();
     const selectedUser = selectedTesterUser();
     const evaluationPlans = plans.filter(plan => plan.is_evaluation);
+    const defaultProductKey = testerDraft.productKey || evaluationPlans[0]?.product_key || "";
+    const defaultStartsAt = testerDraft.startsAt || localDateValue(new Date());
+    const defaultEndsAt = testerDraft.endsAt || localDateValue(new Date(Date.now() + trialOffer.duration_days * 86400000));
     const institutionOptions = availableInstitutions.map(item => {
       const domains = Array.isArray(item.verified_domains) && item.verified_domains.length
         ? ` · ${item.verified_domains.join(", ")}`
@@ -709,30 +723,37 @@
     }).join("");
     const userOptions = users.map(item => `<option value="${escapeHtml(item.user_id)}" ${testerUserId === item.user_id ? "selected" : ""}>${escapeHtml(item.display_name || item.email)} · ${escapeHtml(item.email)}</option>`).join("");
     return `
-      <label>Institución<select name="institutionId" data-map-tester-institution required>
-        <option value="none" ${testerInstitutionId === "none" ? "selected" : ""}>Sin institución / independiente</option>
-        ${institutionOptions}
-      </select></label>
+      <div class="maps-license-field-with-action">
+        <label>Institución<select name="institutionId" data-map-tester-institution required>
+          <option value="none" ${testerInstitutionId === "none" ? "selected" : ""}>Sin institución / independiente</option>
+          ${institutionOptions}
+        </select></label>
+        ${has("platform.evaluations.manage") ? `<button class="btn btn-ghost" type="button" data-map-create-institution-from-issue>Crear institución</button>` : ""}
+      </div>
       <label>Cuenta del usuario<select name="userId" data-map-tester-user required>
         <option value="new" ${testerUserId === "new" ? "selected" : ""}>Invitar una cuenta nueva</option>
         ${userOptions}
       </select></label>
       ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.display_name || selectedUser.email)}</strong><br>${escapeHtml(selectedUser.email)}</p>` : `
-        <label>Nombre completo<input name="fullName" maxlength="160" required autocomplete="name"></label>
-        <label>Correo<input name="email" type="email" maxlength="254" required autocomplete="email" placeholder="usuario@institucion.edu"></label>`}
-      <label>Cohorte <small>(opcional)</small><select name="cohortId" data-map-tester-cohort>
-        <option value="">Sin cohorte</option>
-        ${testerCohorts.map(item => `<option value="${escapeHtml(item.cohort_id)}" ${testerCohortId === item.cohort_id ? "selected" : ""}>${escapeHtml(item.cohort_name || item.name)} · ${escapeHtml(PRODUCTS[item.product_key] || item.product_key)}</option>`).join("")}
-      </select></label>
+        <label>Nombre completo<input name="fullName" maxlength="160" value="${escapeHtml(testerDraft.fullName || "")}" required autocomplete="name"></label>
+        <label>Correo<input name="email" type="email" maxlength="254" value="${escapeHtml(testerDraft.email || "")}" required autocomplete="email" placeholder="usuario@institucion.edu"></label>`}
+      <div class="maps-license-field-with-action">
+        <label>Cohorte <small>(opcional)</small><select name="cohortId" data-map-tester-cohort>
+          <option value="">Sin cohorte</option>
+          ${testerCohorts.map(item => `<option value="${escapeHtml(item.cohort_id)}" ${testerCohortId === item.cohort_id ? "selected" : ""}>${escapeHtml(item.cohort_name || item.name)} · ${escapeHtml(PRODUCTS[item.product_key] || item.product_key)}</option>`).join("")}
+        </select></label>
+        ${has("platform.evaluations.manage") ? `<button class="btn btn-ghost" type="button" data-map-create-cohort-from-issue ${testerInstitutionId === "none" ? "disabled" : ""}>Crear cohorte</button>` : ""}
+      </div>
+      ${testerInstitutionId === "none" && has("platform.evaluations.manage") ? `<p class="maps-license-form-note">Selecciona o crea una institución para habilitar cohortes.</p>` : ""}
       ${selectedCohort ? `
         <p class="maps-license-form-note">La cohorte define ${escapeHtml(PRODUCTS[selectedCohort.product_key] || selectedCohort.product_key)}, la vigencia ${formatDate(selectedCohort.starts_at)} — ${formatDate(selectedCohort.ends_at)} y su justificación.</p>` : `
-        <label>Producto<select name="productKey" required>${evaluationPlans.map(plan => `<option value="${escapeHtml(plan.product_key)}">${escapeHtml(PRODUCTS[plan.product_key] || plan.product_key)}</option>`).join("")}</select></label>
+        <label>Producto<select name="productKey" required>${evaluationPlans.map(plan => `<option value="${escapeHtml(plan.product_key)}" ${defaultProductKey === plan.product_key ? "selected" : ""}>${escapeHtml(PRODUCTS[plan.product_key] || plan.product_key)}</option>`).join("")}</select></label>
         <div class="maps-license-form-row">
-          <label>Inicio<input name="startsAt" type="datetime-local" value="${localDateValue(new Date())}" required></label>
-          <label>Fin<input name="endsAt" type="datetime-local" value="${localDateValue(new Date(Date.now() + trialOffer.duration_days * 86400000))}" required></label>
+          <label>Inicio<input name="startsAt" type="datetime-local" value="${escapeHtml(defaultStartsAt)}" required></label>
+          <label>Fin<input name="endsAt" type="datetime-local" value="${escapeHtml(defaultEndsAt)}" required></label>
         </div>
-        <label>Revisión intermedia <small>(opcional)</small><input name="reviewAt" type="datetime-local"></label>
-        <label>Justificación de la concesión<textarea name="grantReason" minlength="10" maxlength="1000" rows="3" required placeholder="Motivo, alcance acordado y valor esperado para BCC y el tester."></textarea></label>`}
+        <label>Revisión intermedia <small>(opcional)</small><input name="reviewAt" type="datetime-local" value="${escapeHtml(testerDraft.reviewAt || "")}"></label>
+        <label>Justificación de la concesión<textarea name="grantReason" minlength="10" maxlength="1000" rows="3" required placeholder="Motivo, alcance acordado y valor esperado para BCC y el tester.">${escapeHtml(testerDraft.grantReason || "")}</textarea></label>`}
       <p class="maps-license-form-note">La licencia se emitirá sobre la cuenta individual del usuario. La institución y la cohorte sólo organizan su afiliación.</p>`;
   }
 
@@ -1025,9 +1046,21 @@
   async function handleClick(event) {
     if (event.target.closest("[data-map-refresh]")) return void loadDashboard();
 
+    const createInstitutionFromIssue = event.target.closest("[data-map-create-institution-from-issue]");
+    if (createInstitutionFromIssue) {
+      prepareInstitutionFromIssue(createInstitutionFromIssue.closest("form"));
+      return;
+    }
+
+    const createCohortFromIssue = event.target.closest("[data-map-create-cohort-from-issue]");
+    if (createCohortFromIssue) {
+      prepareCohortFromIssue(createCohortFromIssue.closest("form"));
+      return;
+    }
 
     const openButton = event.target.closest("[data-open-map-layer]");
     if (openButton) {
+      if (["map-institution-dialog", "map-cohort-dialog"].includes(openButton.dataset.openMapLayer)) testerSubflow = "";
       if (openButton.dataset.openMapLayer === "map-participant-dialog") syncParticipantDialog();
       const dialog = root.querySelector(`#${openButton.dataset.openMapLayer}`);
       ui.openLayer(dialog, { trigger: openButton });
@@ -1036,7 +1069,8 @@
 
     const closeButton = event.target.closest("[data-close-map-layer]");
     if (closeButton) {
-      ui.closeLayer(closeButton.closest("dialog"));
+      const dialog = closeButton.closest("dialog");
+      ui.closeLayer(dialog);
       return;
     }
 
@@ -1091,8 +1125,61 @@
     refreshIcons(fields);
   }
 
+  function setFormValue(form, name, value) {
+    const field = form?.elements?.namedItem(name);
+    if (field && value !== undefined && value !== null && String(value) !== "") field.value = String(value);
+  }
+
+  function openTesterSubflow(dialog, issueForm, trigger) {
+    const issueDialog = issueForm?.closest("dialog");
+    if (issueDialog?.open) ui.closeLayer(issueDialog, "continue");
+    if (!ui.openLayer(dialog, { trigger })) return;
+    dialog.addEventListener("close", () => {
+      if (!testerSubflow || !issueDialog || issueDialog.open) return;
+      testerSubflow = "";
+      ui.openLayer(issueDialog);
+    }, { once: true });
+  }
+
+  function prepareInstitutionFromIssue(issueForm) {
+    captureTesterDraft(issueForm);
+    testerSubflow = "institution";
+    const dialog = root.querySelector("#map-institution-dialog");
+    const form = dialog?.querySelector("[data-create-institution]");
+    form?.reset();
+    const email = selectedTesterUser()?.email || issueForm?.querySelector('[name="email"]')?.value || testerDraft.email || "";
+    const domain = String(email).split("@")[1]?.trim().toLowerCase() || "";
+    if (domain) {
+      setFormValue(form, "domain", domain);
+      setFormValue(form, "displayName", domain.split(".")[0]?.replace(/[^a-z0-9-]/gi, " ").toUpperCase());
+    }
+    openTesterSubflow(dialog, issueForm, issueForm?.querySelector("[data-map-create-institution-from-issue]"));
+  }
+
+  function prepareCohortFromIssue(issueForm) {
+    captureTesterDraft(issueForm);
+    if (!testerInstitutionId || testerInstitutionId === "none") {
+      setMessage("Selecciona o crea una institución antes de crear la cohorte.", "error");
+      return;
+    }
+    testerSubflow = "cohort";
+    const dialog = root.querySelector("#map-cohort-dialog");
+    const body = dialog?.querySelector(".workspace-layer-body");
+    if (body) body.innerHTML = cohortFields();
+    const form = dialog?.querySelector("[data-create-cohort]");
+    setFormValue(form, "institutionId", testerInstitutionId);
+    setFormValue(form, "programType", "partner_test");
+    setFormValue(form, "productKey", testerDraft.productKey);
+    setFormValue(form, "startsAt", testerDraft.startsAt);
+    setFormValue(form, "endsAt", testerDraft.endsAt);
+    setFormValue(form, "reviewAt", testerDraft.reviewAt);
+    setFormValue(form, "grantReason", testerDraft.grantReason);
+    openTesterSubflow(dialog, issueForm, issueForm?.querySelector("[data-map-create-cohort-from-issue]"));
+  }
+
   function handleChange(event) {
     if (event.target.matches("[data-map-issue-access-kind]")) {
+      captureTesterDraft(event.target.form);
       issueAccessKind = event.target.value === "partner_test" ? "partner_test" : "commercial";
       const fields = event.target.form?.querySelector("[data-map-issue-access-fields]");
       if (fields) fields.innerHTML = issueAccessDetails();
@@ -1100,15 +1187,18 @@
       refreshIcons(fields);
     }
     if (event.target.matches("[data-map-tester-institution]")) {
+      captureTesterDraft(event.target.form);
       testerInstitutionId = event.target.value || "none";
       testerCohortId = "";
       refreshPartnerTesterFields(event.target.form);
     }
     if (event.target.matches("[data-map-tester-user]")) {
+      captureTesterDraft(event.target.form);
       testerUserId = event.target.value || "new";
       refreshPartnerTesterFields(event.target.form);
     }
     if (event.target.matches("[data-map-tester-cohort]")) {
+      captureTesterDraft(event.target.form);
       testerCohortId = event.target.value || "";
       refreshPartnerTesterFields(event.target.form);
     }
@@ -1179,6 +1269,9 @@
             reviewAt: data.reviewAt ? isoDate(data.reviewAt) : null
           });
           successMessage = invitationSuccessMessage(invitation);
+          testerDraft = {};
+          testerUserId = "new";
+          testerCohortId = "";
         } else {
           await repository.issueLicense({ ...data, startsAt: isoDate(data.startsAt), endsAt: data.endsAt ? isoDate(data.endsAt) : null });
         }
@@ -1187,7 +1280,8 @@
         await repository.assignSeat(data.licenseId, data.userId);
       }
       if (form.matches("[data-create-institution]")) {
-        await repository.createInstitution({ displayName: data.displayName, domain: data.domain });
+        const createdInstitutionId = await repository.createInstitution({ displayName: data.displayName, domain: data.domain });
+        if (testerSubflow === "institution") testerInstitutionId = String(createdInstitutionId || "none");
         successMessage = "La institución quedó disponible para usuarios y cohortes.";
       }
       if (form.matches("[data-create-cohort]")) {
@@ -1197,6 +1291,7 @@
           endsAt: isoDate(data.endsAt),
           reviewAt: data.reviewAt ? isoDate(data.reviewAt) : null
         });
+        if (testerSubflow === "cohort") testerCohortId = String(createdCohortId || "");
         successMessage = "El programa de acceso y su cohorte fueron creados.";
       }
       if (form.matches("[data-invite-participant]")) {
@@ -1213,9 +1308,15 @@
           ? "La solicitud quedó marcada en revisión."
           : "La decisión comercial quedó registrada.";
       }
+      const returnToIssue = ["institution", "cohort"].includes(testerSubflow);
       ui.closeLayer(form.closest("dialog"), "success");
       form.reset();
       await loadDashboard({ successMessage });
+      if (returnToIssue) {
+        testerSubflow = "";
+        const issueDialog = root.querySelector("#map-issue-license-dialog");
+        if (issueDialog && !issueDialog.open) ui.openLayer(issueDialog);
+      }
     } catch (error) {
       setMessage(contracts.toError(error).message, "error");
       setBusy(false);
