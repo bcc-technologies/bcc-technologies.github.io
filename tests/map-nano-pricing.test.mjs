@@ -132,6 +132,7 @@ test("dashboard preserves the repository boundary behind explicit billing config
 
 test("commercial-request migration keeps direct browser access closed behind scoped RPCs", () => {
   const migration = read("supabase/migrations/20260728041132_map_nano_commercial_requests.sql");
+  const createRpcFix = read("supabase/migrations/20260728041359_fix_map_nano_commercial_request_create_rpc.sql");
   assert.match(migration, /enable row level security/);
   assert.match(migration, /map_nano_commercial_requests_deny_direct_access/);
   assert.match(migration, /map_nano_commercial_requests_one_open_change/);
@@ -140,7 +141,7 @@ test("commercial-request migration keeps direct browser access closed behind sco
   assert.match(migration, /create_my_map_nano_commercial_request/);
   assert.match(migration, /get_my_map_nano_commercial_requests/);
   assert.match(migration, /cancel_my_map_nano_commercial_request/);
-  assert.match(migration, /returning request\.id, request\.status/);
+  assert.match(createRpcFix, /returning request\.id, request\.status/);
 });
 
 test("staff commercial queue keeps contact data behind a license-manager RPC", () => {
