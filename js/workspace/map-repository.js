@@ -21,10 +21,12 @@
       const payload = await response.clone().json();
       const message = String(payload?.error || payload?.message || "").trim();
       if (!message) return error;
+      const diagnosticId = String(payload?.diagnosticId || response.headers?.get?.("X-Operation-Id") || "").trim();
       return Object.assign(new Error(message), {
         cause: error,
         code: error?.code,
-        status: response.status || error?.status
+        status: response.status || error?.status,
+        diagnosticId
       });
     } catch {
       return error;

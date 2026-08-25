@@ -59,6 +59,11 @@ test("license issuance exposes the governed partner tester flow", () => {
   assert.match(moduleSource, /const commercialPlans = plans\.filter\(plan => !plan\.is_evaluation\)/);
   assert.match(moduleSource, /submit\.disabled = false/);
   assert.doesNotMatch(moduleSource, /missingTesterCohort/);
+  assert.match(moduleSource, /name="individualEndsAt"/);
+  assert.match(moduleSource, /heredar el vencimiento del cohorte/);
+  assert.match(moduleSource, /testerAccessConfirmation/);
+  assert.match(moduleSource, /data\.cohortId \? data\.individualEndsAt : data\.endsAt/);
+
   assert.ok(moduleSource.indexOf("Cuenta del usuario") < moduleSource.indexOf("Institución<select"));
 });
 

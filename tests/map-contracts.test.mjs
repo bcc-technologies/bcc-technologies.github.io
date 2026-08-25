@@ -214,3 +214,16 @@ test("MAP license attention distinguishes cancellation from expiry and ignores r
   const activeElsewhere = { ...active, license_id: "license-other-account", account_id: "account-b" };
   assert.equal(contracts.attentionLicense([suspended, activeElsewhere]).license_id, "license-suspended");
 });
+test("MAP domain errors preserve a support reference without changing their stable code", () => {
+  const window = runtime(async () => ({ data: null, error: null }));
+  const contracts = window.BCCWorkspaceMapContracts;
+  const source = Object.assign(new Error("The MAP invitation service is unavailable"), {
+    diagnosticId: "operation-123"
+  });
+
+  const error = contracts.toError(source);
+  assert.equal(error.code, "operation_failed");
+  assert.equal(error.diagnosticId, "operation-123");
+  assert.match(error.message, /El servicio de invitaciones MAP no está disponible/);
+  assert.match(error.message, /Referencia: operation-123\./);
+});

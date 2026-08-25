@@ -127,3 +127,28 @@ test("institutional tester access belongs to the individual account and keeps co
   assert.match(repository, /create_my_institution/);
   assert.match(repository, /provisionTesterAccess/);
 });
+test("tester provisioning is covered transactionally and failures are correlatable", () => {
+  const databaseTest = read("supabase/tests/provision_tester_access_test.sql");
+  const source = read("supabase/functions/invite-map-evaluation-participant/index.ts");
+  const repository = read("js/workspace/map-repository.js");
+  const contracts = read("js/workspace/map-contracts.js");
+
+  assert.match(databaseTest, /^BEGIN;/);
+  assert.match(databaseTest, /CREATE EXTENSION IF NOT EXISTS pgtap/);
+  assert.match(databaseTest, /private\.provision_tester_access/g);
+  assert.match(databaseTest, /explicit individual expiry/);
+  assert.match(databaseTest, /inherits the cohort expiry/);
+  assert.match(databaseTest, /idempotent retry/);
+  assert.match(databaseTest, /ROLLBACK;/);
+
+  assert.match(source, /crypto\.randomUUID\(\)/);
+  assert.match(source, /"X-Operation-Id"/);
+  assert.match(source, /diagnosticId: operationId/);
+  assert.match(source, /logDiagnostic\(operationId, stage/);
+  assert.match(source, /\[redacted-email\]/);
+  assert.doesNotMatch(source, /console\.error\("\[map-evaluation-invite\]", error\)/);
+  assert.match(repository, /payload\?\.diagnosticId/);
+  assert.match(repository, /response\.headers\?\.get\?\.\("X-Operation-Id"\)/);
+  assert.match(contracts, /Referencia: \$\{diagnosticId\}/);
+  assert.match(contracts, /this\.diagnosticId/);
+});

@@ -239,6 +239,7 @@
       super(message, options);
       this.name = "MapContractError";
       this.code = code;
+      this.diagnosticId = String(options.diagnosticId || "");
     }
   }
 
@@ -434,8 +435,10 @@
   function toError(error, fallback = "No fue posible completar la operación MAP.") {
     if (error instanceof MapContractError) return error;
     const rawMessage = String(error?.message || error || fallback);
-    const message = ERROR_TRANSLATIONS.find(([pattern]) => pattern.test(rawMessage))?.[1] || rawMessage || fallback;
-    return new MapContractError(errorCode(error), message, { cause: error });
+    const translatedMessage = ERROR_TRANSLATIONS.find(([pattern]) => pattern.test(rawMessage))?.[1] || rawMessage || fallback;
+    const diagnosticId = String(error?.diagnosticId || error?.cause?.diagnosticId || "").trim();
+    const message = diagnosticId ? `${translatedMessage} Referencia: ${diagnosticId}.` : translatedMessage;
+    return new MapContractError(errorCode(error), message, { cause: error, diagnosticId });
   }
 
   window.BCCWorkspaceMapContracts = Object.freeze({

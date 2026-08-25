@@ -712,7 +712,7 @@
     if (!form?.matches("[data-issue-license-form]")) return;
     const data = Object.fromEntries(new FormData(form));
     if (issueAccessKind !== "partner_test") return;
-    ["fullName", "email", "productKey", "startsAt", "endsAt", "reviewAt", "grantReason"].forEach(key => {
+    ["fullName", "email", "productKey", "startsAt", "endsAt", "individualEndsAt", "reviewAt", "grantReason"].forEach(key => {
       if (data[key] !== undefined) testerDraft[key] = String(data[key]);
     });
   }
@@ -785,6 +785,14 @@
         </div>
         <label>Revisión intermedia <small>(opcional)</small><input name="reviewAt" type="datetime-local" value="${escapeHtml(testerDraft.reviewAt || "")}"></label>
         <label>Justificación de la concesión<textarea name="grantReason" minlength="10" maxlength="1000" rows="3" required placeholder="Motivo, alcance acordado y valor esperado para BCC y el tester.">${escapeHtml(testerDraft.grantReason || "")}</textarea></label>`}
+      ${selectedCohort ? `
+        <label>Vencimiento individual <small>(opcional)</small>
+          <input name="individualEndsAt" type="datetime-local"
+            value="${escapeHtml(testerDraft.individualEndsAt || "")}"
+            min="${escapeHtml(localDateValue(new Date(Math.max(Date.now(), new Date(selectedCohort.starts_at).getTime()))))}"
+            max="${escapeHtml(localDateValue(new Date(selectedCohort.ends_at)))}">
+        </label>
+        <p class="maps-license-form-note">Déjalo vacío para heredar el vencimiento del cohorte (${formatDate(selectedCohort.ends_at)}). Una fecha individual nunca extenderá el acceso más allá del cohorte.</p>` : ""}
       <p class="maps-license-form-note">La licencia se emitirá sobre la cuenta individual del usuario. La institución y la cohorte sólo organizan su afiliación.</p>`;
   }
 
@@ -1132,6 +1140,7 @@
   }
 
   function handleInput(event) {
+    if (event.target.form?.matches("[data-issue-license-form]")) captureTesterDraft(event.target.form);
     if (event.target.matches("[data-map-license-query]")) {
       licenseQuery = event.target.value;
       renderLicenseResultRegion();
@@ -1281,6 +1290,28 @@
     submit.dataset.idleDisabled = "false";
   }
 
+  function testerAccessConfirmation(data) {
+    const existingUser = users.find(item => item.user_id === data.userId);
+    const cohort = cohorts.find(item => item.cohort_id === data.cohortId);
+    const institution = institutions.find(item => item.institution_id === data.institutionId);
+    const productKey = cohort?.product_key || data.productKey;
+    const explicitEnd = data.cohortId ? data.individualEndsAt : data.endsAt;
+    const effectiveEnd = explicitEnd
+      ? formatDate(isoDate(explicitEnd))
+      : cohort?.ends_at
+        ? `${formatDate(cohort.ends_at)} (heredado del cohorte)`
+        : "No definido";
+    const accountLabel = existingUser?.display_name || existingUser?.email || data.fullName || data.email;
+    const institutionLabel = institution?.display_name || "Independiente";
+    const cohortLabel = cohort?.cohort_name || cohort?.name || "Sin cohorte";
+
+    return ui.confirmAction({
+      title: "Confirmar acceso tester",
+      description: `Cuenta individual: ${accountLabel}. Institución: ${institutionLabel}. Cohorte: ${cohortLabel}. Producto: ${PRODUCTS[productKey] || productKey}. Vencimiento: ${effectiveEnd}.`,
+      confirmLabel: "Dar acceso tester"
+    });
+  }
+
   function renderLicenseResultRegion() {
     const results = root.querySelector("[data-map-license-results]");
     if (results) results.innerHTML = licenseResults();
@@ -1298,8 +1329,12 @@
     if (!form || !root.contains(form)) return;
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
     const data = Object.fromEntries(new FormData(form));
+    if (form.matches("[data-issue-license-form]") && data.accessKind === "partner_test") {
+      const confirmed = await testerAccessConfirmation(data);
+      if (!confirmed) return;
+    }
+    setBusy(true);
     try {
       setMessage("Guardando cambios...");
       let successMessage = "Cambio guardado y acceso recalculado.";
@@ -1313,7 +1348,9 @@
             fullName: existingUser ? "" : data.fullName,
             productKey: data.productKey || null,
             startsAt: data.startsAt ? isoDate(data.startsAt) : null,
-            endsAt: data.endsAt ? isoDate(data.endsAt) : null,
+            endsAt: data.cohortId
+              ? data.individualEndsAt ? isoDate(data.individualEndsAt) : null
+              : data.endsAt ? isoDate(data.endsAt) : null,
             grantReason: data.grantReason || "",
             reviewAt: data.reviewAt ? isoDate(data.reviewAt) : null
           });

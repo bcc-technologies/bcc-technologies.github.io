@@ -93,15 +93,20 @@ function corsHeaders(request: Request): Record<string, string> {
     "Access-Control-Allow-Origin": origin && isAllowedOrigin(origin) ? origin : new URL(siteUrl()).origin,
     "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Expose-Headers": "X-Operation-Id",
     "Access-Control-Max-Age": "3600",
     "Vary": "Origin"
   };
 }
 
-function jsonResponse(request: Request, body: unknown, status = 200): Response {
+function jsonResponse(request: Request, body: unknown, status = 200, operationId = ""): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...JSON_HEADERS, ...corsHeaders(request) }
+    headers: {
+      ...JSON_HEADERS,
+      ...corsHeaders(request),
+      ...(operationId ? { "X-Operation-Id": operationId } : {})
+    }
   });
 }
 
@@ -227,6 +232,39 @@ function invitationRedirectUrl(): string {
   return `${siteUrl()}/auth-callback.html?next=${encodeURIComponent("/dashboard.html#licencias")}`;
 }
 
+function diagnosticText(value: unknown): string {
+  return String(value || "")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
+    .slice(0, 2000);
+}
+function errorDetails(error: unknown): Record<string, string> {
+  const source = error as {
+    name?: unknown;
+    code?: unknown;
+    message?: unknown;
+    details?: unknown;
+    hint?: unknown;
+  } | null;
+  return {
+    name: String(source?.name || "Error"),
+    code: String(source?.code || ""),
+    message: diagnosticText(source?.message || error || "Unknown error"),
+    details: diagnosticText(source?.details),
+    hint: diagnosticText(source?.hint)
+  };
+}
+
+function logDiagnostic(
+  operationId: string,
+  stage: string,
+  outcome: "success" | "error",
+  details: Record<string, unknown> = {}
+): void {
+  const entry = JSON.stringify({ operationId, stage, outcome, ...details });
+  if (outcome === "error") console.error("[map-evaluation-invite]", entry);
+  else console.info("[map-evaluation-invite]", entry);
+}
+
 function publicError(error: unknown): { status: number; message: string } {
   if (error instanceof HttpError) return { status: error.status, message: error.message };
   const message = String((error as { message?: unknown } | null)?.message || "").trim();
@@ -239,24 +277,35 @@ function publicError(error: unknown): { status: number; message: string } {
   if (/tester user does not exist|evaluation cohort is not active|requires a partner tester cohort|cohort does not belong|selected institution is not active|MAP product is required|active evaluation plan|valid start and end time|grant reason|review date/i.test(message)) {
     return { status: 400, message };
   }
-  console.error("[map-evaluation-invite]", error);
+
   return { status: 500, message: "The MAP invitation service is unavailable" };
 }
 
 Deno.serve(async request => {
   if (request.method === "OPTIONS") return optionsResponse(request);
+
+  const operationId = crypto.randomUUID();
+  let stage = "request";
   try {
     if (request.method !== "POST") throw new HttpError(405, "Method not allowed");
+
+    stage = "origin";
     assertAllowedOrigin(request);
 
+    stage = "authentication";
     const admin = adminClient();
     const actor = await authenticatedUser(request, admin);
+
+    stage = "input";
     const input = normalizeInput(await jsonBody(request));
+
+    stage = "context";
     let context = await inviteContext(admin, input, actor.id);
     let userId = context.user_id || null;
     let invitationSent = false;
 
     if (!userId) {
+      stage = "auth_invite";
       if (!input.fullName) {
         throw new HttpError(400, "The participant name is required for a new account");
       }
@@ -282,6 +331,7 @@ Deno.serve(async request => {
     const memberStatus: "invited" | "active" =
       invitationSent || !context.has_signed_in ? "invited" : "active";
 
+    stage = "provision";
     const { data: provisionedData, error: provisionError } = await admin.rpc("provision_tester_access", {
       p_institution_id: context.institution_id || input.institutionId,
       p_cohort_id: input.cohortId,
@@ -301,8 +351,18 @@ Deno.serve(async request => {
     ) as ProvisionedAccess | null;
     if (!provisioned?.license_id) throw new Error("Tester access was not provisioned");
 
+    stage = "complete";
+    logDiagnostic(operationId, stage, "success", {
+      invitationSent,
+      memberStatus: provisioned.member_status,
+      institutionScoped: Boolean(provisioned.institution_id),
+      cohortScoped: Boolean(provisioned.cohort_id),
+      customExpiry: Boolean(input.endsAt)
+    });
+
     return jsonResponse(request, {
       ok: true,
+      operationId,
       invitationSent,
       userId,
       memberStatus: provisioned.member_status,
@@ -311,9 +371,17 @@ Deno.serve(async request => {
       institutionId: provisioned.institution_id || null,
       cohortId: provisioned.cohort_id || null,
       suggestedInstitutionId: context.suggested_institution_id || null
-    }, invitationSent ? 201 : 200);
+    }, invitationSent ? 201 : 200, operationId);
   } catch (error) {
     const response = publicError(error);
-    return jsonResponse(request, { ok: false, error: response.message }, response.status);
+    logDiagnostic(operationId, stage, "error", {
+      status: response.status,
+      ...errorDetails(error)
+    });
+    return jsonResponse(request, {
+      ok: false,
+      error: response.message,
+      diagnosticId: operationId
+    }, response.status, operationId);
   }
 });
