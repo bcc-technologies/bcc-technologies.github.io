@@ -949,6 +949,44 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
     "Cargando contactos...": "Loading contacts...", "Sin asunto": "No subject", "Sin prospecto": "No prospect", "Resumen operativo del pipeline": "Pipeline operational summary", "Resumen del pipeline": "Pipeline summary", "Sin monto": "No amount", "Enviar correo": "Send email", "Registrar actividad": "Log activity", "sin contacto": "no contact", "sin fecha": "no date", "Cada adjunto necesita una URL.": "Each attachment needs a URL.", "Los adjuntos deben usar URLs http(s).": "Attachments must use http(s) URLs.", "CRM tardo demasiado en responder. Revisa Supabase o intenta de nuevo.": "CRM took too long to respond. Check Supabase or try again.", "Nombre, rol o equipo": "Name, role, or team", "Ganado o perdido -> congelar acciones": "Won or lost -> freeze actions", "Evita que los cierres sigan apareciendo como trabajo operativo activo.": "Prevent closed opportunities from continuing to appear as active operational work.", "Designar primer contacto": "Assign first contact", "Asignar responsable, definir estado y abrir comunicación inicial desde una plantilla.": "Assign an owner, set a status, and open initial communication from a template.", "Reasignar la oportunidad y dejar una nota clara para el siguiente responsable.": "Reassign the opportunity and leave a clear note for the next owner.", "Crear actividad inmediata o reasignar la oportunidad a una persona responsable.": "Create an immediate activity or reassign the opportunity to a responsible person.", "Designar responsable y abrir comunicación inicial desde una plantilla.": "Assign an owner and open initial communication from a template.", "Confirmar siguiente hito, registrar actividad y preparar automatización de seguimiento.": "Confirm the next milestone, log activity, and prepare follow-up automation.", "Sin fuente": "No source", "Sin responsable": "No owner", "Filtrar por seguimiento": "Filter by follow-up", "Filtrar por fuente": "Filter by source", "Filtrar por responsable": "Filter by owner", "Resumen del directorio": "Directory summary", "Sin empresa": "No company", "Nuevo contacto": "New contact", "Actualiza la ficha comercial.": "Update the commercial profile.", "Crea un nuevo registro en la base comercial.": "Create a new record in the commercial base.", "industrial, MAP, demo...": "industrial, MAP, demo...", "Persona, equipo o rol": "Person, team, or role", "Contexto para quien recibe o reasigna": "Context for the person receiving or reassigning", "Crear prospecto": "Create prospect", "Guardar correo": "Save email", "Guardar y enviar": "Save and send", "Crear y enviar": "Create and send", "Guardar y programar": "Save and schedule", "Crear y programar": "Create and schedule", "Guardar actividad": "Save activity", "Crear actividad": "Create activity", "Buscar plantillas...": "Search templates...", "Buscar plantillas": "Search templates", "Filtrar plantillas por estado": "Filter templates by status", "Resumen de plantillas": "Template summary", "Actualiza contenido y estado.": "Update content and status.", "Crea un mensaje reutilizable.": "Create a reusable message.", "Primer contacto, seguimiento, propuesta...": "First contact, follow-up, proposal...", "Crear plantilla": "Create template", "Plantilla sin nombre": "Untitled template", "Sin contenido": "No content", "No fue posible guardar el contacto.": "The contact could not be saved.", "No fue posible eliminar el contacto.": "The contact could not be deleted.", "No fue posible guardar la plantilla.": "The template could not be saved.", "No fue posible eliminar la plantilla.": "The template could not be deleted.", "Define una fecha y hora para programar el correo.": "Set a date and time to schedule the email.", "No fue posible guardar el correo.": "The email could not be saved.", "No fue posible eliminar el correo.": "The email could not be deleted.", "No fue posible guardar la actividad.": "The activity could not be saved.", "No fue posible eliminar la actividad.": "The activity could not be deleted.", "Sin fase": "No stage", "Buscar contactos...": "Search contacts...", "Buscar contactos": "Search contacts", "Filtrar por fase": "Filter by stage", "Directorio comercial": "Commercial directory", "Detalle del contacto": "Contact detail",
     "No fue posible completar la solicitud.": "The request could not be completed."
   });
+  const partnerAccessEn = Object.freeze({
+    "Nuevo acceso": "New access",
+    "Emitir acceso MAP": "Issue MAP access",
+    "Asigna una licencia comercial o incorpora un tester a un programa aliado.": "Assign a commercial license or add a tester to a partner program.",
+    "Tipo de acceso": "Access type",
+    "Licencia comercial": "Commercial license",
+    "Dar acceso tester": "Grant tester access",
+    "Primero crea una cohorte tester.": "Create a tester cohort first.",
+    "El acceso tester se administra por cohortes para conservar vigencia, responsable y justificación.": "Tester access is managed through cohorts to preserve its term, sponsor, and rationale.",
+    "Crear cohorte tester": "Create tester cohort",
+    "Cohorte tester": "Tester cohort",
+    "Correo del tester": "Tester email",
+    "(solo si la cuenta todavía no existe)": "(only if the account does not exist yet)",
+    "El usuario existente recibirá acceso activo. Si el correo aún no tiene cuenta, se enviará una invitación.": "An existing user will receive active access. If the email does not have an account yet, an invitation will be sent.",
+    "Evaluación estándar": "Standard evaluation",
+    "Tester de cliente aliado": "Partner client tester",
+    "Piloto de cortesía": "Complimentary pilot",
+    "Gobierno del acceso": "Access governance",
+    "Programa de acceso": "Access program",
+    "Justificación": "Grant rationale",
+    "Responsable BCC": "BCC sponsor",
+    "No registrado": "Not recorded",
+    "Revisión": "Review",
+    "Sin revisión intermedia": "No interim review",
+    "Renovaciones": "Renewals",
+    "Nombre completo": "Full name",
+    "(para cuentas nuevas)": "(for new accounts)",
+    "Programa": "Program",
+    "Justificación de la concesión": "Grant rationale",
+    "Motivo, alcance acordado y valor esperado para BCC y el aliado.": "Reason, agreed scope, and expected value for BCC and the partner.",
+    "Revisión intermedia": "Interim review",
+    "(opcional)": "(optional)",
+    "Renovaciones permitidas": "Allowed renewals",
+    "El programa de acceso y su cohorte fueron creados.": "The access program and its cohort were created.",
+    "La invitación fue enviada y el acceso quedó pendiente de activación.": "The invitation was sent and access is pending activation.",
+    "La cuenta existente recibió acceso activo.": "The existing account received active access.",
+    "La cuenta invitada quedó vinculada a la cohorte.": "The invited account was linked to the cohort."
+  });
   const clientMapLicensesEn = Object.freeze({
     "Sin acceso vigente": "No active access", "Estado de acceso": "Access status", "Tu acceso": "Your access", "Inicio": "Start", "Vigencia": "Term", "Modalidad": "License type", "Facturación": "Billing", "No especificado": "Not specified", "Sin vencimiento": "No expiry", "Hasta": "Until", "No especificada": "Not specified", "Evaluación": "Evaluation", "Licencia MAP": "MAP license", "Cuenta MAP": "MAP account",
     "Capacidades habilitadas": "Enabled capabilities", "Las capacidades técnicas aún no están disponibles para esta asignación.": "Technical capabilities are not available for this assignment yet.", "Uso de plazas": "Seat usage", "de plazas ocupadas": "of seats in use", "El ciclo de evaluación es administrado por el equipo BCC.": "The evaluation cycle is managed by the BCC team.", "Gestionar plazas": "Manage seats", "Renovar licencia": "Renew license", "Solicitar reactivación": "Request reactivation", "Abrir información": "Open details",
@@ -1009,7 +1047,7 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
     "La obtención de patentes todavía está pendiente de implementación, así que se espera que esta vista permanezca vacía por ahora.": "Patent fetching is still pending implementation, so this view is expected to stay empty for now.",
     "Intelligence científica y tecnológica para monitorear señales estratégicas.": "Scientific and technology intelligence for monitoring strategic signals."
   });
-  const copy = Object.freeze({ ...en, ...staffEn, ...staffDynamicEn, ...staffDeferredEn, ...clientMapLicensesEn, ...intelligenceRadarEn });
+  const copy = Object.freeze({ ...en, ...staffEn, ...staffDynamicEn, ...staffDeferredEn, ...partnerAccessEn, ...clientMapLicensesEn, ...intelligenceRadarEn });
   const markupEntries = Object.freeze(Object.entries(copy)
     .sort(([left], [right]) => right.length - left.length));
   const english = () => document.documentElement.lang.toLowerCase().startsWith("en");

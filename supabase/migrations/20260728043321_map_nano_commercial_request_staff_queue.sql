@@ -188,4 +188,4 @@ as $$
 $$;
 
 revoke all on function public.review_my_map_nano_commercial_request(uuid, text, text) from public, anon;
-grant execute on function public.review_my_map_nano_commercial_request(uuid, text, text) to authenticated, service_role;
+grant execute on function public.review_my_map_nano_commercial_request(uuid, text, text) to authenticated, service_role;;

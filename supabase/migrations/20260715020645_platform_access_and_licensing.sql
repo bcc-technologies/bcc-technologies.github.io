@@ -511,3 +511,5 @@ alter table public.profiles add constraint profiles_staff_roles_check
   check (staff_roles <@ array[
     'author', 'cofounder', 'department_director', 'maps_developer', 'maps_release_manager'
   ]::text[]);
+
+;

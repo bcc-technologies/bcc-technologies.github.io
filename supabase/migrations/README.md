@@ -34,5 +34,11 @@ mappings. It never enters the commercial plan or seat model. Developer workspace
 access remains a separate `map.dev.access` permission assigned only to administrators,
 MAP developers and release managers.
 
-The website-side implementation guide is
-[`docs/MAP_EVALUATION_ADMIN_UI.md`](../../docs/MAP_EVALUATION_ADMIN_UI.md).
+`20260825112036_partner_access_programs_and_invitations.sql` classifies
+standard evaluations, partner testing, and complimentary pilots explicitly.
+It adds accountable sponsorship, approval, review and renewal limits, plus a
+service-role-only invitation context for the authenticated Edge Function.
+
+The current website-side implementation guide is
+[`docs/MAP_PARTNER_ACCESS_PROGRAM.md`](../../docs/MAP_PARTNER_ACCESS_PROGRAM.md).
+The earlier backend contract remains in `docs/MAP_EVALUATION_ADMIN_UI.md`.

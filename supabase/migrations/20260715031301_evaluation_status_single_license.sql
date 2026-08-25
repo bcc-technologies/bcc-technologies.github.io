@@ -57,3 +57,5 @@ $$;
 
 revoke all on function private.get_current_evaluation_status() from public, anon, authenticated;
 grant execute on function private.get_current_evaluation_status() to authenticated, service_role;
+
+;

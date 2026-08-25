@@ -1,5 +1,5 @@
 -- The public analytics endpoint is intentionally callable by anonymous visitors.
--- Keep the private schema hidden and delegate through a narrowly scoped wrapper.
+-- Keep private schema hidden and delegate through a narrowly scoped wrapper.
 create or replace function public.record_analytics_event(
   event_name text,
   session_id text,
@@ -38,4 +38,4 @@ as $$
 $$;
 
 revoke all on function public.record_analytics_event(text, text, text, text, text, text, text, text, text, text, text, jsonb, text) from public;
-grant execute on function public.record_analytics_event(text, text, text, text, text, text, text, text, text, text, text, jsonb, text) to anon, authenticated;
+grant execute on function public.record_analytics_event(text, text, text, text, text, text, text, text, text, text, text, jsonb, text) to anon, authenticated;;

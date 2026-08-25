@@ -24,12 +24,26 @@ test("MAP licensing UI uses authenticated Supabase RPCs without the suspended Re
 
   assert.match(repository, /get_my_platform_admin_dashboard/);
   assert.match(repository, /issue_my_platform_license/);
-  assert.match(repository, /provision_my_evaluation_participant/);
+  assert.match(repository, /create_my_access_program_cohort/);
+  assert.match(repository, /invite-map-evaluation-participant/);
   assert.doesNotMatch(moduleSource, /supabase\.rpc|loadSupabaseClient|map-nano\.onrender\.com|mapRequest\(|fetch\(/);
   assert.match(moduleSource, /role="tablist"/);
   assert.match(moduleSource, /aria-selected/);
   assert.match(moduleSource, /platform\.permissions\.manage/);
   assert.match(moduleSource, /platform\.analytics\.read/);
+});
+
+test("license issuance exposes the governed partner tester flow", () => {
+  const moduleSource = read("js/workspace/maps-licensing.js");
+
+  assert.match(moduleSource, /data-map-issue-access-kind/);
+  assert.match(moduleSource, /<option value="partner_test"/);
+  assert.match(moduleSource, /item\.program_type === "partner_test"/);
+  assert.match(moduleSource, /repository\.inviteEvaluationParticipant\(data\.cohortId, data\.email, data\.fullName\)/);
+  assert.match(moduleSource, /data: \{ createPartnerTestCohort: true \}/);
+  assert.match(moduleSource, /program\.value = "partner_test"/);
+  assert.match(moduleSource, /const commercialPlans = plans\.filter\(plan => !plan\.is_evaluation\)/);
+  assert.match(moduleSource, /submit\.disabled = missingTesterCohort/);
 });
 
 test("browser platform administration wrappers bind identity to auth.uid", () => {

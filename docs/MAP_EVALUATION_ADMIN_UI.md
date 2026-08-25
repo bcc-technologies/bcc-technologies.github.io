@@ -1,5 +1,9 @@
 # UI administrativa de evaluaciones MAP
 
+> Nota: este documento conserva el contrato histórico del backend MAP. La
+> implementación web canónica de programas aliados e invitaciones está en
+> [`MAP_PARTNER_ACCESS_PROGRAM.md`](./MAP_PARTNER_ACCESS_PROGRAM.md).
+
 Esta guía describe la interfaz web para gestionar testers externos de la
 **UserUI** de MAP. No es una interfaz de desarrollo de pipelines: los testers
 son usuarios `client` y no reciben `map.dev.access`.

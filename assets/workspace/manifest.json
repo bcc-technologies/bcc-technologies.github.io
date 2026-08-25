@@ -8,7 +8,7 @@
       },
       "javascript": {
         "file": "assets/workspace/dashboard-client.js",
-        "version": "91d5a779303f69c5"
+        "version": "7d568a31bb381c30"
       }
     },
     "staff": {
@@ -18,7 +18,7 @@
       },
       "javascript": {
         "file": "assets/workspace/dashboard-staff.js",
-        "version": "2a623fe424124640"
+        "version": "3dca6dd03ee1a03c"
       }
     }
   }

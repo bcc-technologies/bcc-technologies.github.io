@@ -1,9 +1,9 @@
-create or replace function public.sync_stripe_subscription_snapshot(p_snapshot jsonb)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public, pg_temp
-as $$
+CREATE OR REPLACE FUNCTION public.sync_stripe_subscription_snapshot(p_snapshot jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
 declare
   target_account_id uuid := (p_snapshot->>'account_id')::uuid;
   purchaser_user_id uuid := nullif(p_snapshot->>'purchaser_user_id', '')::uuid;
@@ -108,13 +108,10 @@ begin
     on conflict (license_id, user_id) where unassigned_at is null do nothing;
   end if;
 
-  return jsonb_build_object(
-    'subscription_id', subscription_id,
-    'license_id', target_license_id,
-    'license_status', license_status
-  );
+  return jsonb_build_object('subscription_id', subscription_id, 'license_id', target_license_id, 'license_status', license_status);
 end;
-$$;
+$function$;
 
 revoke all on function public.sync_stripe_subscription_snapshot(jsonb) from public, anon, authenticated;
 grant execute on function public.sync_stripe_subscription_snapshot(jsonb) to service_role;
+;

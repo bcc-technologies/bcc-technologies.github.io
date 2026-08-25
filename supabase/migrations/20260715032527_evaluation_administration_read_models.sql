@@ -165,3 +165,5 @@ $$;
 
 revoke all on function public.list_evaluation_cohort_participants(uuid, uuid) from public, anon, authenticated;
 grant execute on function public.list_evaluation_cohort_participants(uuid, uuid) to service_role;
+
+;

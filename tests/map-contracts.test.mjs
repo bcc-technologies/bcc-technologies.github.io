@@ -43,6 +43,7 @@ test("client MAP repository normalizes malformed collections at the RPC boundary
 
   const result = await window.BCCWorkspaceMapRepository.client.getDashboard();
   assert.deepEqual(calls, [
+    "activate_my_evaluation_memberships",
     "get_my_license_overview",
     "get_my_platform_access",
     "get_my_internal_entitlements",

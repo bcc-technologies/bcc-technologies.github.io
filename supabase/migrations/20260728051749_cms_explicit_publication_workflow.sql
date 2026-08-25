@@ -78,5 +78,4 @@ end;
 $$;
 
 revoke all on function public.publish_cms_post(text) from public;
-revoke all on function public.publish_cms_post(text) from anon;
-grant execute on function public.publish_cms_post(text) to authenticated;
+grant execute on function public.publish_cms_post(text) to authenticated;;

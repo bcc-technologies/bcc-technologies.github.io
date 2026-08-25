@@ -42,3 +42,5 @@ drop policy if exists "No direct authenticated platform access" on public.licens
 create policy "No direct authenticated platform access"
 on public.license_assignments as restrictive for all to authenticated
 using (false) with check (false);
+
+;
