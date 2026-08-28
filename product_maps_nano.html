@@ -145,7 +145,7 @@
       <figure class="hero-media">
         <img src="static/mapnano_sf.png" alt="Interfaz principal de MAP-Nano" width="1920" height="1080" decoding="async" />
         <figcaption>
-          <button class="map-nano-showcase__preview-link" type="button" data-map-nano-showcase-open><span aria-hidden="true">&#9654;</span> Ver recorrido interactivo</button>
+          <button class="map-nano-showcase__preview-link" type="button" data-map-nano-showcase-open><span aria-hidden="true">&#9654;</span> Ver recorrido de producto</button>
         </figcaption>
       </figure>
     </div>
@@ -299,24 +299,46 @@
     <div class="map-nano-showcase__shell">
       <header class="map-nano-showcase__header">
         <div>
-          <p class="map-nano-showcase__eyebrow">Demo interactiva</p>
-          <h2 id="map-nano-showcase-title">Explora MAP-Nano en vivo</h2>
+          <p class="map-nano-showcase__eyebrow">Recorrido de producto</p>
+          <h2 id="map-nano-showcase-title">MAP-Nano: de la micrografía a resultados</h2>
         </div>
         <button class="map-nano-showcase__close" type="button" data-map-nano-showcase-close aria-label="Cerrar recorrido">&times;</button>
       </header>
       <div class="map-nano-showcase__stage" data-map-nano-showcase-stage>
-        <div class="map-nano-showcase__loading" role="status">Preparando el recorrido&hellip;</div>
-        <iframe
-          title="Recorrido interactivo de MAP-Nano"
-          data-src="https://map-nano.onrender.com/demo?embed=1&amp;tour=nano-overview"
-          loading="lazy"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allow="fullscreen"
-          allowfullscreen></iframe>
+        <div class="map-nano-showcase__video-panel" data-map-nano-showcase-video-panel>
+          <video
+            data-map-nano-showcase-video
+            controls
+            playsinline
+            preload="metadata"
+            poster="/static/showcase/map-nano-product-walkthrough-poster-2026-08.jpg"
+            aria-label="Recorrido de producto de MAP-Nano">
+            <source src="/static/showcase/map-nano-product-walkthrough-2026-08.mp4" type="video/mp4">
+            Tu navegador no puede reproducir este vídeo.
+          </video>
+        </div>
+        <div class="map-nano-showcase__live-panel" data-map-nano-showcase-live-panel hidden>
+          <div class="map-nano-showcase__loading" role="status">Preparando el demo en vivo&hellip;</div>
+          <iframe
+            title="Demo interactivo de MAP-Nano"
+            data-src="https://map-nano.onrender.com/demo?embed=1&amp;tour=nano-overview"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="fullscreen"
+            allowfullscreen></iframe>
+        </div>
       </div>
       <footer class="map-nano-showcase__footer">
-        <p>Cuatro pasos guiados con datos demostrativos; no necesitas una cuenta.</p>
-        <a class="btn btn-ghost btn-sm" href="https://map-nano.onrender.com/demo?tour=nano-overview" target="_blank" rel="noopener">Abrir a pantalla completa&nbsp;&nearr;</a>
+        <p>Un recorrido de 63 segundos; abre el demo cuando quieras explorar los datos.</p>
+        <div class="map-nano-showcase__footer-actions">
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            data-map-nano-showcase-live
+            data-live-label="Abrir demo en vivo"
+            data-video-label="Volver al vídeo">Abrir demo en vivo</button>
+          <a class="btn btn-ghost btn-sm" href="https://map-nano.onrender.com/demo?tour=nano-overview" target="_blank" rel="noopener">Abrir demo en otra pestaña&nbsp;&nearr;</a>
+        </div>
       </footer>
     </div>
   </dialog>
