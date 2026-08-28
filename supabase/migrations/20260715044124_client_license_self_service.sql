@@ -1,4 +1,4 @@
--- Client-facing MAP license self-service (remote migration 20260715044124).
+-- Client-facing MAP license self-service.
 -- Direct table access remains closed; authenticated users use RPCs scoped to auth.uid().
 
 create table if not exists public.license_self_service_events (
@@ -391,3 +391,5 @@ grant execute on function public.release_my_license_assignment(uuid) to authenti
 revoke all on table public.license_accounts, public.license_account_members,
   public.license_plans, public.license_types, public.platform_licenses,
   public.license_assignments from anon, authenticated;
+
+;

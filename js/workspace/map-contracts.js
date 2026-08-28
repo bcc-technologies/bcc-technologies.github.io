@@ -204,7 +204,7 @@
   const LOCALIZED_PLATFORM_ACCESS_LABELS = isEnglish() ? Object.freeze({ ...PLATFORM_ACCESS_LABELS, ...EN_PLATFORM_ACCESS_LABELS }) : PLATFORM_ACCESS_LABELS;
 
   const CLIENT_DASHBOARD_KEYS = Object.freeze(["accounts", "licenses", "members", "assignments", "recent_events"]);
-  const ADMIN_DASHBOARD_KEYS = Object.freeze(["licenses", "accounts", "plans", "users", "cohorts", "access_users"]);
+  const ADMIN_DASHBOARD_KEYS = Object.freeze(["licenses", "accounts", "institutions", "plans", "users", "cohorts", "access_users"]);
   const ERROR_TRANSLATIONS = Object.freeze([
     [/Authentication required|JWT|session/i, "Tu sesión expiró. Inicia sesión nuevamente."],
     [/Only an account owner or administrator/i, "Sólo el propietario o un administrador de la cuenta puede asignar plazas."],
@@ -219,6 +219,16 @@
     [/resolution note is required/i, "Agrega una nota de resolución antes de cerrar la solicitud."],
     [/commercial request is not open for review/i, "La solicitud ya no está disponible para revisión."],
     [/License is not active/i, "La licencia no está activa."],
+    [/selected institution is not active/i, "La institución seleccionada no está activa."],
+    [/evaluation cohort is not active/i, "La cohorte de evaluación no está activa."],
+    [/valid participant email/i, "Ingresa un correo válido para el tester."],
+    [/participant name is required/i, "Ingresa el nombre del tester."],
+    [/valid MAP product|MAP product is required/i, "Selecciona un producto MAP válido."],
+    [/valid start and end time/i, "Revisa las fechas de inicio y fin del acceso tester."],
+    [/MAP invitation service is unavailable/i, "El servicio de invitaciones MAP no está disponible. Inténtalo nuevamente."],
+    [/cohort does not belong to the selected institution/i, "La cohorte no pertenece a la institución seleccionada."],
+    [/grant reason/i, "Agrega una justificación de al menos 10 caracteres."],
+    [/already has active MAP access for this product/i, "El usuario ya tiene acceso MAP activo para este producto."],
     [/cannot release this assignment/i, "No tienes permiso para liberar esta plaza."],
     [/permission denied|insufficient permission|not authorized|not allowed/i, "No tienes permisos para completar esta operación."],
     [/Failed to fetch|NetworkError|fetch resource|network request failed/i, "No pudimos conectar con MAP. Revisa tu conexión e inténtalo nuevamente."]
@@ -229,6 +239,7 @@
       super(message, options);
       this.name = "MapContractError";
       this.code = code;
+      this.diagnosticId = String(options.diagnosticId || "");
     }
   }
 
@@ -424,8 +435,10 @@
   function toError(error, fallback = "No fue posible completar la operación MAP.") {
     if (error instanceof MapContractError) return error;
     const rawMessage = String(error?.message || error || fallback);
-    const message = ERROR_TRANSLATIONS.find(([pattern]) => pattern.test(rawMessage))?.[1] || rawMessage || fallback;
-    return new MapContractError(errorCode(error), message, { cause: error });
+    const translatedMessage = ERROR_TRANSLATIONS.find(([pattern]) => pattern.test(rawMessage))?.[1] || rawMessage || fallback;
+    const diagnosticId = String(error?.diagnosticId || error?.cause?.diagnosticId || "").trim();
+    const message = diagnosticId ? `${translatedMessage} Referencia: ${diagnosticId}.` : translatedMessage;
+    return new MapContractError(errorCode(error), message, { cause: error, diagnosticId });
   }
 
   window.BCCWorkspaceMapContracts = Object.freeze({

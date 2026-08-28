@@ -1,9 +1,3 @@
--- Keep BCC account email state aligned with the canonical Supabase Auth identity.
---
--- Changing a user's email through GoTrue can remain pending while Secure Email
--- Change confirmations are outstanding. Application tables must not promote the
--- requested address until auth.users.email has actually changed.
-
 create or replace function private.set_primary_account_email(target_email_id uuid)
 returns void
 language plpgsql
@@ -32,9 +26,9 @@ begin
     raise exception 'No se pudo verificar el correo de autenticacion';
   end if;
 
-  -- updateUser({ email }) may only have initiated an Auth email change.
-  -- Until GoTrue adopts the target address, keep the existing canonical
-  -- primary email in application state.
+  -- A request to change the Auth email can require one or two confirmations.
+  -- Do not promote the application-level primary email until Auth has
+  -- actually adopted the target address.
   if target_email is distinct from canonical_email then
     return;
   end if;
@@ -75,8 +69,8 @@ begin
     return new;
   end if;
 
-  -- auth.users is the source of truth. Mirror a new address only after GoTrue
-  -- has completed its confirmation flow and changed the canonical identity.
+  -- auth.users is the canonical identity. Mirror it only after GoTrue has
+  -- completed the email-change flow.
   update public.account_emails
   set is_primary = false
   where user_id = new.id
@@ -112,7 +106,7 @@ begin
   return new;
 exception
   when others then
-    -- Application mirror failures must never block a canonical Auth change.
+    -- Never let an application mirror failure block an Auth identity change.
     raise warning 'primary email sync failed for user %: %', new.id, sqlerrm;
     return new;
 end;
@@ -126,4 +120,4 @@ create trigger sync_primary_email_after_auth_change
 after update of email on auth.users
 for each row
 when (old.email is distinct from new.email)
-execute function private.sync_primary_email_from_auth();
+execute function private.sync_primary_email_from_auth();;

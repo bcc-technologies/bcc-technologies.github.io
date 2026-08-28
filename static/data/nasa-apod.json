@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-08-22T06:32:56.722Z",
+  "updatedAt": "2026-08-28T18:09:27.129Z",
   "item": {
-    "copyright": "Valašské Meziříčí Observatory",
-    "date": "2026-08-22",
-    "explanation": "Recorded the night of August 12-13, images from four dedicated meteor-monitoring cameras at an astronomical observatory in Czechia were aligned and combined to create this all-night, all-sky view. On that night, the total count came to 1,706 meteors. And since that coincided with the peak activity of the 2026 Perseid Meteor Shower, most are perseids. Their overwhelming numbers make them easy to spot. Quite convincingly, perseid trails all trace back to a single radiant on the sky at the upper right, a region in the annual shower's eponymous constellation Perseus. But meteors belonging to other much less active showers can also revealed by finding their radiants too. For example, seen crossing the perseid trails are meteors from a shower whose radiant lies in Cygnus, known as Kappa Cygnids. The antihelion complex, a general region near Aquarius and opposite the Sun in the sky, is also identifiable as a weak source for meteors.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2608/allsky_CEMeNt_Aug12-13final_pretty_8bit.jpg",
+    "copyright": "Osvaldo Castillo",
+    "date": "2026-08-28",
+    "explanation": "At the latitude of ESO's Paranal Observatory in Chile, about 25 degrees south, Earth's rotation moves the planet's surface eastward at over 1,500 kilometers per hour. And while that's faster than the speed of sound at sea level, the motion is imperceptible. Still, that motion can be revealed in the apparent rotation of the night sky by photographing star trails. This star trail image was composed from a digital stack of 300 consecutive 25-second exposures made with a camera fixed to a tripod to trace the star trail arcs. The graceful arcs are concentric and centered at the south celestial pole, the southern hemisphere extension of Earth's axis of rotation into space. One of the observatory's operating 1.8 meter auxiliary telescopes, AT 3, appears beneath the south celestial pole, faintly illuminated in the foreground of this well-planned scene from a rotating planet.   Growing Gallery: Lunar Eclipse of 2026 August 28 APOD's main NASA site is moving: From apod.nasa.gov to science.nasa.gov/apod",
+    "hdurl": "https://apod.nasa.gov/apod/image/2608/TheSkyTurnsAboveParanal.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Mostly Perseids",
-    "url": "https://apod.nasa.gov/apod/image/2608/allsky_CEMeNt_Aug12-13final_pretty_8bit1024.jpg"
+    "title": "The Sky Turns Above Paranal",
+    "url": "https://apod.nasa.gov/apod/image/2608/TheSkyTurnsAboveParanal_1024.jpg"
   }
 }

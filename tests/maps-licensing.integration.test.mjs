@@ -24,12 +24,47 @@ test("MAP licensing UI uses authenticated Supabase RPCs without the suspended Re
 
   assert.match(repository, /get_my_platform_admin_dashboard/);
   assert.match(repository, /issue_my_platform_license/);
-  assert.match(repository, /provision_my_evaluation_participant/);
+  assert.match(repository, /create_my_access_program_cohort/);
+  assert.match(repository, /invite-map-evaluation-participant/);
   assert.doesNotMatch(moduleSource, /supabase\.rpc|loadSupabaseClient|map-nano\.onrender\.com|mapRequest\(|fetch\(/);
   assert.match(moduleSource, /role="tablist"/);
   assert.match(moduleSource, /aria-selected/);
   assert.match(moduleSource, /platform\.permissions\.manage/);
   assert.match(moduleSource, /platform\.analytics\.read/);
+});
+
+test("license issuance exposes the governed partner tester flow", () => {
+  const moduleSource = read("js/workspace/maps-licensing.js");
+
+  assert.match(moduleSource, /data-map-issue-access-kind/);
+  assert.match(moduleSource, /<option value="partner_test"/);
+  assert.match(moduleSource, /item\.program_type === "partner_test"/);
+  assert.match(moduleSource, /repository\.provisionTesterAccess/);
+  assert.match(moduleSource, /name="institutionId"/);
+  assert.match(moduleSource, /Cohorte <small>\(opcional\)<\/small>/);
+  assert.match(moduleSource, /Sin cohorte/);
+  assert.match(moduleSource, /data-map-create-institution-from-issue/);
+  assert.match(moduleSource, /data-map-create-cohort-from-issue/);
+  assert.match(moduleSource, /data-map-tester-email/);
+  assert.match(moduleSource, /institutionForDomain/);
+  assert.match(moduleSource, /item\.verified_domains\.some/);
+  assert.match(moduleSource, /testerInstitutionAutoSelected/);
+  assert.match(moduleSource, /No encontramos una institución registrada para/);
+  assert.match(moduleSource, /captureTesterDraft/);
+  assert.match(moduleSource, /ui\.closeLayer\(issueDialog, "continue"\)/);
+  assert.match(moduleSource, /dialog\.addEventListener\("close"/);
+  assert.match(moduleSource, /setFormValue\(form, "programType", "partner_test"\)/);
+  assert.match(moduleSource, /testerInstitutionId = String\(createdInstitutionId/);
+  assert.match(moduleSource, /testerCohortId = String\(createdCohortId/);
+  assert.match(moduleSource, /const commercialPlans = plans\.filter\(plan => !plan\.is_evaluation\)/);
+  assert.match(moduleSource, /submit\.disabled = false/);
+  assert.doesNotMatch(moduleSource, /missingTesterCohort/);
+  assert.match(moduleSource, /name="individualEndsAt"/);
+  assert.match(moduleSource, /heredar el vencimiento del cohorte/);
+  assert.match(moduleSource, /testerAccessConfirmation/);
+  assert.match(moduleSource, /data\.cohortId \? data\.individualEndsAt : data\.endsAt/);
+
+  assert.ok(moduleSource.indexOf("Cuenta del usuario") < moduleSource.indexOf("Institución<select"));
 });
 
 test("browser platform administration wrappers bind identity to auth.uid", () => {

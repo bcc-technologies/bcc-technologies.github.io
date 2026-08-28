@@ -8,6 +8,11 @@
   const refreshIcons = utils.refreshIcons;
   const PANELS = ["summary", "licenses", "commercial", "evaluations", "permissions", "analytics"];
   const PRODUCTS = contracts.PRODUCTS;
+  const ACCESS_PROGRAMS = Object.freeze({
+    standard_evaluation: { label: "Evaluación estándar", tone: "neutral" },
+    partner_test: { label: "Tester de cliente aliado", tone: "success" },
+    complimentary_pilot: { label: "Piloto de cortesía", tone: "warning" }
+  });
 
   let root = null;
   let currentUser = null;
@@ -15,6 +20,7 @@
   let overview = {};
   let licenses = [];
   let accounts = [];
+  let institutions = [];
   let plans = [];
   let users = [];
   let accessUsers = [];
@@ -33,6 +39,14 @@
   let commercialRequestQuery = "";
   let commercialRequestStatusFilter = "all";
   let selectedCommercialRequestId = "";
+  let issueAccessKind = "commercial";
+  let testerInstitutionId = "none";
+  let testerInstitutionAutoSelected = false;
+  let testerInstitutionManuallySelected = false;
+  let testerUserId = "new";
+  let testerCohortId = "";
+  let testerDraft = {};
+  let testerSubflow = "";
   let busy = false;
   let tabsController = null;
 
@@ -162,6 +176,7 @@
       overview = dashboard?.overview || {};
       licenses = dashboard?.licenses || [];
       accounts = dashboard?.accounts || [];
+      institutions = dashboard?.institutions || [];
       plans = dashboard?.plans || [];
       users = dashboard?.users || [];
       cohorts = dashboard?.cohorts || [];
@@ -222,7 +237,7 @@
       <section class="maps-license-metrics" aria-label="Resumen operativo">
         ${metric("Licencias activas", overview.active_licenses, `${overview.total_licenses || 0} registradas`)}
         ${metric("Plazas asignadas", overview.assigned_seats, `${overview.available_seats || 0} disponibles`)}
-        ${metric("Evaluaciones activas", overview.active_evaluation_cohorts, `${overview.evaluation_participants || 0} participantes`)}
+        ${metric("Cohortes activas", overview.active_evaluation_cohorts, `${overview.evaluation_participants || 0} participantes`)}
         ${metric("Vencen en 30 días", overview.expiring_licenses, `${overview.evaluation_events_30d || 0} eventos recientes`)}
       </section>
       <div class="maps-license-summary-grid">
@@ -575,13 +590,13 @@
       <dialog id="map-issue-license-dialog" class="workspace-layer is-modal">
         <form class="workspace-layer-panel maps-license-form" data-issue-license-form>
           <header class="workspace-layer-head">
-            <div><span class="workspace-eyebrow">Nueva licencia</span><h2>Emitir acceso comercial</h2><p>Define la cuenta, el producto y la capacidad inicial.</p></div>
+            <div><span class="workspace-eyebrow">Nuevo acceso</span><h2>Emitir acceso MAP</h2><p>Asigna una licencia comercial o incorpora un tester a un programa aliado.</p></div>
             ${closeLayerButton("Cerrar formulario")}
           </header>
           <div class="workspace-layer-body">${issueLicenseFields()}</div>
           <footer class="workspace-layer-actions">
             <button class="btn btn-ghost" type="button" data-close-map-layer>Cancelar</button>
-            <button class="btn btn-primary" type="submit" data-map-control>Emitir licencia</button>
+            <button class="btn btn-primary" type="submit" data-map-control data-map-issue-submit>${issueAccessKind === "partner_test" ? "Dar acceso tester" : "Emitir licencia"}</button>
           </footer>
         </form>
       </dialog>`;
@@ -639,15 +654,146 @@
   }
 
   function issueLicenseFields() {
+    return `
+      <label>Tipo de acceso<select name="accessKind" data-map-issue-access-kind required autofocus>
+        <option value="commercial" ${issueAccessKind === "commercial" ? "selected" : ""}>Licencia comercial</option>
+        <option value="partner_test" ${issueAccessKind === "partner_test" ? "selected" : ""}>Tester de cliente aliado</option>
+      </select></label>
+      <div data-map-issue-access-fields>${issueAccessDetails()}</div>`;
+  }
+
+  function issueAccessDetails() {
+    if (issueAccessKind === "partner_test") return partnerTesterFields();
     const commercialPlans = plans.filter(plan => !plan.is_evaluation);
     return `
-      <label>Cuenta<select name="accountId" required autofocus>${optionList(accounts, "account_id", "display_name")}</select></label>
+      <label>Cuenta<select name="accountId" required>${optionList(accounts, "account_id", "display_name")}</select></label>
       <label>Plan<select name="planId" required>${commercialPlans.map(plan => `<option value="${escapeHtml(plan.plan_id)}" data-seats="${Number(plan.default_seat_limit || 1)}">${escapeHtml(PRODUCTS[plan.product_key] || plan.product_key)} · ${escapeHtml(plan.plan_name)}</option>`).join("")}</select></label>
       <div class="maps-license-form-row">
         <label>Plazas<input name="seatLimit" type="number" min="1" value="${Number(commercialPlans[0]?.default_seat_limit || 1)}" required></label>
         <label>Inicio<input name="startsAt" type="datetime-local" value="${localDateValue(new Date())}" required></label>
       </div>
       <label>Vencimiento opcional<input name="endsAt" type="datetime-local"></label>`;
+  }
+
+  function activeInstitutions() {
+    return institutions.filter(item => item.status === "active");
+  }
+
+  function emailDomain(email) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const separatorIndex = normalizedEmail.lastIndexOf("@");
+    if (separatorIndex <= 0 || separatorIndex === normalizedEmail.length - 1) return "";
+    return normalizedEmail.slice(separatorIndex + 1);
+  }
+
+  function institutionForDomain(domain) {
+    const normalizedDomain = String(domain || "").trim().toLowerCase().replace(/^@/, "");
+    if (!normalizedDomain) return null;
+    return activeInstitutions().find(item => Array.isArray(item.verified_domains)
+      && item.verified_domains.some(value => String(value || "").trim().toLowerCase().replace(/^@/, "") === normalizedDomain)) || null;
+  }
+
+  function partnerTesterCohorts(institutionId = testerInstitutionId) {
+    if (!institutionId || institutionId === "none") return [];
+    return cohorts.filter(item => item.program_type === "partner_test"
+      && item.cohort_status === "active"
+      && (item.institution_id || item.account_id) === institutionId);
+  }
+
+  function selectedTesterCohort() {
+    return partnerTesterCohorts().find(item => item.cohort_id === testerCohortId) || null;
+  }
+
+  function selectedTesterUser() {
+    return users.find(item => item.user_id === testerUserId) || null;
+  }
+
+  function captureTesterDraft(form) {
+    if (!form?.matches("[data-issue-license-form]")) return;
+    const data = Object.fromEntries(new FormData(form));
+    if (issueAccessKind !== "partner_test") return;
+    ["fullName", "email", "productKey", "startsAt", "endsAt", "individualEndsAt", "reviewAt", "grantReason"].forEach(key => {
+      if (data[key] !== undefined) testerDraft[key] = String(data[key]);
+    });
+  }
+
+  function partnerTesterFields() {
+    const availableInstitutions = activeInstitutions();
+    if (testerInstitutionId !== "none" && !availableInstitutions.some(item => item.institution_id === testerInstitutionId)) {
+      testerInstitutionId = "none";
+      testerInstitutionAutoSelected = false;
+      testerInstitutionManuallySelected = false;
+    }
+    if (testerUserId !== "new" && !users.some(item => item.user_id === testerUserId)) testerUserId = "new";
+    const selectedUser = selectedTesterUser();
+    const suggestedEmail = selectedUser?.email || testerDraft.email || "";
+    const suggestedDomain = emailDomain(suggestedEmail);
+    const suggestedInstitution = institutionForDomain(suggestedDomain);
+    if (testerInstitutionId === "none" && suggestedInstitution && !testerInstitutionManuallySelected) {
+      testerInstitutionId = suggestedInstitution.institution_id;
+      testerInstitutionAutoSelected = true;
+    }
+    const testerCohorts = partnerTesterCohorts();
+    if (!testerCohorts.some(item => item.cohort_id === testerCohortId)) testerCohortId = "";
+    const selectedCohort = selectedTesterCohort();
+    const evaluationPlans = plans.filter(plan => plan.is_evaluation);
+    const defaultProductKey = testerDraft.productKey || evaluationPlans[0]?.product_key || "";
+    const defaultStartsAt = testerDraft.startsAt || localDateValue(new Date());
+    const defaultEndsAt = testerDraft.endsAt || localDateValue(new Date(Date.now() + trialOffer.duration_days * 86400000));
+    const institutionOptions = availableInstitutions.map(item => {
+      const domains = Array.isArray(item.verified_domains) && item.verified_domains.length
+        ? ` · ${item.verified_domains.join(", ")}`
+        : "";
+      return `<option value="${escapeHtml(item.institution_id)}" ${testerInstitutionId === item.institution_id ? "selected" : ""}>${escapeHtml(item.display_name)}${escapeHtml(domains)}</option>`;
+    }).join("");
+    const userOptions = users.map(item => `<option value="${escapeHtml(item.user_id)}" ${testerUserId === item.user_id ? "selected" : ""}>${escapeHtml(item.display_name || item.email)} · ${escapeHtml(item.email)}</option>`).join("");
+    const institutionDiscoveryNote = suggestedInstitution && testerInstitutionId === suggestedInstitution.institution_id
+      ? `<p class="maps-license-form-note">Institución sugerida por el dominio <strong>@${escapeHtml(suggestedDomain)}</strong>: <strong>${escapeHtml(suggestedInstitution.display_name)}</strong>.</p>`
+      : suggestedDomain && !suggestedInstitution
+        ? `<p class="maps-license-form-note">No encontramos una institución registrada para <strong>@${escapeHtml(suggestedDomain)}</strong>. Puedes crearla ahora.</p>`
+        : "";
+    return `
+      <label>Cuenta del usuario<select name="userId" data-map-tester-user required>
+        <option value="new" ${testerUserId === "new" ? "selected" : ""}>Invitar una cuenta nueva</option>
+        ${userOptions}
+      </select></label>
+      ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.display_name || selectedUser.email)}</strong><br>${escapeHtml(selectedUser.email)}</p>` : `
+        <label>Nombre completo<input name="fullName" maxlength="160" value="${escapeHtml(testerDraft.fullName || "")}" required autocomplete="name"></label>
+        <label>Correo<input name="email" type="email" maxlength="254" value="${escapeHtml(testerDraft.email || "")}" required autocomplete="email" placeholder="usuario@institucion.edu" data-map-tester-email></label>`}
+      <div class="maps-license-field-with-action">
+        <label>Institución<select name="institutionId" data-map-tester-institution required>
+          <option value="none" ${testerInstitutionId === "none" ? "selected" : ""}>Sin institución / independiente</option>
+          ${institutionOptions}
+        </select></label>
+        ${has("platform.evaluations.manage") ? `<button class="btn btn-ghost" type="button" data-map-create-institution-from-issue>Crear institución</button>` : ""}
+      </div>
+      ${institutionDiscoveryNote}
+      <div class="maps-license-field-with-action">
+        <label>Cohorte <small>(opcional)</small><select name="cohortId" data-map-tester-cohort>
+          <option value="">Sin cohorte</option>
+          ${testerCohorts.map(item => `<option value="${escapeHtml(item.cohort_id)}" ${testerCohortId === item.cohort_id ? "selected" : ""}>${escapeHtml(item.cohort_name || item.name)} · ${escapeHtml(PRODUCTS[item.product_key] || item.product_key)}</option>`).join("")}
+        </select></label>
+        ${has("platform.evaluations.manage") ? `<button class="btn btn-ghost" type="button" data-map-create-cohort-from-issue ${testerInstitutionId === "none" ? "disabled" : ""}>Crear cohorte</button>` : ""}
+      </div>
+      ${testerInstitutionId === "none" && has("platform.evaluations.manage") ? `<p class="maps-license-form-note">Selecciona o crea una institución para habilitar cohortes.</p>` : ""}
+      ${selectedCohort ? `
+        <p class="maps-license-form-note">La cohorte define ${escapeHtml(PRODUCTS[selectedCohort.product_key] || selectedCohort.product_key)}, la vigencia ${formatDate(selectedCohort.starts_at)} — ${formatDate(selectedCohort.ends_at)} y su justificación.</p>` : `
+        <label>Producto<select name="productKey" required>${evaluationPlans.map(plan => `<option value="${escapeHtml(plan.product_key)}" ${defaultProductKey === plan.product_key ? "selected" : ""}>${escapeHtml(PRODUCTS[plan.product_key] || plan.product_key)}</option>`).join("")}</select></label>
+        <div class="maps-license-form-row">
+          <label>Inicio<input name="startsAt" type="datetime-local" value="${escapeHtml(defaultStartsAt)}" required></label>
+          <label>Fin<input name="endsAt" type="datetime-local" value="${escapeHtml(defaultEndsAt)}" required></label>
+        </div>
+        <label>Revisión intermedia <small>(opcional)</small><input name="reviewAt" type="datetime-local" value="${escapeHtml(testerDraft.reviewAt || "")}"></label>
+        <label>Justificación de la concesión<textarea name="grantReason" minlength="10" maxlength="1000" rows="3" required placeholder="Motivo, alcance acordado y valor esperado para BCC y el tester.">${escapeHtml(testerDraft.grantReason || "")}</textarea></label>`}
+      ${selectedCohort ? `
+        <label>Vencimiento individual <small>(opcional)</small>
+          <input name="individualEndsAt" type="datetime-local"
+            value="${escapeHtml(testerDraft.individualEndsAt || "")}"
+            min="${escapeHtml(localDateValue(new Date(Math.max(Date.now(), new Date(selectedCohort.starts_at).getTime()))))}"
+            max="${escapeHtml(localDateValue(new Date(selectedCohort.ends_at)))}">
+        </label>
+        <p class="maps-license-form-note">Déjalo vacío para heredar el vencimiento del cohorte (${formatDate(selectedCohort.ends_at)}). Una fecha individual nunca extenderá el acceso más allá del cohorte.</p>` : ""}
+      <p class="maps-license-form-note">La licencia se emitirá sobre la cuenta individual del usuario. La institución y la cohorte sólo organizan su afiliación.</p>`;
   }
 
   function renderEvaluations() {
@@ -664,10 +810,10 @@
           description: "Selecciona una cohorte para operar sus participantes.",
           actions: [
             {
-              label: "Nueva cuenta",
+              label: "Nueva institución",
               icon: "building-2",
               className: "btn btn-ghost",
-              data: { openMapLayer: "map-evaluation-account-dialog" }
+              data: { openMapLayer: "map-institution-dialog" }
             },
             {
               label: "Nueva cohorte",
@@ -681,7 +827,7 @@
           <aside class="maps-license-cohort-browser">
             <label class="maps-license-search">
               <span class="sr-only">Buscar cohortes</span>${ui.icon("search", "sm")}
-              <input type="search" value="${escapeHtml(cohortQuery)}" placeholder="Buscar cohorte o cuenta" data-map-cohort-query>
+              <input type="search" value="${escapeHtml(cohortQuery)}" placeholder="Buscar cohorte o institución" data-map-cohort-query>
             </label>
             <div data-map-cohort-list>${cohortList()}</div>
           </aside>
@@ -702,7 +848,9 @@
       item.cohort_name,
       item.name,
       item.account_name,
-      PRODUCTS[item.product_key] || item.product_key
+      PRODUCTS[item.product_key] || item.product_key,
+      accessProgram(item).label,
+      item.grant_reason
     ].join(" ").toLocaleLowerCase("es").includes(query));
   }
 
@@ -721,10 +869,10 @@
       return `<button class="maps-license-cohort ${selected ? "is-selected" : ""}" type="button"
         data-load-participants="${escapeHtml(item.cohort_id)}" aria-pressed="${selected}">
         <span class="maps-license-cohort-head">
-          <span><strong>${escapeHtml(item.cohort_name || item.name)}</strong><small>${escapeHtml(item.account_name)}</small></span>
+          <span><strong>${escapeHtml(item.cohort_name || item.name)}</strong><small>${escapeHtml(item.institution_name || item.account_name)}</small></span>
           ${cohortStatusBadge(item)}
         </span>
-        <span class="maps-license-cohort-meta">${escapeHtml(PRODUCTS[item.product_key] || item.product_key)} · ${Number(item.participant_count || 0)} participantes</span>
+        <span class="maps-license-cohort-meta">${escapeHtml(accessProgram(item).label)} · ${escapeHtml(PRODUCTS[item.product_key] || item.product_key)} · ${Number(item.participant_count || 0)} participantes</span>
       </button>`;
     }).join("")}</div>`;
   }
@@ -741,7 +889,13 @@
     };
   }
 
+  function accessProgram(item) {
+    const key = String(item?.program_type || "standard_evaluation");
+    return ACCESS_PROGRAMS[key] || { label: key, tone: "neutral" };
+  }
+
   function cohortDetail(item) {
+    const program = accessProgram(item);
     return `
       ${ui.sectionHeader({
         className: "maps-license-section-head",
@@ -750,6 +904,18 @@
         description: `${item.account_name} · ${formatDate(item.starts_at)} — ${formatDate(item.ends_at)}`,
         status: cohortStatus(item)
       })}
+      <section class="maps-license-program-summary" aria-label="Gobierno del acceso">
+        <div class="maps-license-program-summary-head">
+          <span class="workspace-eyebrow">Programa de acceso</span>
+          ${ui.statusBadge({ label: program.label, status: program.tone })}
+        </div>
+        <dl>
+          <div><dt>Justificación</dt><dd>${escapeHtml(item.grant_reason || "Evaluación estándar")}</dd></div>
+          <div><dt>Responsable BCC</dt><dd>${escapeHtml(item.sponsor_name || "No registrado")}</dd></div>
+          <div><dt>Revisión</dt><dd>${item.review_at ? formatDate(item.review_at) : "Sin revisión intermedia"}</dd></div>
+          <div><dt>Renovaciones</dt><dd>${Number(item.renewal_count || 0)} de ${Number(item.max_renewals || 0)}</dd></div>
+        </dl>
+      </section>
       ${item.purpose ? `<p class="maps-license-cohort-purpose">${escapeHtml(item.purpose)}</p>` : ""}
       ${ui.sectionHeader({
         className: "maps-license-section-head maps-license-participant-head",
@@ -804,11 +970,14 @@
 
   function evaluationLayers() {
     return `
-      <dialog id="map-evaluation-account-dialog" class="workspace-layer is-modal">
-        <form class="workspace-layer-panel maps-license-form" data-create-evaluation-account>
-          <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Organización</span><h2>Nueva cuenta de evaluación</h2><p>Crea el contenedor antes de generar su cohorte.</p></div>${closeLayerButton("Cerrar formulario")}</header>
-          <div class="workspace-layer-body"><label>Cuenta / organización<input name="displayName" maxlength="160" required autofocus></label></div>
-          <footer class="workspace-layer-actions"><button class="btn btn-ghost" type="button" data-close-map-layer>Cancelar</button><button class="btn btn-primary" type="submit" data-map-control>Crear cuenta</button></footer>
+      <dialog id="map-institution-dialog" class="workspace-layer is-modal">
+        <form class="workspace-layer-panel maps-license-form" data-create-institution>
+          <header class="workspace-layer-head"><div><span class="workspace-eyebrow">Institución</span><h2>Nueva institución</h2><p>Registra la institución que agrupará usuarios y cohortes opcionales.</p></div>${closeLayerButton("Cerrar formulario")}</header>
+          <div class="workspace-layer-body">
+            <label>Nombre de la institución<input name="displayName" maxlength="160" required autofocus></label>
+            <label>Dominio institucional <small>(opcional)</small><input name="domain" maxlength="253" inputmode="url" placeholder="uasd.edu.do"></label>
+          </div>
+          <footer class="workspace-layer-actions"><button class="btn btn-ghost" type="button" data-close-map-layer>Cancelar</button><button class="btn btn-primary" type="submit" data-map-control>Crear institución</button></footer>
         </form>
       </dialog>
       <dialog id="map-cohort-dialog" class="workspace-layer is-modal">
@@ -824,6 +993,7 @@
           <div class="workspace-layer-body">
             <input type="hidden" name="cohortId" value="${escapeHtml(selectedCohortId)}">
             <label>Correo<input name="email" type="email" maxlength="320" required autofocus autocomplete="email"></label>
+            <label>Nombre completo <small>(para cuentas nuevas)</small><input name="fullName" maxlength="160" autocomplete="name"></label>
           </div>
           <footer class="workspace-layer-actions"><button class="btn btn-ghost" type="button" data-close-map-layer>Cancelar</button><button class="btn btn-primary" type="submit" data-map-control>Invitar y asignar</button></footer>
         </form>
@@ -833,19 +1003,28 @@
   function cohortFields() {
     const evaluationPlans = plans.filter(plan => plan.is_evaluation);
     return `
-      <label>Cuenta<select name="accountId" required autofocus>${optionList(accounts, "account_id", "display_name")}</select></label>
+      <label>Institución<select name="institutionId" required autofocus>${activeInstitutions().map(item => `<option value="${escapeHtml(item.institution_id)}">${escapeHtml(item.display_name)}</option>`).join("")}</select></label>
       <label>Producto<select name="productKey" required>${evaluationPlans.map(plan => `<option value="${escapeHtml(plan.product_key)}">${escapeHtml(PRODUCTS[plan.product_key] || plan.product_key)}</option>`).join("")}</select></label>
+      <label>Programa<select name="programType" required>
+        ${Object.entries(ACCESS_PROGRAMS).map(([key, meta]) => `<option value="${escapeHtml(key)}">${escapeHtml(meta.label)}</option>`).join("")}
+      </select></label>
       <label>Nombre<input name="name" maxlength="160" required></label>
       <label>Propósito<textarea name="purpose" maxlength="2000" rows="3"></textarea></label>
+      <label>Justificación de la concesión<textarea name="grantReason" minlength="10" maxlength="1000" rows="3" required placeholder="Motivo, alcance acordado y valor esperado para BCC y el aliado."></textarea></label>
       <div class="maps-license-form-row">
         <label>Inicio<input name="startsAt" type="datetime-local" value="${localDateValue(new Date())}" required></label>
         <label>Fin<input name="endsAt" type="datetime-local" value="${localDateValue(new Date(Date.now() + trialOffer.duration_days * 86400000))}" required></label>
+      </div>
+      <div class="maps-license-form-row">
+        <label>Revisión intermedia <small>(opcional)</small><input name="reviewAt" type="datetime-local"></label>
+        <label>Renovaciones permitidas<input name="maxRenewals" type="number" min="0" max="12" value="0" required></label>
       </div>`;
   }
 
   function renderLayerForms() {
     const issueBody = root?.querySelector("#map-issue-license-dialog .workspace-layer-body");
     if (issueBody) issueBody.innerHTML = issueLicenseFields();
+    syncIssueLicenseSubmit();
     const cohortBody = root?.querySelector("#map-cohort-dialog .workspace-layer-body");
     if (cohortBody) cohortBody.innerHTML = cohortFields();
     syncParticipantDialog();
@@ -906,8 +1085,21 @@
   async function handleClick(event) {
     if (event.target.closest("[data-map-refresh]")) return void loadDashboard();
 
+    const createInstitutionFromIssue = event.target.closest("[data-map-create-institution-from-issue]");
+    if (createInstitutionFromIssue) {
+      prepareInstitutionFromIssue(createInstitutionFromIssue.closest("form"));
+      return;
+    }
+
+    const createCohortFromIssue = event.target.closest("[data-map-create-cohort-from-issue]");
+    if (createCohortFromIssue) {
+      prepareCohortFromIssue(createCohortFromIssue.closest("form"));
+      return;
+    }
+
     const openButton = event.target.closest("[data-open-map-layer]");
     if (openButton) {
+      if (["map-institution-dialog", "map-cohort-dialog"].includes(openButton.dataset.openMapLayer)) testerSubflow = "";
       if (openButton.dataset.openMapLayer === "map-participant-dialog") syncParticipantDialog();
       const dialog = root.querySelector(`#${openButton.dataset.openMapLayer}`);
       ui.openLayer(dialog, { trigger: openButton });
@@ -916,7 +1108,8 @@
 
     const closeButton = event.target.closest("[data-close-map-layer]");
     if (closeButton) {
-      ui.closeLayer(closeButton.closest("dialog"));
+      const dialog = closeButton.closest("dialog");
+      ui.closeLayer(dialog);
       return;
     }
 
@@ -947,6 +1140,7 @@
   }
 
   function handleInput(event) {
+    if (event.target.form?.matches("[data-issue-license-form]")) captureTesterDraft(event.target.form);
     if (event.target.matches("[data-map-license-query]")) {
       licenseQuery = event.target.value;
       renderLicenseResultRegion();
@@ -963,7 +1157,109 @@
     }
   }
 
+  function refreshPartnerTesterFields(form) {
+    const fields = form?.querySelector("[data-map-issue-access-fields]");
+    if (!fields) return;
+    fields.innerHTML = partnerTesterFields();
+    syncIssueLicenseSubmit();
+    refreshIcons(fields);
+  }
+
+  function setFormValue(form, name, value) {
+    const field = form?.elements?.namedItem(name);
+    if (field && value !== undefined && value !== null && String(value) !== "") field.value = String(value);
+  }
+
+  function openTesterSubflow(dialog, issueForm, trigger) {
+    const issueDialog = issueForm?.closest("dialog");
+    if (issueDialog?.open) ui.closeLayer(issueDialog, "continue");
+    if (!ui.openLayer(dialog, { trigger })) return;
+    dialog.addEventListener("close", () => {
+      if (!testerSubflow || !issueDialog || issueDialog.open) return;
+      testerSubflow = "";
+      ui.openLayer(issueDialog);
+    }, { once: true });
+  }
+
+  function prepareInstitutionFromIssue(issueForm) {
+    captureTesterDraft(issueForm);
+    testerSubflow = "institution";
+    const dialog = root.querySelector("#map-institution-dialog");
+    const form = dialog?.querySelector("[data-create-institution]");
+    form?.reset();
+    const email = selectedTesterUser()?.email || issueForm?.querySelector('[name="email"]')?.value || testerDraft.email || "";
+    const domain = emailDomain(email);
+    if (domain) {
+      setFormValue(form, "domain", domain);
+      setFormValue(form, "displayName", domain.split(".")[0]?.replace(/[^a-z0-9-]/gi, " ").toUpperCase());
+    }
+    openTesterSubflow(dialog, issueForm, issueForm?.querySelector("[data-map-create-institution-from-issue]"));
+  }
+
+  function prepareCohortFromIssue(issueForm) {
+    captureTesterDraft(issueForm);
+    if (!testerInstitutionId || testerInstitutionId === "none") {
+      setMessage("Selecciona o crea una institución antes de crear la cohorte.", "error");
+      return;
+    }
+    testerSubflow = "cohort";
+    const dialog = root.querySelector("#map-cohort-dialog");
+    const body = dialog?.querySelector(".workspace-layer-body");
+    if (body) body.innerHTML = cohortFields();
+    const form = dialog?.querySelector("[data-create-cohort]");
+    setFormValue(form, "institutionId", testerInstitutionId);
+    setFormValue(form, "programType", "partner_test");
+    setFormValue(form, "productKey", testerDraft.productKey);
+    setFormValue(form, "startsAt", testerDraft.startsAt);
+    setFormValue(form, "endsAt", testerDraft.endsAt);
+    setFormValue(form, "reviewAt", testerDraft.reviewAt);
+    setFormValue(form, "grantReason", testerDraft.grantReason);
+    openTesterSubflow(dialog, issueForm, issueForm?.querySelector("[data-map-create-cohort-from-issue]"));
+  }
+
   function handleChange(event) {
+    if (event.target.matches("[data-map-issue-access-kind]")) {
+      captureTesterDraft(event.target.form);
+      issueAccessKind = event.target.value === "partner_test" ? "partner_test" : "commercial";
+      const fields = event.target.form?.querySelector("[data-map-issue-access-fields]");
+      if (fields) fields.innerHTML = issueAccessDetails();
+      syncIssueLicenseSubmit();
+      refreshIcons(fields);
+    }
+    if (event.target.matches("[data-map-tester-institution]")) {
+      captureTesterDraft(event.target.form);
+      testerInstitutionId = event.target.value || "none";
+      testerInstitutionAutoSelected = false;
+      testerInstitutionManuallySelected = true;
+      testerCohortId = "";
+      refreshPartnerTesterFields(event.target.form);
+    }
+    if (event.target.matches("[data-map-tester-user]")) {
+      captureTesterDraft(event.target.form);
+      if (testerInstitutionAutoSelected) {
+        testerInstitutionId = "none";
+        testerCohortId = "";
+        testerInstitutionAutoSelected = false;
+      }
+      testerInstitutionManuallySelected = false;
+      testerUserId = event.target.value || "new";
+      refreshPartnerTesterFields(event.target.form);
+    }
+    if (event.target.matches("[data-map-tester-email]")) {
+      captureTesterDraft(event.target.form);
+      if (testerInstitutionAutoSelected) {
+        testerInstitutionId = "none";
+        testerCohortId = "";
+        testerInstitutionAutoSelected = false;
+      }
+      testerInstitutionManuallySelected = false;
+      refreshPartnerTesterFields(event.target.form);
+    }
+    if (event.target.matches("[data-map-tester-cohort]")) {
+      captureTesterDraft(event.target.form);
+      testerCohortId = event.target.value || "";
+      refreshPartnerTesterFields(event.target.form);
+    }
     if (event.target.matches("[data-map-license-status-filter]")) {
       licenseStatusFilter = event.target.value;
       renderLicenseResultRegion();
@@ -986,6 +1282,36 @@
     }
   }
 
+  function syncIssueLicenseSubmit() {
+    const submit = root?.querySelector("[data-map-issue-submit]");
+    if (!submit) return;
+    submit.textContent = issueAccessKind === "partner_test" ? "Dar acceso tester" : "Emitir licencia";
+    submit.disabled = false;
+    submit.dataset.idleDisabled = "false";
+  }
+
+  function testerAccessConfirmation(data) {
+    const existingUser = users.find(item => item.user_id === data.userId);
+    const cohort = cohorts.find(item => item.cohort_id === data.cohortId);
+    const institution = institutions.find(item => item.institution_id === data.institutionId);
+    const productKey = cohort?.product_key || data.productKey;
+    const explicitEnd = data.cohortId ? data.individualEndsAt : data.endsAt;
+    const effectiveEnd = explicitEnd
+      ? formatDate(isoDate(explicitEnd))
+      : cohort?.ends_at
+        ? `${formatDate(cohort.ends_at)} (heredado del cohorte)`
+        : "No definido";
+    const accountLabel = existingUser?.display_name || existingUser?.email || data.fullName || data.email;
+    const institutionLabel = institution?.display_name || "Independiente";
+    const cohortLabel = cohort?.cohort_name || cohort?.name || "Sin cohorte";
+
+    return ui.confirmAction({
+      title: "Confirmar acceso tester",
+      description: `Cuenta individual: ${accountLabel}. Institución: ${institutionLabel}. Cohorte: ${cohortLabel}. Producto: ${PRODUCTS[productKey] || productKey}. Vencimiento: ${effectiveEnd}.`,
+      confirmLabel: "Dar acceso tester"
+    });
+  }
+
   function renderLicenseResultRegion() {
     const results = root.querySelector("[data-map-license-results]");
     if (results) results.innerHTML = licenseResults();
@@ -1003,25 +1329,67 @@
     if (!form || !root.contains(form)) return;
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
     const data = Object.fromEntries(new FormData(form));
+    if (form.matches("[data-issue-license-form]") && data.accessKind === "partner_test") {
+      const confirmed = await testerAccessConfirmation(data);
+      if (!confirmed) return;
+    }
+    setBusy(true);
     try {
       setMessage("Guardando cambios...");
       let successMessage = "Cambio guardado y acceso recalculado.";
       if (form.matches("[data-issue-license-form]")) {
-        await repository.issueLicense({ ...data, startsAt: isoDate(data.startsAt), endsAt: data.endsAt ? isoDate(data.endsAt) : null });
+        if (data.accessKind === "partner_test") {
+          const existingUser = users.find(item => item.user_id === data.userId);
+          const invitation = await repository.provisionTesterAccess({
+            institutionId: data.institutionId === "none" ? null : data.institutionId,
+            cohortId: data.cohortId || null,
+            email: existingUser?.email || data.email,
+            fullName: existingUser ? "" : data.fullName,
+            productKey: data.productKey || null,
+            startsAt: data.startsAt ? isoDate(data.startsAt) : null,
+            endsAt: data.cohortId
+              ? data.individualEndsAt ? isoDate(data.individualEndsAt) : null
+              : data.endsAt ? isoDate(data.endsAt) : null,
+            grantReason: data.grantReason || "",
+            reviewAt: data.reviewAt ? isoDate(data.reviewAt) : null
+          });
+          successMessage = invitationSuccessMessage(invitation);
+          testerDraft = {};
+          testerInstitutionId = "none";
+          testerInstitutionAutoSelected = false;
+          testerInstitutionManuallySelected = false;
+          testerUserId = "new";
+          testerCohortId = "";
+        } else {
+          await repository.issueLicense({ ...data, startsAt: isoDate(data.startsAt), endsAt: data.endsAt ? isoDate(data.endsAt) : null });
+        }
       }
       if (form.matches("[data-assign-license-form]")) {
         await repository.assignSeat(data.licenseId, data.userId);
       }
-      if (form.matches("[data-create-evaluation-account]")) {
-        await repository.createEvaluationAccount(data.displayName);
+      if (form.matches("[data-create-institution]")) {
+        const createdInstitutionId = await repository.createInstitution({ displayName: data.displayName, domain: data.domain });
+        if (testerSubflow === "institution") {
+          testerInstitutionId = String(createdInstitutionId || "none");
+          testerInstitutionAutoSelected = testerInstitutionId !== "none";
+          testerInstitutionManuallySelected = false;
+        }
+        successMessage = "La institución quedó disponible para usuarios y cohortes.";
       }
       if (form.matches("[data-create-cohort]")) {
-        await repository.createEvaluationCohort({ ...data, startsAt: isoDate(data.startsAt), endsAt: isoDate(data.endsAt) });
+        const createdCohortId = await repository.createEvaluationCohort({
+          ...data,
+          startsAt: isoDate(data.startsAt),
+          endsAt: isoDate(data.endsAt),
+          reviewAt: data.reviewAt ? isoDate(data.reviewAt) : null
+        });
+        if (testerSubflow === "cohort") testerCohortId = String(createdCohortId || "");
+        successMessage = "El programa de acceso y su cohorte fueron creados.";
       }
       if (form.matches("[data-invite-participant]")) {
-        await repository.inviteEvaluationParticipant(data.cohortId, data.email);
+        const invitation = await repository.inviteEvaluationParticipant(data.cohortId, data.email, data.fullName);
+        successMessage = invitationSuccessMessage(invitation);
       }
       if (form.matches("[data-map-commercial-request-review-form]")) {
         await repository.reviewCommercialRequest({
@@ -1033,13 +1401,27 @@
           ? "La solicitud quedó marcada en revisión."
           : "La decisión comercial quedó registrada.";
       }
+      const returnToIssue = ["institution", "cohort"].includes(testerSubflow);
       ui.closeLayer(form.closest("dialog"), "success");
       form.reset();
       await loadDashboard({ successMessage });
+      if (returnToIssue) {
+        testerSubflow = "";
+        const issueDialog = root.querySelector("#map-issue-license-dialog");
+        if (issueDialog && !issueDialog.open) ui.openLayer(issueDialog);
+      }
     } catch (error) {
       setMessage(contracts.toError(error).message, "error");
       setBusy(false);
     }
+  }
+
+  function invitationSuccessMessage(invitation = {}) {
+    return invitation.invitationSent
+      ? "La invitación fue enviada y el acceso quedó pendiente de activación."
+      : invitation.memberStatus === "active"
+        ? "La cuenta existente recibió acceso activo."
+        : "La cuenta invitada recibió acceso tester.";
   }
 
   async function loadParticipants(cohortId) {

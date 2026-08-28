@@ -14,12 +14,31 @@
     }
   }
 
+  async function functionInvocationError(error) {
+    const response = error?.context;
+    if (!response || typeof response.clone !== "function") return error;
+    try {
+      const payload = await response.clone().json();
+      const message = String(payload?.error || payload?.message || "").trim();
+      if (!message) return error;
+      const diagnosticId = String(payload?.diagnosticId || response.headers?.get?.("X-Operation-Id") || "").trim();
+      return Object.assign(new Error(message), {
+        cause: error,
+        code: error?.code,
+        status: response.status || error?.status,
+        diagnosticId
+      });
+    } catch {
+      return error;
+    }
+  }
+
   async function invokeFunction(name, body) {
     try {
       const supabase = await window.BCCAuth.loadSupabaseClient();
       const { data, error } = await supabase.functions.invoke(name, { body });
-      if (error) throw error;
-      if (!data || typeof data !== "object") throw new Error("The billing service returned an invalid response.");
+      if (error) throw await functionInvocationError(error);
+      if (!data || typeof data !== "object") throw new Error("The MAP service returned an invalid response.");
       return data;
     } catch (error) {
       throw contracts.toError(error);
@@ -37,6 +56,15 @@
     if (error?.code === "invalid_response") return true;
     const message = error?.message || "";
     return new RegExp(`${rpcName}[\\s\\S]*schema cache`, "i").test(message);
+  }
+
+  async function activateEvaluationMemberships() {
+    try {
+      return Number(await rpc("activate_my_evaluation_memberships")) || 0;
+    } catch (error) {
+      if (isMissingRpc(error, "activate_my_evaluation_memberships")) return 0;
+      throw error;
+    }
   }
 
   async function getTrialOffer() {
@@ -87,6 +115,7 @@
   }
 
   async function getClientDashboard() {
+    await activateEvaluationMemberships();
     const [dashboard, access, entitlements, trialOffer, commercialRequestState, billingState] = await Promise.all([
       rpc("get_my_license_overview"),
       rpc("get_my_platform_access"),
@@ -181,18 +210,37 @@
       p_license_id: licenseId,
       p_user_id: userId
     }),
-    createEvaluationAccount: displayName => rpc("create_my_evaluation_account", { p_display_name: displayName }),
-    createEvaluationCohort: values => rpc("create_my_evaluation_cohort", {
-      p_account_id: values.accountId,
+    createInstitution: values => rpc("create_my_institution", {
+      p_display_name: values.displayName,
+      p_domain: values.domain || null
+    }),
+    createEvaluationCohort: values => rpc("create_my_access_program_cohort", {
+      p_account_id: values.institutionId,
       p_product_key: values.productKey,
       p_name: values.name,
       p_purpose: values.purpose,
       p_starts_at: values.startsAt,
-      p_ends_at: values.endsAt
+      p_ends_at: values.endsAt,
+      p_program_type: values.programType || "standard_evaluation",
+      p_grant_reason: values.grantReason || "",
+      p_review_at: values.reviewAt || null,
+      p_max_renewals: Number(values.maxRenewals || 0)
     }),
-    inviteEvaluationParticipant: (cohortId, email) => rpc("provision_my_evaluation_participant", {
-      p_cohort_id: cohortId,
-      p_email: email
+    provisionTesterAccess: values => invokeFunction("invite-map-evaluation-participant", {
+      institutionId: values.institutionId || null,
+      cohortId: values.cohortId || null,
+      email: values.email,
+      fullName: values.fullName || "",
+      productKey: values.productKey || null,
+      startsAt: values.startsAt || null,
+      endsAt: values.endsAt || null,
+      grantReason: values.grantReason || "",
+      reviewAt: values.reviewAt || null
+    }),
+    inviteEvaluationParticipant: (cohortId, email, fullName = "") => invokeFunction("invite-map-evaluation-participant", {
+      cohortId,
+      email,
+      fullName
     }),
     listEvaluationParticipants: cohortId => rpc("list_my_evaluation_cohort_participants", {
       p_cohort_id: cohortId

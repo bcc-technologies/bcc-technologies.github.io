@@ -694,3 +694,5 @@ grant select, insert, update on public.platform_licenses, public.license_assignm
   public.platform_permissions, public.platform_roles, public.profiles,
   public.evaluation_cohorts, public.evaluation_cohort_members, public.evaluation_access_events
 to service_role;
+
+;

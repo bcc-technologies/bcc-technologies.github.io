@@ -9,3 +9,4 @@ alter table public.workspace_prospect_templates
 alter table public.workspace_prospect_templates
   add constraint workspace_prospect_templates_category_check
   check (category in ('', 'first_contact', 'follow_up', 'proposal', 'negotiation', 'reactivation', 'closing', 'internal'));
+;

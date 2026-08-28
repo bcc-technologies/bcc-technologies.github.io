@@ -113,6 +113,9 @@
 .maps-license-form select:focus,
 .maps-license-form textarea:focus{ outline: 2px solid var(--accent); outline-offset: 1px; }
 .maps-license-form-row{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.maps-license-field-with-action{ display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.maps-license-field-with-action > .btn{ min-height: 42px; }
+.maps-license-form-note{ margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
 .maps-license-form .workspace-layer-body{ gap: 14px; }
 
 .maps-license-detail-status{ display: flex; justify-content: flex-start; }
@@ -168,6 +171,12 @@
 .maps-license-cohort-head small,
 .maps-license-cohort-meta{ color: var(--muted); font-size: .78rem; }
 .maps-license-cohort-detail{ min-width: 0; padding: 22px; }
+.maps-license-program-summary{ margin: 16px 0; padding: 14px; border: 1px solid var(--border); border-radius: var(--workspace-radius-control); background: var(--surface-muted); }
+.maps-license-program-summary-head{ display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.maps-license-program-summary dl{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin: 0; }
+.maps-license-program-summary dl div{ min-width: 0; }
+.maps-license-program-summary dt{ color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.maps-license-program-summary dd{ margin: 3px 0 0; overflow-wrap: anywhere; color: var(--ink); font-size: .84rem; line-height: 1.4; }
 .maps-license-cohort-purpose{ margin: 16px 0; padding: 12px 14px; border-radius: var(--workspace-radius-control); background: var(--surface-muted); color: var(--muted); line-height: 1.5; }
 .maps-license-participant-head{ align-items: center; margin: 20px 0 8px; }
 .maps-license-participants{ min-width: 620px; }
@@ -199,7 +208,9 @@
 @media (max-width: 500px){
   .maps-license-metrics,
   .maps-license-form-row,
+  .maps-license-field-with-action,
   .maps-license-detail-list{ grid-template-columns: 1fr; }
+  .maps-license-program-summary dl{ grid-template-columns: 1fr; }
   .maps-license-actions .btn{ flex: 1 1 auto; justify-content: center; }
   .maps-license-danger-zone{ align-items: stretch; flex-direction: column; }
 }

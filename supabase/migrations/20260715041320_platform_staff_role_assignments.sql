@@ -133,3 +133,5 @@ $$;
 
 revoke all on function private.sync_platform_internal_role() from public, anon, authenticated;
 update public.profiles set staff_roles = staff_roles;
+
+;

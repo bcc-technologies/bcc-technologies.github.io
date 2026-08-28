@@ -766,3 +766,5 @@ using (false) with check (false);
 create policy "No direct evaluation audit access"
 on public.evaluation_access_events as restrictive for all to authenticated
 using (false) with check (false);
+
+;
