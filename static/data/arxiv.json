@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-04T10:31:04.272Z",
+  "updatedAt": "2026-09-06T10:12:43.601Z",
   "groups": [
     {
       "id": "physics",
@@ -4042,7 +4042,7 @@
         "Andreu Queralt",
         "Dmitry Krasnov",
         "Yuri Kolesnikov",
-        "JörgSchumacher"
+        "Jörg Schumacher"
       ],
       "categories": [
         "physics.flu-dyn"
@@ -5529,7 +5529,7 @@
       "published": "2026-09-01T23:00:07Z",
       "updated": "2026-09-01T23:00:07Z",
       "authors": [
-        "Mar'ia Florentina Mendoza Ur'an"
+        "María Florentina Mendoza Urán"
       ],
       "categories": [
         "physics.hist-ph"
@@ -6854,9 +6854,9 @@
         "Zhi-Wei Sun"
       ],
       "categories": [
-        "math.NT"
+        "math.GM"
       ],
-      "primaryCategory": "math.NT",
+      "primaryCategory": "math.GM",
       "sourceGroup": "math",
       "group": "math"
     },
