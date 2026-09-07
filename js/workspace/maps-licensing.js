@@ -640,7 +640,7 @@
             <h3>Asignar una plaza</h3>
             <form class="maps-license-form" data-assign-license-form>
               <input type="hidden" name="licenseId" value="${escapeHtml(item.license_id)}">
-              <label>Usuario<select name="userId" required autofocus>${optionList(users, "user_id", "display_name", "email")}</select></label>
+              <label>Usuario<select name="userId" required autofocus>${optionList(users, "user_id", "email")}</select></label>
               <button class="btn btn-primary" type="submit" data-map-control>Asignar plaza</button>
             </form>
           </section>` : ""}
@@ -746,7 +746,7 @@
         : "";
       return `<option value="${escapeHtml(item.institution_id)}" ${testerInstitutionId === item.institution_id ? "selected" : ""}>${escapeHtml(item.display_name)}${escapeHtml(domains)}</option>`;
     }).join("");
-    const userOptions = users.map(item => `<option value="${escapeHtml(item.user_id)}" ${testerUserId === item.user_id ? "selected" : ""}>${escapeHtml(item.display_name || item.email)} · ${escapeHtml(item.email)}</option>`).join("");
+    const userOptions = users.map(item => `<option value="${escapeHtml(item.user_id)}" ${testerUserId === item.user_id ? "selected" : ""}>${escapeHtml(item.email)}</option>`).join("");
     const institutionDiscoveryNote = suggestedInstitution && testerInstitutionId === suggestedInstitution.institution_id
       ? `<p class="maps-license-form-note">Institución sugerida por el dominio <strong>@${escapeHtml(suggestedDomain)}</strong>: <strong>${escapeHtml(suggestedInstitution.display_name)}</strong>.</p>`
       : suggestedDomain && !suggestedInstitution
@@ -757,7 +757,7 @@
         <option value="new" ${testerUserId === "new" ? "selected" : ""}>Invitar una cuenta nueva</option>
         ${userOptions}
       </select></label>
-      ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.display_name || selectedUser.email)}</strong><br>${escapeHtml(selectedUser.email)}</p>` : `
+      ${selectedUser ? `<p class="maps-license-form-note"><strong>${escapeHtml(selectedUser.email)}</strong></p>` : `
         <label>Nombre completo<input name="fullName" maxlength="160" value="${escapeHtml(testerDraft.fullName || "")}" required autocomplete="name"></label>
         <label>Correo<input name="email" type="email" maxlength="254" value="${escapeHtml(testerDraft.email || "")}" required autocomplete="email" placeholder="usuario@institucion.edu" data-map-tester-email></label>`}
       <div class="maps-license-field-with-action">
