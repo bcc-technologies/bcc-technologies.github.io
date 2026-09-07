@@ -68,6 +68,40 @@ body {
     color: var(--ink-muted);
   }
 
+  .password-field {
+    position: relative;
+    margin-bottom: 15px;
+  }
+
+  .signup-card .password-field input {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 0;
+    padding-right: 48px;
+  }
+
+  .signup-card .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-muted);
+  }
+
+  .signup-card .password-toggle:hover { background: var(--surface); color: var(--ink); }
+  .signup-card .password-toggle:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
+  .password-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+  .password-toggle__hide, .password-toggle.is-visible .password-toggle__show { display: none; }
+  .password-toggle.is-visible .password-toggle__hide { display: block; }
+
   .auth-message {
     min-height: 20px;
     margin: 0 0 14px;
@@ -120,4 +154,3 @@ body {
     text-decoration: none;
   }
   
-
