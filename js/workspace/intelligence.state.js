@@ -16,6 +16,7 @@
   let currentAction = "sync_papers";
   let syncDryRun = false;
   let selectedSignalId = "";
+  let signalDetailOpen = false;
   let selectedTopicId = "";
   let selectedSourceId = "";
   let filters = {};
@@ -23,6 +24,7 @@
   let dashboard = emptyDashboard();
   let topicHitsIndex = null;
   let selectedBulkSignalIds = new Set();
+  let signalFilters = { status: "all", keyword: "", line: "" };
 
   function emptyDashboard() {
     return {
@@ -249,7 +251,7 @@
   }
 
   function selectedSignal() {
-    return dashboard.signals.find(item => item.id === selectedSignalId) || sortedSignals()[0] || null;
+    return filteredSignals().find(item => item.id === selectedSignalId) || filteredSignals()[0] || null;
   }
 
   function selectedTopic() {
@@ -261,7 +263,24 @@
   }
 
   function sortedSignals() {
-    return [...dashboard.signals].sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
+    return [...dashboard.signals].sort((left, right) => prioritySignalScore(right) - prioritySignalScore(left)
+      || Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
+  }
+
+  function filteredSignals() {
+    const query = normalizeTopicMatchValue(signalFilters.keyword);
+    return sortedSignals().filter(item => {
+      const statusMatch = signalFilters.status === "all" || (signalFilters.status === "review"
+        ? ["new", "reviewing"].includes(item.status) : item.status === signalFilters.status);
+      const haystack = normalizeTopicMatchValue([item.title, item.summary, item.recommendedAction,
+        ...(item.evidenceRefs || []).map(ref => ref.title)].join(" "));
+      return statusMatch && (!signalFilters.line || signalFilters.line === item.relatedLine) && (!query || haystack.includes(query));
+    });
+  }
+
+  function signalArchiveExport() {
+    return { schemaVersion: 1, exportedAt: new Date().toISOString(), scope: "loaded-filtered-signals",
+      filters: { ...signalFilters }, signals: filteredSignals() };
   }
 
   function failedRuns() {
@@ -378,6 +397,7 @@
   function panelLabel(panel) {
     return {
       overview: "Resumen",
+      opportunities: "Oportunidades",
       signals: "Señales",
       papers: "Papers",
       grants: "Grants",
@@ -927,10 +947,15 @@
   }
 
   window.BCCWorkspaceIntelligenceState = {
+    get signalFilters() { return signalFilters; },
+    filteredSignals,
+    signalArchiveExport,
     get currentUser() { return currentUser; },
     set currentUser(value) { currentUser = value; },
     get currentPanel() { return currentPanel; },
     set currentPanel(value) { currentPanel = value; },
+    get signalDetailOpen() { return signalDetailOpen; },
+    set signalDetailOpen(value) { signalDetailOpen = Boolean(value); },
     get currentAction() { return currentAction; },
     set currentAction(value) { currentAction = value; },
     get syncDryRun() { return syncDryRun; },

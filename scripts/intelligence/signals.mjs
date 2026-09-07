@@ -1,4 +1,6 @@
+import { lexicalMatchScore, containsPhrase, configuredTopicTerms } from "./matching.mjs";
 import { cleanText, titleFingerprint } from "./connectors/base.mjs";
+import { paperRelevance } from "./relevance.mjs";
 
 const PAIN_TERMS = [
   "manual",
@@ -112,41 +114,18 @@ function evidenceRef(type, item) {
     type,
     id: String(item?.id || ""),
     title: cleanText(item?.title || item?.name || "", 240),
+    publicationDate: item?.publicationDate || item?.startDate || "",
+    excerpt: cleanText(item?.abstract || item?.summary || "", 700),
+    relevance: item?.relevance || null,
     sourceUrl: cleanText(item?.sourceUrl || item?.source_url || item?.website || "", 500)
   };
 }
 
 function topicKeywords(topic) {
-  const relatedLine = mapTopicToLine(topic);
-  return uniqueNormalized([
-    String(topic?.name || ""),
-    ...(Array.isArray(topic?.keywords) ? topic.keywords : []),
-    ...(LINE_KEYWORDS[relatedLine] || [])
-  ]);
+  return uniqueNormalized(configuredTopicTerms(topic));
 }
 
-function semanticMatchScore(values, terms) {
-  const haystack = values.map(normalizeText).filter(Boolean).join(" ");
-  if (!haystack || !terms.length) return 0;
-  const haystackTokens = new Set(tokenize(haystack));
-  let score = 0;
-  for (const term of terms) {
-    const phrase = normalizeText(term);
-    if (!phrase) continue;
-    if (haystack.includes(phrase)) {
-      score += 1;
-      continue;
-    }
-    const termTokens = tokenize(phrase);
-    if (!termTokens.length) continue;
-    const overlap = termTokens.filter(token => haystackTokens.has(token)).length;
-    const ratio = overlap / termTokens.length;
-    if (ratio >= 0.5) {
-      score += 0.45 + ratio * 0.4;
-    }
-  }
-  return clamp01(score / Math.max(2, Math.min(6, terms.length)));
-}
+const semanticMatchScore = lexicalMatchScore;
 
 function explicitTopicMatch(item, topic) {
   const explicit = uniqueNormalized(item?.topics || []);
@@ -155,55 +134,34 @@ function explicitTopicMatch(item, topic) {
 }
 
 function paperTopicScore(paper, topic) {
-  if (explicitTopicMatch(paper, topic)) return 1;
-  return semanticMatchScore([
-    paper?.title,
-    paper?.abstract,
-    ...(paper?.topics || []),
-    ...(paper?.keywords || []),
-    ...(paper?.institutions || []),
-    ...(paper?.authors || []),
-    paper?.journalOrVenue
-  ], topicKeywords(topic));
+  return paperRelevance(paper, topic).score;
 }
 
 function grantTopicScore(grant, topic) {
-  if (explicitTopicMatch(grant, topic)) return 1;
   return semanticMatchScore([
     grant?.title,
     grant?.abstract,
     grant?.program,
     grant?.agency,
-    ...(grant?.topics || []),
-    ...(grant?.institutions || [])
   ], topicKeywords(topic));
 }
 
 function patentTopicScore(patent, topic) {
-  if (explicitTopicMatch(patent, topic)) return 1;
   return semanticMatchScore([
     patent?.title,
     patent?.abstract,
-    ...(patent?.topics || []),
-    ...(patent?.assignees || []),
-    ...(patent?.inventors || []),
     patent?.jurisdiction,
     patent?.status
   ], topicKeywords(topic));
 }
 
 function trialTopicScore(trial, topic) {
-  if (explicitTopicMatch(trial, topic)) return 1;
   return semanticMatchScore([
     trial?.title,
     trial?.summary,
-    ...(trial?.topics || []),
     ...(trial?.keywords || []),
     ...(trial?.conditions || []),
     ...(trial?.interventions || []),
-    ...(trial?.collaborators || []),
-    ...(trial?.locations || []),
-    ...(trial?.countries || []),
     trial?.phase,
     trial?.status,
     trial?.studyType,
@@ -227,57 +185,46 @@ function average(values) {
   return values.reduce((sum, value) => sum + (Number(value) || 0), 0) / values.length;
 }
 
-function topicGrowth(topicPapers) {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-  const recent = topicPapers.filter(item => {
-    const date = item?.publicationDate ? new Date(item.publicationDate).getTime() : 0;
-    return date && (now - date) <= 45 * day;
-  }).length;
-  const previous = topicPapers.filter(item => {
-    const date = item?.publicationDate ? new Date(item.publicationDate).getTime() : 0;
-    return date && (now - date) > 45 * day && (now - date) <= 180 * day;
-  }).length;
-  const baseline = previous > 0 ? (previous / 3) : 0.8;
-  return clamp01((recent + (recent >= 3 ? 0.6 : 0)) / (baseline + 1.1));
+export function measureTopicGrowth(papers, now = Date.now()) {
+  const day = 86400000;
+  const ages = papers.map(item => (now - Date.parse(item.publicationDate || "")) / day);
+  const recent = ages.filter(age => age >= 0 && age <= 45).length;
+  const previous = ages.filter(age => age > 45 && age <= 90).length;
+  // Equal windows; absence of a baseline cannot establish growth.
+  const sufficient = recent >= 3 && previous >= 3;
+  return { recent, previous, windowDays: 45, sufficient,
+    score: sufficient ? clamp01((recent - previous) / previous) : null };
 }
 
 function proximityToBCC(topic, papers) {
-  const relatedLine = mapTopicToLine(topic);
-  const keywords = uniqueNormalized(LINE_KEYWORDS[relatedLine] || []);
-  const haystack = [
-    topic?.name,
-    topic?.description,
-    ...(topic?.keywords || []),
-    ...papers.flatMap(item => [item?.title, item?.abstract, ...(item?.topics || []), ...(item?.keywords || [])])
-  ];
-  return semanticMatchScore(haystack, keywords);
+  const keywords = uniqueNormalized(LINE_KEYWORDS[mapTopicToLine(topic)] || []);
+  return average(papers.map(item => semanticMatchScore([item.title, item.abstract, ...(item.keywords || [])], keywords)));
 }
 
 function technicalPainDetected(papers) {
-  const haystack = papers.map(item => [item?.title, item?.abstract].map(normalizeText).join(" ")).join(" ");
-  const matches = PAIN_TERMS.filter(term => haystack.includes(normalizeText(term))).length;
-  return clamp01(matches / 3);
+  // Volume must not turn a few generic words into universal evidence of pain.
+  return average(papers.map(item => {
+    const text = [item.title, item.abstract].join(" ");
+    return clamp01(PAIN_TERMS.filter(term => containsPhrase(text, term)).length / 3);
+  }));
 }
 
 function fundingPresence(grants, trials) {
-  return clamp01((grants.length + trials.length * 0.6) / 3);
+  return clamp01(grants.length / 3);
 }
 
 function activeInstitutionsScore(papers, grants, trials) {
   return clamp01(uniqueInstitutions(papers, grants, trials).length / 6);
 }
 
-function competitiveWhiteSpace(papers, patents) {
-  if (!papers.length) return 0;
-  const patentPressure = patents.length / Math.max(2, papers.length);
-  return clamp01(1 - patentPressure);
+function competitiveWhiteSpace() {
+  // Neither missing patents nor a small search result measures market whitespace.
+  return null;
 }
 
 function openDataAvailability(papers) {
   if (!papers.length) return 0;
-  const open = papers.filter(item => item?.openAccessUrl || /dataset|benchmark|open source/i.test(String(item?.abstract || ""))).length;
-  return clamp01(open / papers.length);
+  return papers.filter(item => /^https?:\/\//i.test(item.datasetUrl || "")).length / papers.length;
 }
 
 function dataAvailability(papers, grants, trials) {
@@ -293,7 +240,7 @@ function easeOfContact(papers, grants, trials, institutions) {
   const names = uniqueInstitutions(papers, grants, trials);
   const known = institutions.filter(item => names.includes(cleanText(item?.name || "", 200)));
   const withUrl = known.filter(item => item?.website || item?.sourceUrl).length;
-  return clamp01((withUrl + names.length * 0.25) / 4);
+  return clamp01(withUrl / 4);
 }
 
 function compatibilityWithCurrentProduct(topic, papers) {
@@ -306,13 +253,12 @@ function contentPotential(topic, papers, meanPaperMatch) {
   return clamp01((richEvidence / papers.length) * 0.45 + meanPaperMatch * 0.25 + clarityOfUseCase(topic, papers, meanPaperMatch) * 0.3);
 }
 
-function confidenceScore(opportunityScore, actionabilityScore, evidenceCount, meanMatchScore) {
-  return toScore(
-    ((opportunityScore / 100) * 0.35)
-    + ((actionabilityScore / 100) * 0.3)
-    + clamp01(evidenceCount / 6) * 0.2
-    + clamp01(meanMatchScore) * 0.15
-  );
+function confidenceScore(items, meanMatchScore) {
+  if (!items.length) return 0;
+  const linked = items.filter(item => /^https?:\/\//i.test(item.sourceUrl || "")).length / items.length;
+  const described = items.filter(item => (item.abstract || item.summary || "").length >= 120).length / items.length;
+  // Evidence completeness, independent of opportunity; not probability of success.
+  return toScore(0.4 * meanMatchScore + 0.3 * linked + 0.3 * described);
 }
 
 function buildRecommendedAction(signalType, topic, institutions, breakdown) {
@@ -323,7 +269,7 @@ function buildRecommendedAction(signalType, topic, institutions, breakdown) {
     ? `Explorar acercamiento con ${sampleInstitutions}. Ease of contact ${breakdown.actionability.easeOfContact}.`
     : `Mapear instituciones activas en ${topic.name} para partnership scouting.`;
   if (signalType === "content_idea") return `Convertir ${topic.name} en artículo, demo o briefing comercial con evidencia enlazada. Content potential ${breakdown.actionability.contentPotential}.`;
-  if (signalType === "competitive_risk") return `Revisar claims y posicionamiento en ${topic.name}. Patent pressure ${100 - breakdown.opportunity.competitiveWhiteSpace}.`;
+  if (signalType === "competitive_risk") return `Revisar claims y posicionamiento en ${topic.name}. Validar alcance, vigencia y claims en la fuente primaria; no se ha medido presión de mercado.`;
   if (signalType === "grant_opportunity") return `Cruzar ${topic.name} con grants y estudios activos para detectar ventanas de colaboración, funding y validación. Funding presence ${breakdown.opportunity.fundingPresence}.`;
   return `Revisar la evidencia de ${topic.name} y priorizar siguiente acción.`;
 }
@@ -406,7 +352,7 @@ function scoreBreakdownForTopic(topic, relatedLine, matches, scores, metrics, th
       fundingPresence: toScore(metrics.fundingValue),
       technicalPainDetected: toScore(metrics.painValue),
       activeInstitutions: toScore(metrics.activeInstitutionsValue),
-      competitiveWhiteSpace: toScore(metrics.whiteSpaceValue),
+      competitiveWhiteSpace: metrics.whiteSpaceValue === null ? null : toScore(metrics.whiteSpaceValue),
       openDataAvailability: toScore(metrics.openDataValue)
     },
     actionability: {
@@ -436,23 +382,25 @@ function buildSignalsForTopic(topic, context) {
   const thresholds = lineThresholds(relatedLine);
 
   const paperMatches = context.papers
+    .filter(item => item.id && /^https?:\/\//i.test(item.sourceUrl || ""))
+    .filter(item => { const age = context.now - Date.parse(item.publicationDate || ""); return age >= 0 && age <= 365 * 86400000; })
     .map(item => ({ item, score: paperTopicScore(item, topic) }))
     .filter(entry => entry.score >= thresholds.product.match)
     .sort((left, right) => right.score - left.score);
-  const grantMatches = context.grants
+  const grantMatches = context.grants.filter(item => item.id && /^https?:\/\//i.test(item.sourceUrl || ""))
     .map(item => ({ item, score: grantTopicScore(item, topic) }))
     .filter(entry => entry.score >= 0.22)
     .sort((left, right) => right.score - left.score);
-  const patentMatches = context.patents
+  const patentMatches = context.patents.filter(item => item.id && /^https?:\/\//i.test(item.sourceUrl || ""))
     .map(item => ({ item, score: patentTopicScore(item, topic) }))
     .filter(entry => entry.score >= 0.22)
     .sort((left, right) => right.score - left.score);
-  const trialMatches = context.trials
+  const trialMatches = context.trials.filter(item => item.id && /^https?:\/\//i.test(item.sourceUrl || ""))
     .map(item => ({ item, score: trialTopicScore(item, topic) }))
     .filter(entry => entry.score >= 0.24)
     .sort((left, right) => right.score - left.score);
 
-  const topicPapers = paperMatches.map(entry => entry.item);
+  const topicPapers = paperMatches.map(entry => ({ ...entry.item, relevance: paperRelevance(entry.item, topic) }));
   const topicGrants = grantMatches.map(entry => entry.item);
   const topicPatents = patentMatches.map(entry => entry.item);
   const topicTrials = trialMatches.map(entry => entry.item);
@@ -464,7 +412,13 @@ function buildSignalsForTopic(topic, context) {
   const meanGrantMatch = average(grantMatches.map(entry => entry.score));
   const meanPatentMatch = average(patentMatches.map(entry => entry.score));
   const meanTrialMatch = average(trialMatches.map(entry => entry.score));
-  const topicGrowthValue = topicGrowth(topicPapers);
+  const growth = measureTopicGrowth(topicPapers, context.now);
+  if (context.coverage?.temporallyRepresentative === false || context.coverage?.atLimit?.includes("papers")) {
+    growth.sufficient = false;
+    growth.score = null;
+    growth.reason = "Muestra temporal incompleta o estratificada; no permite estimar crecimiento.";
+  }
+  const topicGrowthValue = growth.score || 0;
   const proximityValue = proximityToBCC(topic, topicPapers);
   const fundingValue = fundingPresence(topicGrants, topicTrials);
   const painValue = technicalPainDetected(topicPapers);
@@ -496,7 +450,7 @@ function buildSignalsForTopic(topic, context) {
   const scores = {
     opportunityScore,
     actionabilityScore,
-    confidenceScore: confidenceScore(opportunityScore, actionabilityScore, evidenceRefs.length, meanMatchScore)
+    confidenceScore: confidenceScore([...topicPapers, ...topicGrants, ...topicPatents, ...topicTrials], meanMatchScore)
   };
 
   const metrics = {
@@ -527,27 +481,39 @@ function buildSignalsForTopic(topic, context) {
     institutions
   }, scores, metrics, thresholds);
 
+  breakdown.methodology = {
+    version: "2.1", evaluatedAt: new Date(context.now).toISOString(),
+    confidenceMeaning: "Completitud y coincidencia léxica de evidencia; no probabilidad de éxito.",
+    growth,
+    coverage: context.coverage || { bounded: true, limits: null },
+    limitations: [
+      "Muestra de fuentes indexadas; no mide el mercado completo ni valida científicamente los resultados.",
+      "Cobertura competitiva desconocida; ausencia de patentes no demuestra espacio libre.",
+      "Acceso abierto al artículo no demuestra disponibilidad de datasets ni licencia de reutilización.",
+      ...(topicPapers.some(item => item.relevance.basis === "title-method-candidate") ? ["Incluye candidatas por método en el título; confirmar aplicación concreta y demanda antes de priorizar producto."] : []),
+      ...(topicGrants.length ? ["Proyectos ya financiados; no son convocatorias abiertas ni confirman elegibilidad de BCC."] : []),
+      ...(!growth.sufficient ? [growth.reason || "Crecimiento no establecido: faltan al menos 3 publicaciones en cada ventana de 45 días."] : [])
+    ]
+  };
   const candidates = [];
   const basePriority = opportunityScore * 0.45 + actionabilityScore * 0.35 + scores.confidenceScore * 0.2;
 
-  if (opportunityScore >= thresholds.product.opportunity && proximityValue >= thresholds.product.proximity && meanPaperMatch >= thresholds.product.match) {
+  if (topicPapers.length >= 2 && painValue >= 0.2 && opportunityScore >= thresholds.product.opportunity && proximityValue >= thresholds.product.proximity && meanPaperMatch >= thresholds.product.match) {
     candidates.push(buildSignal(`${topic.name}: Product opportunity`, "product_opportunity", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 14));
   }
-  if (topicGrowthValue >= thresholds.research.growth || topicPapers.length >= thresholds.research.minPapers) {
+  if (growth.sufficient && topicGrowthValue >= thresholds.research.growth) {
     candidates.push(buildSignal(`${topic.name}: Emerging research trend`, "research_trend", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 10));
   }
-  if ((institutions.length >= thresholds.partnership.institutions || topicTrials.length) && actionabilityScore >= thresholds.partnership.actionability) {
+  if ((institutions.length >= thresholds.partnership.institutions || topicTrials.length || topicGrants.length) && actionabilityScore >= thresholds.partnership.actionability) {
     candidates.push(buildSignal(`${topic.name}: Partnership candidates`, "partnership", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 8));
   }
   if (contentValue >= thresholds.content.contentPotential) {
     candidates.push(buildSignal(`${topic.name}: Content opportunity`, "content_idea", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 7));
   }
-  if (topicPatents.length >= thresholds.risk.minPatents || (topicPapers.length >= thresholds.risk.minPapers && whiteSpaceValue < thresholds.risk.whiteSpace)) {
-    candidates.push(buildSignal(`${topic.name}: Competitive watch`, "competitive_risk", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 6));
+  if (topicPatents.length >= thresholds.risk.minPatents) {
+    candidates.push(buildSignal(`${topic.name}: Competitive watch`, "competitive_risk", topic, relatedLine, topicPatents.slice(0, 8).map(item => evidenceRef("patent", item)), scores, institutions, breakdown, basePriority + 6));
   }
-  if (topicGrants.length >= thresholds.grant.minGrants || topicTrials.length >= 1) {
-    candidates.push(buildSignal(`${topic.name}: Grant or collaboration window`, "grant_opportunity", topic, relatedLine, evidenceRefs, scores, institutions, breakdown, basePriority + 9));
-  }
+
 
   return candidates
     .sort((left, right) => right._priority - left._priority)
@@ -568,7 +534,9 @@ export function generateStrategicSignals(context = {}) {
     grants,
     patents,
     trials,
-    institutions
+    institutions,
+    coverage: context.coverage,
+    now: Number.isFinite(context.now) ? context.now : Date.now()
   }));
 
   const deduped = new Map();

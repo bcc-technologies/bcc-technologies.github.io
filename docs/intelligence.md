@@ -1,5 +1,7 @@
 # Intelligence Module
 
+> Auditoría y cambios de septiembre de 2026: [Science Radar](science-radar-audit-2026-09-07.md). La sección de scoring describe la heurística original; la versión 2.1 declara incertidumbre, endurece coincidencias y conserva expedientes revisados.
+
 ## What it is
 
 `Intelligence` is an internal Scientific & Technology Intelligence module inside the admin dashboard.
@@ -338,22 +340,33 @@ Reference:
 
 ## Current limitations
 
-- `Fetch grants` and `Fetch patents` are still not implemented end-to-end.
+- Grants and trials connectors are implemented. EPO patents require credentials; USPTO remains inactive.
 - The current sync is strongest on papers; grants and patents still need fuller source ingestion.
 - Signal scoring is heuristic and intentionally simple.
 - Duplicate review exists as metadata, but not yet as a full analyst workflow.
 - Institution enrichment is still lightweight.
-- There is no advanced explainability view beyond the evidence references and score outputs.
+- The detail now displays methodology and limitations. Scientific and commercial validation still require review.
 - Some dashboard reads are still optimized for small-to-medium datasets, not very large intelligence corpora.
 
 ## Pending work
 
 Natural next steps after this stage:
 
-- implement real grants connectors
-- implement real patents connectors
+- add actual open-call funding sources with deadline and eligibility checks
+- activate credentialed patent sources and measure coverage
 - add duplicate review workflow in the dashboard
 - improve institution/entity resolution
 - improve signal review lifecycle and analyst notes
-- add better filtering, saved views, and exports
+- add server-side archive search/pagination and a full decision history
 - evolve scoring with richer heuristics or model-assisted ranking when justified
+## Piloto de archivo curado
+
+### Navegación del radar
+
+La navegación se agrupa en Revisar, Explorar y Configurar; móvil usa un selector de secciones. Cambiar de sección conserva el DOM de los paneles: borradores de formularios y resúmenes de papers expandidos. Una actualización explícita de datos reconstruye las vistas.
+
+Las señales ofrecen anterior/siguiente dentro de los resultados filtrados, contador de posición y vuelta a la lista en móvil con restauración del foco. Las tarjetas se abren también mediante botones accesibles por teclado. Los filtros se pueden limpiar y distinguen una búsqueda sin coincidencias de un radar vacío. Los papers permiten expandir su resumen completo. Las acciones de sincronización están dentro de un desplegable.
+
+Estos cambios de navegación están preparados localmente; no implican publicación del sitio ni activación del piloto de oportunidades.
+
+El [piloto MAP-Nano](science-radar-pilot.md) añade fichas independientes de las señales, evidencia conservada, historial y un evaluador con etiquetas humanas. La migración ya está aplicada en Supabase y hay 60 papers independientes congelados, pendientes de revisión humana. La interfaz sigue desactivada hasta comprobar el flujo con una sesión autenticada real y publicar los assets.

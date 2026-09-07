@@ -260,6 +260,7 @@ export function createIntelligenceStoreFromEnv() {
           params: {
             select: "id,title,abstract,authors,institutions,publication_date,source_name,source_url,journal_or_venue,topics,keywords,citations_count,open_access_url,possible_duplicate,duplicate_candidates,raw_data",
             order: "publication_date.desc,updated_at.desc",
+            publication_date: `lte.${new Date().toISOString().slice(0, 10)}`,
             limit: 300
           }
         }),
@@ -302,6 +303,8 @@ export function createIntelligenceStoreFromEnv() {
       ]);
 
       return {
+        coverage: { bounded: true, limits: { papers: 300, grants: 200, patents: 200, trials: 200 },
+          atLimit: [papers.length >= 300 && "papers", grants.length >= 200 && "grants", patents.length >= 200 && "patents", trials.length >= 200 && "trials"].filter(Boolean) },
         papers: Array.isArray(papers) ? papers.map(item => ({
           id: item.id,
           title: item.title || "",
@@ -919,6 +922,11 @@ export function createIntelligenceStoreFromEnv() {
       };
       const existing = await this.findExistingSignal(signal);
       if (existing?.id) {
+        // Reviewed records are durable dossiers: preserve the exact evidence,
+        // scores and recommendation the reviewer accepted/rejected/archived.
+        if (["accepted", "rejected", "archived"].includes(existing.status)) {
+          return { action: "unchanged", record: existing };
+        }
         // generateStrategicSignals() always emits status "new" -- it has no
         // notion of what a reviewer already decided. Re-running the same
         // matching signal every sync (title+type+line) used to PATCH status
@@ -931,7 +939,8 @@ export function createIntelligenceStoreFromEnv() {
           method: "PATCH",
           prefer: "return=representation",
           params: {
-            id: `eq.${existing.id}`
+            id: `eq.${existing.id}`,
+            status: "in.(new,reviewing)"
           },
           body: refreshBody
         });
@@ -964,7 +973,7 @@ export function createIntelligenceStoreFromEnv() {
       const rows = await restFetch(baseUrl, serviceKey, "intelligence_signals", {
         params: {
           select: "id",
-          status: "in.(new,reviewing)",
+          status: "eq.new",
           created_at: `lt.${cutoff}`,
           opportunity_score: `lt.${opportunityCeiling}`,
           actionability_score: `lt.${actionabilityCeiling}`,
@@ -974,17 +983,22 @@ export function createIntelligenceStoreFromEnv() {
       const ids = [...new Set((Array.isArray(rows) ? rows : []).map(row => row.id).filter(Boolean))];
       if (!ids.length) return { archived: 0 };
 
-      await restFetch(baseUrl, serviceKey, "intelligence_signals", {
+      const archivedRows = await restFetch(baseUrl, serviceKey, "intelligence_signals", {
         method: "PATCH",
         params: {
-          id: `in.(${ids.join(",")})`
+          id: `in.(${ids.join(",")})`,
+          status: "eq.new",
+          opportunity_score: `lt.${opportunityCeiling}`,
+          actionability_score: `lt.${actionabilityCeiling}`,
+          confidence_score: `lt.${confidenceCeiling}`
         },
+        prefer: "return=representation",
         body: {
           status: "archived",
           auto_archived: true
         }
       });
-      return { archived: ids.length };
+      return { archived: Array.isArray(archivedRows) ? archivedRows.length : 0 };
     },
 
     async getRun(runId) {

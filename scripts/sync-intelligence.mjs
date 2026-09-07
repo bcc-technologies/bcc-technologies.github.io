@@ -1,3 +1,4 @@
+import { containsPhrase, configuredTopicTerms } from "./intelligence/matching.mjs";
 import { pathToFileURL } from "node:url";
 import { CONNECTORS, getConnectors } from "./intelligence/connectors/index.mjs";
 import { cleanArray, cleanText } from "./intelligence/connectors/base.mjs";
@@ -196,7 +197,7 @@ function enrichItemTopics(item, topics = []) {
     .filter(topic => {
       const topicName = normalizeTopicMatchValue(topic?.name || "");
       if (topicName && explicitNormalized.includes(topicName)) return true;
-      return topicMatchTerms(topic).some(term => term && haystack.includes(term));
+      return configuredTopicTerms(topic).some(term => term && containsPhrase(haystack, term));
     })
     .map(topic => cleanText(topic?.name || "", 160))
     .filter(Boolean);
@@ -339,7 +340,7 @@ function sourceQueryBudget(connector, explicitMode) {
   return 2;
 }
 
-function buildPaperQueryPlans(options, topics = [], connector = null, runtimeSettings = null) {
+export function buildPaperQueryPlans(options, topics = [], connector = null, runtimeSettings = null, now = Date.now()) {
   const explicitMode = Boolean(cleanText(options.queryText, 400) || cleanArray(options.keywords, 32, 120).length);
   const configuredLimit = Math.max(1, Number(runtimeSettings?.max_results_per_source) || 0);
   const targetPerSource = Math.min(
@@ -370,9 +371,12 @@ function buildPaperQueryPlans(options, topics = [], connector = null, runtimeSet
 
   const topicList = (Array.isArray(topics) ? topics : [])
     .filter(topic => topic?.enabled !== false)
-    .slice(0, 8);
+    .sort((a, b) => String(a.id || a.name).localeCompare(String(b.id || b.name)));
   const budget = sourceQueryBudget(connector, false);
-  const selectedTopics = topicList.slice(0, budget);
+  const dayIndex = Math.floor(now / 86400000);
+  const sourceOffset = String(connector?.sourceType || "").split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  const start = (dayIndex + sourceOffset) % Math.max(1, topicList.length);
+  const selectedTopics = Array.from({ length: Math.min(budget, topicList.length) }, (_, i) => topicList[(start + i) % topicList.length]);
   const perQueryLimit = Math.min(20, Math.max(8, Math.ceil(targetPerSource / Math.max(1, selectedTopics.length))));
   const plans = selectedTopics.map(topic => ({
     label: cleanText(topic?.name || "topic", 160),
@@ -406,7 +410,8 @@ function buildPaperQueryPlans(options, topics = [], connector = null, runtimeSet
 function paperRecencyScore(item) {
   const date = item?.publicationDate ? new Date(item.publicationDate).getTime() : 0;
   if (!date) return 0.12;
-  const ageDays = Math.max(0, (Date.now() - date) / (24 * 60 * 60 * 1000));
+  const ageDays = (Date.now() - date) / (24 * 60 * 60 * 1000);
+  if (ageDays < 0) return 0;
   if (ageDays <= 30) return 1;
   if (ageDays <= 90) return 0.82;
   if (ageDays <= 180) return 0.62;

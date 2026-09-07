@@ -235,6 +235,65 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
   };
 }
 
+test("saved opportunities can be retrieved by evidence and exported without mixing review states", async () => {
+  const signals = [
+    { id: "saved", title: "Saved opportunity", status: "accepted", relatedLine: "MAP-Nano", evidenceRefs: [{ title: "Porosity benchmark", sourceUrl: "https://example.org/evidence" }] },
+    { id: "pending", title: "Pending opportunity", status: "new", relatedLine: "MAP-Nano", opportunityScore: 99 },
+    { id: "archive", title: "Closed", status: "archived", relatedLine: "MAP-Bio" }
+  ];
+  const { root, panels, State } = await loadWorkspaceModule({ signals });
+  const status = createElementStub({ signalFilter: "status" });
+  status.value = "accepted";
+  root.dispatch("change", { target: status });
+  const keyword = createElementStub({ signalFilter: "keyword" });
+  keyword.value = "porosity";
+  root.dispatch("change", { target: keyword });
+  assert.equal(State.filteredSignals().length, 1);
+  assert.equal(State.selectedSignal().id, "saved");
+  assert.match(panels.get("signals").innerHTML, /Aceptadas/);
+  const exported = State.signalArchiveExport();
+  assert.equal(exported.signals.length, 1);
+  assert.equal(exported.signals[0].evidenceRefs[0].sourceUrl, "https://example.org/evidence");
+  assert.equal(exported.scope, "loaded-filtered-signals");
+});
+
+test("navigation preserves panel DOM drafts and rejects unknown mobile destinations", async () => {
+  const { root, panels, State } = await loadWorkspaceModule();
+  panels.get('settings').innerHTML = '<form>Unsaved draft</form>';
+  root.dispatch('click', { target: createElementStub({ panelTarget: 'settings' }) });
+  root.dispatch('click', { target: createElementStub({ panelTarget: 'papers' }) });
+  root.dispatch('click', { target: createElementStub({ panelTarget: 'settings' }) });
+  assert.equal(panels.get('settings').innerHTML, '<form>Unsaved draft</form>');
+  const jump = createElementStub({ intelligencePanelJump: '' });
+  jump.value = 'signals'; root.dispatch('change', { target: jump });
+  assert.equal(State.currentPanel, 'signals');
+  jump.value = 'invalid'; root.dispatch('change', { target: jump });
+  assert.equal(State.currentPanel, 'signals');
+});
+
+test("signal reader follows filtered order, stops at boundaries and returns to list", async () => {
+  const { root, State, panels } = await loadWorkspaceModule({ signals: [
+    { id: 'first', title: 'Primera', status: 'new', opportunityScore: 90, evidenceRefs: [] },
+    { id: 'second', title: 'Segunda', status: 'new', opportunityScore: 60, evidenceRefs: [] }
+  ] });
+  const order = State.filteredSignals();
+  root.dispatch('click', { target: createElementStub({ signalSelect: order[0].id }) });
+  assert.equal(State.signalDetailOpen, true);
+  root.dispatch('click', { target: createElementStub({ signalStep: '1' }) });
+  assert.equal(State.selectedSignalId, order[1].id);
+  root.dispatch('click', { target: createElementStub({ signalStep: '1' }) });
+  assert.equal(State.selectedSignalId, order[1].id);
+  root.dispatch('click', { target: createElementStub({ signalBack: '' }) });
+  assert.equal(State.signalDetailOpen, false);
+  State.signalFilters.keyword = 'no-match';
+  root.dispatch('click', { target: createElementStub({ signalSelect: order[0].id }) });
+  assert.equal(State.selectedSignal().id, order[0].id, 'overview links must open the requested signal even with old filters');
+  State.signalFilters.keyword = 'no-match';
+  root.dispatch('click', { target: createElementStub({ signalReset: '' }) });
+  assert.equal(State.filteredSignals().length, 2);
+  assert.match(panels.get('signals').innerHTML, /data-signal-detail-heading/);
+});
+
 test("intelligence overview renders usable empty states when there is no data", async () => {
   const { panels, message } = await loadWorkspaceModule();
 
@@ -413,7 +472,7 @@ test("grants/patents/trials tables flag possible duplicates and can filter down 
 // this point actually dispatches a DOM event -- addEventListener was a no-op
 // until createElementStub grew dispatch()/matches()/closest() support -- so
 // these are the first tests to run that code at all.
-test("clicking a nav chip switches the current panel and re-renders it as visible", async () => {
+test("clicking a nav chip switches the current panel and makes it visible", async () => {
   const { root, panels, State } = await loadWorkspaceModule();
 
   assert.equal(State.currentPanel, "overview");

@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+
+test('dossier RPC enforces permissions, preserves evidence and history, and rejects stale or incomplete decisions', async () => {
+  const db = new PGlite();
+  const manager = '00000000-0000-4000-8000-000000000001';
+  const paper = '00000000-0000-4000-8000-000000000002';
+  try {
+    await db.exec(`create role anon; create role authenticated; create schema auth; create schema private;
+      grant usage on schema auth,private to authenticated;
+      create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+      create function private.can_manage_signals() returns boolean language sql as $$ select auth.uid() = '${manager}'::uuid $$;
+      create table public.intelligence_papers(id uuid primary key,title text,abstract text,source_url text,doi text,publication_date date,institutions text[],authors text[],updated_at timestamptz);
+      insert into public.intelligence_papers values('${paper}','TEM workflow','Original evidence','https://example.org/paper','',current_date,'{}','{}',now());`);
+    await db.exec(await fs.readFile(new URL('../supabase/migrations/20260907213407_intelligence_opportunity_dossiers.sql', import.meta.url), 'utf8'));
+    const dossier = { title: 'Medir partículas', problem: 'Trabajo manual', target_user: 'Laboratorio TEM', bcc_fit: 'Medición reproducible', hypothesis: 'Error menor del 5%', next_action: 'Conseguir imágenes de referencia' };
+    const save = async (id = null, revision = 0, body = dossier, ids = [paper]) => (await db.query('select public.save_intelligence_opportunity($1,$2,$3,$4) as saved', [id,revision,body,ids])).rows[0].saved;
+    await db.exec('set role anon');
+    await assert.rejects(save(), /permission denied/);
+    await db.exec(`reset role; set role authenticated; set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000099'`);
+    await assert.rejects(save(), /permiso/);
+    assert.equal((await db.query('select * from public.intelligence_opportunities')).rows.length, 0);
+    await db.exec(`set request.jwt.claim.sub = '${manager}'`);
+    const first = await save();
+    assert.equal(first.revision, 1);
+    assert.equal(first.related_line, 'MAP-Nano');
+    assert.equal(first.evidence[0].abstract, 'Original evidence');
+    await assert.rejects(db.exec(`update public.intelligence_opportunities set status='validated'`), /permission denied/);
+    await assert.rejects(db.exec('delete from public.intelligence_opportunity_history'), /permission denied/);
+    await assert.rejects(save(first.id, 0), /ficha cambió/);
+    await assert.rejects(save(first.id, 1, { ...dossier, status: 'validated' }), /responsable/);
+    await assert.rejects(save(first.id, 1, { ...dossier, status: 'rejected' }), /motivo/);
+    await assert.rejects(save(first.id, 1, dossier, []), /1 y 20/);
+    await assert.rejects(save(first.id, 1, dossier, ['00000000-0000-4000-8000-000000000099']), /ya no existe/);
+    await db.exec(`reset role; update public.intelligence_papers set abstract='Updated source'; set role authenticated`);
+    const second = await save(first.id, 1, { ...dossier, status: 'reviewing' }, null);
+    assert.equal(second.evidence[0].abstract, 'Original evidence');
+    const third = await save(first.id, 2, { ...dossier, status: 'validating', owner: 'Responsable', review_on: '2026-09-14' });
+    assert.equal(third.evidence[0].abstract, 'Updated source');
+    const history = (await db.query('select * from public.intelligence_opportunity_history order by revision')).rows;
+    assert.equal(history.length, 3, 'failed writes must not create history entries');
+    assert.equal(history[0].snapshot.evidence[0].abstract, 'Original evidence');
+    assert.equal(history[2].actor_id, manager);
+    await assert.rejects(save(first.id, 3, { ...dossier, status: 'validated', owner: 'Responsable', review_on: '2026-09-14', decision_reason: 'Prueba aprobada' }, null), /resultado/);
+    const validated = await save(first.id, 3, { ...dossier, status: 'validated', owner: 'Responsable', review_on: '2026-09-14', decision_reason: 'Prueba aprobada', outcome: 'Error 3% sobre 100 partículas', verification_notes: 'Permiso escrito para usar imágenes; protocolo revisado' }, null);
+    assert.equal(validated.status, 'validated');
+    await db.exec(`set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000099'`);
+    assert.equal((await db.query('select * from public.intelligence_opportunity_history')).rows.length, 0);
+    await assert.rejects(save(first.id, 4), /permiso/);
+  } finally { await db.close(); }
+});

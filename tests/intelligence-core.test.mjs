@@ -124,6 +124,7 @@ test("deduplicates papers by arXiv ID", () => {
 
 test("generates strategic signals with evidence when the topic has matching records", () => {
   const signals = generateStrategicSignals({
+    now: Date.parse("2026-09-07T12:00:00Z"),
     topics: [
       {
         id: "topic-1",
@@ -193,7 +194,7 @@ test("generates strategic signals with evidence when the topic has matching reco
   assert.ok(signals.every(signal => Array.isArray(signal.evidenceRefs) && signal.evidenceRefs.length > 0));
   assert.ok(signals.every(signal => signal.scoreBreakdown && typeof signal.scoreBreakdown === "object"));
   assert.ok(signals.every(signal => signal.scoreBreakdown?.opportunity && signal.scoreBreakdown?.actionability));
-  assert.ok(signals.some(signal => signal.signalType === "grant_opportunity"));
+  assert.ok(!signals.some(signal => signal.signalType === "grant_opportunity"), "funded awards are not open calls");
 });
 
 test("does not generate signals when there is no evidence", () => {

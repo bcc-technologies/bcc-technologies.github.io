@@ -3,6 +3,7 @@
   const IntelligenceState = window.BCCWorkspaceIntelligenceState;
   const {
     PANELS,
+    NAV_GROUPS,
     RUN_ACTIONS,
     SIGNAL_STATUS_ACTIONS,
     TOPIC_CATEGORY_LABELS,
@@ -16,10 +17,12 @@
       <section class="users-surface intelligence-surface">
         <div class="surface-toolbar intelligence-toolbar">
           <div>
-            <h2>Intelligence</h2>
+            <h2>Science Radar</h2>
             <p class="muted-text" data-intelligence-message>Cargando intelligence...</p>
           </div>
           <div class="intelligence-controls">
+            <button class="btn btn-ghost btn-compact" type="button" data-intelligence-refresh>Actualizar datos</button>
+            <details class="intelligence-sync-menu"><summary>Sincronización</summary><div class="intelligence-controls">
             <label class="intelligence-inline-field">
               <span>Acción</span>
               <select data-intelligence-action aria-label="Seleccionar acción de sync">
@@ -33,19 +36,23 @@
             <button class="btn btn-primary" type="button" data-intelligence-run>
               <i data-lucide="radar"></i>Ejecutar sincronización
             </button>
-            <button class="btn btn-ghost btn-compact" type="button" data-intelligence-refresh>Actualizar</button>
+            </div></details>
           </div>
         </div>
         <nav class="intelligence-nav" aria-label="Secciones de intelligence">
-          ${PANELS.map(panel => `
-            <button class="intelligence-nav-chip${panel === currentPanel ? " is-active" : ""}" type="button" data-panel-target="${escapeHtml(panel)}">
+          ${NAV_GROUPS.map(group => `<div class="intelligence-nav-group" role="group" aria-label="${escapeAttr(group.label)}"><span>${escapeHtml(group.label)}</span><div>${group.panels.map(panel => `
+            <button class="intelligence-nav-chip${panel === currentPanel ? " is-active" : ""}" type="button" data-panel-target="${escapeHtml(panel)}" aria-current="${panel === currentPanel ? "page" : "false"}">
               ${escapeHtml(IntelligenceState.panelLabel(panel))}
             </button>
-          `).join("")}
+          `).join("")}</div></div>`).join("")}
         </nav>
+        <label class="intelligence-mobile-navigation intelligence-field">Ir a sección
+          <select data-intelligence-panel-jump>${NAV_GROUPS.map(group => `<optgroup label="${escapeAttr(group.label)}">${group.panels.map(panel => `<option value="${panel}"${panel === currentPanel ? " selected" : ""}>${escapeHtml(IntelligenceState.panelLabel(panel))}</option>`).join("")}</optgroup>`).join("")}</select>
+        </label>
         <section class="intelligence-panels">
           <section class="intelligence-panel" data-intelligence-panel="overview"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="signals"></section>
+          ${window.BCCWorkspaceIntelligenceConstants.OPPORTUNITIES_ENABLED ? '<section class="intelligence-panel is-hidden" data-intelligence-panel="opportunities"></section>' : ''}
           <section class="intelligence-panel is-hidden" data-intelligence-panel="papers"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="grants"></section>
           <section class="intelligence-panel is-hidden" data-intelligence-panel="patents"></section>
@@ -265,11 +272,12 @@
 
   function renderSignals(target) {
     if (!target) return;
-    const signals = IntelligenceState.sortedSignals();
+    const signals = IntelligenceState.filteredSignals();
     const selected = IntelligenceState.selectedSignal();
+    const selectedIndex = signals.findIndex(signal => signal.id === selected?.id);
     const bulkSelectedIds = IntelligenceState.selectedBulkSignalIds;
     target.innerHTML = `
-      <section class="intelligence-signal-stage">
+      <section class="intelligence-signal-stage${IntelligenceState.signalDetailOpen && selected ? " is-reading" : ""}">
         <article class="activity-surface intelligence-card intelligence-signal-rail">
           <div class="activity-head">
             <h3>Cola de señales</h3>
@@ -282,24 +290,32 @@
           </div>
           ${signals.length ? `
             <div class="intelligence-signal-rail-note">
-              <p>La cola está ordenada para revisión humana. Empieza por señales con mejor combinación de oportunidad, actionability y confidence. Marca varias con la casilla para aceptarlas, rechazarlas o archivarlas en bloque.</p>
+              <p>Ordenadas por prioridad de revisión. Abre una señal para consultar su evidencia o marca varias para decidir en bloque.</p>
             </div>
           ` : ""}
+          <div class="intelligence-filter-grid">
+            <label>Estado<select data-signal-filter="status">${[["all", "Todas"], ["review", "Por revisar"], ["accepted", "Aceptadas"], ["archived", "Archivo"], ["rejected", "Descartadas"]].map(([value, label]) => `<option value="${value}"${IntelligenceState.signalFilters.status === value ? " selected" : ""}>${label}</option>`).join("")}</select></label>
+            <label>Buscar en título y evidencia<input type="search" data-signal-filter="keyword" value="${escapeAttr(IntelligenceState.signalFilters.keyword)}" /></label>
+            <label>Línea<select data-signal-filter="line"><option value="">Todas</option>${["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "General"].map(line => `<option${IntelligenceState.signalFilters.line === line ? " selected" : ""}>${line}</option>`).join("")}</select></label>
+            <button class="btn btn-ghost" type="button" data-signal-reset>Limpiar filtros</button>
+            <button class="btn btn-ghost" type="button" data-signal-export>Exportar resultados (JSON)</button>
+          </div>
+          <p class="muted-text" role="status">${number(signals.length)} de ${number(IntelligenceState.dashboard.signals.length)} señales cargadas. Búsqueda y exportación cubren hasta 500 señales. Aceptar conserva la señal y su evidencia; no valida una oportunidad.</p>
           ${bulkSignalToolbarMarkup(bulkSelectedIds)}
           ${signals.length ? `
             <div class="intelligence-signal-queue">
               ${signals.map(signal => `
-                <article class="intelligence-signal-card${signal.id === IntelligenceState.selectedSignalId ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
+                <article class="intelligence-signal-card${signal.id === selected?.id ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
                   <div class="intelligence-signal-card-head">
                     <label class="intelligence-bulk-checkbox" data-signal-bulk-toggle-wrap>
-                      <input type="checkbox" data-signal-bulk-toggle="${escapeAttr(signal.id)}"${bulkSelectedIds.has(signal.id) ? " checked" : ""} />
+                      <input type="checkbox" aria-label="Seleccionar ${escapeAttr(signal.title)} para acción en bloque" data-signal-bulk-toggle="${escapeAttr(signal.id)}"${bulkSelectedIds.has(signal.id) ? " checked" : ""} />
                     </label>
                     <div class="intelligence-stack-meta">
                       <span>${escapeHtml(IntelligenceState.signalTypeLabel(signal.signalType))}</span>
                       <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
                     </div>
                   </div>
-                  <h4>${escapeHtml(signal.title)}</h4>
+                  <h4><button type="button" class="intelligence-signal-open" data-signal-select="${escapeAttr(signal.id)}">${escapeHtml(signal.title)}</button></h4>
                   <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
                   <div class="intelligence-signal-card-meta">
                     <span class="intelligence-status-pill">${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}</span>
@@ -314,13 +330,19 @@
                 </article>
               `).join("")}
             </div>
-          ` : emptyMarkup("Todavía no hay señales estratégicas generadas.", "Ejecuta el primer sync o corre Generar señales para producir oportunidades estratégicas.")}
+          ` : IntelligenceState.dashboard.signals.length ? emptyMarkup("No hay coincidencias", "Prueba otra búsqueda o limpia los filtros para volver a la cola.") : emptyMarkup("Todavía no hay señales estratégicas generadas.", "Abre Sincronización para obtener datos y generar señales.")}
         </article>
         <article class="activity-surface intelligence-card intelligence-signal-detail">
           <div class="activity-head intelligence-detail-head">
-            <h3>Detalle de la señal</h3>
+            <h3 tabindex="-1" data-signal-detail-heading>Detalle de la señal</h3>
             <span>${escapeHtml(selected ? IntelligenceState.signalStatusLabel(selected.status) : "Sin selección")}</span>
           </div>
+          ${selected ? `<div class="intelligence-reader-controls" aria-label="Navegar señales filtradas">
+            <button type="button" class="btn btn-ghost" data-signal-back>Volver a la lista</button>
+            <button type="button" class="btn btn-ghost" data-signal-step="-1"${selectedIndex <= 0 ? " disabled" : ""}>Anterior</button>
+            <span>${selectedIndex + 1} de ${signals.length}</span>
+            <button type="button" class="btn btn-ghost" data-signal-step="1"${selectedIndex >= signals.length - 1 ? " disabled" : ""}>Siguiente</button>
+          </div>` : ""}
           ${selected ? signalDetailMarkup(selected) : emptyMarkup("Selecciona una señal", "Elige una fila para revisar evidencia, scores y acciones sugeridas.")}
         </article>
       </section>
@@ -965,6 +987,10 @@
             <p>${escapeHtml(signal.recommendedAction || "Sin recomendación todavía.")}</p>
           </div>
           <div class="intelligence-detail-block">
+            <h4>Alcance y límites de la evaluación</h4>
+            <p>${escapeHtml(breakdown.methodology?.confidenceMeaning || "Evaluación anterior: puntuaciones heurísticas sin calibración; revisar evidencia antes de actuar.")}</p>
+            <ul class="intelligence-related-list">${(breakdown.methodology?.limitations || []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+            ${breakdown.methodology?.coverage?.atLimit?.length ? `<p>Muestra al límite en: ${escapeHtml(breakdown.methodology.coverage.atLimit.join(", "))}. Puede faltar evidencia del archivo.</p>` : ""}
             <h4>Por qué importa ahora</h4>
             <ul class="intelligence-related-list">
               ${highlights.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
@@ -996,6 +1022,7 @@
                   ${escapeHtml(action.label)}
                 </button>
               `).join("")}
+              ${window.BCCWorkspaceIntelligenceConstants.OPPORTUNITIES_ENABLED ? `<button class="btn btn-primary" type="button" data-opportunity-signal="${escapeAttr(signal.id)}">Crear ficha de oportunidad</button>` : ''}
             </div>
           </div>
           <div class="intelligence-detail-block">
@@ -1026,6 +1053,9 @@
             <a class="intelligence-evidence-item" href="${escapeAttr(safeExternalUrl(item.sourceUrl || "#"))}" target="_blank" rel="noopener noreferrer">
               <strong>${escapeHtml(item.type || "item")}</strong>
               <span>${escapeHtml(item.title || item.id || "Referencia sin título")}</span>
+              ${item.publicationDate ? `<small>${escapeHtml(item.publicationDate)}</small>` : ""}
+              ${item.relevance?.basis === "title-method-candidate" ? `<small>Candidata por método en el título; aplicación pendiente de confirmar.</small>` : ""}
+              ${item.excerpt ? `<span>${escapeHtml(item.excerpt)}</span>` : ""}
             </a>
           `).join("")}
         </div>
@@ -1040,10 +1070,10 @@
     const matching = breakdown?.matching || {};
     const evidence = breakdown?.evidence || {};
     if (typeof opportunity.topicGrowth === "number" && opportunity.topicGrowth >= 55) {
-      list.push(`El tema muestra crecimiento reciente (${score(opportunity.topicGrowth)}%).`);
+      list.push(`La muestra muestra crecimiento reciente (índice ${score(opportunity.topicGrowth)}/100).`);
     }
     if (typeof opportunity.proximityToBCC === "number" && opportunity.proximityToBCC >= 55) {
-      list.push(`La cercanía con las líneas BCC es alta (${score(opportunity.proximityToBCC)}%).`);
+      list.push(`La coincidencia con las líneas BCC es alta (índice ${score(opportunity.proximityToBCC)}/100).`);
     }
     if (typeof opportunity.technicalPainDetected === "number" && opportunity.technicalPainDetected >= 45) {
       list.push(`Hay pain points técnicos visibles en la evidencia (${score(opportunity.technicalPainDetected)}%).`);
@@ -1320,6 +1350,7 @@
           ${item.arxivId ? `<span>arXiv: ${escapeHtml(item.arxivId)}</span>` : ""}
         </div>
         <p class="intelligence-paper-card-abstract">${escapeHtml(abstract)}</p>
+        ${String(item.abstract || "").length > 360 ? `<details class="intelligence-paper-full-abstract"><summary>Leer resumen completo</summary><p>${escapeHtml(item.abstract)}</p></details>` : ""}
         <div class="intelligence-paper-card-grid">
           <div>
             <span class="intelligence-paper-card-label">Autores</span>
@@ -1333,6 +1364,7 @@
         <div class="intelligence-paper-card-footer">
           <div class="intelligence-paper-card-topics">${topicPills(item.topics)}</div>
           <div class="intelligence-paper-card-actions">
+            ${window.BCCWorkspaceIntelligenceConstants.OPPORTUNITIES_ENABLED ? `<button class="btn btn-ghost btn-compact" type="button" data-opportunity-paper="${escapeAttr(item.id)}">Crear oportunidad</button>` : ''}
             <a class="btn btn-ghost btn-compact" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener noreferrer">Abrir fuente</a>
             ${item.openAccessUrl ? `<a class="btn btn-primary btn-compact" href="${escapeAttr(openAccessUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
           </div>

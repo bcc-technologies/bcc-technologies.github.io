@@ -2035,10 +2035,12 @@ window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxN
         permission: "department:manage",
         scripts: [
           "js/workspace/transport.js",
+          "js/auth-intelligence-opportunities-api.js",
           "js/workspace/intelligence.constants.js",
           "js/workspace/intelligence.api.js",
           "js/workspace/intelligence.state.js",
           "js/workspace/intelligence.view.js",
+          "js/workspace/intelligence.opportunities.js",
           "js/workspace/intelligence.js"
         ],
         selector: "[data-intelligence-workspace]",
@@ -3344,6 +3346,11 @@ async function bccApi(path, options = {}) {
     });
     const dominicanIntelligenceResult = await dominicanIntelligenceApi?.handle(path, options);
     if (dominicanIntelligenceResult?.handled) return dominicanIntelligenceResult.value;
+  }
+
+  if (path.startsWith("/api/admin/intelligence/opportunities")) {
+    const result = await window.BCCAuthIntelligenceOpportunitiesApi?.createApi({ supabase, requireAdminViewUser }).handle(path, options);
+    if (result?.handled) return result.value;
   }
 
   const intelligenceRequestUrl = path.startsWith("/api/admin/intelligence")

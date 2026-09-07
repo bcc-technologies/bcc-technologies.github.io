@@ -145,7 +145,7 @@ function stubSignalsFetch({ existingSignal = null, settings = null, staleCandida
     if (method === "GET" && parsed.searchParams.has("title")) {
       return jsonResponse(existingSignal ? [existingSignal] : []);
     }
-    if (method === "GET" && parsed.searchParams.get("status") === "in.(new,reviewing)") {
+    if (method === "GET" && parsed.searchParams.get("status") === "eq.new") {
       return jsonResponse(staleCandidates);
     }
     if (method === "POST") {
@@ -161,31 +161,24 @@ function stubSignalsFetch({ existingSignal = null, settings = null, staleCandida
   return calls;
 }
 
-test("saveSignal never resets an existing signal's status -- a reviewer's decision must survive the next sync's refresh", () =>
-  withStoreEnv(async () => {
-    const calls = stubSignalsFetch({
-      existingSignal: { id: "sig-1", title: "Rising interest in X", signal_type: "research_trend", related_line: "MAP-Nano", status: "accepted" }
-    });
-    const store = createIntelligenceStoreFromEnv();
-    const result = await store.saveSignal({
-      title: "Rising interest in X",
-      signalType: "research_trend",
-      relatedLine: "MAP-Nano",
-      status: "new", // generateStrategicSignals() always emits this
-      opportunityScore: 70,
-      actionabilityScore: 60,
-      confidenceScore: 55
-    });
-
-    assert.equal(result.action, "updated");
-    const patchCall = calls.find(call => call.method === "PATCH");
-    assert.ok(patchCall, "expected a PATCH against the existing signal");
-    assert.equal(
-      Object.prototype.hasOwnProperty.call(patchCall.body, "status"),
-      false,
-      "refreshing an existing signal must never touch its status"
-    );
+for (const status of ["accepted", "archived", "rejected"]) {
+  test(`saveSignal preserves the entire ${status} dossier without a write`, () => withStoreEnv(async () => {
+    const existing = { id: "sig-1", status, evidence_refs: [{ id: "original", title: "Original evidence" }], opportunity_score: 70 };
+    const calls = stubSignalsFetch({ existingSignal: existing });
+    const result = await createIntelligenceStoreFromEnv().saveSignal({ title: "Changed", signalType: "research_trend", status: "new", opportunityScore: 12 });
+    assert.equal(result.action, "unchanged");
+    assert.deepEqual(result.record, existing);
+    assert.equal(calls.filter(call => call.method !== "GET").length, 0);
   }));
+}
+
+test("refresh rechecks the status at write time so a concurrent acceptance is protected", () => withStoreEnv(async () => {
+  const calls = stubSignalsFetch({ existingSignal: { id: "sig-1", status: "reviewing" } });
+  await createIntelligenceStoreFromEnv().saveSignal({ title: "Refresh", signalType: "research_trend", status: "new" });
+  const patch = calls.find(call => call.method === "PATCH");
+  assert.equal(patch.url.searchParams.get("status"), "in.(new,reviewing)");
+  assert.equal(Object.hasOwn(patch.body, "status"), false);
+}));
 
 test("saveSignal sets status to new only when creating a brand-new signal", () =>
   withStoreEnv(async () => {
@@ -211,7 +204,7 @@ test("archiveStaleLowValueSignals archives only signals that fail every configur
     const store = createIntelligenceStoreFromEnv();
     const result = await store.archiveStaleLowValueSignals(21);
 
-    assert.deepEqual(result, { archived: 2 });
+    assert.deepEqual(result, { archived: 1 }, "reports actual changed rows, not the stale candidate count");
     const getCall = calls.find(call => call.method === "GET" && call.url.pathname.endsWith("/intelligence_signals"));
     assert.equal(getCall.url.searchParams.get("opportunity_score"), "lt.60");
     assert.equal(getCall.url.searchParams.get("actionability_score"), "lt.50");
@@ -221,6 +214,8 @@ test("archiveStaleLowValueSignals archives only signals that fail every configur
     assert.equal(patchCall.url.searchParams.get("id"), "in.(weak-1,weak-2)");
     assert.equal(patchCall.body.status, "archived");
     assert.equal(patchCall.body.auto_archived, true);
+    assert.equal(patchCall.url.searchParams.get("status"), "eq.new", "never sweep a record under human review");
+    assert.equal(patchCall.url.searchParams.get("opportunity_score"), "lt.60");
   }));
 
 test("archiveStaleLowValueSignals is a no-op when nothing qualifies", () =>

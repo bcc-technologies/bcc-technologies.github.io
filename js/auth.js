@@ -1107,6 +1107,11 @@ async function bccApi(path, options = {}) {
     if (dominicanIntelligenceResult?.handled) return dominicanIntelligenceResult.value;
   }
 
+  if (path.startsWith("/api/admin/intelligence/opportunities")) {
+    const result = await window.BCCAuthIntelligenceOpportunitiesApi?.createApi({ supabase, requireAdminViewUser }).handle(path, options);
+    if (result?.handled) return result.value;
+  }
+
   const intelligenceRequestUrl = path.startsWith("/api/admin/intelligence")
     ? new URL(path, window.location.origin)
     : null;

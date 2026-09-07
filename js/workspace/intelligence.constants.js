@@ -1,6 +1,14 @@
 /* Domain constants for the Science Radar (Intelligence) workspace feature. */
 (() => {
   const PANELS = ["overview", "signals", "papers", "grants", "patents", "trials", "institutions", "topics", "sources", "settings"];
+  // Enable only after the dossier migration has been applied and verified.
+  const OPPORTUNITIES_ENABLED = window.BCC_SCIENCE_RADAR_PILOT_ENABLED === true;
+  if (OPPORTUNITIES_ENABLED) PANELS.splice(2, 0, "opportunities");
+  const NAV_GROUPS = [
+    { label: "Revisar", panels: ["overview", "signals", "opportunities"] },
+    { label: "Explorar", panels: ["papers", "grants", "patents", "trials", "institutions"] },
+    { label: "Configurar", panels: ["topics", "sources", "settings"] }
+  ].map(group => ({ ...group, panels: group.panels.filter(panel => PANELS.includes(panel)) }));
 
   const RUN_ACTIONS = [
     { id: "sync_papers", label: "Sincronizar Intelligence" },
@@ -70,6 +78,8 @@
 
   window.BCCWorkspaceIntelligenceConstants = Object.freeze({
     PANELS,
+    NAV_GROUPS,
+    OPPORTUNITIES_ENABLED,
     RUN_ACTIONS,
     SIGNAL_STATUS_ACTIONS,
     SIGNAL_STATUS_LABELS,

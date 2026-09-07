@@ -1,1 +1,32 @@
 @import url("../workspace-intelligence-analytics.css") layer(workspace.features);
+.intelligence-opportunity-form { display: grid; gap: 1rem; }
+.intelligence-opportunity-form label { display: grid; gap: .35rem; }
+.intelligence-opportunity-form .intelligence-opportunity-toggle { display: flex; align-items: center; }
+.intelligence-opportunity-form textarea, .intelligence-opportunity-form select { width: 100%; max-width: 100%; }
+[data-op-history-list] pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Task-oriented navigation and compact reader, scoped to Science Radar. */
+.intelligence-nav-group { display: grid; gap: .45rem; }
+.intelligence-nav-group > span { color: var(--ink-muted); font-size: .72rem; font-weight: 700; }
+.intelligence-nav-group > div { display: flex; flex-wrap: wrap; gap: .35rem; }
+.intelligence-nav { gap: 1rem 1.5rem; }
+.intelligence-mobile-navigation { display: none; }
+.intelligence-sync-menu > summary { cursor: pointer; font-weight: 650; padding: .6rem; }
+.intelligence-sync-menu[open] > div { padding: .75rem; border: 1px solid var(--line); border-radius: .65rem; }
+.intelligence-signal-open { appearance: none; border: 0; padding: 0; text-align: left; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.intelligence-signal-open:focus-visible, .intelligence-nav-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.intelligence-reader-controls { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1rem; }
+.intelligence-reader-controls > span { font-size: .8rem; color: var(--ink-muted); }
+.intelligence-reader-controls [data-signal-back] { display: none; }
+.intelligence-paper-full-abstract { margin-bottom: 1rem; }
+.intelligence-paper-full-abstract summary { cursor: pointer; color: var(--ink-strong); font-weight: 650; }
+.intelligence-paper-full-abstract p { line-height: 1.65; overflow-wrap: anywhere; white-space: pre-line; }
+@media (max-width: 760px) {
+  [data-intelligence-workspace] .intelligence-nav { display: none; }
+  .intelligence-mobile-navigation { display: grid; margin-bottom: 1rem; }
+  [data-intelligence-workspace] .intelligence-signal-stage { display: block; }
+  .intelligence-signal-stage:not(.is-reading) .intelligence-signal-detail,
+  .intelligence-signal-stage.is-reading .intelligence-signal-rail { display: none; }
+  .intelligence-reader-controls [data-signal-back] { display: inline-flex; }
+  .intelligence-sync-menu[open] > div { flex-direction: column; align-items: stretch; }
+}

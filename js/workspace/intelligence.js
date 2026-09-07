@@ -16,6 +16,10 @@
     root.innerHTML = View.shellMarkup(IntelligenceState.currentPanel);
     refreshIcons();
     bindControls();
+    window.BCCWorkspaceIntelligenceOpportunities?.init(root, () => {
+      IntelligenceState.currentPanel = "opportunities";
+      renderPanels(false);
+    });
     void loadDashboard();
   }
 
@@ -64,7 +68,7 @@
     refreshIcons();
   }
 
-  function renderPanels() {
+  function renderPanels(refresh = true) {
     PANELS.forEach(panel => {
       const target = panelRoot(panel);
       if (!target) return;
@@ -72,7 +76,14 @@
     });
     navChips().forEach(button => {
       button.classList.toggle("is-active", button.dataset.panelTarget === IntelligenceState.currentPanel);
+      button.setAttribute?.("aria-current", button.dataset.panelTarget === IntelligenceState.currentPanel ? "page" : "false");
     });
+    const jump = root.querySelector("[data-intelligence-panel-jump]");
+    if (jump) jump.value = IntelligenceState.currentPanel;
+    if (IntelligenceState.currentPanel === "opportunities") window.BCCWorkspaceIntelligenceOpportunities?.show();
+    // Navigation only changes visibility. Preserve form drafts, expanded papers
+    // and DOM state; data refreshes explicitly rebuild the panels.
+    if (!refresh) return;
     View.renderOverview(panelRoot("overview"));
     View.renderSignals(panelRoot("signals"));
     View.renderPapers(panelRoot("papers"));
@@ -99,8 +110,34 @@
 
     const panelButton = event.target.closest("[data-panel-target]");
     if (panelButton) {
-      IntelligenceState.currentPanel = panelButton.dataset.panelTarget || "overview";
-      renderPanels();
+      if (!PANELS.includes(panelButton.dataset.panelTarget)) return;
+      IntelligenceState.currentPanel = panelButton.dataset.panelTarget;
+      renderPanels(false);
+      return;
+    }
+
+    if (event.target.closest("[data-signal-reset]")) {
+      Object.assign(IntelligenceState.signalFilters, { status: "all", keyword: "", line: "" });
+      IntelligenceState.selectedBulkSignalIds.clear();
+      IntelligenceState.signalDetailOpen = false;
+      View.renderSignals(panelRoot("signals"));
+      panelRoot("signals")?.querySelector('[data-signal-filter="keyword"]')?.focus();
+      return;
+    }
+    if (event.target.closest("[data-signal-back]")) {
+      IntelligenceState.signalDetailOpen = false;
+      View.renderSignals(panelRoot("signals"));
+      const buttons = panelRoot("signals")?.querySelectorAll("button[data-signal-select]") || [];
+      [...buttons].find(button => button.dataset.signalSelect === IntelligenceState.selectedSignalId)?.focus();
+      refreshIcons();
+      return;
+    }
+    const step = event.target.closest("[data-signal-step]");
+    if (step) {
+      const signals = IntelligenceState.filteredSignals();
+      const index = signals.findIndex(signal => signal.id === IntelligenceState.selectedSignal()?.id);
+      const next = signals[index + Number(step.dataset.signalStep)];
+      if (next) openSignal(next.id);
       return;
     }
 
@@ -123,16 +160,20 @@
       return;
     }
 
+    if (event.target.closest("[data-signal-export]")) {
+      const blob = new Blob([JSON.stringify(IntelligenceState.signalArchiveExport(), null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `science-radar-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return;
+    }
+
     const signalSelect = event.target.closest("[data-signal-select]");
     if (signalSelect) {
-      IntelligenceState.selectedSignalId = signalSelect.dataset.signalSelect || "";
-      if (IntelligenceState.currentPanel !== "signals") {
-        IntelligenceState.currentPanel = "signals";
-        renderPanels();
-      } else {
-        View.renderSignals(panelRoot("signals"));
-        refreshIcons();
-      }
+      openSignal(signalSelect.dataset.signalSelect || "");
       return;
     }
 
@@ -217,7 +258,39 @@
     }
   }
 
+  function openSignal(id) {
+    if (!IntelligenceState.dashboard.signals.some(signal => signal.id === id)) return;
+    if (!IntelligenceState.filteredSignals().some(signal => signal.id === id)) {
+      Object.assign(IntelligenceState.signalFilters, { status: "all", keyword: "", line: "" });
+      IntelligenceState.selectedBulkSignalIds.clear();
+    }
+    IntelligenceState.selectedSignalId = id;
+    IntelligenceState.signalDetailOpen = true;
+    IntelligenceState.currentPanel = "signals";
+    renderPanels(false);
+    View.renderSignals(panelRoot("signals"));
+    panelRoot("signals")?.querySelector("[data-signal-detail-heading]")?.focus();
+    refreshIcons();
+  }
+
   function handleChange(event) {
+    if (event.target.matches("[data-intelligence-panel-jump]")) {
+      if (PANELS.includes(event.target.value)) {
+        IntelligenceState.currentPanel = event.target.value;
+        renderPanels(false);
+      }
+      return;
+    }
+    if (event.target.matches("[data-signal-filter]")) {
+      const field = event.target.dataset.signalFilter;
+      if (["status", "keyword", "line"].includes(field)) IntelligenceState.signalFilters[field] = String(event.target.value || "");
+      IntelligenceState.selectedBulkSignalIds.clear();
+      IntelligenceState.signalDetailOpen = false;
+      View.renderSignals(panelRoot("signals"));
+      refreshIcons();
+      return;
+    }
+
     if (event.target.matches("[data-intelligence-action]")) {
       IntelligenceState.currentAction = String(event.target.value || "sync_papers");
       return;

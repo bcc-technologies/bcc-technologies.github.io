@@ -19,5 +19,8 @@
     "test:products": "node --test tests/products-page.regression.test.mjs",
     "test:products:browser": "node --test tests/products-browser.smoke.test.mjs",
     "test:science:browser": "node --test tests/science-browser.smoke.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
   }
 }
