@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-09-06T10:12:29.454Z",
+  "updatedAt": "2026-09-08T10:31:14.443Z",
   "item": {
-    "date": "2026-09-06",
-    "explanation": "Pluto is more colorful than we can see. Color data and high-resolution images of our Solar System's most famous dwarf planet, taken by the robotic New Horizons spacecraft during its flyby in 2015 July, have been digitally combined to give an enhanced-color view of this ancient world sporting an unexpectedly young surface. The featured enhanced color image is not only esthetically pretty but scientifically useful, making surface regions of differing chemical composition visually distinct. For example, the light-colored heart-shaped Tombaugh Regio on the lower right is clearly shown here to be divisible into two regions that are geologically different, with the leftmost lobe, Sputnik Planitia, also appearing unusually smooth. After Pluto, New Horizons continued on, shooting  past asteroid Arrokoth in 2019 with enough speed to escape our Solar System completely.",
-    "hdurl": "https://apod.nasa.gov/apod/image/2609/PlutoEnhancedHiRes_NewHorizons_5000.jpg",
+    "date": "2026-09-08",
+    "explanation": "Why are Saturn’s poles geometric? Saturn’s North Pole has been known to be surrounded by a hexagonal (6 sides) cloud since discovery in 1987 in data taken by NASA’s Voyager spacecrafts, which quickly flew past the ringed world in the early 1980s.  Now, recent observations of Saturn by the Hubble Space Telescope reveal a slightly different geometric cloud pattern around the South Pole: a decagon (10 sides).  The geometric boundaries are possibly caused by waves when the fast-moving gas away from the poles interacts with slower-moving gas closer to the poles.  In the featured image composite by the Hubble taken last year, the South Pole of Saturn is marked by an X and surrounded by bands of circulating clouds.  The decagon appears most prominent in the dark inner regions.  The northern hexagon has proven stable for over 40 years, while the stability of the southern decagon will surely remain a topic of research.   APOD's main NASA site is moving: From apod.nasa.gov to science.nasa.gov/apod",
+    "hdurl": "https://apod.nasa.gov/apod/image/2609/SaturnDecagon_Hubble_960.jpg",
     "media_type": "image",
     "service_version": "v1",
-    "title": "Pluto in Enhanced Color",
-    "url": "https://apod.nasa.gov/apod/image/2609/PlutoEnhancedHiRes_NewHorizons_960.jpg"
+    "title": "Hubble: Decagon Around Saturn's South Pole",
+    "url": "https://apod.nasa.gov/apod/image/2609/SaturnDecagon_Hubble_960.jpg"
   }
 }
