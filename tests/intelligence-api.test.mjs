@@ -54,6 +54,7 @@ function createDb(role = "admin") {
     intelligence_papers: [],
     intelligence_grants: [],
     intelligence_patents: [],
+    intelligence_trials: [],
     intelligence_institutions: [],
     intelligence_runs: []
   };
@@ -151,6 +152,10 @@ function createQuery(db, tableName) {
     },
     eq(column, value) {
       state.filters.push(row => row?.[column] === value);
+      return this;
+    },
+    neq(column, value) {
+      state.filters.push(row => row?.[column] !== value);
       return this;
     },
     contains(column, values) {
@@ -375,4 +380,34 @@ test("intelligence sources can be enabled and disabled", async () => {
   const listed = await api("/api/admin/intelligence/sources?enabled=false");
   assert.equal(listed.sources.length, 1);
   assert.equal(listed.sources[0].id, "source-1");
+});
+
+test("an accepted signal survives the dashboard's 500-row recency cap even when 500 newer signals exist", async () => {
+  const { api, db } = loadAuthHarness("admin");
+  const signalBase = {
+    signal_type: "product_opportunity", related_line: "MAP-Nano", confidence_score: 70,
+    opportunity_score: 80, actionability_score: 60, evidence_count: 1, evidence_refs: [],
+    score_breakdown: {}, recommended_action: ""
+  };
+  // Accepted signals are never touched again by sync, so their updated_at
+  // stays old while everything else keeps advancing -- exactly the scenario
+  // that used to push an accepted signal off the single capped/ordered query.
+  db.intelligence_signals.push({
+    ...signalBase, id: "accepted-1", title: "Old but good opportunity", status: "accepted",
+    created_at: "2020-01-01T00:00:00.000Z", updated_at: "2020-01-01T00:00:00.000Z"
+  });
+  for (let index = 0; index < 500; index += 1) {
+    db.intelligence_signals.push({
+      ...signalBase, id: `new-${index}`, title: `Signal ${index}`, status: "new",
+      created_at: "2026-06-01T00:00:00.000Z", updated_at: "2026-06-01T00:00:00.000Z"
+    });
+  }
+
+  const { dashboard } = await api("/api/admin/intelligence/dashboard");
+
+  assert.ok(
+    dashboard.signals.some(item => item.id === "accepted-1"),
+    "an accepted signal must remain reachable even when 500 more-recently-updated signals exist"
+  );
+  assert.equal(dashboard.signals.length, 501, "the 500-row cap should still bound non-accepted signals");
 });

@@ -2236,7 +2236,8 @@ async function loadIntelligenceDashboardData(supabase) {
     { data: trials, error: trialsError },
     { data: institutions, error: institutionsError },
     { data: topics, error: topicsError },
-    { data: signals, error: signalsError },
+    { data: acceptedSignals, error: acceptedSignalsError },
+    { data: otherSignals, error: otherSignalsError },
     { data: runs, error: runsError },
     { data: settingsRows, error: settingsError }
   ] = await Promise.all([
@@ -2255,7 +2256,15 @@ async function loadIntelligenceDashboardData(supabase) {
     supabase.from("intelligence_trials").select(INTELLIGENCE_TRIAL_COLUMNS).order("start_date", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(500),
     supabase.from("intelligence_institutions").select(INTELLIGENCE_INSTITUTION_COLUMNS).order("related_papers_count", { ascending: false }).order("updated_at", { ascending: false }).limit(200),
     supabase.from("intelligence_topics").select(INTELLIGENCE_TOPIC_COLUMNS).order("enabled", { ascending: false }).order("updated_at", { ascending: false }).limit(100),
-    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).order("updated_at", { ascending: false }).limit(500),
+    // Accepted signals are a deliberate human "keep this" decision and are
+    // never touched again by sync (see saveSignal() in intelligence/store.mjs),
+    // so their updated_at stays fixed while new/reviewing signals keep
+    // advancing theirs every run. A single capped-and-ordered query would
+    // eventually push an old accepted signal past the limit and off the
+    // dashboard entirely -- not archived, not deleted, just unreachable.
+    // Fetched without a cap: this is meant to be a small, curated set.
+    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).eq("status", "accepted").order("updated_at", { ascending: false }),
+    supabase.from("intelligence_signals").select(INTELLIGENCE_SIGNAL_COLUMNS).neq("status", "accepted").order("updated_at", { ascending: false }).limit(500),
     supabase.from("intelligence_runs").select(INTELLIGENCE_RUN_COLUMNS).order("created_at", { ascending: false }).limit(50),
     supabase.from("intelligence_settings").select(INTELLIGENCE_SETTINGS_COLUMNS).order("updated_at", { ascending: false }).limit(1)
   ]);
@@ -2267,7 +2276,8 @@ async function loadIntelligenceDashboardData(supabase) {
   if (trialsError) throw trialsError;
   if (institutionsError) throw institutionsError;
   if (topicsError) throw topicsError;
-  if (signalsError) throw signalsError;
+  if (acceptedSignalsError) throw acceptedSignalsError;
+  if (otherSignalsError) throw otherSignalsError;
   if (runsError) throw runsError;
   if (settingsError) throw settingsError;
 
@@ -2278,7 +2288,7 @@ async function loadIntelligenceDashboardData(supabase) {
   const publicTrials = (trials || []).map(publicIntelligenceTrial);
   const publicInstitutions = (institutions || []).map(publicIntelligenceInstitution);
   const publicTopics = (topics || []).map(publicIntelligenceTopic);
-  const publicSignals = (signals || []).map(publicIntelligenceSignal);
+  const publicSignals = [...(acceptedSignals || []), ...(otherSignals || [])].map(publicIntelligenceSignal);
   const publicRuns = (runs || []).map(publicIntelligenceRun);
   const publicSettings = settingsRows?.[0] ? publicIntelligenceSettings(settingsRows[0]) : publicIntelligenceSettings({});
 
