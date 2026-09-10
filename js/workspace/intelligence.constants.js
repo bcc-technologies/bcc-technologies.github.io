@@ -74,7 +74,13 @@
   // limit (to stop hiding data from topic analytics) means clearing filters
   // can now paint hundreds of full cards/rows in one DOM update. Panels
   // render only visibleCounts[panel] items and reveal more via "Cargar más".
-  const RESEARCH_PAGE_SIZE = { papers: 20, grants: 50, patents: 50, trials: 50 };
+  const RESEARCH_PAGE_SIZE = { papers: 20, grants: 50, patents: 50, trials: 50, signals: 18 };
+
+  const SIGNAL_SORT_OPTIONS = [
+    { value: "priority", label: "Prioridad de revisión" },
+    { value: "opportunity", label: "Mayor oportunidad" },
+    { value: "recent", label: "Más recientes" }
+  ];
 
   window.BCCWorkspaceIntelligenceConstants = Object.freeze({
     PANELS,
@@ -84,6 +90,7 @@
     SIGNAL_STATUS_ACTIONS,
     SIGNAL_STATUS_LABELS,
     SIGNAL_TYPE_LABELS,
+    SIGNAL_SORT_OPTIONS,
     TOPIC_CATEGORY_LABELS,
     SETTINGS_FREQUENCY_LABELS,
     DEFAULT_LINES,

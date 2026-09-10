@@ -24,7 +24,7 @@
   let dashboard = emptyDashboard();
   let topicHitsIndex = null;
   let selectedBulkSignalIds = new Set();
-  let signalFilters = { status: "all", keyword: "", line: "" };
+  let signalFilters = { status: "all", keyword: "", line: "", sort: "priority" };
 
   function emptyDashboard() {
     return {
@@ -267,9 +267,15 @@
       || Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
   }
 
+  function signalsOrderedBy(sort) {
+    if (sort === "opportunity") return [...dashboard.signals].sort((left, right) => (Number(right.opportunityScore) || 0) - (Number(left.opportunityScore) || 0));
+    if (sort === "recent") return [...dashboard.signals].sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
+    return sortedSignals();
+  }
+
   function filteredSignals() {
     const query = normalizeTopicMatchValue(signalFilters.keyword);
-    return sortedSignals().filter(item => {
+    return signalsOrderedBy(signalFilters.sort).filter(item => {
       const statusMatch = signalFilters.status === "all" || (signalFilters.status === "review"
         ? ["new", "reviewing"].includes(item.status) : item.status === signalFilters.status);
       const haystack = normalizeTopicMatchValue([item.title, item.summary, item.recommendedAction,

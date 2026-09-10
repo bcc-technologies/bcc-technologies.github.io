@@ -660,3 +660,45 @@ test("a partnership signal offers a Prospects handoff that captures institutions
   assert.match(stored.notes, /Universidad X, Instituto Y/);
   assert.match(stored.notes, /SEM study of nanoparticles \(https:\/\/example\.org\/paper-1\)/);
 });
+
+test("the signal queue paginates instead of rendering every match, and load-more reveals the rest", async () => {
+  const signals = Array.from({ length: 25 }, (_, index) => ({
+    id: `signal-${index}`, title: `Signal ${index}`, summary: "", signalType: "research_trend", relatedLine: "MAP-Nano",
+    status: "new", opportunityScore: 25 + index, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: []
+  }));
+  const { root, panels, State } = await loadWorkspaceModule({ signals });
+
+  assert.equal(State.visibleCounts.signals, 18, "should default to the signals page size");
+  let html = panels.get("signals").innerHTML;
+  assert.equal((html.match(/data-signal-select="signal-/g) || []).length, 18 * 2, "18 cards, each carrying data-signal-select on both the article and its title button");
+  assert.match(html, /Mostrando 18 de 25/);
+  assert.match(html, /data-research-load-more="signals"/);
+
+  root.dispatch("click", { target: createElementStub({ researchLoadMore: "signals" }) });
+  assert.equal(State.visibleCounts.signals, 36);
+  html = panels.get("signals").innerHTML;
+  assert.doesNotMatch(html, /data-research-load-more="signals"/, "load-more disappears once every filtered signal is shown");
+  assert.match(html, /Signal 24/);
+});
+
+test("sorting the signal queue by opportunity reorders it and collapses back to one page", async () => {
+  const signals = Array.from({ length: 20 }, (_, index) => ({
+    id: `signal-${index}`, title: `Signal ${index}`, summary: "", signalType: "research_trend", relatedLine: "MAP-Nano",
+    status: "new", opportunityScore: index, actionabilityScore: 50, confidenceScore: 50, evidenceRefs: []
+  }));
+  const { root, panels, State } = await loadWorkspaceModule({ signals });
+
+  root.dispatch("click", { target: createElementStub({ researchLoadMore: "signals" }) });
+  assert.equal(State.visibleCounts.signals, 36);
+
+  const sortSelect = createElementStub({ signalFilter: "sort" });
+  sortSelect.value = "opportunity";
+  root.dispatch("change", { target: sortSelect });
+
+  assert.equal(State.signalFilters.sort, "opportunity");
+  assert.equal(State.visibleCounts.signals, 18, "changing sort should reset back to the first page");
+  assert.equal(State.filteredSignals()[0].id, "signal-19", "highest opportunity score should sort first");
+  const firstCardIndex = panels.get("signals").innerHTML.indexOf("Signal 19");
+  const laterCardIndex = panels.get("signals").innerHTML.indexOf("Signal 0");
+  assert.ok(firstCardIndex !== -1 && firstCardIndex < laterCardIndex);
+});

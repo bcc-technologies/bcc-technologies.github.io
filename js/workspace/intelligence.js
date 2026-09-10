@@ -117,9 +117,10 @@
     }
 
     if (event.target.closest("[data-signal-reset]")) {
-      Object.assign(IntelligenceState.signalFilters, { status: "all", keyword: "", line: "" });
+      Object.assign(IntelligenceState.signalFilters, { status: "all", keyword: "", line: "", sort: "priority" });
       IntelligenceState.selectedBulkSignalIds.clear();
       IntelligenceState.signalDetailOpen = false;
+      IntelligenceState.visibleCounts.signals = RESEARCH_PAGE_SIZE.signals;
       View.renderSignals(panelRoot("signals"));
       panelRoot("signals")?.querySelector('[data-signal-filter="keyword"]')?.focus();
       return;
@@ -247,6 +248,7 @@
       if (panel === "grants") View.renderGrants(panelRoot("grants"));
       if (panel === "patents") View.renderPatents(panelRoot("patents"));
       if (panel === "trials") View.renderTrials(panelRoot("trials"));
+      if (panel === "signals") View.renderSignals(panelRoot("signals"));
       return;
     }
 
@@ -269,6 +271,15 @@
     if (!IntelligenceState.filteredSignals().some(signal => signal.id === id)) {
       Object.assign(IntelligenceState.signalFilters, { status: "all", keyword: "", line: "" });
       IntelligenceState.selectedBulkSignalIds.clear();
+    }
+    // Keep the rail's paginated slice in sync with detail navigation: a signal
+    // reached via "Siguiente" or from another panel's link should still be
+    // visible (and highlighted) in the list below, not just in the reader.
+    const pageSize = RESEARCH_PAGE_SIZE.signals;
+    const index = IntelligenceState.filteredSignals().findIndex(signal => signal.id === id);
+    const currentlyVisible = IntelligenceState.visibleCounts.signals || pageSize;
+    if (index >= currentlyVisible) {
+      IntelligenceState.visibleCounts.signals = Math.ceil((index + 1) / pageSize) * pageSize;
     }
     IntelligenceState.selectedSignalId = id;
     IntelligenceState.signalDetailOpen = true;
@@ -351,9 +362,10 @@
     }
     if (event.target.matches("[data-signal-filter]")) {
       const field = event.target.dataset.signalFilter;
-      if (["status", "keyword", "line"].includes(field)) IntelligenceState.signalFilters[field] = String(event.target.value || "");
+      if (["status", "keyword", "line", "sort"].includes(field)) IntelligenceState.signalFilters[field] = String(event.target.value || "");
       IntelligenceState.selectedBulkSignalIds.clear();
       IntelligenceState.signalDetailOpen = false;
+      IntelligenceState.visibleCounts.signals = RESEARCH_PAGE_SIZE.signals;
       View.renderSignals(panelRoot("signals"));
       refreshIcons();
       return;

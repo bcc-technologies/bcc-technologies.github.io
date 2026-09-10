@@ -6,10 +6,12 @@
     NAV_GROUPS,
     RUN_ACTIONS,
     SIGNAL_STATUS_ACTIONS,
+    SIGNAL_SORT_OPTIONS,
     TOPIC_CATEGORY_LABELS,
     SETTINGS_FREQUENCY_LABELS,
     DEFAULT_LINES,
-    DATE_RANGE_OPTIONS
+    DATE_RANGE_OPTIONS,
+    RESEARCH_PAGE_SIZE
   } = window.BCCWorkspaceIntelligenceConstants;
 
   function shellMarkup(currentPanel) {
@@ -270,12 +272,25 @@
     `;
   }
 
+  function signalScoreChipsMarkup(signal) {
+    return `
+      <div class="intelligence-signal-card-scores">
+        <span><b>Op</b>${score(signal.opportunityScore)}</span>
+        <span><b>Act</b>${score(signal.actionabilityScore)}</span>
+        <span><b>Conf</b>${score(signal.confidenceScore)}</span>
+      </div>
+    `;
+  }
+
   function renderSignals(target) {
     if (!target) return;
     const signals = IntelligenceState.filteredSignals();
     const selected = IntelligenceState.selectedSignal();
     const selectedIndex = signals.findIndex(signal => signal.id === selected?.id);
     const bulkSelectedIds = IntelligenceState.selectedBulkSignalIds;
+    const pageSize = RESEARCH_PAGE_SIZE.signals;
+    const visibleCount = Math.min(IntelligenceState.visibleCounts.signals || pageSize, signals.length) || pageSize;
+    const visibleSignals = signals.slice(0, visibleCount);
     target.innerHTML = `
       <section class="intelligence-signal-stage${IntelligenceState.signalDetailOpen && selected ? " is-reading" : ""}">
         <article class="activity-surface intelligence-card intelligence-signal-rail">
@@ -288,15 +303,11 @@
             <div><span>Aceptadas</span><strong>${number(signals.filter(item => item.status === "accepted").length)}</strong></div>
             <div><span>Op. promedio</span><strong>${IntelligenceState.averageScore(signals, "opportunityScore")}</strong></div>
           </div>
-          ${signals.length ? `
-            <div class="intelligence-signal-rail-note">
-              <p>Ordenadas por prioridad de revisión. Abre una señal para consultar su evidencia o marca varias para decidir en bloque.</p>
-            </div>
-          ` : ""}
           <div class="intelligence-filter-grid">
             <label>Estado<select data-signal-filter="status">${[["all", "Todas"], ["review", "Por revisar"], ["accepted", "Aceptadas"], ["archived", "Archivo"], ["rejected", "Descartadas"]].map(([value, label]) => `<option value="${value}"${IntelligenceState.signalFilters.status === value ? " selected" : ""}>${label}</option>`).join("")}</select></label>
             <label>Buscar en título y evidencia<input type="search" data-signal-filter="keyword" value="${escapeAttr(IntelligenceState.signalFilters.keyword)}" /></label>
             <label>Línea<select data-signal-filter="line"><option value="">Todas</option>${["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "General"].map(line => `<option${IntelligenceState.signalFilters.line === line ? " selected" : ""}>${line}</option>`).join("")}</select></label>
+            <label>Orden<select data-signal-filter="sort">${SIGNAL_SORT_OPTIONS.map(option => `<option value="${escapeAttr(option.value)}"${IntelligenceState.signalFilters.sort === option.value ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}</select></label>
             <button class="btn btn-ghost" type="button" data-signal-reset>Limpiar filtros</button>
             <button class="btn btn-ghost" type="button" data-signal-export>Exportar resultados (JSON)</button>
           </div>
@@ -304,7 +315,7 @@
           ${bulkSignalToolbarMarkup(bulkSelectedIds)}
           ${signals.length ? `
             <div class="intelligence-signal-queue">
-              ${signals.map(signal => `
+              ${visibleSignals.map(signal => `
                 <article class="intelligence-signal-card${signal.id === selected?.id ? " is-selected" : ""}" data-signal-select="${escapeAttr(signal.id)}">
                   <div class="intelligence-signal-card-head">
                     <label class="intelligence-bulk-checkbox" data-signal-bulk-toggle-wrap>
@@ -316,20 +327,17 @@
                     </div>
                   </div>
                   <h4><button type="button" class="intelligence-signal-open" data-signal-select="${escapeAttr(signal.id)}">${escapeHtml(signal.title)}</button></h4>
-                  <p>${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
+                  <p class="intelligence-signal-card-summary">${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
                   <div class="intelligence-signal-card-meta">
                     <span class="intelligence-status-pill">${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}</span>
                     ${signal.autoArchived ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Auto-archivada</span>` : ""}
                     <small>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</small>
                   </div>
-                  <div class="intelligence-queue-meters">
-                    ${metricBar("Oportunidad", signal.opportunityScore)}
-                    ${metricBar("Actionabilidad", signal.actionabilityScore)}
-                    ${metricBar("Confianza", signal.confidenceScore)}
-                  </div>
+                  ${signalScoreChipsMarkup(signal)}
                 </article>
               `).join("")}
             </div>
+            ${loadMoreMarkup("signals", signals.length)}
           ` : IntelligenceState.dashboard.signals.length ? emptyMarkup("No hay coincidencias", "Prueba otra búsqueda o limpia los filtros para volver a la cola.") : emptyMarkup("Todavía no hay señales estratégicas generadas.", "Abre Sincronización para obtener datos y generar señales.")}
         </article>
         <article class="activity-surface intelligence-card intelligence-signal-detail">
