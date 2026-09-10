@@ -118,3 +118,9 @@ window.BCC_MAP_BILLING = Object.freeze({
 });
 
 window.BCC_WEB_PUSH_PUBLIC_KEY = "BL7ZY6d49L451BwhDIqFa0dSPdXm1kIfxrQXImw2ZPAYxNPgJ64NuaVsM8JN01ZJKLEBHadNS_F0ZiCqs6Izk3c";
+
+// Science Radar MAP-Nano opportunity dossiers pilot. The dossier migration
+// (20260907213407) is applied and its RLS/RPC surface was verified against
+// the live project; this only remained off pending a real authenticated
+// staff session exercising the panel end to end. See docs/science-radar-pilot.md.
+window.BCC_SCIENCE_RADAR_PILOT_ENABLED = true;

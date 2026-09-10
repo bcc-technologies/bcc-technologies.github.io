@@ -1,6 +1,6 @@
 # Science Radar: piloto de oportunidades MAP-Nano
 
-Estado al 7 de septiembre de 2026: tras autorización explícita, la migración está aplicada en Supabase y la muestra independiente de 60 papers está congelada. El sitio y el flag del piloto siguen sin publicar/activar; falta comprobar el flujo con una sesión autenticada real. No hay etiquetas humanas ni métricas de precisión independientes todavía.
+Estado al 9 de septiembre de 2026: la migración está aplicada en Supabase, el flag del piloto está activado y publicado en producción, y la muestra independiente de 60 papers está congelada. Falta comprobar el flujo de creación de fichas con una sesión autenticada real (primera validación en producción) y no hay etiquetas humanas ni métricas de precisión independientes todavía.
 
 ## Qué permite
 
@@ -22,11 +22,11 @@ Las ediciones conservan la evidencia anterior salvo recaptura explícita. Recapt
 
 El piloto captura papers, no páginas completas, datasets, licencias ni retractaciones automáticamente. El responsable es texto libre; no envía notificaciones. El selector usa el corpus ya cargado por el dashboard y la evidencia existente en la ficha. La línea inicial es MAP-Nano, con el mismo esquema reutilizable para otras líneas. Las pistas de la auditoría siguen en [candidatas](science-radar-candidates-2026-09-07.md); no se insertaron como oportunidades validadas.
 
-## Activación pendiente
+## Activación
 
 1. **Completado:** migración aditiva aplicada al proyecto `bglkyqiqzrcwegpjrucc` con versión remota `20260907213407`. El archivo canónico es `supabase/migrations/20260907213407_intelligence_opportunity_dossiers.sql`, alineado con esa versión: dos tablas, índices, políticas de lectura y RPC de escritura; no cambia las tablas existentes.
-2. **Verificación parcial en producción:** catálogo confirma RLS, políticas limitadas a gestores, lectura autenticada sin escritura directa, ausencia de acceso anónimo y los permisos correctos del RPC. Las huellas de ambas funciones coinciden exactamente con la migración probada localmente. El conector no permite `SET ROLE authenticated` ni ejecutar el RPC restringido: la prueba transaccional no llegó a crear fichas. Se confirmaron cero fichas y cero revisiones. Falta la prueba con una sesión autenticada real, sin ampliar permisos al conector.
-3. Después de esa prueba, habilitar `window.BCC_SCIENCE_RADAR_PILOT_ENABLED = true` en la configuración del workspace, antes de cargar la feature, y publicar los assets. Actualmente el flag ausente mantiene ocultos panel y botones y evita consultas del piloto.
+2. **Verificación parcial en producción:** catálogo confirma RLS, políticas limitadas a gestores, lectura autenticada sin escritura directa, ausencia de acceso anónimo y los permisos correctos del RPC. Las huellas de ambas funciones coinciden exactamente con la migración probada localmente. El conector no permite `SET ROLE authenticated` ni ejecutar el RPC restringido: la prueba transaccional no llegó a crear fichas. Se confirmaron cero fichas y cero revisiones.
+3. **Completado (9 de septiembre de 2026):** `window.BCC_SCIENCE_RADAR_PILOT_ENABLED = true` en `js/supabase-config.js`, publicado a producción. Panel y botones de Oportunidades visibles para usuarios con `department:manage`. La prueba end-to-end con una sesión autenticada real (crear y guardar una ficha desde el panel) todavía no se ha hecho; queda como primera validación en producción, no como bloqueo previo a la publicación — decisión explícita del usuario.
 
 Los advisors no reportaron avisos de seguridad sobre las nuevas tablas o funciones. En rendimiento aparece únicamente el [índice todavía sin uso](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index), esperable con tablas recién creadas y vacías. Hay avisos sobre otros componentes del proyecto; este cambio no constituye una auditoría de esos componentes. No hubo commit, push ni publicación del sitio.
 
