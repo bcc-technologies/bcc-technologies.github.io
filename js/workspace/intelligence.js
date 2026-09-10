@@ -183,6 +183,12 @@
       return;
     }
 
+    const prospectButton = event.target.closest("[data-prospect-signal]");
+    if (prospectButton) {
+      sendSignalToProspects(prospectButton.dataset.prospectSignal || "");
+      return;
+    }
+
     const bulkSignalAction = event.target.closest("[data-signal-bulk-status]");
     if (bulkSignalAction) {
       void bulkUpdateSignalStatus([...IntelligenceState.selectedBulkSignalIds], bulkSignalAction.dataset.signalBulkStatus || "");
@@ -271,6 +277,68 @@
     View.renderSignals(panelRoot("signals"));
     panelRoot("signals")?.querySelector("[data-signal-detail-heading]")?.focus();
     refreshIcons();
+  }
+
+  // One-shot handoff to the Prospects/CRM feature: sessionStorage survives the
+  // view switch (Prospects is a separate mounted feature, not a panel here),
+  // while staying private to this tab and self-clearing once Prospects reads
+  // it. Kept in sync with the same key in prospects.js.
+  const PROSPECT_HANDOFF_KEY = "bcc-prospect-handoff:v1";
+
+  function collectSignalInstitutions(signal) {
+    const idsByType = { paper: new Set(), grant: new Set(), trial: new Set() };
+    (signal.evidenceRefs || []).forEach(ref => {
+      if (idsByType[ref?.type]) idsByType[ref.type].add(ref.id);
+    });
+    const names = new Set();
+    IntelligenceState.dashboard.papers
+      .filter(item => idsByType.paper.has(item.id))
+      .forEach(item => (item.institutions || []).forEach(name => name && names.add(name)));
+    IntelligenceState.dashboard.grants
+      .filter(item => idsByType.grant.has(item.id))
+      .forEach(item => (item.institutions || []).forEach(name => name && names.add(name)));
+    IntelligenceState.dashboard.trials
+      .filter(item => idsByType.trial.has(item.id))
+      .forEach(item => {
+        if (item.sponsor) names.add(item.sponsor);
+        (item.collaborators || []).forEach(name => name && names.add(name));
+      });
+    return [...names].slice(0, 8);
+  }
+
+  function sendSignalToProspects(id) {
+    const signal = IntelligenceState.dashboard.signals.find(item => item.id === id);
+    if (!signal) return;
+    const institutions = collectSignalInstitutions(signal);
+    const evidenceLines = (signal.evidenceRefs || [])
+      .slice(0, 6)
+      .map(ref => `- ${ref.title}${ref.sourceUrl ? ` (${ref.sourceUrl})` : ""}`)
+      .join("\n");
+    const notes = [
+      `Origen: Science Radar — señal "${signal.title}" (${signal.relatedLine || "General"}).`,
+      signal.summary || "",
+      signal.recommendedAction || "",
+      institutions.length ? `Instituciones mencionadas en la evidencia (sin contacto verificado): ${institutions.join(", ")}.` : "",
+      evidenceLines ? `Evidencia:\n${evidenceLines}` : ""
+    ].filter(Boolean).join("\n\n").slice(0, 4000);
+    const payload = {
+      company: institutions[0] || "",
+      source: "Science Radar",
+      tags: [signal.relatedLine || "General", "science-radar"],
+      notes
+    };
+    try {
+      sessionStorage.setItem(PROSPECT_HANDOFF_KEY, JSON.stringify(payload));
+    } catch {
+      setMessage("No se pudo preparar el traspaso a Prospects (almacenamiento del navegador no disponible).", "error");
+      return;
+    }
+    const crmLink = document.querySelector('a[href="#crm-correos"]');
+    if (crmLink) {
+      crmLink.click();
+    } else {
+      setMessage("No se encontró el acceso a CRM. Abre CRM > Correos y crea el contacto manualmente con esta evidencia.", "error");
+    }
   }
 
   function handleChange(event) {

@@ -30,12 +30,47 @@
   let directorySection = "profile";
   let activeTab = "home";
   let pipelineMode = "board";
+  let pendingProspectPrefill = null;
+
+  // One-shot handoff from Science Radar's "Enviar a Prospects" action on a
+  // partnership signal. Kept in sync with the same key in intelligence.js.
+  const PROSPECT_HANDOFF_KEY = "bcc-prospect-handoff:v1";
+
+  function consumeProspectHandoff() {
+    let raw = null;
+    try {
+      raw = sessionStorage.getItem(PROSPECT_HANDOFF_KEY);
+      if (raw) sessionStorage.removeItem(PROSPECT_HANDOFF_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+    let payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (!payload || typeof payload !== "object") return;
+    pendingProspectPrefill = {
+      company: String(payload.company || "").slice(0, 120),
+      source: String(payload.source || "Science Radar").slice(0, 80),
+      tags: Array.isArray(payload.tags) ? payload.tags.filter(Boolean).slice(0, 10) : [],
+      notes: String(payload.notes || "").slice(0, 4000)
+    };
+    selectedProspectId = "";
+    selectedEmailId = "";
+    selectedActivityId = "";
+    directoryMode = "edit";
+    activeTab = "directory";
+  }
 
   function init(account) {
     root = document.querySelector("[data-prospects-workspace]");
     if (!root || root.dataset.ready === "true") return;
     root.dataset.ready = "true";
     user = account;
+    consumeProspectHandoff();
     renderShell();
     bindControls();
     void loadDashboard();
@@ -1721,7 +1756,7 @@
   }
 
   function emptyProspect() {
-    return {
+    const base = {
       id: "",
       fullName: "",
       company: "",
@@ -1739,6 +1774,12 @@
       assignmentStatus: "unassigned",
       assignmentNote: ""
     };
+    if (!pendingProspectPrefill) return base;
+    // Consumed once: the form renders with these values, but a fresh "Nuevo
+    // contacto" click right after shouldn't reuse a stale handoff.
+    const prefill = pendingProspectPrefill;
+    pendingProspectPrefill = null;
+    return { ...base, ...prefill };
   }
 
   function emptyTemplate() {

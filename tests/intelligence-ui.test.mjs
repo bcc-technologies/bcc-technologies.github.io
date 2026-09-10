@@ -126,12 +126,25 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
   const code = readWorkspaceFile("js/workspace/intelligence.js");
   const { root, panels, message, action, dryRun, run, chips } = createWorkspaceRoot();
 
+  const crmLink = createElementStub({});
+  crmLink.clicks = 0;
+  crmLink.click = () => { crmLink.clicks += 1; };
   const documentStub = {
     querySelector(selector) {
       if (selector === "[data-intelligence-workspace]") return root;
+      if (selector === 'a[href="#crm-correos"]') return crmLink;
       return null;
     }
   };
+
+  const sessionStorageStub = (() => {
+    const store = new Map();
+    return {
+      getItem: key => (store.has(key) ? store.get(key) : null),
+      setItem: (key, value) => { store.set(key, String(value)); },
+      removeItem: key => { store.delete(key); }
+    };
+  })();
 
   const dashboard = {
     overview: {
@@ -190,6 +203,7 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
       }
     },
     document: documentStub,
+    sessionStorage: sessionStorageStub,
     console,
     URL,
     Date,
@@ -230,6 +244,8 @@ async function loadWorkspaceModule(dashboardOverrides = {}) {
     dryRun,
     run,
     chips,
+    crmLink,
+    sessionStorage: sessionStorageStub,
     State: context.window.BCCWorkspaceIntelligenceState,
     View: context.window.BCCWorkspaceIntelligenceView
   };
@@ -604,4 +620,43 @@ test("an auto-archived signal is badged distinctly from a manually archived one"
   const badgeIndex = signalsHtml.indexOf("Auto-archivada");
   assert.ok(autoIndex !== -1 && manualIndex !== -1 && badgeIndex !== -1);
   assert.ok(badgeIndex > autoIndex && badgeIndex < manualIndex, "the badge should only appear next to the auto-archived signal");
+});
+
+test("a partnership signal offers a Prospects handoff that captures institutions and evidence, and only appears on partnership signals", async () => {
+  const signals = [
+    {
+      id: "signal-partner", title: "MAP-Nano: Partnership candidates", summary: "Instituciones activas en MAP-Nano sugieren colaboración.",
+      signalType: "partnership", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 60, actionabilityScore: 55, confidenceScore: 50,
+      recommendedAction: "Explorar acercamiento con Universidad X, Instituto Y.",
+      evidenceRefs: [
+        { type: "paper", id: "paper-1", title: "SEM study of nanoparticles", sourceUrl: "https://example.org/paper-1" },
+        { type: "grant", id: "grant-1", title: "Nano funding award", sourceUrl: "https://example.org/grant-1" }
+      ]
+    },
+    {
+      id: "signal-other", title: "MAP-Nano: Emerging research trend", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 60, actionabilityScore: 55, confidenceScore: 50, evidenceRefs: []
+    }
+  ];
+  const papers = [{ id: "paper-1", title: "SEM study of nanoparticles", institutions: ["Universidad X"] }];
+  const grants = [{ id: "grant-1", title: "Nano funding award", institutions: ["Instituto Y"] }];
+
+  const { root, panels, crmLink, sessionStorage } = await loadWorkspaceModule({ signals, papers, grants });
+
+  root.dispatch("click", { target: createElementStub({ signalSelect: "signal-other" }) });
+  assert.doesNotMatch(panels.get("signals").innerHTML, /Enviar a Prospects/, "non-partnership signals should not offer the handoff");
+
+  root.dispatch("click", { target: createElementStub({ signalSelect: "signal-partner" }) });
+  assert.match(panels.get("signals").innerHTML, /Enviar a Prospects/);
+
+  root.dispatch("click", { target: createElementStub({ prospectSignal: "signal-partner" }) });
+
+  assert.equal(crmLink.clicks, 1, "should navigate to the CRM view by activating its nav link");
+  const stored = JSON.parse(sessionStorage.getItem("bcc-prospect-handoff:v1"));
+  assert.equal(stored.source, "Science Radar");
+  assert.deepEqual(stored.tags, ["MAP-Nano", "science-radar"]);
+  assert.equal(stored.company, "Universidad X", "first institution found in the evidence becomes the draft company");
+  assert.match(stored.notes, /Universidad X, Instituto Y/);
+  assert.match(stored.notes, /SEM study of nanoparticles \(https:\/\/example\.org\/paper-1\)/);
 });

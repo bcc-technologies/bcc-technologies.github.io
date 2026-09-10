@@ -1023,6 +1023,7 @@
                 </button>
               `).join("")}
               ${window.BCCWorkspaceIntelligenceConstants.OPPORTUNITIES_ENABLED ? `<button class="btn btn-primary" type="button" data-opportunity-signal="${escapeAttr(signal.id)}">Crear ficha de oportunidad</button>` : ''}
+              ${signal.signalType === "partnership" ? `<button class="btn btn-ghost" type="button" data-prospect-signal="${escapeAttr(signal.id)}">Enviar a Prospects</button>` : ''}
             </div>
           </div>
           <div class="intelligence-detail-block">
