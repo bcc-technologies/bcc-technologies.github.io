@@ -270,6 +270,15 @@
   function signalsOrderedBy(sort) {
     if (sort === "opportunity") return [...dashboard.signals].sort((left, right) => (Number(right.opportunityScore) || 0) - (Number(left.opportunityScore) || 0));
     if (sort === "recent") return [...dashboard.signals].sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0));
+    if (sort === "risk") {
+      return [...dashboard.signals].sort((left, right) => {
+        const leftRisk = signalAutoArchiveInfo(left);
+        const rightRisk = signalAutoArchiveInfo(right);
+        if (leftRisk.atRisk !== rightRisk.atRisk) return leftRisk.atRisk ? -1 : 1;
+        if (leftRisk.atRisk) return leftRisk.daysRemaining - rightRisk.daysRemaining;
+        return prioritySignalScore(right) - prioritySignalScore(left);
+      });
+    }
     return sortedSignals();
   }
 
@@ -277,7 +286,8 @@
     const query = normalizeTopicMatchValue(signalFilters.keyword);
     return signalsOrderedBy(signalFilters.sort).filter(item => {
       const statusMatch = signalFilters.status === "all" || (signalFilters.status === "review"
-        ? ["new", "reviewing"].includes(item.status) : item.status === signalFilters.status);
+        ? ["new", "reviewing"].includes(item.status)
+        : signalFilters.status === "at_risk" ? signalAutoArchiveInfo(item).atRisk : item.status === signalFilters.status);
       const haystack = normalizeTopicMatchValue([item.title, item.summary, item.recommendedAction,
         ...(item.evidenceRefs || []).map(ref => ref.title)].join(" "));
       return statusMatch && (!signalFilters.line || signalFilters.line === item.relatedLine) && (!query || haystack.includes(query));
@@ -707,6 +717,31 @@
     return sortedSignals().filter(item => ["new", "reviewing"].includes(item.status));
   }
 
+  // Mirrors archiveStaleLowValueSignals()'s default in scripts/intelligence/store.mjs:
+  // only "new" signals failing every configured ceiling get swept, and only
+  // once they're this old. Keep both in sync if that default ever changes.
+  const AUTO_ARCHIVE_AFTER_DAYS = 21;
+  // Flag it as "at risk" only inside this trailing window, not from the day
+  // it's created -- otherwise nearly every mediocre new signal would carry
+  // the badge and the genuinely urgent ones would get lost in the noise.
+  const AUTO_ARCHIVE_WARNING_DAYS = 7;
+
+  function signalAutoArchiveInfo(signal) {
+    if (signal?.status !== "new") return { atRisk: false, daysRemaining: null };
+    const thresholds = dashboard.settings.scoringThresholds || {};
+    const failsEveryCeiling = Number(signal.opportunityScore || 0) < (Number(thresholds.opportunity) || 60)
+      && Number(signal.actionabilityScore || 0) < (Number(thresholds.actionability) || 50)
+      && Number(signal.confidenceScore || 0) < (Number(thresholds.confidence) || 50);
+    if (!failsEveryCeiling) return { atRisk: false, daysRemaining: null };
+    const createdAt = Date.parse(signal.createdAt || "");
+    if (!Number.isFinite(createdAt)) return { atRisk: false, daysRemaining: null };
+    const ageDays = (Date.now() - createdAt) / 86400000;
+    // 0 means already past the cutoff: it will be swept on the next sync run,
+    // not that it somehow stopped being at risk.
+    const daysRemaining = Math.max(0, Math.ceil(AUTO_ARCHIVE_AFTER_DAYS - ageDays));
+    return { atRisk: daysRemaining <= AUTO_ARCHIVE_WARNING_DAYS, daysRemaining };
+  }
+
   function signalReviewQueue() {
     return sortedSignals().sort((left, right) => prioritySignalScore(right) - prioritySignalScore(left));
   }
@@ -1034,6 +1069,7 @@
     overviewStats,
     signalsNeedingReview,
     signalReviewQueue,
+    signalAutoArchiveInfo,
     prioritySignalScore,
     averageScore,
     overviewBriefing,

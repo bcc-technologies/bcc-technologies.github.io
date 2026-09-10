@@ -79,7 +79,8 @@
   const SIGNAL_SORT_OPTIONS = [
     { value: "priority", label: "Prioridad de revisión" },
     { value: "opportunity", label: "Mayor oportunidad" },
-    { value: "recent", label: "Más recientes" }
+    { value: "recent", label: "Más recientes" },
+    { value: "risk", label: "Riesgo de auto-archivo" }
   ];
 
   window.BCCWorkspaceIntelligenceConstants = Object.freeze({

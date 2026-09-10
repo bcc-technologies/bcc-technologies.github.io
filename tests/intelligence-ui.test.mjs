@@ -702,3 +702,70 @@ test("sorting the signal queue by opportunity reorders it and collapses back to 
   const laterCardIndex = panels.get("signals").innerHTML.indexOf("Signal 0");
   assert.ok(firstCardIndex !== -1 && firstCardIndex < laterCardIndex);
 });
+
+function daysAgoIso(days) {
+  return new Date(Date.now() - days * 86400000).toISOString();
+}
+
+test("only a new, low-scoring, old-enough signal is flagged at risk of auto-archive", async () => {
+  const signals = [
+    { id: "at-risk", title: "Old and weak", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(22) },
+    { id: "fresh", title: "Young and weak", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(2) },
+    { id: "strong", title: "Old but strong", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 90, actionabilityScore: 90, confidenceScore: 90, evidenceRefs: [], createdAt: daysAgoIso(22) },
+    { id: "reviewing", title: "Old, weak, but already claimed", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "reviewing",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(22) }
+  ];
+  const { panels, State } = await loadWorkspaceModule({ signals });
+
+  assert.equal(State.signalAutoArchiveInfo(signals[0]).atRisk, true);
+  assert.equal(State.signalAutoArchiveInfo(signals[0]).daysRemaining, 0, "already past 21 days: due on the next sync, not merely close");
+  assert.equal(State.signalAutoArchiveInfo(signals[1]).atRisk, false, "too young to be swept yet");
+  assert.equal(State.signalAutoArchiveInfo(signals[2]).atRisk, false, "clears every threshold, so the sweep never touches it");
+  assert.equal(State.signalAutoArchiveInfo(signals[3]).atRisk, false, "reviewing signals are exempt from the sweep");
+
+  const overviewHtml = panels.get("overview").innerHTML;
+  assert.match(overviewHtml, /Old and weak/);
+  assert.match(overviewHtml, /Auto-archivo hoy/);
+});
+
+test("filtering the signal queue by auto-archive risk shows only at-risk signals", async () => {
+  const signals = [
+    { id: "at-risk", title: "Old and weak", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(19) },
+    { id: "safe", title: "Comfortably new", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(1) }
+  ];
+  const { root, panels, State } = await loadWorkspaceModule({ signals });
+
+  const statusSelect = createElementStub({ signalFilter: "status" });
+  statusSelect.value = "at_risk";
+  root.dispatch("change", { target: statusSelect });
+
+  assert.equal(State.filteredSignals().length, 1);
+  assert.equal(State.filteredSignals()[0].id, "at-risk");
+  const html = panels.get("signals").innerHTML;
+  assert.match(html, /Old and weak/);
+  assert.doesNotMatch(html, /Comfortably new/);
+  assert.match(html, /Auto-archivo en 2 días/);
+});
+
+test("sorting by auto-archive risk puts the most urgent signal first and safe ones last", async () => {
+  const signals = [
+    { id: "safe", title: "Comfortably new", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(1) },
+    { id: "soon", title: "A few days left", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(17) },
+    { id: "urgent", title: "Due today", summary: "", signalType: "research_trend", relatedLine: "MAP-Nano", status: "new",
+      opportunityScore: 20, actionabilityScore: 20, confidenceScore: 20, evidenceRefs: [], createdAt: daysAgoIso(25) }
+  ];
+  const { root, State } = await loadWorkspaceModule({ signals });
+
+  const sortSelect = createElementStub({ signalFilter: "sort" });
+  sortSelect.value = "risk";
+  root.dispatch("change", { target: sortSelect });
+
+  assert.deepEqual([...State.filteredSignals()].map(item => item.id), ["urgent", "soon", "safe"]);
+});

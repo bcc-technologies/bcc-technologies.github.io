@@ -75,6 +75,16 @@
     const recentSignals = prioritizedSignals.slice(0, 5);
     const recentErrors = IntelligenceState.failedRuns().slice(0, 5);
     const reviewSignals = IntelligenceState.signalsNeedingReview();
+    // Surface signals about to auto-archive first, so returning after a gap
+    // shows what's disappearing soon instead of burying it behind whatever
+    // scored highest on priority alone.
+    const reviewQueuePreview = [...reviewSignals].sort((left, right) => {
+      const leftRisk = IntelligenceState.signalAutoArchiveInfo(left);
+      const rightRisk = IntelligenceState.signalAutoArchiveInfo(right);
+      if (leftRisk.atRisk !== rightRisk.atRisk) return leftRisk.atRisk ? -1 : 1;
+      if (leftRisk.atRisk) return leftRisk.daysRemaining - rightRisk.daysRemaining;
+      return 0;
+    }).slice(0, 4);
     const sourceWatch = IntelligenceState.sourceWatchItems().slice(0, 4);
     const hotTopics = IntelligenceState.topicHeatmap();
     const heatTopicsPreview = hotTopics.slice(0, 4);
@@ -164,13 +174,14 @@
           </div>
           ${reviewSignals.length ? `
             <div class="intelligence-queue-list">
-              ${reviewSignals.slice(0, 4).map(signal => `
+              ${reviewQueuePreview.map(signal => `
                 <article class="intelligence-queue-item" data-signal-select="${escapeAttr(signal.id)}">
                   <div class="intelligence-stack-meta">
                     <span>${escapeHtml(IntelligenceState.signalTypeLabel(signal.signalType))}</span>
                     <strong>${escapeHtml(signal.relatedLine || "General")}</strong>
                   </div>
                   <h4>${escapeHtml(signal.title)}</h4>
+                  ${signalRiskBadgeMarkup(signal)}
                   <p>${escapeHtml(signal.summary || signal.recommendedAction || "Sin resumen todavía.")}</p>
                   <div class="intelligence-queue-meters">
                     ${metricBar("Oportunidad", signal.opportunityScore)}
@@ -282,6 +293,13 @@
     `;
   }
 
+  function signalRiskBadgeMarkup(signal) {
+    const risk = IntelligenceState.signalAutoArchiveInfo(signal);
+    if (!risk.atRisk) return "";
+    const label = risk.daysRemaining === 0 ? "Auto-archivo hoy" : `Auto-archivo en ${number(risk.daysRemaining)} día${risk.daysRemaining === 1 ? "" : "s"}`;
+    return `<span class="intelligence-meta-pill intelligence-meta-pill-warn">${escapeHtml(label)}</span>`;
+  }
+
   function renderSignals(target) {
     if (!target) return;
     const signals = IntelligenceState.filteredSignals();
@@ -291,6 +309,7 @@
     const pageSize = RESEARCH_PAGE_SIZE.signals;
     const visibleCount = Math.min(IntelligenceState.visibleCounts.signals || pageSize, signals.length) || pageSize;
     const visibleSignals = signals.slice(0, visibleCount);
+    const atRiskCount = signals.filter(item => IntelligenceState.signalAutoArchiveInfo(item).atRisk).length;
     target.innerHTML = `
       <section class="intelligence-signal-stage${IntelligenceState.signalDetailOpen && selected ? " is-reading" : ""}">
         <article class="activity-surface intelligence-card intelligence-signal-rail">
@@ -300,11 +319,12 @@
           </div>
           <div class="intelligence-signal-summary">
             <div><span>Requieren revisión</span><strong>${number(IntelligenceState.signalsNeedingReview().length)}</strong></div>
+            <div><span>En riesgo de auto-archivo</span><strong>${number(atRiskCount)}</strong></div>
             <div><span>Aceptadas</span><strong>${number(signals.filter(item => item.status === "accepted").length)}</strong></div>
             <div><span>Op. promedio</span><strong>${IntelligenceState.averageScore(signals, "opportunityScore")}</strong></div>
           </div>
           <div class="intelligence-filter-grid">
-            <label>Estado<select data-signal-filter="status">${[["all", "Todas"], ["review", "Por revisar"], ["accepted", "Aceptadas"], ["archived", "Archivo"], ["rejected", "Descartadas"]].map(([value, label]) => `<option value="${value}"${IntelligenceState.signalFilters.status === value ? " selected" : ""}>${label}</option>`).join("")}</select></label>
+            <label>Estado<select data-signal-filter="status">${[["all", "Todas"], ["review", "Por revisar"], ["at_risk", "En riesgo de auto-archivo"], ["accepted", "Aceptadas"], ["archived", "Archivo"], ["rejected", "Descartadas"]].map(([value, label]) => `<option value="${value}"${IntelligenceState.signalFilters.status === value ? " selected" : ""}>${label}</option>`).join("")}</select></label>
             <label>Buscar en título y evidencia<input type="search" data-signal-filter="keyword" value="${escapeAttr(IntelligenceState.signalFilters.keyword)}" /></label>
             <label>Línea<select data-signal-filter="line"><option value="">Todas</option>${["MAP-Nano", "MAP-Bio", "MAP-Med", "MAP-Ing", "General"].map(line => `<option${IntelligenceState.signalFilters.line === line ? " selected" : ""}>${line}</option>`).join("")}</select></label>
             <label>Orden<select data-signal-filter="sort">${SIGNAL_SORT_OPTIONS.map(option => `<option value="${escapeAttr(option.value)}"${IntelligenceState.signalFilters.sort === option.value ? " selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}</select></label>
@@ -330,7 +350,7 @@
                   <p class="intelligence-signal-card-summary">${escapeHtml(signal.summary || "Sin resumen todavía.")}</p>
                   <div class="intelligence-signal-card-meta">
                     <span class="intelligence-status-pill">${escapeHtml(IntelligenceState.signalStatusLabel(signal.status))}</span>
-                    ${signal.autoArchived ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Auto-archivada</span>` : ""}
+                    ${signal.autoArchived ? `<span class="intelligence-meta-pill intelligence-meta-pill-warn">Auto-archivada</span>` : signalRiskBadgeMarkup(signal)}
                     <small>${escapeHtml(formatDateTime(signal.updatedAt || signal.createdAt))}</small>
                   </div>
                   ${signalScoreChipsMarkup(signal)}
