@@ -7,6 +7,7 @@ let WEB_USER = null;
 let CMS_DRAFT_STORAGE_USER = null;
 let WEB_INDEX_FALLBACK = null;
 let WEB_POST_BODY_CACHE = new Map();
+const WEB_AUTHOR_NAMES = new Map();
 
 function toast(msg, ok = true) {
   toastEl.textContent = msg;
@@ -123,8 +124,39 @@ function normalizeWebPost(row) {
     excerpt: row.excerpt || "",
     cover: row.cover || "",
     isPublished: Boolean(row.is_published),
+    createdBy: row.created_by || "",
+    updatedBy: row.updated_by || "",
     bodyUrl: ""
   };
+}
+
+async function resolveAuthorNames(ids) {
+  const pending = [...new Set((ids || []).filter(Boolean))].filter(id => !WEB_AUTHOR_NAMES.has(id));
+  if (!pending.length) return;
+  if (CMS_RUNTIME !== "web" || !window.CMS_SUPABASE) {
+    pending.forEach(id => WEB_AUTHOR_NAMES.set(id, null));
+    return;
+  }
+  try {
+    const { data, error } = await window.CMS_SUPABASE.rpc("get_cms_author_names", { p_ids: pending });
+    if (error) throw error;
+    const found = new Set();
+    (Array.isArray(data) ? data : []).forEach(row => {
+      if (!row?.id) return;
+      found.add(row.id);
+      WEB_AUTHOR_NAMES.set(row.id, row.display_name || null);
+    });
+    pending.filter(id => !found.has(id)).forEach(id => WEB_AUTHOR_NAMES.set(id, null));
+  } catch (_error) {
+    pending.forEach(id => WEB_AUTHOR_NAMES.set(id, null));
+  }
+}
+
+function authorLabelFor(userId) {
+  if (!userId) return "";
+  if (WEB_USER?.id === userId) return "Tú";
+  const name = WEB_AUTHOR_NAMES.get(userId);
+  return name || "Otro autor";
 }
 
 function postPayloadForSupabase(payload) {
@@ -190,7 +222,7 @@ async function webApi(path, opts = {}) {
     const { data, error } = await supabase.functions.invoke("publish-blog-now", {
       body: { message }
     });
-    if (error) throw error;
+    if (error) throw await window.BCCAuth.supabaseFunctionError(error, "No fue posible disparar el workflow.");
     if (data?.ok === false) throw new Error(data.error || "No fue posible disparar el workflow.");
     return {
       ok: true,
@@ -204,7 +236,7 @@ async function webApi(path, opts = {}) {
     const fallback = await loadStaticIndexFallback();
     const { data, error } = await supabase
       .from("cms_posts")
-      .select("id,title,date,section,lang,translation_id,tags,author_ids,reference_ids,resource_ids,excerpt,cover,body_markdown,is_published,updated_at")
+      .select("id,title,date,section,lang,translation_id,tags,author_ids,reference_ids,resource_ids,excerpt,cover,body_markdown,is_published,created_by,updated_by,updated_at")
       .order("date", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false });
     if (error) throw error;
@@ -797,7 +829,11 @@ function refreshPostHeader() {
     const dirtyChip = autosaveDirty || signatureForPayload(payload) !== lastAutosaveSignature
       ? `<span class="doc-meta-chip is-dirty">Cambios<strong>Locales pendientes</strong></span>`
       : "";
-    chips.innerHTML = `${stateChip}${idChip}${dirtyChip}`;
+    const savedPost = hasSavedId ? (INDEX.posts || []).find(p => p.id === id) : null;
+    const authorChip = savedPost?.createdBy
+      ? `<span class="doc-meta-chip">Autor<strong>${escapeHtml(authorLabelFor(savedPost.createdBy))}</strong></span>`
+      : "";
+    chips.innerHTML = `${stateChip}${idChip}${authorChip}${dirtyChip}`;
   }
 
   document.querySelectorAll(".lang-chip[data-lang]").forEach(btn => {
@@ -914,6 +950,7 @@ async function refreshAll() {
   pruneLegacyLocalDrafts();
   const { index } = await api("/api/index");
   INDEX = normalizeIndex(index);
+  await resolveAuthorNames((INDEX.posts || []).map(p => p.createdBy));
 
   renderPosts();
   renderProducts();
@@ -1165,6 +1202,7 @@ function renderPosts() {
             <span>${escapeHtml(date)}</span>
             <span>·</span>
             <span class="entry-id" title="Grupo de traducción">${escapeHtml(key)}</span>
+            ${main.createdBy ? `<span>·</span><span title="Creado por">${escapeHtml(authorLabelFor(main.createdBy))}</span>` : ""}
           </div>
 
           ${excerpt ? `<div class="entry-excerpt">${escapeHtml(excerpt)}</div>` : ""}

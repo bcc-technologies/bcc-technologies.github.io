@@ -226,14 +226,25 @@
     if (!modal || !preview) return;
     const role = modal.querySelector("[data-modal-role-select]")?.value || "client";
     const selected = selectedAccess(modal);
-    const customPermissions = view.permissionsForCustomRoles(selected.customRoles);
+    const warning = modal.querySelector("[data-access-role-mismatch]");
+    const hasInternalSelections = Boolean(selected.staffRoles.length || selected.departments.length || selected.customRoles.length);
+    // A "client" account can never keep staff roles, departments, or custom
+    // roles -- private.set_user_access() rejects that combination outright
+    // (it used to silently drop them instead, which is what this warning
+    // exists to prevent from being submitted in the first place).
+    const roleBlocksInternalAccess = role === "client" && hasInternalSelections;
+    if (warning) warning.hidden = !roleBlocksInternalAccess;
+
+    const effectiveStaffRoles = roleBlocksInternalAccess ? [] : selected.staffRoles;
+    const effectiveCustomRoles = roleBlocksInternalAccess ? [] : selected.customRoles;
+    const customPermissions = view.permissionsForCustomRoles(effectiveCustomRoles);
     const labels = [view.roleLabel(role)];
-    if (selected.customRoles.length) labels.push(`${selected.customRoles.length} rol personalizado`);
-    if (role === "admin" || selected.staffRoles.some(item => ["author", "cofounder", "department_director"].includes(item)) || customPermissions.includes("cms:access")) labels.push("CMS");
-    if (role === "admin" || selected.staffRoles.includes("department_director") || customPermissions.includes("forms:manage")) labels.push("Formularios");
-    if (role === "admin" || selected.staffRoles.some(item => ["maps_developer", "maps_release_manager"].includes(item)) || customPermissions.includes("map.dev.access") || customPermissions.includes("maps:developer:access")) labels.push("MAPs Dev");
-    if (role === "admin" || selected.staffRoles.includes("maps_license_manager") || customPermissions.includes("platform.licenses.manage")) labels.push("Licencias MAP");
-    if (selected.staffRoles.includes("maps_product_analyst") || customPermissions.includes("platform.analytics.read")) labels.push("Analítica MAP");
+    if (effectiveCustomRoles.length) labels.push(`${effectiveCustomRoles.length} rol personalizado`);
+    if (role === "admin" || effectiveStaffRoles.some(item => ["author", "cofounder", "department_director"].includes(item)) || customPermissions.includes("cms:access")) labels.push("CMS");
+    if (role === "admin" || effectiveStaffRoles.includes("department_director") || customPermissions.includes("forms:manage")) labels.push("Formularios");
+    if (role === "admin" || effectiveStaffRoles.some(item => ["maps_developer", "maps_release_manager"].includes(item)) || customPermissions.includes("map.dev.access") || customPermissions.includes("maps:developer:access")) labels.push("MAPs Dev");
+    if (role === "admin" || effectiveStaffRoles.includes("maps_license_manager") || customPermissions.includes("platform.licenses.manage")) labels.push("Licencias MAP");
+    if (effectiveStaffRoles.includes("maps_product_analyst") || customPermissions.includes("platform.analytics.read")) labels.push("Analítica MAP");
     hideConfirmation(modal);
     preview.textContent = labels.join(" · ");
   }
@@ -246,6 +257,9 @@
     const selected = selectedAccess(modal);
     const roleSelect = modal.querySelector("[data-modal-role-select]");
     const role = roleSelect.disabled ? user.role : roleSelect.value;
+    if (role === "client" && (selected.staffRoles.length || selected.departments.length || selected.customRoles.length)) {
+      return showModalMessage(message, "Un rol base \"Cliente\" no puede tener roles internos, departamentos ni roles personalizados. Cambia el rol base o quita esas selecciones.", "error");
+    }
     const changes = view.accessChangeSummary(user, role, selected.staffRoles, selected.departments, selected.customRoles);
     if (!changes.length) return showModalMessage(message, "No hay cambios de acceso para guardar.", "error");
     if (modal.dataset.confirming !== "true") {

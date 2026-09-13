@@ -4948,7 +4948,8 @@ window.BCCAuth = {
   loadSupabaseClient,
   validatePassword,
   changePassword,
-  signOutOtherSessions
+  signOutOtherSessions,
+  supabaseFunctionError
 };
 
 document.addEventListener("DOMContentLoaded", () => {

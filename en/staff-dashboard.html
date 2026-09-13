@@ -14,7 +14,7 @@
   <link rel="alternate" hreflang="en" href="/en/staff-dashboard.html" />
   <meta name="bcc-lang-targets" content="es,en" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8" defer data-bcc-supabase-js="true"></script>
-  <script src="assets/workspace/dashboard-staff.js?v=09c34bdc32a3657b" defer></script>
+  <script src="assets/workspace/dashboard-staff.js?v=f6fc1465431ad97b" defer></script>
 </head>
 <body class="dashboard-shell workspace-shell workspace-refined staff-workspace">
   <div class="workspace">
@@ -691,6 +691,7 @@
           <legend>Roles personalizados</legend>
           <div data-modal-custom-roles></div>
         </fieldset>
+        <p class="access-role-mismatch-warning" data-access-role-mismatch hidden>Estas selecciones no tendrán efecto: un rol base "Cliente" no puede tener roles internos, departamentos ni roles personalizados. Cambia el rol base a Staff o Admin, o quítalas.</p>
         <section class="access-preview" data-access-preview>
           <span>Acceso efectivo</span>
           <strong>Cliente</strong>

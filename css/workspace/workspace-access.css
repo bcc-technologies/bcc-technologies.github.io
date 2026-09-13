@@ -37,6 +37,21 @@
   border-top: 1px solid var(--line);
 }
 
+.access-role-mismatch-warning{
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--warning) 38%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning) 9%, var(--surface-solid));
+  padding: 10px 13px;
+  color: var(--ink);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.access-role-mismatch-warning[hidden]{
+  display: none !important;
+}
+
 .access-preview{
   display: grid;
   gap: 8px;

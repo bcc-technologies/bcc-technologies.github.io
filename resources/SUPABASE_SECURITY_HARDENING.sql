@@ -103,12 +103,26 @@ on public.cms_posts
 for select
 to anon
 using (is_published = true);
+-- Keep this in sync with
+-- supabase/migrations/20260913121500_fix_cms_posts_read_isolation_regression.sql:
+-- using can_manage_cms_content() alone here (true for every CMS user,
+-- including a plain author) would let any author read every other author's
+-- drafts, undoing cms_posts' per-author isolation. Reads must check
+-- is_cms_manager() (role = admin) or ownership (created_by), not just
+-- "has CMS access at all".
 drop policy if exists "Authenticated can read permitted CMS posts" on public.cms_posts;
 create policy "Authenticated can read permitted CMS posts"
 on public.cms_posts
 for select
 to authenticated
-using ((is_published = true) or (select private.can_manage_cms_content()));
+using (
+  is_published = true
+  or (select private.is_cms_manager())
+  or (
+    (select private.can_manage_cms_content())
+    and created_by = (select auth.uid())
+  )
+);
 
 drop policy if exists "Admins manage workspace forms" on public.workspace_forms;
 drop policy if exists "Recipients read published workspace forms" on public.workspace_forms;
