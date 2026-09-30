@@ -21,6 +21,7 @@
     color: { bg: '#FFFFFF', ink: NAVY, accent: AQUA, sub: NAVY, knock: '#FFFFFF' },
     inverse: { bg: NAVY, ink: '#FFFFFF', accent: '#5CC8E4', sub: '#CFE3EE', knock: NAVY },
     mono: { bg: '#FFFFFF', ink: NAVY, accent: NAVY, sub: NAVY, knock: '#FFFFFF' },
+    monoWhite: { bg: NAVY, ink: '#FFFFFF', accent: '#FFFFFF', sub: '#FFFFFF', knock: NAVY },
   };
 
   // Local fonts so the logo renders identically offline (event venues).
@@ -54,7 +55,7 @@
   // ---------- helpers ----------
   // Sampled sine: `halfWaves` humps over `width`; first hump goes up. `phase` animates it.
   function sinePath(ctx, x0, y0, width, amp, halfWaves, phase) {
-    const steps = Math.max(24, Math.round(width));
+    const steps = 480; // dense enough to stay smooth in large exports
     ctx.moveTo(x0, y0 - amp * Math.sin(phase));
     for (let i = 1; i <= steps; i++) {
       const t = i / steps;
@@ -389,9 +390,12 @@
   }
 
   function firmaLayout(ctx, opts) {
-    const size = 72, pad = 40;
+    const size = 72;
     ctx.font = font(600, size, 'Sora');
     const cap = capHeight(ctx);
+    // Clear space = height of the A, built into the canvas bounds.
+    const pad = Math.round(cap * 1.03);
+    const tag = opts.tagline !== false;
     const iBox = ctx.measureText('I');
     const stem = iBox.actualBoundingBoxLeft + iBox.actualBoundingBoxRight;
     const wQua = ctx.measureText('qua').width;
@@ -412,7 +416,7 @@
     const baseline = pad + cap * 1.03;
     const textX = markX + rightEdge * s + size * 0.035;
     const textW = wQua + wSpec;
-    const lockW = textX + textW + pad, lockH = baseline + 34 + 14 + pad - 6;
+    const lockW = textX + textW + pad, lockH = baseline + (tag ? 34 : 14) + pad;
 
     let W = lockW, H = lockH;
     if (opts.stage === '16:9') { W = lockW * 1.4; H = (W * 9) / 16; }
@@ -420,7 +424,7 @@
 
     const drop = dropPolygon(apexY);
     return {
-      W, H, s, sw, cap, stem, size, apexY, waveW,
+      W, H, s, sw, cap, stem, size, apexY, waveW, tag,
       markX: markX + ox, baseline: baseline + oy, textX: textX + ox, wQua, textW,
       rightFootX: poly[1][0],
       poly, D: resample(drop.pts, N_PTS), k: drop.k,
@@ -453,7 +457,8 @@
     // drop -> triangle -> Λ, delayed by its height so the change flows downward.
     const k = L.k, span = 96 - L.apexY, crotchY = L.poly[3][1];
     const m1 = clamp01(u / T.split);
-    const shape = L.D.map((p, i) => {
+    // At rest the A uses its exact 6-vertex outline (crisp corners in large exports).
+    const shape = u >= 1 ? L.poly : L.D.map((p, i) => {
       const down = clamp01((p[1] - L.apexY) / span);
       const ui = clamp01((u - down * T.stagger) / (1 - T.stagger));
       if (ui <= T.split) {
@@ -477,7 +482,7 @@
       const alive = 1 - m1; // spectrum shimmer fades out as the stripes fill
       for (let i = 0; i < n; i++) {
         const dist = Math.abs(i - 4) / 4;
-        const shimmer = 0.16 * alive * Math.sin(time * 3.2 + i * 0.9);
+        const shimmer = time == null ? 0 : 0.16 * alive * Math.sin(time * 3.2 + i * 0.9);
         const fillK = easeSine(clamp01(m1 * 1.7 - dist * 0.7));
         const f = Math.min(1.06, lerp(base * (1 + shimmer), 1.06, fillK));
         mctx.fillRect(x0 + (i + 0.5) * pitch - (f * pitch) / 2, -40, f * pitch, 200);
@@ -575,7 +580,7 @@
       ctx.restore();
     }
     const gk = seg(time, ...T.tag);
-    if (gk > 0) {
+    if (gk > 0 && L.tag) {
       ctx.save();
       ctx.globalAlpha = easeOut(gk);
       ctx.fillStyle = t.accent;
@@ -613,7 +618,31 @@
     };
   }
 
-  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(1.4), 'q-onda': qOnda, monograma, espectro, sello };
+  // Standalone symbols (square): the A, or the drop, at their resting state.
+  function symbolConcept(u) {
+    return (ctx, t, phase, draw) => {
+      const L = firmaLayout(ctx, {});
+      const S = 240, markH = 96 - L.apexY;
+      if (!draw) return { w: S, h: S };
+      const sc = (S * 0.66) / markH;
+      const tx = S / 2 - 50 * sc, ty = S / 2 - (L.apexY + markH / 2) * sc;
+      const cw = ctx.canvas.width, ch = ctx.canvas.height;
+      const lay = document.createElement('canvas');
+      lay.width = cw; lay.height = ch;
+      const mctx = lay.getContext('2d');
+      mctx.setTransform(ctx.getTransform());
+      mctx.translate(tx, ty);
+      mctx.scale(sc, sc);
+      drawMark(mctx, L, t, u, phase, null);
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(lay, 0, 0);
+      ctx.restore();
+      return { w: S, h: S };
+    };
+  }
+
+  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(1.4), 'simbolo-a': symbolConcept(1), 'simbolo-gota': symbolConcept(0), 'q-onda': qOnda, monograma, espectro, sello };
 
   // ---------- public API ----------
   function render(canvas, opts = {}) {
