@@ -325,6 +325,11 @@
     return [apex(o), foot(pR(o), dR), foot(pR(-o), dR), apex(-o), foot(pL(-o), dL), foot(pL(o), dL)];
   }
 
+  // Same Λ with its crotch moved to height y (y = 96 gives a solid triangle).
+  function withCrotch(poly, y) {
+    return poly.map((p, i) => (i === 3 ? [50, y] : p));
+  }
+
   function resample(poly, n) {
     const pts = [...poly, poly[0]];
     const cum = [0];
@@ -396,35 +401,59 @@
       W, H, s, sw, cap, stem, size, apexY, waveW,
       markX: markX + ox, baseline: baseline + oy, textX: textX + ox, wQua, textW,
       rightFootX: poly[1][0],
-      A: resample(poly, N_PTS), D: resample(drop.pts, N_PTS), k: drop.k,
+      poly, D: resample(drop.pts, N_PTS), k: drop.k,
+      Tri: resample(withCrotch(poly, 96), N_PTS),
       aBox: [poly[5][0], poly[1][0]],
     };
   }
 
   // Timeline (seconds).
-  const T = { dropIn: [0, 0.7], morph: [1.2, 2.3], camera: [1.3, 2.5], text: [2.35, 3.3], tag: [3.1, 3.8], end: 3.8 };
+  const T = {
+    fall: [0, 0.85],        // drop falls, stretched
+    settle: [0.85, 2.3],    // impact squash + damped wobble, ripples
+    fill: [2.3, 3.5],       // stripes fill centre-out; drop rounds into a solid triangle
+    open: [3.3, 4.3],       // base opens from the centre: the legs of the A appear
+    camera: [3.5, 4.7],     // mark shrinks into the initial-letter position
+    text: [4.5, 5.5],       // "quaSpecter" slides out from behind the A
+    tag: [5.3, 6.0],
+    end: 6.0,
+  };
+  const easeSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
+  const easeIn2 = (x) => x * x;
 
-  function drawMark(mctx, L, t, m, phase) {
-    // m: morph progress 0 (drop) -> 1 (A)
-    const shape = L.D.map((p, i) => [lerp(p[0], L.A[i][0], m), lerp(p[1], L.A[i][1], m)]);
+  function drawMark(mctx, L, t, m1, m2, phase, time) {
+    // m1: drop -> solid triangle (+ stripes fill); m2: crotch rises, triangle -> Λ.
     const k = L.k;
+    let shape;
+    if (m2 <= 0) {
+      shape = L.D.map((p, i) => [lerp(p[0], L.Tri[i][0], m1), lerp(p[1], L.Tri[i][1], m1)]);
+    } else {
+      shape = resample(withCrotch(L.poly, lerp(96, L.poly[3][1], m2)), N_PTS);
+    }
     mctx.save();
     mctx.beginPath();
     shape.forEach(([x, y], i) => (i ? mctx.lineTo(x, y) : mctx.moveTo(x, y)));
     mctx.closePath();
     mctx.fillStyle = t.ink;
-    if (m >= 0.999) {
+    if (m1 >= 0.999) {
       mctx.fill();
     } else {
       mctx.clip();
-      const x0 = lerp(50 - 55 * k, L.aBox[0] - 2, m), x1 = lerp(50 + 55 * k, L.aBox[1] + 2, m);
-      const n = 9, pitch = (x1 - x0) / n;
-      const f = lerp(8 / 12.75, 1.04, easeOut(m));
-      for (let i = 0; i < n; i++) mctx.fillRect(x0 + (i + 0.5) * pitch - (f * pitch) / 2, -40, f * pitch, 200);
+      const x0 = lerp(50 - 55 * k, L.aBox[0] - 2, m1), x1 = lerp(50 + 55 * k, L.aBox[1] + 2, m1);
+      const n = 9, pitch = (x1 - x0) / n, base = 8 / 12.75;
+      const alive = 1 - m1; // spectrum shimmer fades out as the stripes fill
+      for (let i = 0; i < n; i++) {
+        const dist = Math.abs(i - 4) / 4;
+        const shimmer = 0.16 * alive * Math.sin(time * 3.2 + i * 0.9);
+        const fillK = easeSine(clamp01(m1 * 1.7 - dist * 0.7));
+        const f = Math.min(1.06, lerp(base * (1 + shimmer), 1.06, fillK));
+        mctx.fillRect(x0 + (i + 0.5) * pitch - (f * pitch) / 2, -40, f * pitch, 200);
+      }
     }
     mctx.restore();
 
-    // Wave: knock a gap out of the mark, then draw the wave (works on transparent too).
+    // Wave: knock a gap out of the mark, then draw it (clean on transparent exports).
+    const m = easeSine((m1 + m2) / 2);
     const wx = lerp(50 - 49 * k, 0, m), ww = lerp(98 * k, 100, m);
     const wy = lerp(L.apexY + 88 * k, 65, m), amp = lerp(7 * k, 6.5, m);
     const stroke = lerp(5.5 * k * 1.25, L.waveW, m);
@@ -444,18 +473,51 @@
 
   let layer = null;
   function drawFirma(ctx, L, t, time, phase) {
-    const m = ease(seg(time, ...T.morph));
+    const m1 = easeSine(seg(time, ...T.fill));
+    const m2 = easeSine(seg(time, ...T.open));
     const cam = ease(seg(time, ...T.camera));
-    const inK = easeOut(seg(time, ...T.dropIn));
 
     // Camera: big and centred -> final lockup position.
-    const markH = 96 - L.apexY;
-    const s0 = (L.H * 0.62) / markH;
-    const cx0 = L.W / 2 - 50 * s0, cy0 = L.H / 2 - (L.apexY + markH / 2) * s0;
+    const markH = 96 - L.apexY, midY = L.apexY + markH / 2;
+    const s0 = (L.H * 0.58) / markH;
+    const cx0 = L.W / 2 - 50 * s0, cy0 = L.H / 2 - midY * s0;
     const s1 = L.s, cx1 = L.markX, cy1 = L.baseline - 96 * s1;
-    const sc = lerp(s0, s1, cam) * lerp(0.86, 1, inK);
-    const tx = lerp(cx0, cx1, cam) + (lerp(s0, s1, cam) - sc) * 50;
-    const ty = lerp(cy0, cy1, cam) + (lerp(s0, s1, cam) - sc) * (L.apexY + markH / 2);
+    const sc = lerp(s0, s1, cam);
+    let tx = lerp(cx0, cx1, cam), ty = lerp(cy0, cy1, cam);
+
+    // Life: fall (gravity + stretch), then impact squash with a damped wobble.
+    let sx = 1, sy = 1, alpha = 1;
+    const fk = seg(time, ...T.fall);
+    if (time < T.fall[1]) {
+      const g = easeIn2(fk);
+      ty -= (1 - g) * (L.H * 0.9);
+      sy = lerp(1.0, 1.22, g); sx = lerp(1.0, 0.86, g);
+      alpha = clamp01(fk * 5);
+    } else {
+      const d = time - T.settle[0];
+      const q = 0.2 * Math.exp(-d * 4.2) * Math.cos(d * 13);
+      sy = 1 - q; sx = 1 + q * 0.75;
+    }
+    // Scale about the drop's base while it lands, so it squashes onto the ground.
+    const pivotX = 50, pivotY = 96;
+
+    // Ripples on impact.
+    const rd = time - T.settle[0];
+    if (rd > 0 && rd < 1.4) {
+      ctx.save();
+      ctx.strokeStyle = t.accent;
+      for (const delay of [0, 0.22]) {
+        const p = clamp01((rd - delay) / 1.15);
+        if (p <= 0 || p >= 1) continue;
+        const rx = lerp(30, 118, easeOut(p)) * sc;
+        ctx.globalAlpha = 0.45 * (1 - p);
+        ctx.lineWidth = lerp(3, 0.8, p) * sc;
+        ctx.beginPath();
+        ctx.ellipse(tx + 50 * sc, ty + 97 * sc, rx, rx * 0.16, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     // Text slides out from behind the A (drawn first, clipped to the right of the A).
     const tk = seg(time, ...T.text);
@@ -495,10 +557,13 @@
     mctx.setTransform(ctx.getTransform());
     mctx.translate(tx, ty);
     mctx.scale(sc, sc);
-    drawMark(mctx, L, t, m, phase);
+    mctx.translate(pivotX, pivotY);
+    mctx.scale(sx, sy);
+    mctx.translate(-pivotX, -pivotY);
+    drawMark(mctx, L, t, m1, m2, phase, time);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = inK;
+    ctx.globalAlpha = alpha;
     ctx.drawImage(layer, 0, 0);
     ctx.restore();
   }
@@ -511,7 +576,7 @@
     };
   }
 
-  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(1.0), 'q-onda': qOnda, monograma, espectro, sello };
+  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(2.4), 'q-onda': qOnda, monograma, espectro, sello };
 
   // ---------- public API ----------
   function render(canvas, opts = {}) {
