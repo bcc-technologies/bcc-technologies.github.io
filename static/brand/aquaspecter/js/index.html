@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AquaSpecter — Logo</title>
+  <style>
+    :root { --navy: #0B2A4A; --aqua: #1497B8; --bg: #EEF2F6; --card: #FFFFFF; --muted: #46607A; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--navy); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    header { padding: 20px 16px 8px; max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 20px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; max-width: 1100px; margin: 0 auto; padding: 12px 16px; }
+    .seg { display: inline-flex; background: var(--card); border-radius: 8px; padding: 3px; gap: 2px; }
+    .seg button { border: 0; background: transparent; padding: 7px 12px; border-radius: 6px; font: inherit; color: var(--navy); cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+    label.chk { display: inline-flex; gap: 6px; align-items: center; background: var(--card); padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+    .dl { border: 0; background: var(--aqua); color: #fff; padding: 9px 14px; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
+    main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 40px; }
+    .stage { border-radius: 12px; padding: clamp(16px, 5vw, 56px); display: grid; place-items: center; min-height: 340px; transition: background .2s; }
+    .stage canvas { width: min(100%, 860px); height: auto; display: block; }
+    .stage.square canvas { width: min(100%, 420px); }
+    .note { color: var(--muted); margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header><h1>AquaSpecter — logo en JavaScript (Canvas)</h1></header>
+
+  <div class="bar">
+    <div class="seg" id="concept" role="group" aria-label="Concepto">
+      <button data-v="monograma" aria-pressed="true">Monograma A</button>
+      <button data-v="q-onda">Q-Onda</button>
+      <button data-v="espectro">Espectro</button>
+      <button data-v="sello">Sello</button>
+    </div>
+    <div class="seg" id="theme" role="group" aria-label="Tema">
+      <button data-v="color" aria-pressed="true">Color</button>
+      <button data-v="inverse">Fondo oscuro</button>
+      <button data-v="mono">Una tinta</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="anim"> Animar onda</label>
+    <label class="chk"><input type="checkbox" id="transp"> PNG transparente</label>
+    <button class="dl" id="dl">Descargar PNG (4x)</button>
+  </div>
+
+  <main>
+    <div class="stage" id="stage"><canvas id="logo" role="img" aria-label="Logo AquaSpecter"></canvas></div>
+    <p class="note">La animación es para pantallas del evento; para impresión descarga el PNG a 4x (o pide la exportación a mayor escala).</p>
+  </main>
+
+  <script src="aquaspecter-logo.js"></script>
+  <script>
+    const state = { concept: 'monograma', theme: 'color', anim: false, transparent: false };
+    const canvas = document.getElementById('logo');
+    const stage = document.getElementById('stage');
+    let stop = () => {};
+
+    const params = new URLSearchParams(location.search);
+    for (const k of ['concept', 'theme']) if (params.get(k)) state[k] = params.get(k);
+    if (params.get('anim') === '1') state.anim = true;
+
+    function draw() {
+      stop();
+      stage.style.background = state.theme === 'inverse' ? '#0B2A4A' : '#FFFFFF';
+      stage.classList.toggle('square', state.concept === 'sello');
+      const opts = { concept: state.concept, theme: state.theme };
+      stop = state.anim ? AquaSpecterLogo.animate(canvas, opts) : (AquaSpecterLogo.render(canvas, opts), () => {});
+    }
+
+    function bindSeg(id, key) {
+      const el = document.getElementById(id);
+      const sync = () => el.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state[key])));
+      el.addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        state[key] = b.dataset.v;
+        sync();
+        draw();
+      });
+      sync();
+    }
+    bindSeg('concept', 'concept');
+    bindSeg('theme', 'theme');
+
+    const anim = document.getElementById('anim');
+    anim.checked = state.anim;
+    anim.addEventListener('change', () => { state.anim = anim.checked; draw(); });
+    document.getElementById('transp').addEventListener('change', (e) => { state.transparent = e.target.checked; });
+
+    document.getElementById('dl').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = AquaSpecterLogo.toPNG({ concept: state.concept, theme: state.theme, transparent: state.transparent, scale: 4 });
+      a.download = `aquaspecter-${state.concept}-${state.theme}.png`;
+      a.click();
+    });
+
+    AquaSpecterLogo.ready().then(draw);
+  </script>
+</body>
+</html>
