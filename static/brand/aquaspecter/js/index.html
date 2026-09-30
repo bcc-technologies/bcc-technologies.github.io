@@ -28,7 +28,9 @@
 
   <div class="bar">
     <div class="seg" id="concept" role="group" aria-label="Concepto">
-      <button data-v="monograma" aria-pressed="true">Monograma A</button>
+      <button data-v="firma" aria-pressed="true">Firma (gota → A)</button>
+      <button data-v="gota">Gota</button>
+      <button data-v="monograma">Monograma A</button>
       <button data-v="q-onda">Q-Onda</button>
       <button data-v="espectro">Espectro</button>
       <button data-v="sello">Sello</button>
@@ -38,19 +40,22 @@
       <button data-v="inverse">Fondo oscuro</button>
       <button data-v="mono">Una tinta</button>
     </div>
+    <button class="dl" id="play">▶ Reproducir intro</button>
     <label class="chk"><input type="checkbox" id="anim"> Animar onda</label>
+    <label class="chk"><input type="checkbox" id="stage169"> Pantalla 16:9</label>
+    <label class="chk"><input type="checkbox" id="loop"> Repetir intro</label>
     <label class="chk"><input type="checkbox" id="transp"> PNG transparente</label>
     <button class="dl" id="dl">Descargar PNG (4x)</button>
   </div>
 
   <main>
     <div class="stage" id="stage"><canvas id="logo" role="img" aria-label="Logo AquaSpecter"></canvas></div>
-    <p class="note">La animación es para pantallas del evento; para impresión descarga el PNG a 4x (o pide la exportación a mayor escala).</p>
+    <p class="note">“Firma”: la gota se transforma en la A y “quaSpecter” sale de detrás. La animación es para pantallas del evento; para impresión descarga el PNG a 4x (o pide la exportación a mayor escala).</p>
   </main>
 
   <script src="aquaspecter-logo.js"></script>
   <script>
-    const state = { concept: 'monograma', theme: 'color', anim: false, transparent: false };
+    const state = { concept: 'firma', theme: 'color', anim: false, transparent: false, stage: false, loop: false };
     const canvas = document.getElementById('logo');
     const stage = document.getElementById('stage');
     let stop = () => {};
@@ -63,7 +68,7 @@
       stop();
       stage.style.background = state.theme === 'inverse' ? '#0B2A4A' : '#FFFFFF';
       stage.classList.toggle('square', state.concept === 'sello');
-      const opts = { concept: state.concept, theme: state.theme };
+      const opts = { concept: state.concept, theme: state.theme, stage: state.stage ? '16:9' : undefined };
       stop = state.anim ? AquaSpecterLogo.animate(canvas, opts) : (AquaSpecterLogo.render(canvas, opts), () => {});
     }
 
@@ -82,6 +87,18 @@
     bindSeg('concept', 'concept');
     bindSeg('theme', 'theme');
 
+    function play() {
+      stop();
+      if (state.concept !== 'firma' && state.concept !== 'gota') state.concept = 'firma';
+      document.querySelectorAll('#concept button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state.concept)));
+      stage.style.background = state.theme === 'inverse' ? '#0B2A4A' : '#FFFFFF';
+      stage.classList.remove('square');
+      stop = AquaSpecterLogo.intro(canvas, { theme: state.theme, stage: state.stage ? '16:9' : undefined, loop: state.loop, flow: state.anim });
+    }
+    document.getElementById('play').addEventListener('click', play);
+    document.getElementById('stage169').addEventListener('change', (e) => { state.stage = e.target.checked; draw(); });
+    document.getElementById('loop').addEventListener('change', (e) => { state.loop = e.target.checked; });
+
     const anim = document.getElementById('anim');
     anim.checked = state.anim;
     anim.addEventListener('change', () => { state.anim = anim.checked; draw(); });
@@ -89,12 +106,12 @@
 
     document.getElementById('dl').addEventListener('click', () => {
       const a = document.createElement('a');
-      a.href = AquaSpecterLogo.toPNG({ concept: state.concept, theme: state.theme, transparent: state.transparent, scale: 4 });
+      a.href = AquaSpecterLogo.toPNG({ concept: state.concept, theme: state.theme, transparent: state.transparent, stage: state.stage ? '16:9' : undefined, scale: 4 });
       a.download = `aquaspecter-${state.concept}-${state.theme}.png`;
       a.click();
     });
 
-    AquaSpecterLogo.ready().then(draw);
+    AquaSpecterLogo.ready().then(() => (params.get('intro') === '1' ? play() : draw()));
   </script>
 </body>
 </html>

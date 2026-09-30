@@ -6,7 +6,9 @@
  *   const stop = AquaSpecterLogo.animate(canvas, { concept: 'sello' });
  *   const png = AquaSpecterLogo.toPNG({ concept: 'monograma', scale: 4 });
  *
- * concept: 'monograma' | 'q-onda' | 'espectro' | 'sello'
+ *   const stop2 = AquaSpecterLogo.intro(canvas, { stage: '16:9', loop: true });
+ *
+ * concept: 'firma' | 'gota' | 'monograma' | 'q-onda' | 'espectro' | 'sello'
  * theme:   'color' | 'inverse' | 'mono'
  */
 (function (global) {
@@ -296,7 +298,220 @@
     return { w, h };
   }
 
-  const CONCEPTS = { 'q-onda': qOnda, monograma, espectro, sello };
+  // ---------- 5. Firma: gota -> A, "quaSpecter" sale de detrás de la A ----------
+  // Geometry lives in "A units": feet on y = 96, apex on top, x roughly 0..100.
+  const N_PTS = 240;
+  const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const clamp01 = (x) => Math.min(1, Math.max(0, x));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const seg = (time, t0, t1) => clamp01((time - t0) / (t1 - t0));
+
+  // Λ outline (an A without crossbar is a simple polygon, so it morphs cleanly).
+  function lambdaPolygon(sw) {
+    const P0 = [2, 110], Q = [50, 6], P1 = [98, 110], FOOT = 96;
+    const len = Math.hypot(48, 104);
+    const dL = [48 / len, -104 / len], dR = [-48 / len, -104 / len];
+    const nL = [dL[1], -dL[0]], nR = [-dR[1], dR[0]];
+    const pL = (o) => [P0[0] + o * nL[0], P0[1] + o * nL[1]];
+    const pR = (o) => [P1[0] + o * nR[0], P1[1] + o * nR[1]];
+    const apex = (o) => {
+      // Symmetric: apex sits on x = 50, on the offset left line.
+      const p = pL(o), k = (50 - p[0]) / dL[0];
+      return [50, p[1] + k * dL[1]];
+    };
+    const foot = (p, d) => { const k = (FOOT - p[1]) / d[1]; return [p[0] + k * d[0], FOOT]; };
+    const o = sw / 2;
+    return [apex(o), foot(pR(o), dR), foot(pR(-o), dR), apex(-o), foot(pL(-o), dL), foot(pL(o), dL)];
+  }
+
+  function resample(poly, n) {
+    const pts = [...poly, poly[0]];
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const total = cum[cum.length - 1], out = [];
+    let j = 1;
+    for (let i = 0; i < n; i++) {
+      const d = (i / n) * total;
+      while (cum[j] < d) j++;
+      const k = (d - cum[j - 1]) / (cum[j] - cum[j - 1] || 1);
+      out.push([lerp(pts[j - 1][0], pts[j][0], k), lerp(pts[j - 1][1], pts[j][1], k)]);
+    }
+    return out;
+  }
+
+  // Same drop as concept 3, as a dense polyline mapped into A units (tip = apex).
+  function dropPolygon(apexY) {
+    const k = (96 - apexY) / 146;
+    const map = ([x, y]) => [50 + (x - 60) * k, apexY + (y - 4) * k];
+    const quad = (p0, c, p1, out) => {
+      for (let i = 0; i < 40; i++) {
+        const t = i / 40, u = 1 - t;
+        out.push([u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]]);
+      }
+    };
+    const pts = [];
+    quad([60, 4], [78, 40], [102, 70], pts);
+    const a0 = Math.atan2(-30, 42), sweep = Math.PI + 2 * Math.atan2(30, 42);
+    for (let i = 0; i <= 80; i++) {
+      const a = a0 + (sweep * i) / 80;
+      pts.push([60 + 50 * Math.cos(a), 100 + 50 * Math.sin(a)]);
+    }
+    quad([18, 70], [42, 40], [60, 4], pts);
+    return { pts: pts.map(map), k };
+  }
+
+  function firmaLayout(ctx, opts) {
+    const size = 72, pad = 40;
+    ctx.font = font(600, size, 'Sora');
+    const cap = capHeight(ctx);
+    const iBox = ctx.measureText('I');
+    const stem = iBox.actualBoundingBoxLeft + iBox.actualBoundingBoxRight;
+    const wQua = ctx.measureText('qua').width;
+    ctx.font = font(300, size, 'Sora');
+    const wSpec = ctx.measureText('Specter').width;
+
+    // Solve scale so the A matches cap height (+3% overshoot, like a pointed glyph).
+    let s = 0.55, sw = 16, poly;
+    for (let i = 0; i < 4; i++) {
+      sw = stem / s;
+      poly = lambdaPolygon(sw);
+      s = (cap * 1.03) / (96 - poly[0][1]);
+    }
+    const apexY = poly[0][1];
+    const waveW = sw * 0.46;
+    const rightEdge = Math.max(poly[1][0], 100 + waveW / 2);
+    const markX = pad + waveW / 2 * s;
+    const baseline = pad + cap * 1.03;
+    const textX = markX + rightEdge * s + size * 0.035;
+    const textW = wQua + wSpec;
+    const lockW = textX + textW + pad, lockH = baseline + 34 + 14 + pad - 6;
+
+    let W = lockW, H = lockH;
+    if (opts.stage === '16:9') { W = lockW * 1.4; H = (W * 9) / 16; }
+    const ox = (W - lockW) / 2, oy = (H - lockH) / 2;
+
+    const drop = dropPolygon(apexY);
+    return {
+      W, H, s, sw, cap, stem, size, apexY, waveW,
+      markX: markX + ox, baseline: baseline + oy, textX: textX + ox, wQua, textW,
+      rightFootX: poly[1][0],
+      A: resample(poly, N_PTS), D: resample(drop.pts, N_PTS), k: drop.k,
+      aBox: [poly[5][0], poly[1][0]],
+    };
+  }
+
+  // Timeline (seconds).
+  const T = { dropIn: [0, 0.7], morph: [1.2, 2.3], camera: [1.3, 2.5], text: [2.35, 3.3], tag: [3.1, 3.8], end: 3.8 };
+
+  function drawMark(mctx, L, t, m, phase) {
+    // m: morph progress 0 (drop) -> 1 (A)
+    const shape = L.D.map((p, i) => [lerp(p[0], L.A[i][0], m), lerp(p[1], L.A[i][1], m)]);
+    const k = L.k;
+    mctx.save();
+    mctx.beginPath();
+    shape.forEach(([x, y], i) => (i ? mctx.lineTo(x, y) : mctx.moveTo(x, y)));
+    mctx.closePath();
+    mctx.fillStyle = t.ink;
+    if (m >= 0.999) {
+      mctx.fill();
+    } else {
+      mctx.clip();
+      const x0 = lerp(50 - 55 * k, L.aBox[0] - 2, m), x1 = lerp(50 + 55 * k, L.aBox[1] + 2, m);
+      const n = 9, pitch = (x1 - x0) / n;
+      const f = lerp(8 / 12.75, 1.04, easeOut(m));
+      for (let i = 0; i < n; i++) mctx.fillRect(x0 + (i + 0.5) * pitch - (f * pitch) / 2, -40, f * pitch, 200);
+    }
+    mctx.restore();
+
+    // Wave: knock a gap out of the mark, then draw the wave (works on transparent too).
+    const wx = lerp(50 - 49 * k, 0, m), ww = lerp(98 * k, 100, m);
+    const wy = lerp(L.apexY + 88 * k, 65, m), amp = lerp(7 * k, 6.5, m);
+    const stroke = lerp(5.5 * k * 1.25, L.waveW, m);
+    const knock = stroke + lerp(6.5 * k * 1.25, L.sw * 0.26, m);
+    const wave = () => { mctx.beginPath(); sinePath(mctx, wx, wy, ww, amp, 4, phase); };
+    mctx.lineCap = 'round';
+    mctx.globalCompositeOperation = 'destination-out';
+    mctx.lineWidth = knock;
+    wave();
+    mctx.stroke();
+    mctx.globalCompositeOperation = 'source-over';
+    mctx.strokeStyle = t.accent;
+    mctx.lineWidth = stroke;
+    wave();
+    mctx.stroke();
+  }
+
+  let layer = null;
+  function drawFirma(ctx, L, t, time, phase) {
+    const m = ease(seg(time, ...T.morph));
+    const cam = ease(seg(time, ...T.camera));
+    const inK = easeOut(seg(time, ...T.dropIn));
+
+    // Camera: big and centred -> final lockup position.
+    const markH = 96 - L.apexY;
+    const s0 = (L.H * 0.62) / markH;
+    const cx0 = L.W / 2 - 50 * s0, cy0 = L.H / 2 - (L.apexY + markH / 2) * s0;
+    const s1 = L.s, cx1 = L.markX, cy1 = L.baseline - 96 * s1;
+    const sc = lerp(s0, s1, cam) * lerp(0.86, 1, inK);
+    const tx = lerp(cx0, cx1, cam) + (lerp(s0, s1, cam) - sc) * 50;
+    const ty = lerp(cy0, cy1, cam) + (lerp(s0, s1, cam) - sc) * (L.apexY + markH / 2);
+
+    // Text slides out from behind the A (drawn first, clipped to the right of the A).
+    const tk = seg(time, ...T.text);
+    if (tk > 0) {
+      const e = easeOut(tk);
+      const edge = L.markX + L.rightFootX * L.s;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(edge, 0, L.W - edge, L.H);
+      ctx.clip();
+      ctx.globalAlpha = clamp01(tk * 2.5);
+      ctx.fillStyle = t.ink;
+      const dx = lerp(-L.textW * 0.55, 0, e);
+      ctx.font = font(600, L.size, 'Sora');
+      ctx.fillText('qua', L.textX + dx, L.baseline);
+      ctx.font = font(300, L.size, 'Sora');
+      ctx.fillText('Specter', L.textX + L.wQua + dx, L.baseline);
+      ctx.restore();
+    }
+    const gk = seg(time, ...T.tag);
+    if (gk > 0) {
+      ctx.save();
+      ctx.globalAlpha = easeOut(gk);
+      ctx.fillStyle = t.accent;
+      ctx.font = font(400, 14, 'Sora');
+      drawSpaced(ctx, 'BCC TECHNOLOGIES', L.markX + 2, L.baseline + 34 + lerp(6, 0, easeOut(gk)), 0.3 * 14);
+      ctx.restore();
+    }
+
+    // Mark on its own layer so the wave knockout never punches the background.
+    const cw = ctx.canvas.width, ch = ctx.canvas.height;
+    if (!layer) layer = document.createElement('canvas');
+    if (layer.width !== cw || layer.height !== ch) { layer.width = cw; layer.height = ch; }
+    const mctx = layer.getContext('2d');
+    mctx.setTransform(1, 0, 0, 1, 0, 0);
+    mctx.clearRect(0, 0, cw, ch);
+    mctx.setTransform(ctx.getTransform());
+    mctx.translate(tx, ty);
+    mctx.scale(sc, sc);
+    drawMark(mctx, L, t, m, phase);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = inK;
+    ctx.drawImage(layer, 0, 0);
+    ctx.restore();
+  }
+
+  function firmaConcept(time) {
+    return (ctx, t, phase, draw, opts) => {
+      const L = firmaLayout(ctx, opts || {});
+      if (draw) drawFirma(ctx, L, t, opts && opts.time != null ? opts.time : time, phase);
+      return { w: L.W, h: L.H };
+    };
+  }
+
+  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(1.0), 'q-onda': qOnda, monograma, espectro, sello };
 
   // ---------- public API ----------
   function render(canvas, opts = {}) {
@@ -307,7 +522,7 @@
     const phase = opts.phase || 0;
 
     const ctx = canvas.getContext('2d');
-    const { w, h } = concept(ctx, theme, phase, false);
+    const { w, h } = concept(ctx, theme, phase, false, opts);
     const pw = Math.ceil(w * scale), ph = Math.ceil(h * scale);
     if (canvas.width !== pw || canvas.height !== ph) {
       canvas.width = pw;
@@ -323,7 +538,7 @@
       ctx.fillRect(0, 0, w, h);
     }
     ctx.textBaseline = 'alphabetic';
-    concept(ctx, theme, phase, true);
+    concept(ctx, theme, phase, true, opts);
     return { w, h };
   }
 
@@ -345,11 +560,35 @@
     return () => global.cancelAnimationFrame(raf);
   }
 
+  // Intro: drop -> A -> "quaSpecter" slides out. Wave keeps flowing after the intro
+  // unless opts.flow === false. opts.loop restarts it after opts.hold seconds.
+  function intro(canvas, opts = {}) {
+    const reduce = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const base = { ...opts, concept: 'firma' };
+    if (reduce) {
+      render(canvas, { ...base, time: T.end });
+      return () => {};
+    }
+    const speed = opts.speed || 1.6, hold = opts.hold != null ? opts.hold : 3;
+    let raf = 0, start = 0, done = false;
+    const tick = (ts) => {
+      if (!start) start = ts;
+      let time = (ts - start) / 1000;
+      if (opts.loop && time > T.end + hold) { start = ts; time = 0; }
+      const flowing = opts.flow !== false || time < T.end;
+      render(canvas, { ...base, time, phase: flowing ? time * speed : T.end * speed });
+      if (!done && time >= T.end) { done = true; if (opts.onDone) opts.onDone(); }
+      if (flowing || opts.loop || time < T.end) raf = global.requestAnimationFrame(tick);
+    };
+    raf = global.requestAnimationFrame(tick);
+    return () => global.cancelAnimationFrame(raf);
+  }
+
   function toPNG(opts = {}) {
     const c = document.createElement('canvas');
     render(c, { ...opts, scale: opts.scale || 4, cssSize: false });
     return c.toDataURL('image/png');
   }
 
-  global.AquaSpecterLogo = { ready, render, animate, toPNG, concepts: Object.keys(CONCEPTS), themes: Object.keys(THEMES) };
+  global.AquaSpecterLogo = { ready, render, animate, intro, toPNG, timeline: T, concepts: Object.keys(CONCEPTS), themes: Object.keys(THEMES) };
 })(window);
