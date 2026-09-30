@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 170" width="160" height="170" role="img" aria-labelledby="t">
+  <title id="t">AquaSpecter</title>
+  <defs>
+    <linearGradient id="aqg" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1FA3C6"/>
+      <stop offset="1" stop-color="#0E5E8C"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(20 8) scale(1)">
+    <path d="M60 6Q77.78 45.7 102.34 73.4A50 50 0 1 1 17.66 73.4Q42.22 45.7 60 6Z" fill="url(#aqg)"/>
+    <path d="M24 118H96" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" opacity=".6"/>
+    <path d="M33 118A27 27 0 0 1 87 118" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+    <g fill="#FFFFFF"><circle cx="33.85" cy="111.29" r="3.4"/><circle cx="39.2" cy="100.79" r="3.4"/><circle cx="48.5" cy="93.57" r="3.4"/><circle cx="60" cy="91" r="4.4"/><circle cx="71.5" cy="93.57" r="3.4"/><circle cx="80.8" cy="100.79" r="3.4"/><circle cx="86.15" cy="111.29" r="3.4"/></g>
+    <path d="M35 64c5.5-8.5 11-8.5 16.5 0s11 8.5 16.5 0 11-8.5 16.5 0" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round"/>
+  </g>
+</svg>
