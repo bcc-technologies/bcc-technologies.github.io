@@ -330,6 +330,28 @@
     return poly.map((p, i) => (i === 3 ? [50, y] : p));
   }
 
+  // Arc-length samples expressed as (edge, fraction), so the same point can be
+  // re-evaluated on the Λ while its crotch moves (no sliding along the outline).
+  function resampleParams(poly, n) {
+    const m = poly.length, lens = [];
+    for (let j = 0; j < m; j++) {
+      const a = poly[j], b = poly[(j + 1) % m];
+      lens.push(Math.hypot(b[0] - a[0], b[1] - a[1]));
+    }
+    const total = lens.reduce((x, y) => x + y, 0), out = [];
+    let j = 0, acc = 0;
+    for (let i = 0; i < n; i++) {
+      const d = (i / n) * total;
+      while (acc + lens[j] < d) { acc += lens[j]; j++; }
+      out.push([j, (d - acc) / (lens[j] || 1)]);
+    }
+    return out;
+  }
+  function pointOnEdge(poly, [j, f]) {
+    const a = poly[j], b = poly[(j + 1) % poly.length];
+    return [lerp(a[0], b[0], f), lerp(a[1], b[1], f)];
+  }
+
   function resample(poly, n) {
     const pts = [...poly, poly[0]];
     const cum = [0];
@@ -403,6 +425,7 @@
       rightFootX: poly[1][0],
       poly, D: resample(drop.pts, N_PTS), k: drop.k,
       Tri: resample(withCrotch(poly, 96), N_PTS),
+      TriP: resampleParams(withCrotch(poly, 96), N_PTS),
       aBox: [poly[5][0], poly[1][0]],
     };
   }
@@ -410,26 +433,36 @@
   // Timeline (seconds).
   const T = {
     fall: [0, 0.85],        // drop falls, stretched
-    settle: [0.85, 2.3],    // impact squash + damped wobble, ripples
-    morph: [2.3, 3.9],      // one continuous curve: drop -> triangle (stripes fill) -> A opens
-    split: 0.55,            // share of the morph spent reaching the triangle
-    camera: [3.3, 4.5],     // mark shrinks into the initial-letter position
-    text: [4.3, 5.3],       // "quaSpecter" slides out from behind the A
-    tag: [5.1, 5.8],
-    end: 5.8,
+    settle: 0.85,           // impact: squash + damped wobble, ripples
+    morph: [1.45, 3.35],    // starts inside the wobble: drop -> triangle -> A, top to bottom
+    split: 0.52,            // share of each point's path spent reaching the triangle
+    stagger: 0.38,          // how far behind the base follows the tip
+    camera: [2.55, 4.05],   // overlaps the legs settling
+    text: [3.55, 4.6],      // starts before the mark has fully landed
+    tag: [4.35, 5.05],
+    end: 5.1,
   };
   const easeSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
   const easeIn2 = (x) => x * x;
 
-  function drawMark(mctx, L, t, m1, m2, phase, time) {
-    // m1: drop -> solid triangle (+ stripes fill); m2: crotch rises, triangle -> Λ.
-    const k = L.k;
-    let shape;
-    if (m2 <= 0) {
-      shape = L.D.map((p, i) => [lerp(p[0], L.Tri[i][0], m1), lerp(p[1], L.Tri[i][1], m1)]);
-    } else {
-      shape = resample(withCrotch(L.poly, lerp(96, L.poly[3][1], m2)), N_PTS);
-    }
+  // Legs open with a small overshoot that settles (derivative 1 at w = 0: no speed jump).
+  const settleIn = (w) => w + 0.6 * Math.sin(Math.PI * w) * w * w;
+
+  function drawMark(mctx, L, t, u, phase, time) {
+    // u: eased global morph progress. Each outline point runs its own path
+    // drop -> triangle -> Λ, delayed by its height so the change flows downward.
+    const k = L.k, span = 96 - L.apexY, crotchY = L.poly[3][1];
+    const m1 = clamp01(u / T.split);
+    const shape = L.D.map((p, i) => {
+      const down = clamp01((p[1] - L.apexY) / span);
+      const ui = clamp01((u - down * T.stagger) / (1 - T.stagger));
+      if (ui <= T.split) {
+        const a = ui / T.split, q = L.Tri[i];
+        return [lerp(p[0], q[0], a), lerp(p[1], q[1], a)];
+      }
+      const w = settleIn((ui - T.split) / (1 - T.split));
+      return pointOnEdge(withCrotch(L.poly, lerp(96, crotchY, w)), L.TriP[i]);
+    });
     mctx.save();
     mctx.beginPath();
     shape.forEach(([x, y], i) => (i ? mctx.lineTo(x, y) : mctx.moveTo(x, y)));
@@ -453,7 +486,7 @@
     mctx.restore();
 
     // Wave: knock a gap out of the mark, then draw it (clean on transparent exports).
-    const m = easeSine((m1 + m2) / 2);
+    const m = u;
     const wx = lerp(50 - 49 * k, 0, m), ww = lerp(98 * k, 100, m);
     const wy = lerp(L.apexY + 88 * k, 65, m), amp = lerp(7 * k, 6.5, m);
     const stroke = lerp(5.5 * k * 1.25, L.waveW, m);
@@ -475,9 +508,7 @@
   function drawFirma(ctx, L, t, time, phase) {
     // A single easing over the whole morph keeps speed up through the triangle (no pause).
     const u = easeSine(seg(time, ...T.morph));
-    const m1 = clamp01(u / T.split);
-    const m2 = clamp01((u - T.split) / (1 - T.split));
-    const cam = ease(seg(time, ...T.camera));
+    const cam = easeSine(seg(time, ...T.camera));
 
     // Camera: big and centred -> final lockup position.
     const markH = 96 - L.apexY, midY = L.apexY + markH / 2;
@@ -496,7 +527,7 @@
       sy = lerp(1.0, 1.22, g); sx = lerp(1.0, 0.86, g);
       alpha = clamp01(fk * 5);
     } else {
-      const d = time - T.settle[0];
+      const d = time - T.settle;
       const q = 0.2 * Math.exp(-d * 4.2) * Math.cos(d * 13);
       sy = 1 - q; sx = 1 + q * 0.75;
     }
@@ -504,7 +535,7 @@
     const pivotX = 50, pivotY = 96;
 
     // Ripples on impact.
-    const rd = time - T.settle[0];
+    const rd = time - T.settle;
     if (rd > 0 && rd < 1.4) {
       ctx.save();
       ctx.strokeStyle = t.accent;
@@ -525,14 +556,18 @@
     const tk = seg(time, ...T.text);
     if (tk > 0) {
       const e = easeOut(tk);
-      const edge = L.markX + L.rightFootX * L.s;
+      // Anchor to the A where it is now, so the text travels with it while it lands.
+      const edge = tx + L.rightFootX * sc;
+      const follow = edge - (L.markX + L.rightFootX * L.s);
+      const by = (ty + 96 * sc) - L.baseline;
       ctx.save();
+      ctx.translate(0, by);
       ctx.beginPath();
-      ctx.rect(edge, 0, L.W - edge, L.H);
+      ctx.rect(edge, -by, L.W - edge, L.H);
       ctx.clip();
       ctx.globalAlpha = clamp01(tk * 2.5);
       ctx.fillStyle = t.ink;
-      const dx = lerp(-L.textW * 0.55, 0, e);
+      const dx = lerp(-L.textW * 0.55, 0, e) + follow;
       ctx.font = font(600, L.size, 'Sora');
       ctx.fillText('qua', L.textX + dx, L.baseline);
       ctx.font = font(300, L.size, 'Sora');
@@ -562,7 +597,7 @@
     mctx.translate(pivotX, pivotY);
     mctx.scale(sx, sy);
     mctx.translate(-pivotX, -pivotY);
-    drawMark(mctx, L, t, m1, m2, phase, time);
+    drawMark(mctx, L, t, u, phase, time);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = alpha;
@@ -578,7 +613,7 @@
     };
   }
 
-  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(2.4), 'q-onda': qOnda, monograma, espectro, sello };
+  const CONCEPTS = { firma: firmaConcept(T.end), gota: firmaConcept(1.4), 'q-onda': qOnda, monograma, espectro, sello };
 
   // ---------- public API ----------
   function render(canvas, opts = {}) {
