@@ -419,7 +419,14 @@
     const lockW = textX + textW + pad, lockH = baseline + (tag ? 34 : 14) + pad;
 
     let W = lockW, H = lockH;
-    if (opts.stage === '16:9') { W = lockW * 1.4; H = (W * 9) / 16; }
+    // Stage: extra room around the lockup so the drop can fall ('16:9' screens, '4:3' heroes…).
+    if (opts.stage) {
+      const [sa, sb] = String(opts.stage).split(':').map(Number);
+      if (sa > 0 && sb > 0) {
+        W = lockW * (opts.stage === '16:9' ? 1.4 : 1.12);
+        H = Math.max((W * sb) / sa, lockH * 1.4);
+      }
+    }
     const ox = (W - lockW) / 2, oy = (H - lockH) / 2;
 
     const drop = dropPolygon(apexY);

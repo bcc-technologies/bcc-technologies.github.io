@@ -265,13 +265,13 @@ window.BCC_PRODUCTS_CONTENT = {
         ],
         "actions": [
           {
-            "label": "Cotizar",
-            "href": "/contactUs.html?demo=1",
+            "label": "Ver producto",
+            "href": "/product_aquaspecter.html",
             "variant": "dark"
           },
           {
             "label": "Ficha rapida",
-            "href": "/contactUs.html?demo=1",
+            "href": "/product_aquaspecter.html",
             "variant": "ghost",
             "detailId": "aqua-specter"
           }
@@ -305,13 +305,13 @@ window.BCC_PRODUCTS_CONTENT = {
         ],
         "actions": [
           {
-            "label": "Hablar con BCC",
-            "href": "/contactUs.html?demo=1",
+            "label": "Ver producto",
+            "href": "/product_aquaspecter.html#tuberia",
             "variant": "dark"
           },
           {
             "label": "Ficha rapida",
-            "href": "/contactUs.html?demo=1",
+            "href": "/product_aquaspecter.html#tuberia",
             "variant": "ghost",
             "detailId": "aqua-specter-inline"
           }
@@ -900,13 +900,13 @@ window.BCC_PRODUCTS_CONTENT = {
         ],
         "actions": [
           {
-            "label": "Get quote",
-            "href": "/en/contactUs.html?demo=1",
+            "label": "View product",
+            "href": "/en/product_aquaspecter.html",
             "variant": "dark"
           },
           {
             "label": "Quick view",
-            "href": "/en/contactUs.html?demo=1",
+            "href": "/en/product_aquaspecter.html",
             "variant": "ghost",
             "detailId": "aqua-specter"
           }
@@ -940,13 +940,13 @@ window.BCC_PRODUCTS_CONTENT = {
         ],
         "actions": [
           {
-            "label": "Talk to BCC",
-            "href": "/en/contactUs.html?demo=1",
+            "label": "View product",
+            "href": "/en/product_aquaspecter.html#inline",
             "variant": "dark"
           },
           {
             "label": "Quick view",
-            "href": "/en/contactUs.html?demo=1",
+            "href": "/en/product_aquaspecter.html#inline",
             "variant": "ghost",
             "detailId": "aqua-specter-inline"
           }

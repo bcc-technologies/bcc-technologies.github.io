@@ -13,8 +13,13 @@
     "map.ing": "MAP-Ing",
     "map-ing": "MAP-Ing",
     "map.med": "MAP Med",
-    "map-med": "MAP Med"
+    "map-med": "MAP Med",
+    "aquaspecter": "AquaSpecter",
+    "aquaspecter-inline": "AquaSpecter de tubería"
   };
+
+  // Instruments are quoted, not licensed.
+  const HARDWARE = new Set(["aquaspecter", "aquaspecter-inline"]);
 
   function init() {
     const params = new URLSearchParams(window.location.search);
@@ -39,6 +44,11 @@
     if (licenseType) addHiddenField(form, "license_type", licenseType);
     if (planId) addHiddenField(form, "commercial_plan", planId);
 
+    if (HARDWARE.has(productKey)) {
+      addHardwareRequest(form, subject, message, product, intent, isEnglish);
+      return;
+    }
+
     if (subject && product) {
       const option = document.createElement("option");
       option.value = `License request: ${product}${licenseTypeLabel ? ` · ${licenseTypeLabel}` : ""}`;
@@ -57,6 +67,26 @@
 
     if (mapNanoPlan) addMapNanoCommercialFields(form, message, mapNanoPlan, intent, isEnglish);
     if (productKey === "map-nano") addMapNanoSavingsEstimateFields(form, params);
+  }
+
+  function addHardwareRequest(form, subject, message, product, intent, isEnglish) {
+    const labels = isEnglish
+      ? { quote: "Quote", pilot: "Pilot request", project: "Custom project" }
+      : { quote: "Cotización", pilot: "Solicitud de piloto", project: "Proyecto a medida" };
+    const label = labels[intent] || labels.quote;
+    const name = isEnglish && product === "AquaSpecter de tubería" ? "Inline AquaSpecter" : product;
+    if (subject) {
+      const option = document.createElement("option");
+      option.value = `${labels[intent] ? intent : "quote"}: ${name}`;
+      option.textContent = `${label} · ${name}`;
+      option.selected = true;
+      subject.append(option);
+    }
+    if (message && !message.value.trim()) {
+      message.value = isEnglish
+        ? `I would like information about ${name}. Sample type / what we want to measure: `
+        : `Me gustaría recibir información sobre ${name}. Tipo de muestra / qué queremos medir: `;
+    }
   }
 
   function addMapNanoSavingsEstimateFields(form, params) {
