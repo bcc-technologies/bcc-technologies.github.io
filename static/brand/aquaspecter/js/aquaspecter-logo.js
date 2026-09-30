@@ -411,12 +411,12 @@
   const T = {
     fall: [0, 0.85],        // drop falls, stretched
     settle: [0.85, 2.3],    // impact squash + damped wobble, ripples
-    fill: [2.3, 3.5],       // stripes fill centre-out; drop rounds into a solid triangle
-    open: [3.3, 4.3],       // base opens from the centre: the legs of the A appear
-    camera: [3.5, 4.7],     // mark shrinks into the initial-letter position
-    text: [4.5, 5.5],       // "quaSpecter" slides out from behind the A
-    tag: [5.3, 6.0],
-    end: 6.0,
+    morph: [2.3, 3.9],      // one continuous curve: drop -> triangle (stripes fill) -> A opens
+    split: 0.55,            // share of the morph spent reaching the triangle
+    camera: [3.3, 4.5],     // mark shrinks into the initial-letter position
+    text: [4.3, 5.3],       // "quaSpecter" slides out from behind the A
+    tag: [5.1, 5.8],
+    end: 5.8,
   };
   const easeSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
   const easeIn2 = (x) => x * x;
@@ -473,8 +473,10 @@
 
   let layer = null;
   function drawFirma(ctx, L, t, time, phase) {
-    const m1 = easeSine(seg(time, ...T.fill));
-    const m2 = easeSine(seg(time, ...T.open));
+    // A single easing over the whole morph keeps speed up through the triangle (no pause).
+    const u = easeSine(seg(time, ...T.morph));
+    const m1 = clamp01(u / T.split);
+    const m2 = clamp01((u - T.split) / (1 - T.split));
     const cam = ease(seg(time, ...T.camera));
 
     // Camera: big and centred -> final lockup position.
