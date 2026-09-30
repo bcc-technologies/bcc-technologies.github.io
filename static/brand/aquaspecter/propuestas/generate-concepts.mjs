@@ -1,10 +1,20 @@
 // Four distinct AquaSpecter logo directions, text outlined to paths.
 import fs from 'node:fs';
+import path from 'node:path';
 import opentype from 'opentype.js';
+import { createRequire } from 'node:module';
+
+// Fonts are resolved from the installed devDependencies, whatever the cwd.
+const require = createRequire(import.meta.url);
+function fontFile(family, weight) {
+  const dir = path.dirname(require.resolve(`@fontsource/${family}/package.json`));
+  const buf = fs.readFileSync(path.join(dir, 'files', `${family}-latin-${weight}-normal.woff`));
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
 
 const OUT = process.argv[2] || 'concepts';
 fs.mkdirSync(OUT, { recursive: true });
-const load = (fam, w) => opentype.parse(fs.readFileSync(`node_modules/@fontsource/${fam}/files/${fam}-latin-${w}-normal.woff`).buffer);
+const load = (fam, w) => opentype.parse(fontFile(fam, w));
 const manrope7 = load('manrope', 700), manrope5 = load('manrope', 500), manrope8 = load('manrope', 800);
 const sora6 = load('sora', 600), sora3 = load('sora', 300), sora4 = load('sora', 400);
 

@@ -32,5 +32,5 @@ Tipografía: Montserrat 700 / 400 / 500 (SIL Open Font License).
 - No deformar, rotar, cambiar colores ni añadir sombras.
 
 ## Regenerar
-`generate-logo.mjs` produce todos los SVG (requiere `opentype.js` y `@fontsource/montserrat`):
-`node generate-logo.mjs <carpeta-salida>`
+`generate-logo.mjs` produce todos los SVG. Sus dependencias (`opentype.js`, `@fontsource/*`) están en `devDependencies`:
+`npm install` y luego `node static/brand/aquaspecter/generate-logo.mjs <carpeta-salida>` (funciona desde cualquier carpeta).

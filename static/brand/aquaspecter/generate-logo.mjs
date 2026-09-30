@@ -2,11 +2,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import opentype from 'opentype.js';
+import { createRequire } from 'node:module';
+
+// Fonts are resolved from the installed devDependencies, whatever the cwd.
+const require = createRequire(import.meta.url);
+function fontFile(family, weight) {
+  const dir = path.dirname(require.resolve(`@fontsource/${family}/package.json`));
+  const buf = fs.readFileSync(path.join(dir, 'files', `${family}-latin-${weight}-normal.woff`));
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
 
 const OUT = process.argv[2];
 fs.mkdirSync(OUT, { recursive: true });
 
-const F = (w) => opentype.parse(fs.readFileSync(`node_modules/@fontsource/montserrat/files/montserrat-latin-${w}-normal.woff`).buffer);
+const F = (w) => opentype.parse(fontFile('montserrat', w));
 const bold = F(700), regular = F(400), medium = F(500);
 
 const C = {
@@ -18,13 +27,16 @@ const C = {
 };
 
 const r = (n) => Math.round(n * 100) / 100;
+// Own serializer: opentype's optimized path output can glue numbers ("0.330 0.33").
+const pd = (p) => p.commands.map((c) => c.type === 'Z' ? 'Z'
+  : c.type + [c.x1, c.y1, c.x2, c.y2, c.x, c.y].filter((v) => v !== undefined).map(r).join(' ')).join('');
 
 // Text -> path, returns {d, width}. letterSpacing in em.
 function textPath(font, str, x, y, size, ls = 0) {
   let cx = x, d = '';
   const glyphs = font.stringToGlyphs(str);
   glyphs.forEach((g, i) => {
-    d += g.getPath(cx, y, size).toPathData(2);
+    d += pd(g.getPath(cx, y, size));
     cx += (g.advanceWidth / font.unitsPerEm) * size;
     if (i < glyphs.length - 1) {
       cx += (font.getKerningValue(g, glyphs[i + 1]) / font.unitsPerEm) * size;
