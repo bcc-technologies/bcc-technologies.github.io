@@ -317,9 +317,28 @@
     return `${occupied} de ${capacity} ${capacity === 1 ? "plaza ocupada" : "plazas ocupadas"}`;
   }
 
+  // MAP-Nano is a web app with its own login - today a licensed user lands
+  // on a marketing/info page here and still has to type credentials again
+  // over there. renderMapNanoLaunchAction hands off the session this page
+  // already has (via /auth/callback#access_token=...) so "open it" actually
+  // opens it, signed in. Other MAP products don't have this web app yet, so
+  // they're untouched - still just the "Abrir información" link below.
+  function renderMapNanoLaunchAction(item) {
+    return ui.action({
+      label: isEnglish() ? "Open MAP-Nano" : "Abrir MAP-Nano",
+      icon: "external-link",
+      className: "btn btn-primary",
+      data: { mapNanoLaunch: item.license_id || item.account_id || "session" }
+    });
+  }
+
   function renderCurrentAccessActions(product, item) {
+    const canLaunchMapNano = item.product_key === "map.nano" && !["suspended", "cancelled", "expired", "revoked"].includes(item.status);
+    const launchAction = canLaunchMapNano ? renderMapNanoLaunchAction(item) : "";
+
     if (item.canManage) {
-      return ui.action({ label: "Gestionar plazas", icon: "users", className: "btn btn-primary", data: { clientLicenseManage: item.license_id } });
+      const manageAction = ui.action({ label: "Gestionar plazas", icon: "users", className: launchAction ? "btn btn-ghost" : "btn btn-primary", data: { clientLicenseManage: item.license_id } });
+      return `${launchAction}${manageAction}`;
     }
     if (["expiring", "suspended", "cancelled", "expired", "revoked"].includes(item.status)) {
       return ui.action({
@@ -329,7 +348,8 @@
         data: { clientLicenseRequest: item.product_key, clientLicenseType: item.license_type || "named_user" }
       });
     }
-    return ui.action({ label: "Abrir información", href: product.productHref, icon: "external-link", className: "btn btn-ghost" });
+    const infoAction = ui.action({ label: "Abrir información", href: product.productHref, icon: "external-link", className: "btn btn-ghost" });
+    return `${launchAction}${infoAction}`;
   }
 
   function renderBillingAction(item, subscription) {
@@ -1173,7 +1193,53 @@
     if (focus) root.querySelector('[data-client-suite-product][aria-selected="true"]')?.focus();
   }
 
+  const MAP_NANO_APP_URL = "https://map-nano.onrender.com";
+
+  // Handoff, not a shared cookie: MAP-Nano is a different origin, so this
+  // page's session (in this origin's localStorage) is invisible to it no
+  // matter what. Supabase's own email-confirmation links solve the same
+  // problem the same way - tokens in the URL fragment - and MAP-Nano's
+  // /auth/callback already consumes that exact format (it has to, to handle
+  // its own confirmation links), so this reuses that endpoint rather than
+  // needing anything new on that side.
+  async function launchMapNanoApp(trigger) {
+    const originalLabel = trigger.querySelector("span:not(.sr-only)")?.textContent;
+    trigger.disabled = true;
+    const label = trigger.querySelector("span:not(.sr-only)");
+    if (label) label.textContent = isEnglish() ? "Opening..." : "Abriendo...";
+
+    try {
+      const supabase = await window.BCCAuth.loadSupabaseClient();
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const session = data?.session;
+      if (!session?.access_token || !session?.refresh_token) {
+        throw new Error("No hay una sesión activa de Supabase.");
+      }
+      const params = new URLSearchParams({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_in: String(session.expires_in ?? 3600),
+        token_type: "bearer"
+      });
+      window.open(`${MAP_NANO_APP_URL}/auth/callback#${params.toString()}`, "_blank", "noopener");
+    } catch (error) {
+      // Fails open to the status quo (manual login on MAP-Nano) rather than
+      // leaving the button stuck or silently doing nothing.
+      console.error("No se pudo abrir MAP-Nano con sesión compartida.", error);
+      window.open(MAP_NANO_APP_URL, "_blank", "noopener");
+    } finally {
+      trigger.disabled = false;
+      if (label && originalLabel) label.textContent = originalLabel;
+    }
+  }
+
   async function handleClick(event) {
+    const mapNanoLaunchButton = event.target.closest("[data-map-nano-launch]");
+    if (mapNanoLaunchButton) {
+      void launchMapNanoApp(mapNanoLaunchButton);
+      return;
+    }
     const suiteTab = event.target.closest("[data-client-suite-product]");
     if (suiteTab) {
       activateSuiteProduct(suiteTab.dataset.clientSuiteProduct, { focus: true });
