@@ -1209,10 +1209,7 @@
     if (label) label.textContent = isEnglish() ? "Opening..." : "Abriendo...";
 
     try {
-      const supabase = await window.BCCAuth.loadSupabaseClient();
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      const session = data?.session;
+      const session = await repository.getSessionTokens();
       if (!session?.access_token || !session?.refresh_token) {
         throw new Error("No hay una sesión activa de Supabase.");
       }
