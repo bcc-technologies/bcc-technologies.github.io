@@ -8,17 +8,22 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-science-cache
+  cancel-in-progress: false
+
 jobs:
   update-cache:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Update cache
         env:
@@ -35,4 +40,9 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add static/data/arxiv.json static/data/nasa-apod.json
           git commit -m "chore: update science cache"
-          git push
+          # Other workflows push to main too; rebase and retry on race.
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

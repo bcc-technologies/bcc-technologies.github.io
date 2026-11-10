@@ -114,25 +114,76 @@ async function writeJson(file, data) {
   await fs.writeFile(file, JSON.stringify(data, null, 2), "utf-8");
 }
 
+// arXiv API terms: max 1 request every 3 seconds, single connection.
+const ARXIV_DELAY_MS = 3500;
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function warn(msg) {
+  // Surfaces as an annotation in GitHub Actions without failing the job.
+  console.log(`::warning::${msg}`);
+}
+
+async function fetchWithRetry(url, options = {}, { label = url, retries = 4, baseDelayMs = 5000, timeoutMs = 60000 } = {}) {
+  for (let attempt = 0; ; attempt += 1) {
+    let reason;
+    let waitMs = baseDelayMs * 2 ** attempt;
+    try {
+      const res = await fetch(url, { ...options, signal: AbortSignal.timeout(timeoutMs) });
+      if (res.ok) return res;
+      if (!RETRYABLE.has(res.status)) throw Object.assign(new Error(`${label} HTTP ${res.status}`), { fatal: true });
+      reason = `HTTP ${res.status}`;
+      const retryAfter = Number(res.headers.get("retry-after"));
+      if (Number.isFinite(retryAfter) && retryAfter > 0) waitMs = Math.max(waitMs, retryAfter * 1000);
+    } catch (err) {
+      if (err.fatal) throw err;
+      reason = err.message; // network error / timeout
+    }
+    if (attempt >= retries) throw new Error(`${label} ${reason} (after ${retries + 1} attempts)`);
+    console.log(`${label}: ${reason}, retry ${attempt + 1}/${retries} in ${Math.round(waitMs / 1000)}s`);
+    await sleep(waitMs);
+  }
+}
+
+async function readJson(file) {
+  try {
+    return JSON.parse(await fs.readFile(file, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
 async function fetchArxivGroup(group) {
   const query = `cat:${group.query}`;
   const url = `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=${MAX_RESULTS_PER_GROUP}&sortBy=lastUpdatedDate&sortOrder=descending`;
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: {
       "User-Agent": "BCC-Science/1.0 (contact: info@bcctech.com)"
     }
-  });
-  if (!res.ok) throw new Error(`ArXiv HTTP ${res.status}`);
+  }, { label: `ArXiv ${group.id}`, baseDelayMs: 10000 });
   const xml = await res.text();
   return parseArxiv(xml).map((item) => ({ ...item, sourceGroup: group.id }));
 }
 
-async function fetchArxiv() {
-  const groupResults = await Promise.all(GROUPS.map(async (group) => {
-    const items = await fetchArxivGroup(group);
-    return { groupId: group.id, items };
-  }));
+async function fetchArxiv(previous) {
+  // Sequential on purpose: parallel bursts trigger HTTP 429.
+  const groupResults = [];
+  let failed = 0;
+  for (const [i, group] of GROUPS.entries()) {
+    if (i > 0) await sleep(ARXIV_DELAY_MS);
+    try {
+      const items = await fetchArxivGroup(group);
+      groupResults.push({ groupId: group.id, items });
+    } catch (err) {
+      failed += 1;
+      const fallback = (previous?.items || []).filter((it) => (it.sourceGroup || it.group) === group.id);
+      warn(`ArXiv group "${group.id}" failed (${err.message}); reusing ${fallback.length} cached items.`);
+      groupResults.push({ groupId: group.id, items: fallback });
+    }
+  }
+  if (failed === GROUPS.length) throw new Error("ArXiv: all groups failed");
 
   const merged = new Map();
   groupResults.forEach((res) => {
@@ -182,9 +233,9 @@ async function fetchArxiv() {
 
 async function fetchApod() {
   const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
+  if (apiKey === "DEMO_KEY") warn("NASA_API_KEY secret is empty; using DEMO_KEY (heavily rate-limited).");
   const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`NASA APOD HTTP ${res.status}`);
+  const res = await fetchWithRetry(url, {}, { label: "NASA APOD" });
   const item = await res.json();
 
   return {
@@ -196,15 +247,33 @@ async function fetchApod() {
 async function main() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 
-  const [arxiv, apod] = await Promise.all([
-    fetchArxiv(),
+  const arxivFile = path.join(DATA_DIR, "arxiv.json");
+  const apodFile = path.join(DATA_DIR, "nasa-apod.json");
+  const previousArxiv = await readJson(arxivFile);
+
+  // Each source is independent: one outage must not block the other.
+  const [arxiv, apod] = await Promise.allSettled([
+    fetchArxiv(previousArxiv),
     fetchApod()
   ]);
 
-  await writeJson(path.join(DATA_DIR, "arxiv.json"), arxiv);
-  await writeJson(path.join(DATA_DIR, "nasa-apod.json"), apod);
+  if (arxiv.status === "fulfilled") {
+    await writeJson(arxivFile, arxiv.value);
+    console.log("ArXiv cache updated.");
+  } else {
+    warn(`ArXiv update skipped, keeping previous cache: ${arxiv.reason?.message || arxiv.reason}`);
+  }
 
-  console.log("Science cache updated.");
+  if (apod.status === "fulfilled") {
+    await writeJson(apodFile, apod.value);
+    console.log("NASA APOD cache updated.");
+  } else {
+    warn(`NASA APOD update skipped, keeping previous cache: ${apod.reason?.message || apod.reason}`);
+  }
+
+  if (arxiv.status === "rejected" && apod.status === "rejected") {
+    throw new Error("All science sources failed");
+  }
 }
 
 main().catch((err) => {

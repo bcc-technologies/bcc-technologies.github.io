@@ -14,6 +14,17 @@
     }
   }
 
+  async function getSessionTokens() {
+    try {
+      const supabase = await window.BCCAuth.loadSupabaseClient();
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return data?.session || null;
+    } catch (error) {
+      throw contracts.toError(error);
+    }
+  }
+
   async function functionInvocationError(error) {
     const response = error?.context;
     if (!response || typeof response.clone !== "function") return error;
@@ -150,6 +161,7 @@
 
   const client = Object.freeze({
     getDashboard: getClientDashboard,
+    getSessionTokens,
     getSeatManagement: (licenseId, query = "") => rpc("get_my_license_seat_management", {
       p_license_id: licenseId,
       p_query: query || null,
